@@ -1,0 +1,70 @@
+.contactFormList {
+    //margin-top: 20px;
+    .inputs-item {
+        border: 1px solid var(--ion-color-c6);
+        //box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        margin: 10px;
+    }
+}
+
+ion-button {
+    --border-radius: 5px;
+    margin: 10px;
+}
+
+.footerContent {
+    margin-top: 10px;
+    .infoFooter {
+        color: gray;
+        font-size: 10px;
+    }
+    .footerImage {
+        height: 25px;
+    }
+    .footerImageW {
+        height: 25px;
+        margin-left: 82%;
+    }
+}
+
+.row-margin {
+    margin: 10px;
+    padding-top: 10px;
+    background: lightgray;
+}
+
+h6 {
+    font-size: 14px;
+}
+
+.item-bg {
+    --background: var(--ion-color-c7) !important;
+    --min-height: inherit !important;
+}
+
+.main_content_div {
+    width: 100%;
+    .back_image {
+        height: 85px;
+        width: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        position: relative;
+        ion-icon {
+            font-size: 20px;
+            color: white;
+            position: absolute;
+            right: 5px;
+            top: 5px;
+        }
+    }
+    ion-label {
+        display: block;
+        text-align: center;
+        padding-left: 10px;
+        padding-right: 10px;
+        margin-top: 10px;
+        font-weight: 600;
+    }
+}

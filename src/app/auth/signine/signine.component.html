@@ -1,0 +1,66 @@
+<ion-content>
+  <div class="box">
+
+      <h4 class="ion-padding-start ion-no-margin div-text"> Login With Email Id</h4>
+
+  </div>
+  <ion-grid>
+      <ion-row class="ion-justify-content-center">
+          <ion-col size="4">
+
+          </ion-col>
+          <ion-col size="4" class="ion-text-center">
+              <img src="assets/logo.png">
+          </ion-col>
+          <ion-col size="4">
+
+          </ion-col>
+      </ion-row>
+
+      <ion-row>
+          <ion-card class="ion-margin-bottom card-width">
+              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                  <ion-col size="12">
+                      <ion-item>
+                          <ion-input type="email" formControlName="email" placeholder="Email Id"></ion-input>
+                          <!-- <ion-icon name="email-portrait-outline" slot="start" color="medium" class="item-left"></ion-icon> -->
+                      </ion-item>
+                      <div *ngIf="f.email.invalid && (f.email.dirty || f.email.touched)" class="alert ml-35">
+                          <div *ngIf="f.email.errors.required" class="warning">
+                              Email Id is required.
+                          </div>
+                          <div *ngIf="f.email.errors?.email" class="warning">
+                              Enter Valid Email Id.
+                          </div>
+                      </div>
+                  </ion-col>
+                  <ion-col size="12">
+                    <ion-item>
+                        <ion-input type="password" formControlName="password" placeholder="Password"></ion-input>
+                        <!-- <ion-icon name="email-portrait-outline" slot="start" color="medium" class="item-left"></ion-icon> -->
+                    </ion-item>
+                    <div *ngIf="f.password.invalid && (f.password.dirty || f.password.touched)" class="alert ml-35">
+                        <div *ngIf="f.password.errors.required" class="warning">
+                            Password Id is required.
+                        </div>
+                    </div>
+                </ion-col>
+                  <ion-col size="12">
+                      <ion-button type="submit" [disabled]="checkValidate()" shape="round" expand="block" color="medium" class="bg-web">Login</ion-button>
+                  </ion-col>
+              </form>
+              <ion-col class="ion-text-end" size="4">
+
+              </ion-col>
+              <ion-col class="ion-text-end" size="5">
+
+              </ion-col>
+              <ion-col size="3">
+                  <ion-text class="signup" [routerLink]="['/auth/signupe']" color="medium">SignUp</ion-text>
+              </ion-col>
+
+          </ion-card>          
+      </ion-row>
+
+  </ion-grid>
+</ion-content>

@@ -1,0 +1,6 @@
+{
+	"appId": "com.hardgoodlbs.ai",
+	"appName": "hardgoodlabs",
+	"webDir": "www",
+	"bundledWebRuntime": false
+}
