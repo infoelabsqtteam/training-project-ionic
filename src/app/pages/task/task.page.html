@@ -1,0 +1,43 @@
+<ion-header>
+    <ion-toolbar>
+        <a routerLink="/home" slot="start">
+            <ion-icon name="chevron-back-outline" size="large"></ion-icon>
+        </a>
+
+        <ion-title class="ion-text-center">Task</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-grid>
+        <div *ngFor="let data of taskList" class="divsize" (click)="openModal(data)">
+            <ion-row class="row-padding" [ngClass]="{'ragR': data.status === 'R', 'ragA' : data.status === 'A', 'ragG' : data.status === 'G'}">
+                <ion-col size="8 ">
+                    <ion-label class="nameFont "><strong>{{data.task_name | titlecase}}</strong></ion-label>
+                </ion-col>
+                <ion-col size="4" class="ion-no-margin ion-no-padding">
+                    <ion-button size="small " *ngIf="data.task_status" class="call-btn ">{{data?.task_status.name}}</ion-button>
+                </ion-col>
+                <ion-col size="12">
+                    <ion-label class=" text-color">{{data?.client_name.name}}
+                    </ion-label>
+                </ion-col>
+                <ion-col size="11" class="ion-text-nowrap">
+                    <p class="ion-no-margin ion-no-padding text-color summ-text">{{data.summary}}
+                    </p>
+                </ion-col>
+
+                <!-- <ion-col size="3 " class=" " offset="3 ">
+                <ion-icon name="call " class="icon-size " (click)="call(data); $event.stopPropagation(); "></ion-icon>
+            </ion-col> -->
+                <ion-col size="8">
+                    <ion-label class="text-color"> {{data.createdDate | date:'dd-MMM-yy'}}</ion-label>
+                </ion-col>
+                <!-- <ion-col size="4 " class="ion-no-margin ion-no-padding ">
+                    <ion-button size="small " class="call-btn ">{{data.status}}</ion-button>
+
+                </ion-col> -->
+            </ion-row>
+        </div>
+    </ion-grid>
+</ion-content>

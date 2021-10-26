@@ -1,0 +1,22 @@
+<ion-header>
+    <ion-toolbar>
+        <a routerLink="/home" slot="start">
+            <ion-icon name="chevron-back-outline" size="large"></ion-icon>
+        </a>
+
+        <ion-title class="ion-text-center">Notification</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-card *ngFor="let message of notificationList" (click)="viewNotification(message)" class="card-style">
+        <img *ngIf="message.image" [src]="message.image" />
+        <ion-card-header>
+            <!-- <ion-card-subtitle>Destination</ion-card-subtitle> -->
+            <ion-card-title>{{message.title}}</ion-card-title>
+        </ion-card-header>
+        <!-- <ion-card-content>
+            Founded in 1829 on an isthmus between Lake Monona and Lake Mendota, Madison was named the capital of the Wisconsin Territory in 1836.
+        </ion-card-content> -->
+    </ion-card>
+</ion-content>

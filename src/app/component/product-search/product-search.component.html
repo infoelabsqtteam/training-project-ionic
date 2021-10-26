@@ -1,0 +1,46 @@
+<ion-header color="medium">
+    <ion-toolbar class="Rectangle-98">
+        <ion-row>
+            <ion-col size="2" class="ion-margin-top">
+
+                <!-- <ion-button (click)="addAddress()"> -->
+                <ion-icon size="large" (click)="goToHome()" name="chevron-back-sharp"></ion-icon>
+                <!-- </ion-button> -->
+
+            </ion-col>
+            <ion-col size="8" class="ion-margin-top">
+                <div class="ion-text-wrap header-title">
+                    Product Search
+                </div>
+            </ion-col>
+            <ion-col size="2" class="ion-margin-top" (click)="goToCart()">
+                <ion-icon name="cart-outline" class="cart-icon" size="large"></ion-icon>
+                <ion-badge class="cart-badge" *ngIf="cart_count && cart_count>0">{{cart_count}}</ion-badge>
+            </ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col>
+                <ion-searchbar [(ngModel)]="name" (ionChange)="searchProduct(name)" #autofocus debounce="500" (ionClear)="onClose(name)" animated class="search"></ion-searchbar>
+            </ion-col>
+        </ion-row>
+
+    </ion-toolbar>
+
+</ion-header>
+<ion-content>
+    <ion-row *ngFor="let product of productList" class="ion-margin-vertical ion-padding-horizontal">
+        <ion-col size="1">
+            <ion-icon name="close-outline"></ion-icon>
+        </ion-col>
+        <ion-col size="10" (click)="getStockItem(product)">
+            <ion-label>
+                {{product.name}}
+            </ion-label>
+        </ion-col>
+        <ion-col size="1">
+            <!-- <ion-icon name="arrow-back-outline"></ion-icon> -->
+        </ion-col>
+
+    </ion-row>
+
+</ion-content>

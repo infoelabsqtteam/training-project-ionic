@@ -1,0 +1,70 @@
+<ion-header>
+    <!-- <ion-toolbar color="secondary">
+    <ion-buttons slot="start">
+      <ion-back-button text="" mode="md"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Chat Example 1</ion-title>
+  </ion-toolbar> -->
+
+    <div class="header_div">
+        <div class="first_div">
+            <ion-button fill="clear" size="small" slot="start">
+                <a routerLink="/lrtab/ld">
+                    <ion-icon name="chevron-back-outline" size="large"></ion-icon>
+                </a>
+            </ion-button>
+            <div class="back_image" [style.backgroundImage]="'url(assets/imgs/user1.jpg)'"></div>
+            <ion-label>{{lead.name}}</ion-label>
+        </div>
+        <div>
+            <!-- <ion-button fill="clear" size="small">
+                <ion-icon slot="icon-only" name="call"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" size="small">
+                <ion-icon slot="icon-only" name="videocam"></ion-icon>
+            </ion-button> -->
+        </div>
+    </div>
+
+</ion-header>
+
+<ion-content>
+    <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+    <div class="main_content_div">
+        <span *ngFor="let item of chatHistory">
+            <div class="left_div" *ngIf="item.message_status == 'INCOMMING'">
+                <div class="inner_div">
+                    <div class="back_image" [style.backgroundImage]="'url(assets/imgs/user1.jpg)'"></div>
+                    <div class="msg_div">
+                        <ion-label>{{item.messageBody}}</ion-label>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="item.message_status == 'INCOMMING'" class="left_div_time">
+                <ion-label class="time-label">{{item.createdDate | date:'dd-MMM-yy HH:mm'}}</ion-label>
+            </div>
+      
+            <div class="right_div" *ngIf="item.message_status == 'OUTGOING'">
+                <div class="inner_div">
+                    <div class="msg_div">
+                        <ion-label>{{item.messageBody}}</ion-label>
+                    </div>
+                    <div class="back_image" [style.backgroundImage]="'url(assets/imgs/user2.jpg)'"></div>
+                </div>
+            </div>
+            <div *ngIf="item.message_status == 'OUTGOING'" class="right_div_time">
+                <ion-label class="time-label">{{item.createdDate | date:'dd-MMM-yy HH:mm'}}</ion-label>
+            </div>
+        </span>
+    </div>
+</ion-content>
+
+<ion-footer>
+    <div class="footer_div">
+        <ion-input type="text" [(ngModel)]="message" placeholder="Type Here..">
+        </ion-input>
+        <ion-icon name="navigate-circle" slot="end" (click)="sendWhatsAppMsg()"></ion-icon>
+    </div>
+</ion-footer>

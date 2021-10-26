@@ -1,0 +1,39 @@
+<ion-header class="ion-no-border header-bg">
+    <ion-toolbar class="Rectangle-98 ion-no-margin">
+        <ion-buttons slot="start">
+            <!-- <ion-button (click)="addAddress()"> -->
+            <ion-icon slot="icon-only" size="large" class="header-icon" [routerLink]="['/tab/home2']" name="chevron-back-sharp"></ion-icon>
+            <!-- </ion-button> -->
+        </ion-buttons>
+        <!-- <ion-title (click)="addAddress()" size="small" class="Gurgaon"> -->
+        <div class="ion-text-wrap header-title">
+            Support
+        </div>
+
+        <!-- </ion-title> -->
+
+        <!-- <img src="assets/newdesign/Path 229.svg" />
+  <img src="assets/newdesign/discount.svg" class="discount" />
+  <img src="assets/newdesign/Group 45.svg" class="Group-45" /> -->
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-list>
+        <ion-list-header>
+            Other Help Topics
+        </ion-list-header>
+        <ion-item *ngFor="let group of supportOptions" (click)="showTopics(group)">
+            <ion-avatar slot="start">
+                <img src="./assets/003.png">
+            </ion-avatar>
+            <ion-label>
+                <h2>{{group?.name}}</h2>
+
+                <!-- <h3>I'm a big deal</h3> -->
+                <p>{{group?.description}}</p>
+            </ion-label>
+        </ion-item>
+    </ion-list>
+
+</ion-content>

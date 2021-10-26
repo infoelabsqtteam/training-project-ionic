@@ -1,0 +1,65 @@
+<ion-header>
+    <ion-toolbar>
+        <a (click)="_dismiss()" slot="start">
+            <ion-icon name="chevron-back-outline" size="large"></ion-icon>
+        </a>
+        <ion-title class="ion-text-center">Task</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-list lines="none" class="contactFormList">
+
+        <ion-item class="inputs-item item-bg" lines="none">
+            <ion-input type="text" [(ngModel)]="modalData.task_name" placeholder="Task Name" readonly="true"></ion-input>
+        </ion-item>
+        <ion-item class="inputs-item item-bg" lines="none">
+            <ion-input type="text" [(ngModel)]="modalData.summary" placeholder="Task Summary" readonly="true"></ion-input>
+        </ion-item>
+        <ion-item class="inputs-item item-bg" lines="none">
+            <ion-input type="text" [(ngModel)]="modalData.description" placeholder="Task Description" readonly="true"></ion-input>
+        </ion-item>
+        <!-- <ion-row class="row-margin">
+            <ion-col size="12">
+                <h6 class="ion-no-margin msg">13-03-21 user ID</h6>
+            </ion-col>
+            <ion-col size="12" class="ion-margin-bottom">
+                <h6 class="ion-no-margin msg" class="ion-no-margin ">USer Comment</h6>
+            </ion-col>
+        </ion-row> -->
+
+
+        <ion-item class="inputs-item " lines="none ">
+            <ion-textarea placeholder="Add Comment" [(ngModel)]="modalData.uploadComment" rows="3"></ion-textarea>
+        </ion-item>
+        <ion-item lines="inset">
+            <ion-label> Status</ion-label>
+            <ion-select [(ngModel)]="modalData.task_status" [compareWith]="compareWith" (ionChange)="statusChange($event)" cancelText="Cancel" okText="Okay">
+                <ion-select-option *ngFor="let status of statusList" [value]="status">{{status.name}}</ion-select-option>
+            </ion-select>
+        </ion-item>
+        <ion-item lines="inset" (click)="uploadDocument()">
+            <ion-icon slot="end" name="cloud-upload-sharp"></ion-icon>
+            <ion-label>Upload Document</ion-label>
+        </ion-item>
+
+    </ion-list>
+    <div class="main_content_div">
+        <ion-grid fixed>
+            <ion-row>
+                <ion-col size="6" *ngFor="let item of uploadList">
+                    <div class="back_image" [style.backgroundImage]="'url(' + 'data:image/jpeg;base64,' + item.fileData + ')'">
+                        <ion-icon size="large" name="close-outline" color="danger"></ion-icon>
+                    </div>
+
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+    </div>
+
+</ion-content>
+<ion-footer>
+    <ion-toolbar (click)="updateTask()">
+        <ion-title class="ion-text-center">Save</ion-title>
+    </ion-toolbar>
+</ion-footer>

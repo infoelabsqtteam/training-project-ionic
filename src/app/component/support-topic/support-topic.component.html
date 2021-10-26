@@ -1,0 +1,39 @@
+<ion-header class="ion-no-border header-bg">
+    <ion-toolbar class="Rectangle-98 ion-no-margin">
+        <ion-buttons slot="start">
+            <!-- <ion-button (click)="addAddress()"> -->
+            <ion-icon slot="icon-only" size="large" class="header-icon" (click)="_dismiss()" name="chevron-back-sharp"></ion-icon>
+            <!-- </ion-button> -->
+        </ion-buttons>
+        <!-- <ion-title (click)="addAddress()" size="small" class="Gurgaon"> -->
+        <div class="ion-text-wrap header-title">
+            {{modalData?.name}}
+        </div>
+        <!-- </ion-title> -->
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-list *ngIf="!showDescription">
+        <ion-item detail="true" *ngFor="let topic of topics" (click)="getTopicByParent(topic)">
+            <ion-label>{{topic.name}}</ion-label>
+        </ion-item>
+
+    </ion-list>
+
+    <div *ngIf="showDescription">
+        <ion-item>
+            <ion-label position="floating">Description</ion-label>
+            <ion-textarea auto-grow="true" [(ngModel)]="description" rows="5"></ion-textarea>
+        </ion-item>
+        <ion-row>
+            <ion-col size="6">
+                <ion-button expand="block" color="medium" shape="round" class="add-cart-btn ion-text-capitalize" (click)="cancel()">Close</ion-button>
+            </ion-col>
+            <ion-col size="6">
+                <ion-button expand="block" color="medium" shape="round" class="add-cart-btn ion-text-capitalize" [disabled]="!description" (click)="saveRequest()">Raise a Ticket</ion-button>
+            </ion-col>
+        </ion-row>
+
+    </div>
+</ion-content>

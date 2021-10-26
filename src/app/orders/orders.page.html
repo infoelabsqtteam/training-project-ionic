@@ -1,0 +1,45 @@
+<ion-header>
+    <ion-toolbar>
+        <a routerLink="/home" slot="start">
+            <ion-icon name="chevron-back-outline" size="large"></ion-icon>
+        </a>
+        <ion-title>Orders</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-row>
+        <ion-col size="12">
+            <ion-searchbar [(ngModel)]="myInput" (ionInput)="search(myInput)" (ionChange)="onChangeValue(myInput)" (ionClear)="onClose(myInput)"></ion-searchbar>
+        </ion-col>
+    </ion-row>
+    <ion-grid>
+        <div *ngFor="let data of gridData" class="divsize">
+            <ion-row (click)="openModal(data)">
+                <ion-col size="8">
+                    <ion-label class="nameFont">{{data.billing_company}}</ion-label>
+                </ion-col>
+                <ion-col size="4" class="ion-text-end nameFont">
+                    <ion-label>{{data.net_amount}}</ion-label>
+                </ion-col>
+                <ion-col size="8">
+                    <ion-label>{{data.altname}}</ion-label>
+                </ion-col>
+                <ion-col size="4" class="ion-text-end">
+                    <ion-label>{{data.createdByName}}</ion-label>
+                </ion-col>
+                <ion-col size="6">
+                    <ion-label>{{data.createdBy}}</ion-label>
+                </ion-col>
+                <ion-col size="6" class="ion-text-end">
+                    <ion-label>{{data.createdDate | date:'dd-MMM-yy HH:mm'}}</ion-label>
+                </ion-col>
+                <ion-col size="6">
+                    <ion-button color="medium" class="boxsize">{{data.order_status}}</ion-button>
+                </ion-col>
+
+            </ion-row>
+
+        </div>
+    </ion-grid>
+</ion-content>

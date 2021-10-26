@@ -1,0 +1,59 @@
+<ion-header>
+    <ion-toolbar>
+        <a routerLink="/lrtab/ld" slot="start">
+            <ion-icon name="chevron-back-outline" size="large"></ion-icon>
+        </a>
+
+        <ion-title class="ion-text-center">Calls</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <!-- <ion-grid class="ion-no-padding">
+        <ion-row class="row-padding">
+            <ion-col size="6">
+                <ion-button expand="block" color="medium" expand="full">Status</ion-button>
+            </ion-col>
+            <ion-col size="6">
+                <ion-button expand="block" (click)="openModal(lead)" color="medium" expand="full">Reminder</ion-button>
+            </ion-col>
+        </ion-row>
+    </ion-grid> -->
+    <ion-grid>
+        <div *ngFor="let data of callLogs" class="divsize">
+            <ion-row class="row-padding">
+                <ion-col size="8">
+                    <ion-label class="nameFont"><strong>{{lead.phone}}</strong></ion-label>
+                </ion-col>
+                <ion-col size="4" class="ion-no-margin ion-no-padding">
+                    <!-- <ion-button size="small" color="medium" class="call-btn" (click)="call(data); $event.stopPropagation();">click to call</ion-button> -->
+                </ion-col>
+                <ion-col size="12">
+                    <ion-label class="text-color">{{data?.message}}
+                    </ion-label>
+                </ion-col>
+                <ion-col size="12">
+                    <ion-label class="text-color">Start Time: {{data.start_datetime | date:'dd-MMM-yy hh:mm'}}
+                    </ion-label>
+                </ion-col>
+                <ion-col size="12">
+                    <ion-label class="text-color">End Time: {{data.end_datetime | date:'dd-MMM-yy hh:mm'}}
+                    </ion-label>
+                </ion-col>
+
+                <!-- <ion-col size="3" class="" offset="3">
+                    <ion-icon name="call" class="icon-size" (click)="call(data); $event.stopPropagation(); "></ion-icon>
+                </ion-col> -->
+
+            </ion-row>
+        </div>
+    </ion-grid>
+</ion-content>
+
+<!-- <ion-footer>
+    <ion-row>
+        <ion-col>
+            <ion-button expand="block" (click)="saveCallLogs(lead)" color="medium">Save Call History</ion-button>
+        </ion-col>
+    </ion-row>
+</ion-footer> -->

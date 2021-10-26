@@ -1,0 +1,186 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>{{web_site_name}}</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+    <!-- <ion-slides class="slidesize"> -->
+    <ion-slides pager="true" [options]="slideOpts1">
+        <ion-slide *ngFor="let item of list">
+            <img [src]="item" class="slide-img">
+        </ion-slide>
+    </ion-slides>
+    <!-- <ion-slide *ngFor="let data of bannerData">
+            <div class="cardbox2 ion-text-center">
+                <h1 class="maintop ion-text-center">{{data.name}} </h1>
+                <ion-row>
+                    <ion-col size="4">
+                        <h4 class="h2Today ion-text-right">Today</h4>
+                        <h4 class="h2Total ion-text-right">Yesterday </h4>
+                    </ion-col>
+                    <ion-col size="3">
+                        <h2 class="h2Today">{{data.today_count}}</h2>
+                        <h2 class="h2Total">{{data.yesterday_count}}</h2>
+                    </ion-col>
+                    <ion-col size="5">
+                        <h2 class="h2Today ion-text-left">{{data.today_total | currency:'INR' :'symbol':'.2-2'}}</h2>
+                        <h2 class="h2Total ion-text-left">{{data.yesterday_total | currency:'INR' :'symbol':'.2-2'}}</h2>
+                    </ion-col>
+                </ion-row>
+                <div class="dummy">This is dummy data. work in progress.</div>  
+        </div>
+        </ion-slide>-->
+
+    <!-- <ion-slide>
+            <div class="cardbox2 ion-text-center">
+                <h1 class="maintop ion-text-center">Quotations </h1>
+                <ion-row>
+                    <ion-col size="5">
+                        <h2 class="h2Today">Today</h2>
+                        <h2 class="h2Total">Yesterday </h2>
+                    </ion-col>
+                    <ion-col size="3">
+                        <h2 class="h2Today">130</h2>
+                        <h2 class="h2Total">123</h2>
+                    </ion-col>
+                    <ion-col size="4">
+                        <h2 class="h2Today">1,34,000</h2>
+                        <h2 class="h2Total">34,000</h2>
+                    </ion-col>
+                </ion-row>
+                <div class="dummy">This is dummy data. work in progress.</div>
+            </div>
+        </ion-slide>
+
+        <ion-slide>
+            <div class="cardbox">
+                <div class="maintop">Sample Booking </div>
+                <ion-row>
+                    <ion-col size="6">
+                        <ion-card class="cardstyle">
+                            <label class="top">Today</ion-label>
+                            <h2 class="top">130</h2>
+                            <h2 class="top">1,34,000</h2>
+                        </ion-card>
+                    </ion-col>
+                    <ion-col size="6">
+                        <ion-card class="cardstyle">
+                            <label class="top">Yesterday </ion-label>
+                            <h2 class="top">123</h2>
+                            <h2 class="top">34,000</h2>
+                        </ion-card>
+                    </ion-col>
+                </ion-row>
+                <div class="dummy1">This is dummy data. work in progress.</div>
+            </div>
+        </ion-slide>
+
+
+        <ion-slide>
+            <div class="cardbox3">
+                <div class="maintop">Order TAT </div>
+                <ion-row>
+                    <ion-col size="6">
+                        <ion-card class="cardstyle">
+                            <label class="top">Due Today</ion-label>
+                            <div class="divToday">130</div>
+                            <div class="smallBox">
+                                <div>Overdue </div>
+                                <div>10</div>
+                            </div>
+                            <div>Due Tomorrow</div>
+                            <div class="divToday">130</div>
+                        </ion-card>
+                    </ion-col>
+                    <ion-col size="6">
+                        <ion-card class="cardstyle">
+                            <label class="top">Due Yesterday </ion-label>
+                            <h2 class="divToday">120</h2>
+                            <div class="smallBox">
+                                <div>Overdue </div>
+                                <div>3</div>
+                            </div>
+                        </ion-card>
+                    </ion-col>
+                </ion-row>
+            </div>
+        </ion-slide> 
+    </ion-slides>-->
+
+    <ion-grid>
+        <ion-row class="ion-text-center">
+            <ion-col size="4">
+                <!-- <img src="./assets/dollar.svg" /> -->
+                <div class="magrinPading">
+                    <a routerLink="/lrtab/ld"><img src="./assets/HRMS.png" height="70"></a>
+
+                </div>
+                <a routerLink="/lrtab/ld">
+                    <ion-label>Leads</ion-label>
+                </a>
+            </ion-col>
+            <ion-col size="4">
+                <!-- <img src="./assets/dollar.svg" /> -->
+                <div class="magrinPading">
+                    <a routerLink="/task"><img src="./assets/leaves.png" height="70"></a>
+
+                </div>
+                <a routerLink="/task">
+                    <ion-label>Task</ion-label>
+                </a>
+            </ion-col>
+            <!-- <ion-col size="4 ">
+                <div class="magrinPading">
+                    <a routerLink="/orders"><img src="./assets/orders.png" height="80px"></a>
+
+                </div>
+                <a routerLink="/orders">
+                    <label>Orders</ion-label>
+                </a>
+            </ion-col> -->
+            <!--<ion-col size="4 ">
+                <div class="magrinPading " (click)="showMessage() ">
+                    <a><img src="./assets/invoice.png " height="80px " /></a>
+
+                </div>
+                <label>Invoices</ion-label>
+            </ion-col>
+               <ion-col size="4 ">
+                <div class="magrinPading " (click)="showMessage() ">
+                    <a><img src=" ./assets/expense.png " height="80px " /></a>
+
+                </div>
+                <label>Expenses</ion-label>
+            </ion-col>
+            <ion-col size="4 ">
+                <div class="magrinPading " (click)="showMessage() ">
+                    <a><img src="./assets/leaves.png " height="80px " /></a>
+
+                </div>
+                <label>Leaves</ion-label>
+            </ion-col>
+            <ion-col size="4 ">
+                <div class="magrinPading " (click)="showMessage() ">
+                    <a><img src=" ./assets/HRMS.png " height="80px " /></a>
+
+                </div>
+                <label>Tasks</ion-label>
+            </ion-col> -->
+        </ion-row>
+        <!-- <ion-row *ngIf="appModules &&  appModules.length<1">
+            <ion-col size="12">
+                <ion-card>
+                    <ion-card-header>
+                        You don't have Permissions. Please contact admin.
+                    </ion-card-header>
+                </ion-card>
+            </ion-col>
+        </ion-row> -->
+    </ion-grid>
+    <!-- <button ion-button color="secondary" (click)="getCallLogs() ">Secondary</button> -->
+</ion-content>

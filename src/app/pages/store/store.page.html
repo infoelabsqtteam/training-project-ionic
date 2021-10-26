@@ -1,0 +1,36 @@
+<ion-header class="ion-no-border">
+    <ion-toolbar class="Rectangle-98 ion-no-margin">
+        <ion-buttons slot="start">
+            <!-- <ion-button (click)="addAddress()"> -->
+            <ion-icon slot="icon-only" size="large" class="header-icon" (click)="goToHome()" name="chevron-back-sharp"></ion-icon>
+            <!-- </ion-button> -->
+        </ion-buttons>
+        <!-- <ion-title (click)="addAddress()" size="small" class="Gurgaon"> -->
+        <div class="ion-text-wrap header-title">
+            Store
+        </div>
+
+        <!-- </ion-title> -->
+
+        <!-- <img src="assets/newdesign/Path 229.svg" />
+    <img src="assets/newdesign/discount.svg" class="discount" />
+    <img src="assets/newdesign/Group 45.svg" class="Group-45" /> -->
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <div>
+        <ion-card *ngFor="let store of stores">
+            <img src="https://www.sanjivanichemist.com/assets/img/slider1.png" />
+            <ion-card-header>
+
+                <ion-card-title>{{store?.name}}</ion-card-title>
+                <ion-card-subtitle>{{store?.phone}}</ion-card-subtitle>
+                <ion-card-subtitle>{{store?.timing}}</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+                {{store?.address}}
+            </ion-card-content>
+        </ion-card>
+    </div>
+</ion-content>
