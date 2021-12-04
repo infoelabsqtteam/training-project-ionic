@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastController, ModalController } from '@ionic/angular';
 import { UpdateTaskComponent } from 'src/app/component/update-task/update-task.component';
-import { AuthService, StorageService, LoaderService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService, LoaderService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-task',
@@ -22,7 +22,8 @@ export class TaskPage implements OnInit {
     public toastController: ToastController, 
     public modalController: ModalController,
     private loaderService: LoaderService,
-    private coreUtilService:CoreUtilityService
+    private coreUtilService:CoreUtilityService,
+    private envService:EnvService
   ) { }
 
   ngOnInit() {
@@ -51,7 +52,7 @@ export class TaskPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             this.loaderService.hideLoader();

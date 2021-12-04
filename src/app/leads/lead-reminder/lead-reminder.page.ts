@@ -4,7 +4,7 @@ import { AlertController, ToastController } from '@ionic/angular';
 import { NewReminderComponent } from 'src/app/component/new-reminder/new-reminder.component';
 import { ModalController } from '@ionic/angular';
 import { HttpHeaders, HttpErrorResponse, HttpClient } from '@angular/common/http';
-import { AuthService, StorageService, LoaderService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService, LoaderService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-lead-reminder',
@@ -24,7 +24,9 @@ export class LeadReminderPage implements OnInit {
     private http: HttpClient,
     private callNumber: CallNumber,
     private storageService: StorageService,
-    private alertController: AlertController) { }
+    private alertController: AlertController,
+    private envService: EnvService
+    ) { }
 
   ngOnInit() {
   }
@@ -59,7 +61,7 @@ export class LeadReminderPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             this.loaderService.hideLoader();
@@ -116,7 +118,7 @@ export class LeadReminderPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           data['log'] = val;
           data.status = "InActive";
-          let api = `${this.coreUtilService.baseUrl('SAVE_FORM_DATA')}/reminders`;
+          let api = `${this.envService.baseUrl('SAVE_FORM_DATA')}/reminders`;
           this.http.post(api, data, header).subscribe(
             respData => {
               this.loaderService.hideLoader();
@@ -187,7 +189,7 @@ export class LeadReminderPage implements OnInit {
         this.loaderService.showLoader(null);
         this.storageService.getUserLog().then((val) => {
           data['log'] = val;
-          let api = `${this.coreUtilService.baseUrl('SAVE_FORM_DATA')}/reminder_comment`;
+          let api = `${this.envService.baseUrl('SAVE_FORM_DATA')}/reminder_comment`;
           this.http.post(api, data, header).subscribe(
             respData => {
               this.loaderService.hideLoader();

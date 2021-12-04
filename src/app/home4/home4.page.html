@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      <ion-title>{{web_site_name}}</ion-title>
+      <ion-buttons slot="end">        
+        <ion-icon name="notifications-outline" size="large"></ion-icon>
+      </ion-buttons>
+  </ion-toolbar>
+  <ion-searchbar [(ngModel)]="myInput" (ionInput)="search(myInput)" (ionChange)="onChangeValue(myInput)" (ionClear)="onClose(myInput)" showCancelButton="focus" value="Search" autocomplete="on" autocorrect="on"></ion-searchbar>
+</ion-header>
+
+<ion-content>
+  <ion-slides class="slidesize">
+
+    <ion-slide *ngFor="let data of bannerData">
+        <div class="cardbox2 ion-text-center">
+            <h1 class="maintop ion-text-center">{{data.name}} </h1>
+            <ion-row>
+                <ion-col size="5">
+                    <h2 class="h2Today">Today</h2>
+                    <h2 class="h2Total">Yesterday </h2>
+                </ion-col>
+                <ion-col size="3">
+                    <h2 class="h2Today">{{data.today_count}}</h2>
+                    <h2 class="h2Total">{{data.yesterday_count}}</h2>
+                </ion-col>
+                <ion-col size="4">
+                    <h2 class="h2Today">{{data.today_total?data.today_total:'0'}}</h2>
+                    <h2 class="h2Total">{{data.yesterday_total?data.yesterday_total:'0'}}</h2>
+                </ion-col>
+            </ion-row>
+            <!-- <div class="dummy">This is dummy data. work in progress.</div>  -->
+        </div>
+    </ion-slide>
+  </ion-slides>
+
+  <!-- get below data from card master-->
+  <ion-grid>
+       
+    <!--  -->
+    <ion-row class="">
+
+      <!-- <ion-col size="3">
+        <div class="home_ionmenu ion-text-center">
+            <ion-img src="./assets/expense.png"></ion-img>
+          <ion-label class="label">Quotation Card</ion-label>
+        </div>
+      </ion-col> -->
+
+      <ion-col [size]="col_size" *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
+        <div class="home_ionmenu ion-text-center">
+          <ion-img [src]="img_src"></ion-img>
+          <ion-label class="label">{{cardItem.name}}</ion-label>
+        </div>
+      </ion-col>
+      
+    </ion-row>    
+
+  </ion-grid>
+
+
+</ion-content>

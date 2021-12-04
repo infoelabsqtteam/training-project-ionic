@@ -6,7 +6,7 @@ import { ToastController } from '@ionic/angular';
 import { ModalController } from '@ionic/angular';
 import { from } from 'rxjs';
 import { ModalComponent } from '../component/modal/modal.component';
-import { AuthService, StorageService, LoaderService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService, LoaderService, CoreUtilityService, EnvService } from '@core/ionic-core';
 import { SearchModalComponent } from '../component/search-modal/search-modal.component';
 
 @Component({
@@ -24,7 +24,7 @@ export class ModuleListPage implements OnInit {
   constructor(private authService: AuthService,
     private http: HttpClient, private router: Router, private storageService: StorageService,
     public toastController: ToastController, public modalController: ModalController,
-    private loaderService: LoaderService, private coreUtilService:CoreUtilityService) { }
+    private loaderService: LoaderService, private coreUtilService:CoreUtilityService, private envService: EnvService) { }
 
   ngOnInit() {
 
@@ -92,7 +92,7 @@ export class ModuleListPage implements OnInit {
     this.storageService.setAppId(module.name)
     const pageName = 'DASHBOARD';
 
-    const menuSearchModule = { "value": "menu", key2: this.storageService.getAppId('apiId') }
+    const menuSearchModule = { "value": "menu", key2: this.storageService.getAppId() }
     this.storageService.sendRequestToServer(menuSearchModule, "GET_CUSTOM_TEMPLATE")
   }
 
@@ -116,7 +116,7 @@ export class ModuleListPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             this.loaderService.hideLoader();
@@ -244,7 +244,7 @@ export class ModuleListPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           searchObj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/null', searchObj, header).subscribe(
           respData => {
             this.gridData = respData['data'];

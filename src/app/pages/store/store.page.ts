@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { CoreUtilityService, RestService, StorageService,  } from '@core/ionic-core';
+import { CoreUtilityService, RestService, StorageService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-store',
@@ -12,7 +12,8 @@ export class StorePage implements OnInit {
   constructor(
     private coreUtilService: CoreUtilityService,
     private restService: RestService, 
-    private storageService: StorageService
+    private storageService: StorageService,
+    private envService:EnvService
   ) { }
 
   ngOnInit() {
@@ -36,7 +37,7 @@ export class StorePage implements OnInit {
       pageSize: 100,
       value: "store_locator"
     }
-    let api = `${this.coreUtilService.baseUrl('GET_GRID_DATA')}/null`;
+    let api = `${this.envService.baseUrl('GET_GRID_DATA')}/null`;
     this.restService.postApiMethod(api, obj).subscribe((resp) => {
       if (resp['data'] && resp['data'].length > 0) {
         this.stores = resp['data'];

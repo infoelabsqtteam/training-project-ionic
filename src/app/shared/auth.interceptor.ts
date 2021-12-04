@@ -19,7 +19,7 @@ export class AuthInterceptor implements HttpInterceptor {
         if (idToken) {
             const url = req.url;
             const authUrl = this.envService.getBaseUrl() + "login";
-            const medSearch = this.coreUtilService.getMediceaSearchUrl('MED_SEARCH');
+            const medSearch = this.envService.getMediceaSearchUrl('MED_SEARCH');
             if (url.indexOf("/rest/public") != -1 || (url.startsWith(authUrl)) || url.startsWith(medSearch)) {
                 return next.handle(req);
             } else {

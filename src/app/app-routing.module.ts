@@ -85,13 +85,30 @@ const routes: Routes = [
     loadChildren: () => import('./pages/product-details/product-details.module').then(m => m.ProductDetailsPageModule)
   },
   {
-    path: 'home2',
-    loadChildren: () => import('./home2/home2.module').then( m => m.Home2PageModule)
+    path: 'home4',
+    loadChildren: () => import('./home4/home4.module').then( m => m.Home4PageModule)
   },
   {
-    path: 'home3',
-    loadChildren: () => import('./home3/home3.module').then( m => m.Home3PageModule)
+    path: 'modalh4details',
+    loadChildren: () => import('./component/modalh4/modalh4.component').then( m => m.Modalh4Component)
   },
+  {
+    path: 'teams',
+    loadChildren: () => import('./pages/teams/teams.module').then( m => m.TeamsPageModule)
+  },
+  {
+    path: 'cardview',
+    loadChildren: () => import('./pages/cardview/cardview.module').then( m => m.CardviewPageModule)
+  },
+  {
+    path: 'carddetailview',
+    loadChildren: () => import('./pages/carddetailview/carddetailview.module').then( m => m.CarddetailviewPageModule)
+  },
+
+
+
+
+
 
 
 
@@ -99,7 +116,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, {onSameUrlNavigation: 'reload'})],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

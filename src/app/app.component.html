@@ -1,5 +1,5 @@
 <ion-app>
-    <ion-menu side="start">
+    <ion-menu side="start" id="main">
         <!-- <ion-header>
             <ion-toolbar>
                 <ion-title class="ion-text-center">
@@ -29,10 +29,11 @@
                 </div>
             </div>
             <ion-list>
-
-                <ion-item lines="none" *ngIf="!userInfo?.email">
-                    <ion-label class="ion-no-margin" [routerLink]="['/auth/signup']" color="medium">Login/Signup</ion-label>
-                </ion-item>
+                <ion-menu-toggle>
+                    <ion-item lines="none" *ngIf="!userInfo?.email">
+                        <ion-label class="ion-no-margin" [routerLink]="['/auth/signup']" color="medium">Login/Signup</ion-label>
+                    </ion-item>
+                </ion-menu-toggle>
 
             </ion-list>
             <ion-row class="row-box-shadow">
@@ -53,11 +54,11 @@
             <ion-list>
                 <ion-menu-toggle>
                     <ion-item lines="none" [routerLink]="['/home']">
-                        <ion-img src="assets/newdesign/Image 28.png"></ion-img>
+                        <ion-icon name="home-outline"></ion-icon>
                         <ion-label class="ion-margin-start">Home</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
-                <ion-menu-toggle>
+                <!-- <ion-menu-toggle>
                     <ion-item lines="none" [routerLink]="['/tab/home2']">
                         <ion-img src="assets/newdesign/Image 28.png"></ion-img>
                         <ion-label class="ion-margin-start">Home 2</ion-label>
@@ -68,6 +69,57 @@
                         <ion-img src="assets/newdesign/Image 28.png"></ion-img>
                         <ion-label class="ion-margin-start">Home 3</ion-label>
                     </ion-item>
+                </ion-menu-toggle> -->
+                
+                    <ion-item lines="none">
+                        <ion-icon name="card-outline"></ion-icon>
+                        <ion-label class="ion-margin-start">Card View</ion-label>
+                    </ion-item>
+                
+
+
+                <!-- dynamic menu items -->
+
+                <ion-menu-toggle auto-hide="false">
+                    <ion-item  *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" lines="none"
+                    detail="false" [class.selected]="selectedIndex == i" [ngClass]="cardItem.sidebar_menu?'ion-show':'ion-hide'">
+                        <ion-icon name="return-down-forward-outline"></ion-icon>
+                        <ion-label class="ion-margin-start">{{cardItem.name}}</ion-label>
+                    </ion-item>
+                </ion-menu-toggle>
+
+                <ion-menu-toggle auto-hide="false">
+                    <ion-item lines="none" >
+                        <ion-label>Card Type</ion-label>
+                        <ion-select placeholder="Select One">
+                            <ion-select-option *ngFor="let cardTypeItem of cardTypeList; let j = index" value="{{cardTypeItem.card_type_master}}" (click)="setData()">{{cardTypeItem.card_type_master}}</ion-select-option>
+                        </ion-select>
+                    </ion-item>
+                </ion-menu-toggle>
+                <!-- <ion-menu-toggle auto-hide="false">
+                    <ion-item lines="none" >
+                        <ion-label>Collection Name</ion-label>
+                        <ion-select placeholder="Select One">
+                            <ion-select-option *ngFor="let collectionNameItem of collectionNameList; let k = index" value="{{collectionNameItem.class_name}}">{{collectionNameItem.class_name}}</ion-select-option>
+                        </ion-select>
+                    </ion-item>
+                </ion-menu-toggle> -->
+                
+                
+                <!-- end dynamic menu items -->
+
+                
+                <ion-menu-toggle>
+                    <ion-item lines="none" [routerLink]="['home4']">
+                        <ion-icon name="people-outline"></ion-icon>
+                        <ion-label class="ion-margin-start">New home</ion-label>
+                    </ion-item>
+                </ion-menu-toggle>
+                <!-- <ion-menu-toggle>
+                    <ion-item lines="none" [routerLink]="['/auth/login']">
+                        <ion-icon name="log-in-outline"></ion-icon>
+                        <ion-label class="ion-margin-start">Login</ion-label>
+                    </ion-item>
                 </ion-menu-toggle>
                 <ion-menu-toggle>
                     <ion-item lines="none" [routerLink]="['/cat']">
@@ -75,27 +127,30 @@
                         <ion-label class="ion-margin-start">Shop by Category</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
-                <!-- <ion-menu-toggle>
+                <ion-menu-toggle>
                     <ion-item lines="none">
                         <ion-img src="assets/newdesign/Icon feather-file-text.png"></ion-img>
                         <ion-label class="ion-margin-start">Order with Prescription</ion-label>
                     </ion-item>
                 </ion-menu-toggle> -->
-                <ion-menu-toggle>
+                <!-- <ion-menu-toggle>
                     <ion-item lines="none" button [routerLink]="['/tab/cart-items']">
-                        <ion-img src="assets/newdesign/Icon feather-shopping-cart.png"></ion-img>
+                        <!-- <ion-img src="assets/newdesign/Icon feather-shopping-cart.png"></ion-img> -->
+                        <!--<ion-icon name="cart-outline"></ion-icon>
                         <ion-label class="ion-margin-start">Cart</ion-label>
                     </ion-item>
-                </ion-menu-toggle>
+                </ion-menu-toggle> -->
                 <ion-menu-toggle>
                     <ion-item lines="none" button [routerLink]="['/order-history']">
-                        <ion-img src="assets/newdesign/Icon awesome-history.png"></ion-img>
+                        <!-- <ion-img src="assets/newdesign/Icon awesome-history.png"></ion-img> -->
+                        <ion-icon name="time-outline"></ion-icon>
                         <ion-label class="ion-margin-start">History</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
                 <ion-menu-toggle>
                     <ion-item lines="none" button (click)="onLogout()">
-                        <ion-img src="assets/newdesign/Icon ionic-md-help.png"></ion-img>
+                        <!-- <ion-img src="assets/newdesign/Icon ionic-md-help.png"></ion-img> -->
+                        <ion-icon name="log-out-outline"></ion-icon>
                         <ion-label class="ion-margin-start"> Logout</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
@@ -124,5 +179,5 @@
 
         </ion-footer>
     </ion-menu>
-    <ion-router-outlet main></ion-router-outlet>
+    <ion-router-outlet main id="main"></ion-router-outlet>
 </ion-app>

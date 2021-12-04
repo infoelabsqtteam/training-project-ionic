@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 import { SupportTopicComponent } from 'src/app/component/support-topic/support-topic.component';
-import { AuthService, StorageService, RestService, LoaderService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService, RestService, LoaderService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-support',
@@ -19,7 +19,8 @@ export class SupportPage implements OnInit {
     private http: HttpClient,
     private restService: RestService,
     private loaderService: LoaderService,
-    private coreUtilService:CoreUtilityService
+    private coreUtilService:CoreUtilityService,
+    private envService:EnvService
   ) { }
 
   ngOnInit() {
@@ -46,7 +47,7 @@ export class SupportPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             this.loaderService.hideLoader();

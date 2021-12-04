@@ -108,7 +108,7 @@ export class SigninComponent implements OnInit {
       return;
     }
     let obj = { username: this.loginObj.mobileNo, verif_code: this.otpVerifyForm.value.otp_input };
-    this.authService.verifyOtp(obj);
+    this.authService.verifyOtp(obj,'/home');
     this.otpVerifyForm.reset();
   }
   goBackToOtp() {

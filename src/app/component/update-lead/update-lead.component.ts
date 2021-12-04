@@ -4,7 +4,7 @@ import { Component, HostListener, Input, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { ModalController, ToastController } from '@ionic/angular';
 import { SearchModalComponent } from '../search-modal/search-modal.component';
-import { AuthService, StorageService, LoaderService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService, LoaderService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-update-lead',
@@ -29,7 +29,9 @@ export class UpdateLeadComponent implements OnInit {
     private loaderService: LoaderService,
     private storageService: StorageService,
     private coreUtilService:CoreUtilityService,
-    private http: HttpClient,) { }
+    private http: HttpClient,
+    private envService: EnvService
+    ) { }
 
   ngOnInit() {
     const modalState = {
@@ -95,7 +97,7 @@ export class UpdateLeadComponent implements OnInit {
         this.storageService.getUserLog().then((val) => {
           this.modalData['log'] = val;
 
-          let api = `${this.coreUtilService.baseUrl('SAVE_FORM_DATA')}/leads_master`;
+          let api = `${this.envService.baseUrl('SAVE_FORM_DATA')}/leads_master`;
           this.http.post(api, this.modalData, header).subscribe(
             respData => {
               this.loaderService.hideLoader();

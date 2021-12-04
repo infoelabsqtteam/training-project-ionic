@@ -6,7 +6,7 @@ import { ModalController, ToastController } from '@ionic/angular';
 import { UpdateLeadComponent } from '../update-lead/update-lead.component';
 import { PickerController } from "@ionic/angular";
 import { PickerOptions } from "@ionic/core";
-import { AuthService, StorageService, LoaderService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService, LoaderService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-call-feedback',
@@ -40,7 +40,8 @@ export class CallFeedbackComponent implements OnInit {
     private storageService: StorageService,
     private coreUtilService:CoreUtilityService,
     private http: HttpClient,
-    private pickerController: PickerController
+    private pickerController: PickerController,
+    private envService: EnvService
   ) {
     this.minDate = new Date().toJSON().split('T')[0];
     this.maxDate = new Date(new Date().setFullYear(2050)).toJSON().split('T')[0];
@@ -118,7 +119,7 @@ export class CallFeedbackComponent implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             //this.loaderService.hideLoader();
@@ -157,7 +158,7 @@ export class CallFeedbackComponent implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             //this.loaderService.hideLoader();
@@ -215,7 +216,7 @@ export class CallFeedbackComponent implements OnInit {
         this.storageService.getUserLog().then((val) => {
           data['log'] = val;
 
-          let api = `${this.coreUtilService.baseUrl('SAVE_FORM_DATA')}/call_feedback`;
+          let api = `${this.envService.baseUrl('SAVE_FORM_DATA')}/call_feedback`;
           this.http.post(api, data, header).subscribe(
             respData => {
               this.loaderService.hideLoader();

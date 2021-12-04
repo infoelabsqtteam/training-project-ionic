@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, HostListener, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { IonSearchbar, ModalController } from '@ionic/angular';
-import { CoreUtilityService, ProductService, RestService, StorageService } from '@core/ionic-core';
+import { CoreUtilityService, ProductService, RestService, StorageService, EnvService } from '@core/ionic-core';
 
 
 @Component({
@@ -25,7 +25,8 @@ export class ProductSearchComponent implements OnInit {
     private coreUtilService:CoreUtilityService,
     private productService: ProductService,
     private restService:RestService,
-    private storageService:StorageService
+    private storageService:StorageService,
+    private envService: EnvService
   ) { }
 
   ngOnInit() {
@@ -65,7 +66,7 @@ export class ProductSearchComponent implements OnInit {
   }
   async searchProduct(name) {
     if (name && name.length > 3) {
-      let api = `${this.coreUtilService.baseUrl('MED_SEARCH')}`;
+      let api = `${this.envService.baseUrl('MED_SEARCH')}`;
 
       let criteria: any = { alternateName: name, }
       let log = await this.storageService.getUserLog();

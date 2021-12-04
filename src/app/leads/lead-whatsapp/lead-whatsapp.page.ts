@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { ToastController, ModalController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { AuthService, StorageService, LoaderService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService, LoaderService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-lead-whatsapp',
@@ -23,7 +23,9 @@ export class LeadWhatsappPage implements OnInit {
     private coreUtilService: CoreUtilityService,
     private http: HttpClient,
     private callNumber: CallNumber,
-    private storageService: StorageService) {
+    private storageService: StorageService,
+    private envService:EnvService
+    ) {
     this.msgs = [{
       side: 'left',
       msg: 'Hello'
@@ -82,7 +84,7 @@ export class LeadWhatsappPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             this.loaderService.hideLoader();
@@ -114,7 +116,7 @@ export class LeadWhatsappPage implements OnInit {
           this.storageService.getUserLog().then((val) => {
             data['log'] = val;
 
-            let api = this.coreUtilService.baseUrl('SAVE_FORM_DATA')
+            let api = this.envService.baseUrl('SAVE_FORM_DATA')
             this.http.post(api + '/' + 'whatsap', data, header).subscribe(
               respData => {
                 this.loaderService.hideLoader();

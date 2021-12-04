@@ -11,7 +11,7 @@ import { ProductSearchComponent } from '../component/product-search/product-sear
 import { FaqComponent } from '../component/faq/faq.component';
 import { FilterComponent } from '../component/filter/filter.component';
 import { CategoryListPage } from '../pages/category-list/category-list.page';
-import { AuthService, StorageService, CoreUtilityService, LocationAddress, RestService, App_googleService, ModelService, ProductService, LoaderService } from '@core/ionic-core';
+import { AuthService, StorageService, CoreUtilityService, LocationAddress, RestService, App_googleService, ModelService, ProductService, LoaderService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-home2',
@@ -63,7 +63,8 @@ export class Home2Page implements OnInit {
     private media: Media,
     private file: File,
     private productService:ProductService,
-    private loaderService:LoaderService
+    private loaderService:LoaderService,
+    private envService: EnvService
 
   ) {
     this.initializeApp();
@@ -147,7 +148,7 @@ export class Home2Page implements OnInit {
           key: val.idToken
         };
 
-        let api = this.coreUtilService.baseUrl('GET_USER_PERMISSION');
+        let api = this.envService.baseUrl('GET_USER_PERMISSION');
         this.http.post(api, obj, header).subscribe(
           respData => {
             if (respData && respData['authenticated'] === "true") {
@@ -220,7 +221,7 @@ export class Home2Page implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_APP_BANNERS')
+        let api = this.envService.baseUrl('GET_APP_BANNERS')
         this.http.post(api, obj, header).subscribe(
           (respData) => {
             this.bannerData = respData['success'];

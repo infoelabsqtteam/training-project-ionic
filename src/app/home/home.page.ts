@@ -48,7 +48,7 @@ export class HomePage implements OnInit {
     private mediaCapture: MediaCapture,
     private media: Media,
     private file: File,
-    private callNumber: CallNumber,
+    private callNumber: CallNumber
   ) {
     this.initializeApp();
     this.list = [
@@ -118,7 +118,7 @@ export class HomePage implements OnInit {
           key: val.idToken
         };
 
-        let api = this.coreUtilService.baseUrl('GET_USER_PERMISSION');
+        let api = this.envService.baseUrl('GET_USER_PERMISSION');
         this.http.post(api, obj, header).subscribe(
           respData => {
             if (respData && respData['authenticated'] === "true") {
@@ -191,7 +191,7 @@ export class HomePage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_APP_BANNERS')
+        let api = this.envService.baseUrl('GET_APP_BANNERS')
         this.http.post(api, obj, header).subscribe(
           (respData) => {
             this.bannerData = respData['success'];

@@ -1,0 +1,31 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons  slot="start" class="">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{childDataTitle}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-row *ngIf="cardType == 'detail1'" >
+    <ion-col size="12">
+      <ion-card class="ion-padding">
+        <table>
+          <tr *ngFor="let column of childColumns; index as j">
+            <td class="colwidth_border">
+              <ion-label [ngClass]="column.class_name ? column.class_name  : ''">{{column.field_label}}</ion-label>
+            </td>
+            <td>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,childData)"></p>
+              <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,childData)"></ion-button>
+            </td>
+          </tr>
+        </table>
+
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+</ion-content>

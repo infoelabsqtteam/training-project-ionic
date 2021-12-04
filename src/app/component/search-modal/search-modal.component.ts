@@ -2,7 +2,7 @@ import { Component, HostListener, Input, OnInit } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import { DatePipe } from '@angular/common';
 import { HttpHeaders, HttpErrorResponse, HttpClient } from '@angular/common/http';
-import { AuthService, StorageService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 
 @Component({
@@ -23,7 +23,9 @@ export class SearchModalComponent implements OnInit {
     public modalController: ModalController,
     private coreUtilService:CoreUtilityService,
     private storageService: StorageService,
-    private http: HttpClient) { }
+    private http: HttpClient,
+    private envService: EnvService
+    ) { }
 
   ngOnInit() {
     const modalState = {
@@ -61,7 +63,7 @@ export class SearchModalComponent implements OnInit {
           this.storageService.getUserLog().then((val) => {
             data['log'] = val;
           })
-          let api = this.coreUtilService.baseUrl('GET_STATIC_DATA')
+          let api = this.envService.baseUrl('GET_STATIC_DATA')
           data.crList[0].fValue = param;
           let param_list = [data];
           this.http.post(api, param_list, header).subscribe(

@@ -7,7 +7,7 @@ import { OrderDetailComponent } from 'src/app/component/order-detail/order-detai
 
 
 import * as appConstants from '../../shared/app.constants';
-import { StorageService, RestService, AuthService, CoreUtilityService } from '@core/ionic-core';
+import { StorageService, RestService, AuthService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-order-history',
@@ -21,7 +21,8 @@ export class OrderHistoryPage implements OnInit {
     private restService: RestService, 
     private authService: AuthService, 
     private modalController: ModalController,
-    private coreUtilService:CoreUtilityService
+    private coreUtilService:CoreUtilityService,
+    private envService:EnvService
   ) { }
 
   ngOnInit() {
@@ -45,7 +46,7 @@ export class OrderHistoryPage implements OnInit {
       pageSize: 100,
       value: "order_mang",
     }
-    let api = `${this.coreUtilService.baseUrl('GET_GRID_DATA')}/null`;
+    let api = `${this.envService.baseUrl('GET_GRID_DATA')}/null`;
     this.restService.postApiMethod(api, obj).subscribe((resp) => {
       if (resp['data'] && resp['data'].length > 0) {
         this.orderHistory = resp['data'];

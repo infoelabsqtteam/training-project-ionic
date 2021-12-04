@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { AddAddressComponent } from 'src/app/component/add-address/add-address.component';
-import { StorageService, AuthService, LoaderService, CoreUtilityService, LocationAddress, RestService, App_googleService, ProductService } from '@core/ionic-core';
+import { StorageService, AuthService, LoaderService, CoreUtilityService, LocationAddress, RestService, App_googleService, ProductService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-order-summary',
@@ -25,7 +25,8 @@ export class OrderSummaryPage implements OnInit {
     private coreUtilService:CoreUtilityService,
     private modalController: ModalController,
     private googleService:App_googleService,
-    private productService:ProductService
+    private productService:ProductService,
+    private envService:EnvService
   ) { }
 
   ngOnInit() {
@@ -100,7 +101,7 @@ export class OrderSummaryPage implements OnInit {
       this.order.longitude = this.selectedAddress.lng;
     }
     this.order.log = log;
-    let api = `${this.coreUtilService.baseUrl('SAVE_FORM_DATA')}/order_mang`;
+    let api = `${this.envService.baseUrl('SAVE_FORM_DATA')}/order_mang`;
     this.restService.postApiMethod(api, this.order).subscribe((resp) => {
       this.loader.hideLoader();
       if (resp.hasOwnProperty("success") && resp['success'] == "success") {

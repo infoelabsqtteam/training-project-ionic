@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" icon="arrow-back-outline"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Teams</ion-title>
+    <!-- <ion-searchbar slot="end" showCancelButton="focus" value="Search Card" autocomplete="on" autocorrect="on"></ion-searchbar> -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <!-- get below data from local json -->
+  <ion-grid>
+
+    <ion-row>
+      <ion-col>
+        <ion-card class="">
+          <ion-list>
+
+            <ion-item >
+              <ion-label>
+                <p class="custom_primary_color">Deepti Malik</p>
+                <p class="small">(Junior Manager)</p>
+                <p class="small custom_light_color">+91 8826522145</p>
+                <p class="small custom_light_color" (click)="mailTo()">prakanchan7@gmail.com</p>
+              </ion-label>
+              <ion-thumbnail slot="end">
+                <img src="https://ionicframework.com/docs/demos/api/avatar/avatar.svg">
+              </ion-thumbnail>
+            </ion-item>
+
+            <ion-item >
+              <ion-label>
+                <p class="custom_primary_color">Deepti Malik</p>
+                <p class="small">(Junior Manager)</p>
+                <p class="small custom_light_color">+91 8826522145</p>
+                <p class="small custom_light_color" (click)="mailTo()">prakanchan7@gmail.com</p>
+              </ion-label>
+              <ion-thumbnail slot="end">
+                <img src="https://ionicframework.com/docs/demos/api/avatar/avatar.svg">
+              </ion-thumbnail>
+            </ion-item>
+            
+          </ion-list>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+       
+    <!-- <ion-row *ngIf="cardType == 'TeamList'" >
+      <ion-col size="12" *ngFor="let card of carddata; index as i">
+        <ion-card class="ion-padding-horizontal record_info">
+          <ion-row class="ion-align-items-center">
+            <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size">
+              <p [ngClass]="column.class ? column.class  : ''" *ngIf="column.field_type == 'amount'" [innerHtml]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class ? column.class  : ''" *ngIf="column.field_type == 'text'" [innerHtml]="getValueForGrid(column,card)"></p>
+              <ion-button [ngClass]="column.class ? column.class  : ''" *ngIf="column.field_type == 'button'" color="medium" fill="outline" size="small" [innerHtml]="getValueForGrid(column,card)"></ion-button>
+              <p [ngClass]="column.class ? column.class  : ''" *ngIf="column.field_type == 'date' || column.field_type == 'datetime'" [innerHtml]="getValueForGrid(column,card)"></p>
+            </ion-col>
+          </ion-row>
+        </ion-card>
+      </ion-col>
+    </ion-row> -->
+
+  </ion-grid>
+
+
+</ion-content>

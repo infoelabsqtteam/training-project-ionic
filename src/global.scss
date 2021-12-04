@@ -8,6 +8,7 @@
 @import '~@ionic/angular/css/text-alignment.css';
 @import '~@ionic/angular/css/text-transformation.css';
 @import '~@ionic/angular/css/flex-utils.css';
+@import '~@ionic/angular/css/display.css';
 .ion-invalid.ion-touched ion-label {
     color: var(--ion-color-danger);
 }
@@ -361,3 +362,20 @@
         opacity: 0;
     }
 }
+
+// creted by kunal for home4
+.half-modal{
+    // height: 90%;
+    // top: 10%;
+    // position: absolute;
+    // display: block;
+}
+
+// below are generic css for site
+.custom_primary_color{color: #5167c5;}
+.custom_light_color{color: #a9aaaa;}
+.small{font-size:12px;}
+.outline_button{font-size: 10px;}
+.ionic-d-none{display: none;}
+.ionic-d-block{display: block;}
+.main_label{font-size: 14px;color: #5167c5;}
