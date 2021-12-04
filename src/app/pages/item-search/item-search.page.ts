@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { createOfflineCompileUrlResolver } from '@angular/compiler';
 import { Component, OnInit } from '@angular/core';
-import { CoreUtilityService,RestService, ProductService } from '@core/ionic-core';
+import { CoreUtilityService, RestService, ProductService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-item-search',
@@ -15,7 +15,9 @@ export class ItemSearchPage implements OnInit {
   constructor(
     private restService: RestService, 
     private coreUtilService:CoreUtilityService ,
-    private productService:ProductService
+    private productService:ProductService,
+    private envService:EnvService
+    
   ) {}
 
   ngOnInit() {
@@ -52,7 +54,7 @@ export class ItemSearchPage implements OnInit {
         pageSize: 100,
         value: "items_master"
       }
-      let api = `${this.coreUtilService.baseUrl('GET_GRID_DATA')}/null`;
+      let api = `${this.envService.baseUrl('GET_GRID_DATA')}/null`;
       this.restService.postApiMethod(api, obj).subscribe(success => {
         console.log(success);
         if ('data' in success) {

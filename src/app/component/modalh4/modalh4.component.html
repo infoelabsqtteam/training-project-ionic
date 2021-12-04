@@ -1,0 +1,51 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title class="titleP">{{childDataTitle}} </ion-title>
+    <ion-button (click)="dismissModal()" slot="end">
+      <ion-icon slot="icon-only" name="close"></ion-icon> 
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-row *ngIf="cardType == 'detail1'" >
+    <ion-col size="12">
+      <ion-card class="ion-padding">
+        <table>
+          <tr *ngFor="let column of childColumns; index as j">
+            <td class="colwidth_border">
+              <ion-label [ngClass]="column.class_name ? column.class_name  : ''">{{column.field_label}}</ion-label>
+            </td>
+            <td>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,childData)"></p>
+              <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,childData)"></ion-button>
+            </td>
+          </tr>
+        </table>
+
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <!-- <ion-row *ngIf="cardType == 'detail1'" >
+    <ion-col size="12">
+      <ion-card class="ion-padding-horizontal record_info" >
+        <ion-row class="ion-align-items-center">
+          <ion-col *ngFor="let column of childColumns; index as j" [size]="column.column_size">
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,childData)"></p>
+            <!-- <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,childData)"></p>
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'email'" [innerHTML]="getValueForGrid(column,childData)"></p>
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,childData)"></p> -->
+            <!-- <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" (click)="buttonAction(column,childData)" [innerHTML]="getValueForGrid(column,childData)"></ion-button> -->
+            <!-- <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,childData)"></p> -->
+          <!-- </ion-col>
+        </ion-row>
+      </ion-card>
+    </ion-col>
+  </ion-row> -->
+
+
+  
+
+</ion-content>

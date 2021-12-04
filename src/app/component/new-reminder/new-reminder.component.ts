@@ -4,7 +4,7 @@ import { FormGroup, FormBuilder, Validators, FormControl } from "@angular/forms"
 import { DatePipe } from '@angular/common';
 import { HttpHeaders, HttpErrorResponse, HttpClient } from '@angular/common/http';
 import { now } from '@ionic/core/dist/types/utils/helpers';
-import { AuthService, StorageService, LoaderService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService, LoaderService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-new-reminder',
@@ -30,7 +30,9 @@ export class NewReminderComponent implements OnInit {
     private loaderService: LoaderService,
     private storageService: StorageService,
     private coreUtilService:CoreUtilityService,
-    private http: HttpClient,) { }
+    private http: HttpClient,
+    private envService: EnvService
+    ) { }
 
   ngOnInit() {
     const modalState = {
@@ -101,7 +103,7 @@ export class NewReminderComponent implements OnInit {
         this.storageService.getUserLog().then((val) => {
           data['log'] = val;
 
-          let api = this.coreUtilService.baseUrl('SAVE_FORM_DATA')
+          let api = this.envService.baseUrl('SAVE_FORM_DATA')
           this.http.post(api + '/' + 'leads_reminder', data, header).subscribe(
             respData => {
               this.loaderService.hideLoader();

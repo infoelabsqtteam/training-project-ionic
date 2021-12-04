@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { Component, HostListener, Input, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ModalController, ToastController } from '@ionic/angular';
-import { AuthService, StorageService, LoaderService, CoreUtilityService, GallaryService } from '@core/ionic-core';
+import { AuthService, StorageService, LoaderService, CoreUtilityService, GallaryService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-update-task',
@@ -30,7 +30,9 @@ export class UpdateTaskComponent implements OnInit {
     private storageService: StorageService,
     private coreUtilService:CoreUtilityService,
     private galleryService:GallaryService,
-    private http: HttpClient,) {
+    private http: HttpClient,
+    private envService: EnvService
+    ) {
 
   }
 
@@ -88,7 +90,7 @@ export class UpdateTaskComponent implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_STATIC_DATA')
+        let api = this.envService.baseUrl('GET_STATIC_DATA')
         this.http.post(api, [obj], header).subscribe(
           respData => {
             // this.loaderService.hideLoader();
@@ -141,7 +143,7 @@ export class UpdateTaskComponent implements OnInit {
         if (this.uploadList && this.uploadList.length > 0) {
           this.modalData.attachment = [{ uploadData: this.uploadList }];
         }
-        let api = `${this.coreUtilService.baseUrl('SAVE_FORM_DATA')}/task_master`;
+        let api = `${this.envService.baseUrl('SAVE_FORM_DATA')}/task_master`;
         this.http.post(api, this.modalData, header).subscribe(
           respData => {
             console.log(respData);

@@ -50,7 +50,7 @@ export class SignineComponent implements OnInit {
       return;
     }
     let loginObj = this.loginForm.value;     
-    this.authService.login(loginObj.email, loginObj.password);
+    this.authService.login(loginObj.email, loginObj.password,'/home');
     this.loginForm.reset();
   }
 

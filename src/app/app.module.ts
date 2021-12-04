@@ -17,7 +17,7 @@ import { File } from '@ionic-native/File/ngx';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 // import { CallLog } from '@ionic-native/call-log/ngx';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
+import { DatePipe, CurrencyPipe} from '@angular/common';
 import { FileOpener } from '@ionic-native/file-opener/ngx';
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { NativeGeocoder, NativeGeocoderResult, NativeGeocoderOptions } from '@ionic-native/native-geocoder/ngx';
@@ -49,6 +49,7 @@ import { IonicCoreModule } from '@core/ionic-core';
     File,
     CallNumber,
     DatePipe,
+    CurrencyPipe,
     FileOpener,
     AndroidPermissions,
     NativeGeocoder,

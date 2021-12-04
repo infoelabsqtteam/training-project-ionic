@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { ModalController } from '@ionic/angular';
 import { OrdermodalComponent } from '../ordermodal/ordermodal.component';
 import { from } from 'rxjs';
-import { AuthService, LoaderService, CoreUtilityService, StorageService } from '@core/ionic-core';
+import { AuthService, LoaderService, CoreUtilityService, StorageService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-orders',
@@ -23,7 +23,8 @@ export class OrdersPage implements OnInit {
     private modalController: ModalController, 
     private loaderService: LoaderService, 
     private coreUtilService:CoreUtilityService,
-    private storageService:StorageService
+    private storageService:StorageService,
+    private envService:EnvService
   ) { }
 
   ngOnInit() {
@@ -66,7 +67,7 @@ export class OrdersPage implements OnInit {
           pageSize: 50,
           value: "orders"
         }
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             this.loaderService.hideLoader();
@@ -114,7 +115,7 @@ export class OrdersPage implements OnInit {
           pageSize: 50,
           value: "orders",
         }
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/null', searchObj, header).subscribe(
           respData => {
             this.gridData = respData['data'];

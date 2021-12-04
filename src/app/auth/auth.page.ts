@@ -90,7 +90,7 @@ export class AuthPage implements OnInit {
          let authObs: Observable<AuthResponseData>;
     if (this.isLogin) {
       //  authObs = this.authService.login(email, password);
-       this.authService.login(email, password);
+       this.authService.login(email, password,'/home');
      } else {
       //  authObs = this.authService.signup(email, password,name,mobile);
        this.authService.signup(email, password, name, mobile);

@@ -8,7 +8,7 @@ import { ModalComponent } from '../component/modal/modal.component';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { CallLogsComponent } from '../call-logs/call-logs.component';
 import { CallFeedbackComponent } from '../component/call-feedback/call-feedback.component';
-import { AuthService, StorageService, CoreUtilityService, LoaderService } from '@core/ionic-core';
+import { AuthService, StorageService, CoreUtilityService, LoaderService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-leads',
@@ -35,7 +35,8 @@ export class LeadsPage implements OnInit {
     private loaderService: LoaderService, 
     private alertController: AlertController,
     private callNumber: CallNumber,
-    private coreUtilService:CoreUtilityService
+    private coreUtilService:CoreUtilityService,
+    private envService:EnvService
   ) { }
 
   ngOnInit() {
@@ -68,7 +69,7 @@ export class LeadsPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = `${this.coreUtilService.baseUrl('GET_GRID_DATA')}/-show_on_top,updateDate`;
+        let api = `${this.envService.baseUrl('GET_GRID_DATA')}/-show_on_top,updateDate`;
         this.http.post(api, obj, header).subscribe(
           respData => {
             if (crList === null) this.loaderService.hideLoader();
@@ -106,7 +107,7 @@ export class LeadsPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             // this.loaderService.hideLoader();

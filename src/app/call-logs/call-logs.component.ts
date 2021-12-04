@@ -4,7 +4,7 @@ import { ModalController } from '@ionic/angular';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
-import { AuthService, StorageService,LoaderService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService,LoaderService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-call-logs',
@@ -20,7 +20,8 @@ export class CallLogsComponent implements OnInit {
 
   constructor(private modalCtrl: ModalController,
     private callLog: CallLog, private authService: AuthService,
-    private http: HttpClient, private router: Router, private storageService: StorageService,
+    private http: HttpClient, private router: Router,private envService:EnvService,
+    private storageService: StorageService,
     public toastController: ToastController, private loaderService: LoaderService,private coreUtilService:CoreUtilityService) { }
 
   ngOnInit() {
@@ -64,7 +65,7 @@ export class CallLogsComponent implements OnInit {
         this.storageService.getUserLog().then((val) => {
           data['log'] = val;
 
-          let api = this.coreUtilService.baseUrl('SAVE_FORM_DATA')
+          let api = this.envService.baseUrl('SAVE_FORM_DATA')
           this.http.post(api + '/' + 'lead_call_history', data, header).subscribe(
             respData => {
               this.loaderService.hideLoader();

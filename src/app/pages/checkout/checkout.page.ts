@@ -123,7 +123,7 @@ export class CheckoutPage implements OnInit {
     this.order.deliveryAddress = `${deliveryAddress.locality}, ${deliveryAddress.landmark}, ${deliveryAddress.address}`;
     this.order.log = { "userId": "vksh6623@gmail.com", "appId": "ECOM", "refCode": "MCLR01" };
 
-    let api = `${this.coreUtilService.baseUrl('SAVE_FORM_DATA')}/order_mang`;
+    let api = `${this.envService.baseUrl('SAVE_FORM_DATA')}/order_mang`;
     this.restService.postApiMethod(api, this.order).subscribe((success) => {
       console.log(success);
       if ('success' in success) {

@@ -1,0 +1,95 @@
+{
+    "_id": "6180df9d7ed96371558c515e",
+    "rowNumber": 0,
+    "uploadComment": null,
+    "remarks": null,
+    "cancel_reason": null,
+    "altname": null,
+    "srNumber": 85,
+    "series": "",
+    "serialId": "-85",
+    "appId": null,
+    "refCode": "MCLR01",
+    "createdBy": "kunalwebdeveloper11@gmail.com",
+    "createdByName": "Kunal Chola",
+    "createdDate": "2021-11-02T06:50:05.000+00:00",
+    "createdLocation": null,
+    "verifiedBy": null,
+    "verifiedDate": null,
+    "verifiedLocation": null,
+    "assignedUser": null,
+    "prevUser": null,
+    "updatedBy": null,
+    "updatedByName": null,
+    "updateDate": null,
+    "updateLocation": null,
+    "documents": null,
+    "attachments": null,
+    "etc_fields": null,
+    "etc_field_list": null,
+    "version": 0,
+    "migration_comment": null,
+    "myCount": 0,
+    "status": "Active",
+    "migrated": false,
+    "log": null,
+    "myPath": null,
+    "docList": null,
+    "attached_files": null,
+    "dbMigrationRemarks": null,
+    "requesting_user": null,
+    "fields": [
+      {
+        "_id": "6180df9d7ed96371558c5160",
+        "class": "main_label ion-no-margin",
+        "field_name": "orderLabel",
+        "type":"text",
+        "size":"8"
+      },
+      {
+        "_id": "6180df9d7ed96371558c5160",
+        "class": "ion-text-end ",
+        "field_name": "orderPrice",
+        "type":"amount",
+        "size":"4"
+      },
+      {
+        "_id": "6180df9d7ed96371558c5160",
+        "class": "ion-no-margin small",
+        "field_name": "orderId",
+        "type":"text",
+        "size":"6"
+      },
+      {
+        "_id": "6180df9d7ed96371558c5160",
+        "class": "ion-text-end ion-no-margin small",
+        "field_name": "createdBy",
+        "type":"text",
+        "size":"6"
+      },
+      {
+        "_id": "6180df9d7ed96371558c5160",
+        "class": "outline_button",
+        "field_name": "buttonText",
+        "type":"button",
+        "size":"6"
+      },
+      {
+        "_id": "6180df9d7ed96371558c5160",
+        "class": "ion-text-end ion-no-margin small",
+        "field_name": "createdDate",
+        "type":"datetime",
+        "size":"6"
+      },
+      {
+        "_id": "6180df9d7ed96371558c5160",
+        "class": "ion-text-end ion-no-margin small",
+        "field_name": "url",
+        "type":"image",
+        "size":"6"
+      }
+    ],
+    "card_name": "card1",
+    "card_type": "record_info"
+
+}

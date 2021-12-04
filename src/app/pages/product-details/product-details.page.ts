@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { PickerController } from "@ionic/angular";
 import { PickerOptions } from "@ionic/core";
 import { take } from 'rxjs/operators';
-import { RestService, StorageService, LocationAddress, ProductService, App_googleService, CoreUtilityService } from '@core/ionic-core';
+import { RestService, StorageService, LocationAddress, ProductService, App_googleService, CoreUtilityService, EnvService } from '@core/ionic-core';
 
 
 
@@ -38,7 +38,8 @@ export class ProductDetailsPage implements OnInit {
     private pickerController: PickerController,
     private productService:ProductService,
     private googlService:App_googleService,
-    private coreUtilService:CoreUtilityService
+    private coreUtilService:CoreUtilityService,
+    private envService:EnvService
   ) { }
 
   ngOnInit() {
@@ -118,7 +119,7 @@ export class ProductDetailsPage implements OnInit {
       pageSize: 100,
       value: "item_from_stock"
     }
-    let api = `${this.coreUtilService.baseUrl('GET_GRID_DATA')}/null`;
+    let api = `${this.envService.baseUrl('GET_GRID_DATA')}/null`;
     this.restService.postApiMethod(api, obj).subscribe((resp) => {
       if (resp['data'] && resp['data'].length > 0) {
         this.item_detais = resp['data'][0];
@@ -136,7 +137,7 @@ export class ProductDetailsPage implements OnInit {
     })
   }
   searchProductSubstitute(mediceaId) {
-    let api = `${this.coreUtilService.baseUrl('PRODUCT_SUBSTITUTE')}`;
+    let api = `${this.envService.baseUrl('PRODUCT_SUBSTITUTE')}`;
     let obj = { mediceaId: mediceaId }
     this.restService.postApiMethod(api, obj).subscribe((resp) => {
       if (resp['data'] && resp['data'].length > 0) {

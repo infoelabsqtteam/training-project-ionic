@@ -1,7 +1,8 @@
 export const environment = {
   production: true,
   // serverhost: "https://serveraal.allaboutlab.com/rest/",
-  serverhost: "https://serverqualiteklab.e-labs.ai/rest/",
+  // serverhost: "https://serverqualiteklab.e-labs.ai/rest/",
+  serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "ELABS",
   appName: "tonicprod",

@@ -4,7 +4,7 @@ import { ToastController } from '@ionic/angular';
 import { NewReminderComponent } from 'src/app/component/new-reminder/new-reminder.component';
 import { ModalController } from '@ionic/angular';
 import { HttpHeaders, HttpErrorResponse, HttpClient } from '@angular/common/http';
-import { AuthService, StorageService, LoaderService, CoreUtilityService } from '@core/ionic-core';
+import { AuthService, StorageService, LoaderService, CoreUtilityService, EnvService } from '@core/ionic-core';
 import { CoreEnvironment } from '@angular/compiler/src/compiler_facade_interface';
 
 
@@ -25,7 +25,8 @@ export class LeadCallsPage implements OnInit {
     private coreUtilService:CoreUtilityService,
     private http: HttpClient,
     private callNumber: CallNumber,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private envService: EnvService
 
   ) {
 
@@ -96,7 +97,7 @@ export class LeadCallsPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           obj['log'] = val;
         })
-        let api = this.coreUtilService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             this.loaderService.hideLoader();
@@ -126,7 +127,7 @@ export class LeadCallsPage implements OnInit {
         this.storageService.getUserLog().then((val) => {
           data['log'] = val;
 
-          let api = this.coreUtilService.baseUrl('SAVE_FORM_DATA')
+          let api = this.envService.baseUrl('SAVE_FORM_DATA')
           this.http.post(api + '/' + 'lead_call_history', data, header).subscribe(
             respData => {
               this.loaderService.hideLoader();
