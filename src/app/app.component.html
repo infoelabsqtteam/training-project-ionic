@@ -36,7 +36,7 @@
                 </ion-menu-toggle>
 
             </ion-list>
-            <ion-row class="row-box-shadow">
+            <!-- <ion-row class="row-box-shadow">
                 <ion-col size="4" class="ion-text-center col-border">
                     <ion-icon name="list-outline" size="large"></ion-icon>
                     <p class="ion-no-margin menu-grid-label">Affordable</p>
@@ -49,7 +49,7 @@
                     <ion-icon name="people-outline" size="large"></ion-icon>
                     <p class="ion-no-margin menu-grid-label">Consultations</p>
                 </ion-col>
-            </ion-row>
+            </ion-row> -->
 
             <ion-list>
                 <ion-menu-toggle>
@@ -88,14 +88,14 @@
                     </ion-item>
                 </ion-menu-toggle>
 
-                <ion-menu-toggle auto-hide="false">
+                <!-- <ion-menu-toggle auto-hide="false">
                     <ion-item lines="none" >
                         <ion-label>Card Type</ion-label>
                         <ion-select placeholder="Select One">
                             <ion-select-option *ngFor="let cardTypeItem of cardTypeList; let j = index" value="{{cardTypeItem.card_type_master}}" (click)="setData()">{{cardTypeItem.card_type_master}}</ion-select-option>
                         </ion-select>
                     </ion-item>
-                </ion-menu-toggle>
+                </ion-menu-toggle> -->
                 <!-- <ion-menu-toggle auto-hide="false">
                     <ion-item lines="none" >
                         <ion-label>Collection Name</ion-label>
@@ -113,6 +113,12 @@
                     <ion-item lines="none" [routerLink]="['home4']">
                         <ion-icon name="people-outline"></ion-icon>
                         <ion-label class="ion-margin-start">New home</ion-label>
+                    </ion-item>
+                </ion-menu-toggle>
+                <ion-menu-toggle>
+                    <ion-item lines="none" [routerLink]="['charts']">
+                        <ion-icon name="people-outline"></ion-icon>
+                        <ion-label class="ion-margin-start">Chart.js</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
                 <!-- <ion-menu-toggle>
@@ -140,13 +146,12 @@
                         <ion-label class="ion-margin-start">Cart</ion-label>
                     </ion-item>
                 </ion-menu-toggle> -->
-                <ion-menu-toggle>
+                <!-- <ion-menu-toggle>
                     <ion-item lines="none" button [routerLink]="['/order-history']">
-                        <!-- <ion-img src="assets/newdesign/Icon awesome-history.png"></ion-img> -->
                         <ion-icon name="time-outline"></ion-icon>
                         <ion-label class="ion-margin-start">History</ion-label>
                     </ion-item>
-                </ion-menu-toggle>
+                </ion-menu-toggle> -->
                 <ion-menu-toggle>
                     <ion-item lines="none" button (click)="onLogout()">
                         <!-- <ion-img src="assets/newdesign/Icon ionic-md-help.png"></ion-img> -->

@@ -104,9 +104,10 @@ const routes: Routes = [
     path: 'carddetailview',
     loadChildren: () => import('./pages/carddetailview/carddetailview.module').then( m => m.CarddetailviewPageModule)
   },
-
-
-
+  {
+    path: 'charts',
+    loadChildren: () => import('./pages/charts/charts.module').then( m => m.ChartsPageModule)
+  },
 
 
 
