@@ -37,6 +37,7 @@ export const chartdata =   {
                     'rgba(255, 159, 64, 1)'
                 ],
                 borderWidth: 1,
+                borderRadius: 20,
                 grouped: true
             },
             {
@@ -74,7 +75,8 @@ export const chartdata =   {
                     'rgba(153, 102, 255, 1)',
                     'rgba(255, 159, 64, 1)'
                 ],
-                borderWidth: 1
+                borderWidth: 1,
+                borderRadius: 7
             }
         ],
         "type": "bar",
@@ -86,7 +88,60 @@ export const chartdata =   {
             }
         },
         "legend": true
-    },    
+    },
+    "Reports Horizontal":  {
+        "datasets": [
+            {
+                label: 'Skils',
+                data: [90, 85, 65, 80, 70, 60],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(255,99,132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],                                
+                hoverBackgroundColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                hoverBorderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1,
+                borderRadius: 7,
+                barPercentage: .5,
+                indexAxis: 'y',
+            }
+        ],
+        "type": "bar",
+        "label": ['HTML', 'CSS', 'SASS', 'PHP', 'IONIC', 'JQuery'],
+        "option": {
+            responsive: true,
+            layout: {
+                padding: 0
+            }
+        },
+        "legend": true
+    },
     "Report on Pie Chart":  {
         "datasets": [
             {
@@ -138,20 +193,10 @@ export const chartdata =   {
                     label: 'Report Card 1',
                     data: [98, 90, 70, 60, 75, 80],
                     backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 206, 86, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(153, 102, 255, 0.2)',
-                    'rgba(255, 159, 64, 0.2)'
+                        'rgba(255, 159, 64, 0.2)'
                     ],
                     borderColor: [
-                    'rgba(255,99,132,1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
+                        'rgba(255, 99 , 132, 1)'
                     ],
                     borderWidth: 1
                 },
@@ -159,28 +204,48 @@ export const chartdata =   {
                     label: 'Report Card 2',
                     data: [68, 80, 50,30, 45, 60],
                     backgroundColor: [
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(54, 162, 235, 0.8)',
-                    'rgba(255, 206, 86, 0.8)',
-                    'rgba(75, 192, 192, 0.8)',
-                    'rgba(153, 102, 255, 0.8)',
-                    'rgba(255, 159, 64, 0.8)'
+                        'rgba(255, 99, 132, 0.2)'
                     ],
                     borderColor: [
-                    'rgba(255,99,132,1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
+                        'rgba(54, 162, 235, 1)',
                     ],
-                    borderWidth: 1
+                    borderWidth: 3
                 }
             ],
             "type": "line",
-            "label": ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-            "option": {responsive: true},
+            "label": ['January', 'February', 'March', 'April', 'May', 'June'],
+            "option": {
+                responsive: true
+            },
             "legend": true
+    },
+    "Report progress Y-axis":  {
+        "datasets": [
+            {
+                label: 'Report Progress',
+                data: [70, 90, 80, 40, 55, 30],
+                backgroundColor: [
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99 , 132, 1)'
+                ],
+                borderWidth: 1
+            }
+        ],
+        "type": "line",
+        "label": ['January', 'February', 'March', 'April', 'May', 'June'],
+        "option": {
+            responsive: true,
+            indexAxis: 'y',
+            scales: {
+                x: {
+                beginAtZero: true
+                }
+            },
+        },
+        
+        "legend": true
     },
     "Daily Report on Doughnut":  {
         "datasets": [
