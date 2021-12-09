@@ -11,6 +11,60 @@ import { filter } from 'rxjs';
 import { EndPoint } from '../../../../../../ui-ionic-core/projects/ionic-core/src/lib/shared/enums/end-point.enum';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
+import { Chart,
+  ArcElement,
+  LineElement,
+  BarElement,
+  PointElement,
+  BarController,
+  BubbleController,
+  DoughnutController,
+  LineController,
+  PieController,
+  PolarAreaController,
+  RadarController,
+  ScatterController,
+  CategoryScale,
+  LinearScale,
+  LogarithmicScale,
+  RadialLinearScale,
+  TimeScale,
+  TimeSeriesScale,
+  Decimation,
+  Filler,
+  Legend,
+  Title,
+  Tooltip,
+  ChartDataset,
+  ChartDatasetProperties,
+  Color,
+  TooltipLabelStyle} from 'chart.js';
+  
+  Chart.register(
+    ArcElement,
+    LineElement,
+    BarElement,
+    PointElement,
+    BarController,
+    BubbleController,
+    DoughnutController,
+    LineController,
+    PieController,
+    PolarAreaController,
+    RadarController,
+    ScatterController,
+    CategoryScale,
+    LinearScale,
+    LogarithmicScale,
+    RadialLinearScale,
+    TimeScale,
+    TimeSeriesScale,
+    Decimation,
+    Filler,
+    Legend,
+    Title,
+    Tooltip
+  );
 
 
 @Component({
@@ -56,6 +110,9 @@ export class CardviewPage implements OnInit {
   createFormgroup: boolean = true;
   openFilter: boolean = false;
 
+  // chart value
+  chartData: any;
+
   
 
   slideOptions = {
@@ -69,6 +126,9 @@ export class CardviewPage implements OnInit {
       prevEl: '.swiper-button-prev',
     },
   };
+
+  // chart
+  
 
 
   constructor(

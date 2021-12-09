@@ -8,6 +8,7 @@ import { CardviewPageRoutingModule } from './cardview-routing.module';
 
 import { CardviewPage } from './cardview.page';
 import { Modalh4Component } from '../../component/modalh4/modalh4.component';
+import { Ng2GoogleChartsModule } from 'ng2-google-charts';
 
 @NgModule({
   imports: [
@@ -15,7 +16,8 @@ import { Modalh4Component } from '../../component/modalh4/modalh4.component';
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
-    CardviewPageRoutingModule
+    CardviewPageRoutingModule,
+    Ng2GoogleChartsModule
   ],
   declarations: [
     CardviewPage, 
