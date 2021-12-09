@@ -12,7 +12,6 @@ import { EndPoint } from '../../../../../../ui-ionic-core/projects/ionic-core/sr
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 
-
 @Component({
   selector: 'app-cardview',
   templateUrl: './cardview.page.html',
@@ -56,7 +55,6 @@ export class CardviewPage implements OnInit {
   createFormgroup: boolean = true;
   openFilter: boolean = false;
 
-  
 
   slideOptions = {
     slidesPerView:1.2,
@@ -68,7 +66,7 @@ export class CardviewPage implements OnInit {
       nextEl: '.swiper-button-next',
       prevEl: '.swiper-button-prev',
     },
-  };
+  };  
 
 
   constructor(
@@ -95,13 +93,6 @@ export class CardviewPage implements OnInit {
       'https://www.sanjivanichemist.com/assets/img/service1.jpg',
     ];
     this.web_site_name = this.envService.getWebSiteName();
-
-    // this.cardDataMasterSubscription = this.dataShareService.setCardmasterData.subscribe(data =>{
-    //   this.cardType = data.card_type.name;
-    //   this.columnList=data.fields;
-    //   this.collectionname=data.collection_name;
-    //   this.getcardData(this.collectionname);
-    // })
 
     // this.cardDataMasterSubscription = this.dataShareService.getCardMasterData();
     // this.cardType = this.cardDataMasterSubscription.card_type.name;
@@ -259,9 +250,9 @@ export class CardviewPage implements OnInit {
     }
     return filterList;
   }
+
   dateFormat(value) {
     return this.datePipe.transform(value, 'dd/MM/yyyy')
-
   }
 
   getCriteriaList(criteria,object){
@@ -297,10 +288,10 @@ export class CardviewPage implements OnInit {
       return val;
     }
   }
+
   // openFilter(){
   //   this.openFilter = true;
   // }
-
 
   createFormControl(forControl, field, object, type) {
     let disabled = field.is_disabled ? true : ((field.disable_if != undefined && field.disable_if != '') ? true : false);
@@ -325,6 +316,7 @@ export class CardviewPage implements OnInit {
         break;
     }
   }
+
   validator(field) {
     const validator = []
     if (field.is_mandatory != undefined && field.is_mandatory) {
@@ -516,6 +508,7 @@ export class CardviewPage implements OnInit {
     return await modal.present();
 
   }
+
   detailModalResponce(){
     this.childColumns = [];
     this.childData = {};
@@ -525,7 +518,6 @@ export class CardviewPage implements OnInit {
      this.modalController.dismiss();
 
   }
-
 
   // go to new page 2nd method
   async detailCardButton(column, data){
@@ -551,6 +543,5 @@ export class CardviewPage implements OnInit {
     this.router.navigate(['carddetailview']);
 
   }
-
   
 }
