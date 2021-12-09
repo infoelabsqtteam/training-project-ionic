@@ -20,9 +20,7 @@
           [labels]="chartLabels[chart.name]"
           [options]="chartOptions[chart.name]"
           [legend]="chartLegend[chart.name]"
-          [type]="chartType[chart.name]"
-          (chartHover)="chartHovered($event)"
-          (chartClick)="chartClicked($event)">
+          [type]="chartType[chart.name]">
           <p>Your browser does not support the canvas element.</p>
         </canvas>
       </ion-card-content>

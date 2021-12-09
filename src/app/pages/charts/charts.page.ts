@@ -48,13 +48,15 @@ export class ChartsPage implements AfterViewInit {
     
   }
 
-  chartHovered({ event, active }: { event: MouseEvent, active: {}[] }): void {
-    console.log(event, active);
-  }
+  //  (chartHover)="chartHovered($event[])"
+  // chartHovered({ event, active }: { event: MouseEvent, active: {}[] }): void {
+  //   console.log(event, active);
+  // }
   
-  chartClicked({ event, active }: { event: MouseEvent, active: {}[] }): void {
-    alert("Enent Clicked = " + event.type + "=" + " x = " + event.x  + " y = " + event.y);
-    console.log(event, active);
-  }
+  //(chartClick)="chartClicked($event[])"
+  // chartClicked({ event, active }: { event: MouseEvent, active: {}[] }): void {
+  //   alert("Enent Clicked = " + event.type + "=" + " x = " + event.x  + " y = " + event.y);
+  //   console.log(event, active);
+  // }
 
 }
