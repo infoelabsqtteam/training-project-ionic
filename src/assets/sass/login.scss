@@ -1,0 +1,31 @@
+.loginpage {--background:#EFF1F3;font-family:Source Sans Pro;
+    .logintitle { padding:16px;padding-bottom:120px;
+        h4 {font-size:28px;font-weight:bold;color:#3A3A3A;margin-bottom:0;}
+        p {color:#777;font-size:20px;margin:8px 0;}
+    }
+    .login {border-radius:24px 24px 0 0;padding:20px;background:#fff;position:absolute;width:100%;bottom:0;
+        .formgroup {position:relative;margin-bottom:5px;}
+        .label-stacked.sc-ion-label-md-h, .label-floating.sc-ion-label-md-h {color:#A5A5A5;font-size:14px;}
+        .sc-ion-input-md-h {--padding:0px;margin:0px;color:#323643;font-size:16px;position:relative;}
+        .item-label-floating, .item-label-stacked {--min-height:35px;--padding-start:0px;}
+        .label-floating.sc-ion-label-md-h {transform:translateY(165%);}
+        .item-has-focus.label-floating.sc-ion-label-md-h, .item-has-focus .label-floating.sc-ion-label-md-h, .item-has-placeholder.sc-ion-label-md-h:not(.item-input).label-floating, .item-has-placeholder:not(.item-input) .label-floating.sc-ion-label-md-h, .item-has-value.label-floating.sc-ion-label-md-h, .item-has-value .label-floating.sc-ion-label-md-h {transform:translateY(50%) scale(0.75);}
+        .alert {position:absolute;width:100%;font-size:11px;color:red;z-index:5;}
+        .item-label-stacked.sc-ion-input-md-h, .item-label-stacked .sc-ion-input-md-h, .item-label-floating.sc-ion-input-md-h, .item-label-floating .sc-ion-input-md-h {padding:0px;}
+        .item-highlight, .item-inner-highlight {--height:1px !important;}
+        .showpassword {color:#C6CBD4;position:absolute;right:5px;top:20px;font-size:20px;}
+        .forgetpassword {color:#313131;font-size:16px;text-decoration:none;}
+        ion-button {margin-top:20px;--background:#113970;height:54px;border-radius:10px;color:#fff;position:relative;opacity:1;border-radius:10px;overflow:hidden;
+            ion-icon {position:absolute;right:10px;}
+        }
+        .signup {color:#313131;font-size:16px;margin-top:15px;display:block;}
+        .signinwith {max-width:230px;margin:0 auto;border-bottom:1px solid #ccc;position:relative;text-align:center;
+            span {position:absolute;left:0px;width:100%;bottom:-8px;}
+            i {font-size:14px;color:#999;background:#fff;padding:0 5px;font-style:normal;}
+        }
+
+
+    }
+    .mailicon {width:48px;height:48px;border-radius:100%;background:#fff;padding:10px;margin:25px auto 0;display:inline-block;box-shadow:0 0 39px #dedede;font-size:25px;line-height:35px;color:#ff7b7b;}
+    p {margin:0;}
+}

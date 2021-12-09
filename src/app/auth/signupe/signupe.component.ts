@@ -14,6 +14,7 @@ export class SignupeComponent implements OnInit {
 
 
   userForm: FormGroup;
+  showpassword = false;
 
   constructor(
     private authService: AuthService,
@@ -49,6 +50,10 @@ export class SignupeComponent implements OnInit {
     this.authService.signup(loginObj.email, loginObj.password, loginObj.name, phone_number,'/auth/signine');
     this.userForm.reset();
     this.router.navigate(['/auth/signine']);
+  }
+
+  showtxtpass() {
+    this.showpassword = !this.showpassword;
   }
 
 }
