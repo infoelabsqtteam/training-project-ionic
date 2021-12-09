@@ -11,61 +11,6 @@ import { filter } from 'rxjs';
 import { EndPoint } from '../../../../../../ui-ionic-core/projects/ionic-core/src/lib/shared/enums/end-point.enum';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Chart,
-  ArcElement,
-  LineElement,
-  BarElement,
-  PointElement,
-  BarController,
-  BubbleController,
-  DoughnutController,
-  LineController,
-  PieController,
-  PolarAreaController,
-  RadarController,
-  ScatterController,
-  CategoryScale,
-  LinearScale,
-  LogarithmicScale,
-  RadialLinearScale,
-  TimeScale,
-  TimeSeriesScale,
-  Decimation,
-  Filler,
-  Legend,
-  Title,
-  Tooltip,
-  ChartDataset,
-  ChartDatasetProperties,
-  Color,
-  TooltipLabelStyle} from 'chart.js';
-  
-  Chart.register(
-    ArcElement,
-    LineElement,
-    BarElement,
-    PointElement,
-    BarController,
-    BubbleController,
-    DoughnutController,
-    LineController,
-    PieController,
-    PolarAreaController,
-    RadarController,
-    ScatterController,
-    CategoryScale,
-    LinearScale,
-    LogarithmicScale,
-    RadialLinearScale,
-    TimeScale,
-    TimeSeriesScale,
-    Decimation,
-    Filler,
-    Legend,
-    Title,
-    Tooltip
-  );
-
 
 @Component({
   selector: 'app-cardview',
@@ -110,10 +55,6 @@ export class CardviewPage implements OnInit {
   createFormgroup: boolean = true;
   openFilter: boolean = false;
 
-  // chart value
-  chartData: any;
-
-  
 
   slideOptions = {
     slidesPerView:1.2,
@@ -125,10 +66,7 @@ export class CardviewPage implements OnInit {
       nextEl: '.swiper-button-next',
       prevEl: '.swiper-button-prev',
     },
-  };
-
-  // chart
-  
+  };  
 
 
   constructor(
@@ -155,13 +93,6 @@ export class CardviewPage implements OnInit {
       'https://www.sanjivanichemist.com/assets/img/service1.jpg',
     ];
     this.web_site_name = this.envService.getWebSiteName();
-
-    // this.cardDataMasterSubscription = this.dataShareService.setCardmasterData.subscribe(data =>{
-    //   this.cardType = data.card_type.name;
-    //   this.columnList=data.fields;
-    //   this.collectionname=data.collection_name;
-    //   this.getcardData(this.collectionname);
-    // })
 
     // this.cardDataMasterSubscription = this.dataShareService.getCardMasterData();
     // this.cardType = this.cardDataMasterSubscription.card_type.name;
@@ -319,9 +250,9 @@ export class CardviewPage implements OnInit {
     }
     return filterList;
   }
+
   dateFormat(value) {
     return this.datePipe.transform(value, 'dd/MM/yyyy')
-
   }
 
   getCriteriaList(criteria,object){
@@ -357,10 +288,10 @@ export class CardviewPage implements OnInit {
       return val;
     }
   }
+
   // openFilter(){
   //   this.openFilter = true;
   // }
-
 
   createFormControl(forControl, field, object, type) {
     let disabled = field.is_disabled ? true : ((field.disable_if != undefined && field.disable_if != '') ? true : false);
@@ -385,6 +316,7 @@ export class CardviewPage implements OnInit {
         break;
     }
   }
+
   validator(field) {
     const validator = []
     if (field.is_mandatory != undefined && field.is_mandatory) {
@@ -576,6 +508,7 @@ export class CardviewPage implements OnInit {
     return await modal.present();
 
   }
+
   detailModalResponce(){
     this.childColumns = [];
     this.childData = {};
@@ -585,7 +518,6 @@ export class CardviewPage implements OnInit {
      this.modalController.dismiss();
 
   }
-
 
   // go to new page 2nd method
   async detailCardButton(column, data){
@@ -611,6 +543,5 @@ export class CardviewPage implements OnInit {
     this.router.navigate(['carddetailview']);
 
   }
-
   
 }
