@@ -4,7 +4,6 @@ import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild } fr
 import { AuthService, EnvService, StorageService } from '@core/ionic-core';
 import { chartdata } from './data';
 
-import { ChartDataset, ChartOptions } from 'chart.js';
 
 @Component({
   selector: 'app-charts',
@@ -22,23 +21,20 @@ export class ChartsPage implements AfterViewInit {
 
   charts = [
     {"name":"Reports"},
+    {"name":"Reports Horizontal"},
     {"name":"Report on Pie Chart"},
     {"name":"Report progress"},
+    {"name":"Report progress Y-axis"},
     {"name":"Daily Report on Doughnut"},
     {"name":"Report on Polar Area Chart"},
     {"name":"Mixed Chart Report"}
     
   ];
 
-  constructor(
-  ) { }
-
+  constructor() { }
   
   
-  ngAfterViewInit(){
-    
-
-  }
+  ngAfterViewInit(){ }
 
 
   ngOnInit() {
@@ -51,5 +47,16 @@ export class ChartsPage implements AfterViewInit {
     })
     
   }
+
+  //  (chartHover)="chartHovered($event[])"
+  // chartHovered({ event, active }: { event: MouseEvent, active: {}[] }): void {
+  //   console.log(event, active);
+  // }
+  
+  //(chartClick)="chartClicked($event[])"
+  // chartClicked({ event, active }: { event: MouseEvent, active: {}[] }): void {
+  //   alert("Enent Clicked = " + event.type + "=" + " x = " + event.x  + " y = " + event.y);
+  //   console.log(event, active);
+  // }
 
 }
