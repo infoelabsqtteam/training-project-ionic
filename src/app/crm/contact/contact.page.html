@@ -10,14 +10,14 @@
 <ion-tabs class="innerpagetabs">
   <ion-tab-bar slot="top">
       <ion-tab-button class="activetab"><ion-label>Contact</ion-label> </ion-tab-button>
-      <ion-tab-button [routerLink]="['/crm/enquiry']"><ion-label>Enquiry Master</ion-label></ion-tab-button>
-      <ion-tab-button><ion-label>Quotation</ion-label></ion-tab-button>
+      <ion-tab-button routerLink="/crm/enquiry"><ion-label>Enquiry Master</ion-label></ion-tab-button>
+      <ion-tab-button routerLink="/crm/quotation"><ion-label>Quotation</ion-label></ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>
 
 <ion-content class="pages">
   <div class="useritems">
-    <div class="userlist" *ngFor="let data of userdata">
+    <div class="userlist" *ngFor="let data of userdata" routerLink="/crm/contact-details">
       <div class="userinfo">
         <ion-avatar slot="start">AT</ion-avatar>
         <ion-label><h5>{{data.name}}</h5><small>{{data.profile}}</small></ion-label>
@@ -25,5 +25,5 @@
       <ion-label slot="end"><h6>{{data.company}}</h6><small>{{data.mobile}}</small></ion-label>
     </div>
   </div>
-  <div class="addmore" (click)="addmore()"><ion-icon name="add-outline"></ion-icon> ADD</div>
+  <div class="addmore" routerLink="../addcontact"><ion-icon name="add-outline"></ion-icon> ADD</div>
 </ion-content>

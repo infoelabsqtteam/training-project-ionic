@@ -11,24 +11,24 @@
   <ion-tab-bar slot="top">
       <ion-tab-button [routerLink]="['/crm/contact']"><ion-label>Contact</ion-label> </ion-tab-button>
       <ion-tab-button class="activetab"><ion-label>Enquiry Master</ion-label></ion-tab-button>
-      <ion-tab-button><ion-label>Quotation</ion-label></ion-tab-button>
+      <ion-tab-button routerLink="/crm/quotation"><ion-label>Quotation</ion-label></ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>
 
 <ion-content class="pages">
   <div class="useritems">
-    <div class="enquirylist" *ngFor="let data of enquirydata">
+    <div class="enquirylist" *ngFor="let data of enquirydata" routerLink="../enquiry-details">
       <ion-label>
         <h5>{{data.enquiry}}</h5>
         <p><small>{{data.location}}</small></p>
         <strong><small>Sample - Urea</small></strong>
       </ion-label>
-      <ion-label slot="end">
+      <ion-label slot="end" class="endlabel">
         <h6>{{data.enqno}}</h6>
         <p><small>NOV 11</small></p>
-        <ion-button color="primary">Regret</ion-button>
+        <a href="#">Regret</a>
       </ion-label>
     </div>
   </div>
-  <div class="addmore" (click)="addmore()"><ion-icon name="add-outline"></ion-icon> ADD</div>
+  <div class="addmore" routerLink="../add-enquiry"><ion-icon name="add-outline"></ion-icon> ADD</div>
 </ion-content>

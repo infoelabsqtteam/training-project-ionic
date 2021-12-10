@@ -6,7 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./addcontact.page.scss'],
 })
 export class AddcontactPage implements OnInit {
-
+  disabled = true;
   constructor() { }
 
   ngOnInit() {

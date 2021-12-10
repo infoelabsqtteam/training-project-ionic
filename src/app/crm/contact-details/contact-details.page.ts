@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-enquiry',
-  templateUrl: './enquiry.page.html',
-  styleUrls: ['./enquiry.page.scss'],
+  selector: 'app-contact-details',
+  templateUrl: './contact-details.page.html',
+  styleUrls: ['./contact-details.page.scss'],
 })
-export class EnquiryPage implements OnInit {
+export class ContactDetailsPage implements OnInit {
+
   enquirydata = [
     {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
     {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},

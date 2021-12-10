@@ -29,9 +29,4 @@ export class ContactPage implements OnInit {
 
   ngOnInit() {
   }
-
-  addmore() {
-    this.router.navigate(['crm/addcontact']);
-  }
-
 }

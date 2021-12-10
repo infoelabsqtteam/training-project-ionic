@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="../contact"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/crm/quotation"></ion-back-button></ion-buttons>
     <ion-title class="ion-no-padding ion-text-uppercase">crm</ion-title>
     <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
     <ion-buttons slot="end" class="ion-padding-start"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
@@ -9,31 +9,64 @@
 
 <ion-tabs class="innerpagetabs">
   <ion-tab-bar slot="top">
-      <ion-tab-button routerLink="/crm/contact" class="activetab"><ion-label>Contact</ion-label> </ion-tab-button>
+      <ion-tab-button routerLink="/crm/contact"><ion-label>Contact</ion-label> </ion-tab-button>
       <ion-tab-button routerLink="/crm/enquiry"><ion-label>Enquiry Master</ion-label></ion-tab-button>
-      <ion-tab-button routerLink="/crm/quotation"><ion-label>Quotation</ion-label></ion-tab-button>
+      <ion-tab-button routerLink="/crm/quotation" class="activetab"><ion-label>Quotation</ion-label></ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>
 
-<ion-content class="pages">
+<ion-content class="pages quotation">
+
+
   <div class="addnewform">
     <form>
       <ion-item>
-        <ion-label position="floating">Person Name</ion-label>
+        <ion-label position="floating">Enquiry No.</ion-label>
         <ion-input autocomplete="off"></ion-input>
       </ion-item>
+      <h6>Product & Test details</h6>
       <ion-item>
-        <ion-label position="floating">Company Name</ion-label>
+        <ion-label position="floating">Products*</ion-label>
         <ion-input></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Company Address</ion-label>
+        <ion-label position="floating">Sample Name</ion-label>
         <ion-input></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">City</ion-label>
+        <ion-label position="floating">Reference Test Standard</ion-label>
         <ion-input></ion-input>
       </ion-item>
+
+
+      <ion-item class="selectvalue">
+        <ion-select value="brown" okText="Okay" cancelText="Dismiss">
+          <ion-select-option value="brown">Brown</ion-select-option>
+          <ion-select-option value="blonde">Blonde</ion-select-option>
+          <ion-select-option value="black">Black</ion-select-option>
+          <ion-select-option value="red">Red</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       <ion-item>
         <ion-label position="floating">Pin Code</ion-label>
         <ion-input type="number"></ion-input>

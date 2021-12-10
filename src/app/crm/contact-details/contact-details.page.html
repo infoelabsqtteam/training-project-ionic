@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="crm/contact"></ion-back-button></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-uppercase">Amit Tomer</ion-title>
+    <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
+    <ion-buttons slot="end" class="ion-padding-start"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pages">
+  <div class="contactprofile">
+      <div class="profileicon">AT</div>
+       <h3>Amit Tomer</h3>
+       <p>Project Manager</p>
+    </div>
+
+   <div class="contactdetails">
+    <div class="menutab">
+       <ion-tab-button class="active"><ion-label>Enquiry</ion-label> </ion-tab-button>
+       <ion-tab-button routerLink="/crm/enquiry"><ion-label>Quotation</ion-label></ion-tab-button>
+       <ion-tab-button><ion-label>Call History</ion-label></ion-tab-button>
+       <ion-tab-button><ion-label>Notes</ion-label></ion-tab-button>
+    </div>
+    <div class="enquirylist" *ngFor="let data of enquirydata" routerLink="../enquiry-details">
+      <ion-label>
+        <h5>{{data.enquiry}}</h5>
+        <p><small>{{data.location}}</small></p>
+        <strong><small>Sample - Urea</small></strong>
+      </ion-label>
+      <ion-label slot="end" class="endlabel">
+        <h6>{{data.enqno}}</h6>
+        <p><small>NOV 11</small></p>
+        <a href="#">Regret</a>
+      </ion-label>
+    </div>
+    <div class="addmore" routerLink="../add-enquiry"><ion-icon name="add-outline"></ion-icon> ADD</div>
+  </div>
+</ion-content>

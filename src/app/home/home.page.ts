@@ -41,10 +41,10 @@ export class HomePage implements OnInit {
 
   ngOnInit() {}
   
-  showCardTemplate(card:any, index:number){
-    this.selectedIndex = index;
+  showCardTemplate(){
+    //this.selectedIndex = index;
     this.router.navigate(['crm/contact']);
-    this.dataShareService.setcardData(card);
+    // this.dataShareService.setcardData(card);
   }
 
 
