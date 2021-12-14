@@ -55,19 +55,23 @@ const routes: Routes = [
   { path: 'home4', loadChildren: () => import('./home4/home4.module').then( m => m.Home4PageModule)},
   // { path: 'modalh4details', loadChildren: () => import('./component/modalh4/modalh4.component').then( m => m.Modalh4Component)},
   { path: 'teams', loadChildren: () => import('./pages/teams/teams.module').then( m => m.TeamsPageModule) },
-  // { path: 'cardview', loadChildren: () => import('./pages/cardview/cardview.module').then( m => m.CardviewPageModule) },
-  // { path: 'carddetailview', loadChildren: () => import('./pages/carddetailview/carddetailview.module').then( m => m.CarddetailviewPageModule)},
-  // { path: 'charts', loadChildren: () => import('./pages/charts/charts.module').then( m => m.ChartsPageModule) },
+  { path: 'cardview', loadChildren: () => import('./pages/cardview/cardview.module').then( m => m.CardviewPageModule) },
+  { path: 'carddetailview', loadChildren: () => import('./pages/carddetailview/carddetailview.module').then( m => m.CarddetailviewPageModule)},
+  { path: 'charts', loadChildren: () => import('./pages/charts/charts.module').then( m => m.ChartsPageModule) },
   
   { path: 'crm/contact', loadChildren: () => import('./crm/contact/contact.module').then( m => m.ContactPageModule)},
   { path: 'crm/addcontact', loadChildren: () => import('./crm/addcontact/addcontact.module').then( m => m.AddcontactPageModule)},
   { path: 'crm/contact-details', loadChildren: () => import('./crm/contact-details/contact-details.module').then( m => m.ContactDetailsPageModule) },
+  { path: 'crm/contact-quotation', loadChildren: () => import('./crm/contact-quotation/contact-quotation.module').then( m => m.ContactQuotationPageModule) },
   { path: 'crm/enquiry',loadChildren: () => import('./crm/enquiry/enquiry.module').then( m => m.EnquiryPageModule)},
   { path: 'crm/enquiry-details', loadChildren: () => import('./crm/enquiry-details/enquiry-details.module').then( m => m.EnquiryDetailsPageModule) },
   { path: 'crm/add-enquiry', loadChildren: () => import('./crm/add-enquiry/add-enquiry.module').then( m => m.AddEnquiryPageModule)},
   { path: 'crm/quotation', loadChildren: () => import('./crm/quotation/quotation.module').then( m => m.QuotationPageModule) },
   { path: 'crm/addquotation', loadChildren: () => import('./crm/addquotation/addquotation.module').then( m => m.AddquotationPageModule) },
   { path: 'crm/quotation-details', loadChildren: () => import('./crm/quotation-details/quotation-details.module').then( m => m.QuotationDetailsPageModule) },
+  { path: 'crm/whatsapp-chat', loadChildren: () => import('./crm/whatsapp-chat/whatsapp-chat.module').then( m => m.WhatsappChatPageModule) },
+
+
 
 
 

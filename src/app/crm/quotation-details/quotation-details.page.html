@@ -1,9 +1,37 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>quotation-details</ion-title>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/crm/quotation"></ion-back-button></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-uppercase">Quotation Details</ion-title>
+    <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
+    <ion-buttons slot="end" class="ion-padding-start"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
 
+<ion-tabs class="innerpagetabs">
+  <ion-tab-bar slot="top">
+      <ion-tab-button routerLink="/crm/contact"><ion-label>Contact</ion-label> </ion-tab-button>
+      <ion-tab-button routerLink="/crm/enquiry"><ion-label>Enquiry Master</ion-label></ion-tab-button>
+      <ion-tab-button routerLink="/crm/quotation" class="activetab"><ion-label>Quotation</ion-label></ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>
+
+<ion-content class="pages">
+    <div class="enquirydata">
+      <p><span>Quotation No.</span><strong>15</strong></p>
+      <p><span>Date</span><strong>11-Nov-2021</strong></p>
+      <p><span>Time</span><strong>08:00:00</strong></p>
+      <p><span>Person Name</span><strong>Anirudh Sharma</strong></p>
+      <p><span>Mobile No</span><strong>+91 9205280930</strong></p>
+      <p><span>Company Name</span><strong>Tirupati Life Science</strong></p>
+      <p><span>Company Address</span><strong>Plot No. 100 Sec- 19, Industrial Area Phase - 1, Pin code-110096</strong></p>
+      <p><span>Branch</span><strong>Panchkula</strong></p>
+      <p><span>Department</span><strong>Other</strong></p>
+      <p><span>Sample Name</span><strong>Uera</strong></p>
+      <p><span>Reference Test Standard</span><strong>IS 10500, IS 4251</strong></p>
+      <p><span>Query Details</span><strong>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</strong></p>
+      <p><span>Upload Files</span><strong><ion-icon name="document"></ion-icon> Urea.pdf</strong></p>
+      <p><span>Status</span><strong><a href="#">Move To Quotations</a></strong></p>
+    </div>
 </ion-content>
+
