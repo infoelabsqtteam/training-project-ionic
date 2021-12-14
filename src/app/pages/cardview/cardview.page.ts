@@ -8,7 +8,6 @@ import { Modalh4Component } from '../../component/modalh4/modalh4.component';
 import { NavigationEnd, NavigationExtras, Router, RouterEvent } from '@angular/router';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { filter } from 'rxjs';
-import { EndPoint } from '../../../../../../ui-ionic-core/projects/ionic-core/src/lib/shared/enums/end-point.enum';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 

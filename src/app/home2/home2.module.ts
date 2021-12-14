@@ -9,7 +9,6 @@ import { Home2PageRoutingModule } from './home2-routing.module';
 import { Home2Page } from './home2.page';
 import { UploadPrescriptionComponent } from '../component/upload-prescription/upload-prescription.component';
 import { AddAddressComponent } from '../component/add-address/add-address.component';
-import { ProductSearchComponent } from '../component/product-search/product-search.component';
 import { FaqComponent } from '../component/faq/faq.component';
 import { FilterComponent } from '../component/filter/filter.component';
 import { CategoryListPage } from '../pages/category-list/category-list.page';
@@ -21,7 +20,7 @@ import { CategoryListPage } from '../pages/category-list/category-list.page';
     IonicModule,
     Home2PageRoutingModule
   ],
-  declarations: [Home2Page,UploadPrescriptionComponent, AddAddressComponent, ProductSearchComponent, FaqComponent, FilterComponent]
+  declarations: [Home2Page,UploadPrescriptionComponent, AddAddressComponent, FaqComponent, FilterComponent]
 })
 export class Home2PageModule {
   // slideOpts = {

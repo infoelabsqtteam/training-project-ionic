@@ -11,6 +11,7 @@ import { SignupComponent } from './signup/signup.component';
 import { AuthGuard } from './auth.guard';
 import { SignineComponent } from './signine/signine.component';
 import { SignupeComponent } from './signupe/signupe.component';
+import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 
 const routes: Routes = [
   {
@@ -20,7 +21,8 @@ const routes: Routes = [
       { path: 'signin', component: SigninComponent, },
       { path: 'signup', component: SignupComponent },
       { path: 'signine', component: SignineComponent, },
-      { path: 'signupe', component: SignupeComponent }
+      { path: 'signupe', component: SignupeComponent },
+      { path: 'forgetpassword', component: ForgetPasswordComponent },
     ]
 
   }
@@ -39,7 +41,8 @@ const routes: Routes = [
     SigninComponent, 
     SignupComponent,
     SignineComponent,
-    SignupeComponent
+    SignupeComponent,
+    ForgetPasswordComponent
   ]
 })
 export class AuthPageModule { }

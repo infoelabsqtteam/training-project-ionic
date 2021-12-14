@@ -67,7 +67,7 @@ export class AuthPage implements OnInit {
         this.storageService.presentToast('Otp Matched !!');
         const obj = JSON.stringify({ authenticated: true, mobileNo: this.loginObj.mobileNo });
         this.storageService.setObject('userData', obj);
-        this.coreUtilService.gotoPage('/tab/home');
+        this.coreUtilService.gotoPage('/home');
       } else {
 
       }
