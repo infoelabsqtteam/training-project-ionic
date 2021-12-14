@@ -14,7 +14,6 @@ ion-header {
     .usertitle {width:32px;height:32px;border-radius:100%;background:#0851B5;font-size:13px;text-align:center;color:#fff;line-height:22px;padding:5px;margin-right:10px;}
 }
 
-
 // Sidenavbar
 .sidenav {--background:var(--themebg);-color:#fff;
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6e00dd', endColorstr='#0851b5',GradientType=1 );
@@ -31,31 +30,20 @@ ion-header {
     ion-item {--background:rgba(0,0,0,0.08);--color:#96b1d7;margin-bottom:1px;}
 }
 
-
-
 .sidenavfooter {position:absolute;left:0;bottom:0;width:100%;background:rgba(0,0,0,0.05);padding:10px;text-align:center;
     ion-icon {color:#9ebae1;font-size:20px;margin:8px 10px;}
     ion-note {color:#929bd7;margin:5px 0 0;display:block;font-size:11px;}
 }
 
-
-
-
-
-
-
-
-
-
-
 // Banner
 .banner {padding:10px 0;margin-bottom:20px;
     .swiper-wrapper {margin-left:-27%;}
     .swiper-slide.swiper-slide-active {width:85% !important;}
-    .slideshow {background:var(--themebg);width:100%;height:200px;border-radius:10px;display:flex;align-items:center;}
+    .slideshow {background:var(--themebg);width:100%;height:200px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
 }
+
 // Home page Category List
-.catlist {background:#fff;padding:10px;border-radius:20px 20px 0 0;height:calc(100% -50px);
+.catlist {background:#fff;padding:10px;border-radius:20px 20px 0 0;height:calc(100% -50px);min-height:50%;
     ul {margin:0;padding:0;list-style:none;text-align:center;
         li {display:inline-block;margin:10px 7px;
             .caticon {background:#8FBFE34D;border-radius:5px;width:55px;height:55px;line-height:55px;margin:auto;}
@@ -64,6 +52,22 @@ ion-header {
         }
     }
 }
+.home_ionmenu {
+    padding: 0.5em;
+    box-shadow: rgb(223 223 223 / 80%) 0px 3px 1px -2px, rgb(0 0 0 / 14%) 0px 2px 2px 0px, rgb(0 0 0 / 12%) 0px 1px 5px 0px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    flex-wrap: nowrap;
+    align-items: center;
+    background: #8FBFE34D;
+    border-radius: 5px;
+    width: 55px;
+    height: 55px;
+    margin: auto;
+}
+.home_icon_label {color:#3A3A3A;font-size:11px;}
+
 // Footer Tabs
 ion-tabs.footertab {
     ion-tab-bar {background:var(--themebg);}
@@ -85,8 +89,6 @@ ion-tabs.footertab {
         h6, small {color:#313131;font-size:10px;}
     }
 }
-
-
 .contactlist {background:none;margin:10px;
     ion-item {border-radius:20px;--border-color:#fff;margin-bottom:5px;}
     ion-avatar {width:48px;height:48px;margin:10px 15px 10px 0;color:#fff;line-height:48px;text-align:center;background:#0851b5;}
@@ -95,15 +97,6 @@ ion-tabs.footertab {
     ion-item-options {height:auto;}
     ion-item-option {background:#0851b5;line-height:66px;border-radius:20px;color:#fff;}
 }
-
-
-
-
-
-
-
-
-
 
 .addmore {position:fixed;right:20px;bottom:30px;z-index:9;background:#113970;color:#fff;width:48px;height:48px;border-radius:100%;text-align:center;line-height:55px;font-size:25px;}
   .addnewform {background:#fff;margin-top:10px;padding:20px;border-radius:20px 20px 0 0;font-family:Source Sans Pro;
@@ -120,7 +113,6 @@ ion-tabs.footertab {
     .selectvalue {--inner-padding-end:0px;--padding-start:0px;
         ion-select {width:100%;background:#E6E7E8;border-radius:10px;font-size:12px;padding:5px 10px;}
     }
-
     
 }
 .contactprofile {text-align:center;background:#fff;padding:15px 0 20px; border-radius:0 0 20px 20px;
@@ -140,7 +132,6 @@ ion-tabs.footertab {
     .enquirylist {border:1px solid #70707014;}
 }
 
-
 // CRM Enquiry Pages
 .enquirylist {display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-radius:20px;background:#fff;margin-bottom:5px;
     .endlabel {text-align:right;}
@@ -155,7 +146,6 @@ ion-tabs.footertab {
     a {display:inline-block;color:#fff;background:#187D4E;border-radius:4px;width:100px;height:22px;line-height:22px;text-align:center;font-size:11px;}
 }
 
-
 // CRM Quotation Pages
 .quotation {
     .enquirylist {padding:15px;
@@ -163,11 +153,19 @@ ion-tabs.footertab {
     }
     small {font-size:10px;}
 }
-
-
-
-
-
-
-
-
+// cardview
+.cardlist_title {
+    color: #113970;
+    font-size: 16px;
+    font-weight: 600;
+}
+.strong{font-weight: bold;}
+.cardlist_h6 {
+    font-size: 10px;
+    color: #3A3A3A;
+    margin-bottom: 10px;
+}
+.cardlist_small {
+    font-size: 10px;
+}
+.small{font-size: 10px;}

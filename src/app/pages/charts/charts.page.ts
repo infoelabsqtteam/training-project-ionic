@@ -50,9 +50,9 @@ export class ChartsPage implements AfterViewInit {
   }
 
   //  (chartHover)="chartHovered($event[])"
-  chartHovered({ event, active }: { event: MouseEvent, active: {}[] }): void {
-    console.log(event, active);
-  }
+  // chartHovered({ event, active }: { event: MouseEvent, active: {}[] }): void {
+  //   console.log(event, active);
+  // }
   
   //(chartClick)="chartClicked($event[])"
   // chartClicked({ event, active }: { event: MouseEvent, ac'tive: {}[] }): void {
@@ -61,7 +61,7 @@ export class ChartsPage implements AfterViewInit {
   // }
 
   chartClicked(obj: any, i){
-    alert(this.charts[i].name);
+    alert("You clicked on Chart " + this.charts[i].name);
     console.log(this.charts[i]);
   }
 
