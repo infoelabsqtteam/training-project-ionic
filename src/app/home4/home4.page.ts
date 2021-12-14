@@ -80,9 +80,11 @@ export class Home4Page implements OnInit {
     // below code is for slider and title name
     this.initializeApp();
     this.list = [
-      'https://www.sanjivanichemist.com/assets/img/service1.jpg',
-      'https://www.sanjivanichemist.com/assets/img/service1.jpg',
-      'https://www.sanjivanichemist.com/assets/img/service1.jpg',
+      'assets/img/home/banner1.png',
+      'assets/img/home/banner2.png'
+      // 'https://www.sanjivanichemist.com/assets/img/service1.jpg',
+      // 'https://www.sanjivanichemist.com/assets/img/service1.jpg',
+      // 'https://www.sanjivanichemist.com/assets/img/service1.jpg',
     ];
     this.web_site_name = this.envService.getWebSiteName();
     this.cardListSubscription = this.dataShareService.cardList.subscribe(data =>{
