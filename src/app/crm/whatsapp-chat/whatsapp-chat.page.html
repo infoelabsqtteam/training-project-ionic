@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="crm/contact-details"></ion-back-button></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-uppercase usertitle">AK</ion-title>
+    <ion-title class="ion-no-padding">Amit Tomer</ion-title>
+    <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content class="chatbox">
+  <div *ngFor="let data of chatdata">
+    <div class="chatlist">
+        <div class="userimg">{{data.username}}</div>
+        <div class="usermsg">
+            <div class="msgbox">{{data.chatmsg}}</div>
+            <div class="time">{{data.time}}</div>
+        </div>
+      </div>
+
+      <div class="chatlist replymsg">
+        <div class="usermsg">
+            <div class="msgbox">{{data.reply}}</div>
+            <div class="time">{{data.time}}</div>
+        </div>
+      </div>
+
+  </div>
+
+</ion-content>
+
+
+<ion-footer class="sendmsg">
+  <ion-buttons><ion-icon name="add-circle"></ion-icon></ion-buttons>
+  <ion-buttons><ion-icon name="happy"></ion-icon></ion-buttons>
+  <div class="inputbox"><input type="text" placeholder="Type something"></div>
+  <ion-buttons><ion-icon name="send"></ion-icon></ion-buttons>
+</ion-footer>

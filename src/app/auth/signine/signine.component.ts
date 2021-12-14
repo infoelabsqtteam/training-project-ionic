@@ -15,6 +15,7 @@ export class SignineComponent implements OnInit {
 
 
   loginForm: FormGroup;
+  showpassword = false;
 
   constructor(
     private authService: AuthService,
@@ -53,5 +54,11 @@ export class SignineComponent implements OnInit {
     this.authService.login(loginObj.email, loginObj.password,'/home');
     this.loginForm.reset();
   }
+
+  showtxtpass() {
+    this.showpassword = !this.showpassword;
+  }
+
+
 
 }
