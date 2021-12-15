@@ -45,7 +45,7 @@ ion-header {
 // Home page Category List
 .catlist {background:#fff;padding:10px;border-radius:20px 20px 0 0;height:calc(100% -50px);min-height:50%;
     ul {margin:0;padding:0;list-style:none;text-align:center;
-        li {display:inline-block;margin:10px 7px;
+        li {display:inline-block;margin:10px 7px;cursor: pointer;
             .caticon {background:#8FBFE34D;border-radius:5px;width:55px;height:55px;line-height:55px;margin:auto;}
             img {vertical-align:middle;}
             span {color:#3A3A3A;font-size:11px;}
@@ -169,3 +169,4 @@ ion-tabs.footertab {
     font-size: 10px;
 }
 .small{font-size: 10px;}
+.cursor_pointer{cursor: pointer;}
