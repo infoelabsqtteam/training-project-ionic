@@ -17,28 +17,6 @@ ion-searchbar{
 .small{font-size:12px;}
 .outline_button{font-size: 10px;}
 
-// icon menu
-.home_ionmenu{
-    padding: .5em;
-    background: rgb(81 103 197 / 8%);
-    border-radius: 7px;
-    box-shadow: rgb(223 223 223 / 80%) 0px 3px 1px -2px, rgb(0 0 0 / 14%) 0px 2px 2px 0px, rgb(0 0 0 / 12%) 0px 1px 5px 0px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    flex-wrap: nowrap;
-    align-items: center;
-    
-    ion-img{
-        margin: 0 auto;
-    }
-    img{
-        margin:0 auto;
-        max-width: 100px;
-    }
-    .label{font-size: 14px;}
-
-}
 // banner
 .cardbox2{width: 95%; border:1px solid #cccccc; margin: 10px 0px 15px 0px;border-radius: 15px;background: url('/assets/003.png') no-repeat; padding-bottom: 40px;}
 .maintop{margin-top: 20px; font-size: 22px; font-weight: bold;}
