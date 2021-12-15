@@ -94,8 +94,8 @@ ion-tabs.footertab {
     ion-item-options {height:calc(100% - 7px);}
     ion-item-option {background:#0851b5;line-height:66px;border-radius:20px;color:#fff;width:50px;}
     a {display:inline-block;color:#E23339;border-radius:4px;border:1px solid;width:78px;height:22px;line-height:22px;text-align:center;font-size:11px;}
-
 }
+.addmore {position:fixed;right:20px;bottom:30px;z-index:9;background:#0851b5;color:#fff;width:48px;height:48px;border-radius:100%;text-align:center;line-height:55px;font-size:25px;}
 
 .quotationlist {
     .inner_padding{padding: 10px 0;}
@@ -118,12 +118,6 @@ ion-tabs.footertab {
         text-transform: capitalize;
     }
 }
-
-
-
-
-
-.addmore {position:fixed;right:20px;bottom:30px;z-index:9;background:#0851b5;color:#fff;width:48px;height:48px;border-radius:100%;text-align:center;line-height:55px;font-size:25px;}
 
 // CRM Contact Details Pages
 .contactdetails {background:#fff;border-radius:20px 20px 0 0;padding:20px;margin-top:20px;padding-bottom:50px;
