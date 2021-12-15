@@ -15,30 +15,24 @@
                         <ion-label class="ion-margin-start">Home</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
-                <ion-menu-toggle>
-                    <ion-item lines="none" [routerLink]="['home4']">
-                        <ion-icon name="home-outline"></ion-icon>
-                        <ion-label class="ion-margin-start">New home</ion-label>
-                    </ion-item>
-                </ion-menu-toggle>
-                    <ion-item lines="none">
+                    <!-- <ion-item lines="none">
                         <ion-icon name="card-outline"></ion-icon>
                         <ion-label class="ion-margin-start">Card View</ion-label>
-                    </ion-item>
+                    </ion-item> -->
                 <ion-menu-toggle auto-hide="false">
-                    <ion-item  *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" lines="none"
+                    <ion-item lines="none"  *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" lines="none"
                     detail="false" [class.selected]="selectedIndex == i" [ngClass]="cardItem.sidebar_menu?'ion-show':'ion-hide'">
                         <ion-icon name="return-down-forward-outline"></ion-icon>
                         <ion-label class="ion-margin-start">{{cardItem.name}}</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
 
-                <ion-menu-toggle>
+                <!-- <ion-menu-toggle>
                     <ion-item lines="none" [routerLink]="['charts']">
                         <ion-icon name="bar-chart-outline"></ion-icon>
                         <ion-label class="ion-margin-start">Charts</ion-label>
                     </ion-item>
-                </ion-menu-toggle>
+                </ion-menu-toggle> -->
                 
             </ion-list>
 

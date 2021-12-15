@@ -1,37 +1,29 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="../enquiry"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start"><ion-back-button defaultHref="crm/enquiry"></ion-back-button></ion-buttons>
     <ion-title class="ion-no-padding ion-text-uppercase">crm</ion-title>
     <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
     <ion-buttons slot="end" class="ion-padding-start"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-tabs class="innerpagetabs">
-  <ion-tab-bar slot="top">
-      <ion-tab-button routerLink="/crm/contact"><ion-label>Contact</ion-label> </ion-tab-button>
-      <ion-tab-button routerLink="/crm/enquiry" class="activetab"><ion-label>Enquiry Master</ion-label></ion-tab-button>
-      <ion-tab-button routerLink="/crm/quotation"><ion-label>Quotation</ion-label></ion-tab-button>
-  </ion-tab-bar>
-</ion-tabs>
+<div class="menutab">
+  <ion-tab-button routerLink="/crm/addcontact"><ion-label>New Contact</ion-label> </ion-tab-button>
+  <ion-tab-button routerLink="/crm/add-enquiry" class="active"><ion-label>New Enquiry</ion-label></ion-tab-button>
+  <ion-tab-button routerLink="/crm/addquotation"><ion-label>New Quotation</ion-label></ion-tab-button>
+</div>
+
 
 <ion-content class="pages">
 
   <div class="addnewform">
+    
     <form>
-
-
       <ion-item>
         <ion-label position="floating">Person/ Company Name</ion-label>
-        <ion-input type="text" debounce="500" (ionChange)="getItems($event)" autocomplete="off"></ion-input>
+        <ion-input></ion-input>
       </ion-item>
-      <div class="autoresult" *ngIf="isItemAvailable">
-        <div *ngFor="let item of items">
-          <p>{{ item }}</p>
-        </div>
-      </div>
-
-
+      <h6>Enquiry Detail</h6>
       <ion-item>
         <ion-label position="floating">Branch</ion-label>
         <ion-input></ion-input>
@@ -62,6 +54,14 @@
           <small>Only JPEG or PDF files With Max Size of 10MB</small>
         </div>
       </div>
+      <ion-item>
+        <ion-label>Status</ion-label>
+        <ion-select class="custom-options" interface="popover">
+          <ion-select-option value="blonde">Blonde</ion-select-option>
+          <ion-select-option value="black">Black</ion-select-option>
+          <ion-select-option value="red">Red</ion-select-option>
+        </ion-select>
+      </ion-item>
 
       <ion-button [disabled]="disabled? 'desabledbtn': '' "  expand="full">Save & Move To Enquiry <ion-icon name="arrow-forward"></ion-icon></ion-button>
   </form>

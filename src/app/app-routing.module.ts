@@ -53,7 +53,7 @@ const routes: Routes = [
   { path: 'order-summary', loadChildren: () => import('./pages/order-summary/order-summary.module').then(m => m.OrderSummaryPageModule) },
   { path: 'product-details', loadChildren: () => import('./pages/product-details/product-details.module').then(m => m.ProductDetailsPageModule) },
   { path: 'home4', loadChildren: () => import('./home4/home4.module').then( m => m.Home4PageModule)},
-  // { path: 'modalh4details', loadChildren: () => import('./component/modalh4/modalh4.component').then( m => m.Modalh4Component)},
+  { path: 'modalh4details', loadChildren: () => import('./component/modalh4/modalh4.component').then( m => m.Modalh4Component)},
   { path: 'teams', loadChildren: () => import('./pages/teams/teams.module').then( m => m.TeamsPageModule) },
   { path: 'cardview', loadChildren: () => import('./pages/cardview/cardview.module').then( m => m.CardviewPageModule) },
   { path: 'carddetailview', loadChildren: () => import('./pages/carddetailview/carddetailview.module').then( m => m.CarddetailviewPageModule)},

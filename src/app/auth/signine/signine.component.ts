@@ -59,6 +59,8 @@ export class SignineComponent implements OnInit {
     this.showpassword = !this.showpassword;
   }
 
-
+  comingSoon() {
+    this.storageService.presentToast('Comming Soon...');
+  }
 
 }
