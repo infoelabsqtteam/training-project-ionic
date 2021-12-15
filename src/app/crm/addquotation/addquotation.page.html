@@ -7,22 +7,18 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-tabs class="innerpagetabs">
-  <ion-tab-bar slot="top">
-      <ion-tab-button routerLink="/crm/contact"><ion-label>Contact</ion-label> </ion-tab-button>
-      <ion-tab-button routerLink="/crm/enquiry"><ion-label>Enquiry Master</ion-label></ion-tab-button>
-      <ion-tab-button routerLink="/crm/quotation" class="activetab"><ion-label>Quotation</ion-label></ion-tab-button>
-  </ion-tab-bar>
-</ion-tabs>
+<div class="menutab">
+  <ion-tab-button routerLink="/crm/addcontact"><ion-label>New Contact</ion-label> </ion-tab-button>
+  <ion-tab-button routerLink="/crm/add-enquiry"><ion-label>New Enquiry</ion-label></ion-tab-button>
+  <ion-tab-button routerLink="/crm/addquotation" class="active"><ion-label>New Quotation</ion-label></ion-tab-button>
+</div>
 
-<ion-content class="pages quotation">
-
-
+<ion-content class="pages">
   <div class="addnewform">
     <form>
       <ion-item>
         <ion-label position="floating">Enquiry No.</ion-label>
-        <ion-input autocomplete="off"></ion-input>
+        <ion-input></ion-input>
       </ion-item>
       <h6>Product & Test details</h6>
       <ion-item>
@@ -37,8 +33,6 @@
         <ion-label position="floating">Reference Test Standard</ion-label>
         <ion-input></ion-input>
       </ion-item>
-
-
       <ion-item class="selectvalue">
         <ion-select value="brown" okText="Okay" cancelText="Dismiss">
           <ion-select-option value="brown">Brown</ion-select-option>
@@ -47,26 +41,6 @@
           <ion-select-option value="red">Red</ion-select-option>
         </ion-select>
       </ion-item>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       <ion-item>
         <ion-label position="floating">Pin Code</ion-label>
         <ion-input type="number"></ion-input>

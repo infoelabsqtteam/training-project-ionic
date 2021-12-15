@@ -1,0 +1,9 @@
+<svg id="Component_101_1" data-name="Component 101 – 1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <g id="Group_8108" data-name="Group 8108">
+    <g id="file-Bold">
+      <rect id="Path" width="24" height="24" fill="rgba(255,255,255,0)"/>
+      <path id="file-Bold_1_" d="M510.414,1969,506,1964.586a1.986,1.986,0,0,0-1.414-.586H500a5.006,5.006,0,0,0-5,5v10a5.006,5.006,0,0,0,5,5h6a5.006,5.006,0,0,0,5-5v-8.586A2.011,2.011,0,0,0,510.414,1969ZM506,1967.414l1.586,1.586H507.5a1.5,1.5,0,0,1-1.5-1.5ZM506,1982h-6a3,3,0,0,1-3-3v-10a3,3,0,0,1,3-3h4v1.5a3.5,3.5,0,0,0,3.5,3.5H509v8A3,3,0,0,1,506,1982Z" transform="translate(-491 -1962)" fill="#3a3a3a"/>
+    </g>
+    <text id="PDF" transform="translate(8 14)" fill="#3a3a3a" font-size="4" font-family="SourceSansPro-Bold, Source Sans Pro" font-weight="700"><tspan x="0" y="0">PDF</tspan></text>
+  </g>
+</svg>
