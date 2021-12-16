@@ -23,7 +23,8 @@
                 </ion-item>
                 <div *ngIf="f.password.invalid && (f.password.dirty || f.password.touched)" class="alert"><div *ngIf="f.password.errors.required" class="warning">Password Id is required.</div></div>
             </div>
-            <div class="formgroup ion-text-end"><ion-text class="forgetpassword" [routerLink]="['/auth/forgetpassword']">Forgot Password?</ion-text></div>
+            <!-- <div class="formgroup ion-text-end"><ion-text class="forgetpassword" [routerLink]="['/auth/forgetpassword']" >Forgot Password?</ion-text></div> -->
+            <div class="formgroup ion-text-end"><ion-text class="forgetpassword" (click)="comingSoon()">Forgot Password?</ion-text></div>
             <div class="formgroup"><ion-button type="submit" [disabled]="checkValidate()" expand="full">Login <ion-icon name="arrow-forward"></ion-icon></ion-button></div>
             <div class="formgroup ion-text-center"><ion-text class="signup" [routerLink]="['/auth/signupe']">Don't have an account ? <strong>Sign-up</strong></ion-text></div>
             <div class="signinwith ion-padding-vertical"><span><i>Or sign-in with</i></span></div>

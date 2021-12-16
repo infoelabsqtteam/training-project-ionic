@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { StorageService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-tabs',
@@ -7,9 +8,13 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TabsPage implements OnInit {
 
-  constructor() { }
+  constructor(
+    private storageService:StorageService,) { }
 
   ngOnInit() {
   }
 
+  comingSoon() {
+    this.storageService.presentToast('Comming Soon...');
+  }
 }

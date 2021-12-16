@@ -81,7 +81,7 @@ export class AppComponent implements OnInit, OnDestroy {
     } else if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
     //   this.commonFunction();
     //  this.cardTypeFunction();
-      this.router.navigateByUrl('/home4');
+     this.router.navigateByUrl('/home');
       
     } else {
       if(appConstants.loginWithMobile){
@@ -91,7 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       
     }
-    this.authService.getUserPermission(false,'/home4');
+    this.authService.getUserPermission(false,'/home');
 
     this.authService._user_info.subscribe(resp => {
       this.userInfo = resp;
@@ -197,11 +197,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
   showCardTemplate(card:any, index:number){
     this.selectedIndex = index;
-    this.router.navigate(['cardview']);
+    this.router.navigate(['crm/quotation']);
     this.dataShareService.setcardData(card);
   }
 
   setData(){    
+  }
+
+  comingSoon() {
+    this.storageService.presentToast('Comming Soon...');
   }
 
 }
