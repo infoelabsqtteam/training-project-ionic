@@ -44,9 +44,9 @@ ion-toolbar.grey-toolbar {--background-color: #EFF1F3;}
 
 // Home page Category List
 .catlist {background:#fff;padding:10px;border-radius:20px 20px 0 0;height:calc(100% -50px);min-height:50%;
-    ul {margin:0;padding:0;list-style:none;text-align:center;
-        li {display:inline-block;margin:10px 7px;cursor: pointer;
-            .caticon {background:#8FBFE34D;border-radius:5px;width:55px;height:55px;line-height:55px;margin:auto;}
+    ul {margin:0;padding:0;list-style:none;text-align:start;
+        li {display:inline-block;margin:10px 7px;cursor: pointer;text-align:center;
+            .caticon {background:#8FBFE34D;border-radius:5px;width:55px;height:55px;line-height:55px;margin:auto;text-align: center;}
             img {vertical-align:middle;max-width:40px;}
             span {color:#3A3A3A;font-size:11px;}
         }
