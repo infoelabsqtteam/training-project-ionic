@@ -1,11 +1,15 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start"><ion-back-button defaultHref="/crm/quotation"></ion-back-button></ion-buttons>
-    <ion-title class="ion-no-padding ion-text-capitalize">{{childDataTitle}}</ion-title>
+    <!-- <ion-title class="ion-no-padding ion-text-capitalize">{{childDataTitle}}</ion-title> -->
+    <ion-buttons slot="end" (click)="downloadPDF()"><ion-icon name="download-outline"></ion-icon></ion-buttons>
+    
     <!-- <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
     <ion-buttons slot="end" class="ion-padding-start"><ion-icon name="notifications-outline"></ion-icon></ion-buttons> -->
   </ion-toolbar>
 </ion-header>
+
+
 
 <!-- <div class="menutab">
     <ion-tab-button routerLink="/crm/contact"><ion-label>Contact</ion-label> </ion-tab-button>
@@ -35,6 +39,7 @@
     <p class="enquerylist"><span>Upload Files</span><strong><img src="assets/img/icons/pdf.svg"> Urea.pdf</strong></p>-->
     <!-- <p class="enquerylist"><span>Status</span><strong><a href="#">Move To Quotations</a></strong></p>  -->
   </div>
+  
 
   <!-- <ion-row *ngIf="cardType == 'detail1'" >
     <ion-col size="12">

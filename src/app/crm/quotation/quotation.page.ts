@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Injectable } from '@angular/core';
 import { DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common';
 import { AuthService, EnvService, StorageService, LoaderService } from '@core/ionic-core';
 import { Platform, ModalController , PopoverController, IonInfiniteScroll} from '@ionic/angular';
@@ -10,13 +10,17 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
+// calling
+import { CallNumber } from '@ionic-native/call-number/ngx';
 
 @Component({
   selector: 'app-quotation',
   templateUrl: './quotation.page.html',
   styleUrls: ['./quotation.page.scss'],
 })
+
 export class QuotationPage implements OnInit {
+  //sampledata
   quotationdata = [
     {'quotation': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'qtnno': 'QTN No : QL/2021-2022/11/KS/Quote-00009/R0', 'quotate': 'NOV 27', 'price': '7000', 'simpleno': 'No. Of Sample - 2'}]
   
@@ -54,6 +58,9 @@ export class QuotationPage implements OnInit {
   createFormgroup: boolean = true;
   openFilter: boolean = false;
 
+  // loadmore variables
+  private toplimit: number = 15;
+
 
   slideOptions = {
     slidesPerView:1.2,
@@ -81,7 +88,9 @@ export class QuotationPage implements OnInit {
     private dataShareService:DataShareServiceService,
     private loaderService: LoaderService,
     private CurrencyPipe: CurrencyPipe,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    //private infiniteScroll: IonInfiniteScroll
+    private callNumber: CallNumber
   ) 
   {
     // below code is for slider and title name
@@ -136,6 +145,7 @@ export class QuotationPage implements OnInit {
       }
       this.collectionname = this.cardDataMasterSubscription.collection_name;
       this.getcardData(this.collectionname);
+      // this.loadData(this.cardDataMasterSubscription);
 
     });  
 
@@ -346,6 +356,7 @@ export class QuotationPage implements OnInit {
     return validator;
   }
   
+  testload: any = [];
   getcardData(collection_name:any){
     this.storageService.getObject('authData').then(async (val) => {
       if (val && val.idToken != null) {
@@ -368,6 +379,8 @@ export class QuotationPage implements OnInit {
           respData => {
             // this.loaderService.hideLoader();
             this.carddata = respData['data'];
+            // this.testload = this.carddata.slice(0, this.toplimit)
+            // this.loadData(this.carddata);
           },
           (err: HttpErrorResponse) => {
             // this.loaderService.hideLoader();
@@ -541,6 +554,28 @@ export class QuotationPage implements OnInit {
   
   comingSoon() {
     this.storageService.presentToast('Comming Soon...');
+  }
+
+  loadData(event) {
+    setTimeout(() => {
+      // this.toplimit += 10;
+      // this.carddata = respData['data'].slice(0, this.toplimit);
+      // console.log('Done');
+      for (let i = 0; i < 25; i++) { 
+        this.carddata.push("Item number " + this.carddata.length);
+      }
+      event.target.complete();
+      
+      if (this.carddata.length == 50) {
+        event.target.disabled = true;
+      }
+    }, 500);
+  }
+
+  call() {
+    this.callNumber.callNumber("9716606378", true)
+      .then(res => alert('Launched dialer!' + res))
+      .catch(err => alert('Error launching dialer ' + err));
   }
 
 
