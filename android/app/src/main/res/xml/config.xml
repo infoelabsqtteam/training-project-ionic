@@ -6,8 +6,16 @@
     <param name="android-package" value="mx.ferreyra.callnumber.CFCallNumber"/>
   </feature>
 
+  <feature name="PDFService">
+    <param name="android-package" value="com.pdf.generator.PDFGenerator"/>
+  </feature>
+
   <feature name="Camera">
     <param name="android-package" value="org.apache.cordova.camera.CameraLauncher"/>
+  </feature>
+
+  <feature name="SitewaertsDocumentViewer">
+    <param name="android-package" value="de.sitewaerts.cordova.documentviewer.DocumentViewerPlugin"/>
   </feature>
 
   <feature name="File">
@@ -25,6 +33,36 @@
 
   <feature name="Capture">
     <param name="android-package" value="org.apache.cordova.mediacapture.Capture"/>
+  </feature>
+
+  <feature name="NetworkStatus">
+    <param name="android-package" value="org.apache.cordova.networkinformation.NetworkManager"/>
+  </feature>
+
+  <feature name="Downloader">
+    <param name="android-package" value="hr.integrator.cordova.plugins.downloader.Downloader"/>
+  </feature>
+
+  <feature name="Permissions">
+    <param name="android-package" value="com.android.plugins.Permissions"/>
+  </feature>
+
+  <feature name="Device">
+    <param name="android-package" value="org.apache.cordova.device.Device"/>
+  </feature>
+
+  <feature name="FileTransfer">
+    <param name="android-package" value="org.apache.cordova.filetransfer.FileTransfer"/>
+  </feature>
+
+  <feature name="StatusBar">
+    <param name="android-package" value="org.apache.cordova.statusbar.StatusBar"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="Whitelist">
+    <param name="android-package" value="org.apache.cordova.whitelist.WhitelistPlugin"/>
+    <param name="onload" value="true"/>
   </feature>
 
   

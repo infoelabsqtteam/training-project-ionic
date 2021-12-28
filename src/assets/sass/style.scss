@@ -86,7 +86,8 @@ ion-tabs.footertab {
 
 // Contact Listing
 .contactlist {background:none;margin:10px;
-    ion-item {border-radius:20px;--border-color:#fff;margin-bottom:5px;}
+    ion-item {border-radius:20px;--border-color:#fff;margin-bottom:5px;margin-top: 0;}
+    // ion-row{width: 100%;}
     ion-avatar {width:48px;height:48px;margin:10px 15px 10px 0;color:#fff;line-height:48px;text-align:center;background:#7d7d7d;}
     h4 {font-size:16px;color:#113970;}
     h5 {margin:0;color:#292a2c;font-size:16px;}
@@ -94,6 +95,11 @@ ion-tabs.footertab {
     ion-item-options {height:calc(100% - 7px);}
     ion-item-option {background:#0851b5;line-height:66px;border-radius:20px;color:#fff;width:50px;}
     a {display:inline-block;color:#E23339;border-radius:4px;border:1px solid;width:78px;height:22px;line-height:22px;text-align:center;font-size:11px;}
+    p{margin:0;margin-bottom:5px;}
+    .contact_person_name{margin: 0;color: #292a2c;font-size: 16px;margin-bottom:5px}
+    .contact_company_name{color: #313131;font-size: 10px;text-transform: capitalize;margin-bottom:5px}
+    .contact_serial_id{color: #313131;font-size: 10px;text-align: end;margin-bottom:5px}
+    .contact_person_mobile{color: #313131;font-size: 10px;text-align: end;margin-bottom:5px}
 }
 .addmore {position:fixed;right:20px;bottom:30px;z-index:9;background:#0851b5;color:#fff;width:48px;height:48px;border-radius:100%;text-align:center;line-height:55px;font-size:25px;}
 
