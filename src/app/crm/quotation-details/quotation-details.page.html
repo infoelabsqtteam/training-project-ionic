@@ -8,6 +8,8 @@
   </ion-toolbar>
 </ion-header>
 
+
+
 <!-- <div class="menutab">
     <ion-tab-button routerLink="/crm/contact"><ion-label>Contact</ion-label> </ion-tab-button>
     <ion-tab-button routerLink="/crm/enquiry"><ion-label>Enquiry Master</ion-label></ion-tab-button>
@@ -20,7 +22,7 @@
     <p class="enquerylist" *ngFor="let column of childColumns; index as j">
       <span [ngClass]="column.class_name ? column.class_name  : ''">{{column.field_label}}</span>
 
-      <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,childData)">11-Nov-2021</strong>
+      <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,childData)"></strong>
       <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,childData)"></ion-button>
     </p>
     <!-- <p class="enquerylist"><span>Time</span><strong>08:00:00</strong></p>
@@ -36,6 +38,7 @@
     <p class="enquerylist"><span>Upload Files</span><strong><img src="assets/img/icons/pdf.svg"> Urea.pdf</strong></p>-->
     <!-- <p class="enquerylist"><span>Status</span><strong><a href="#">Move To Quotations</a></strong></p>  -->
   </div>
+  
 
   <!-- <ion-row *ngIf="cardType == 'detail1'" >
     <ion-col size="12">

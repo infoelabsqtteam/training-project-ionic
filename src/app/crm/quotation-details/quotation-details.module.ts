@@ -8,6 +8,7 @@ import { QuotationDetailsPageRoutingModule } from './quotation-details-routing.m
 
 import { QuotationDetailsPage } from './quotation-details.page';
 
+
 @NgModule({
   imports: [
     CommonModule,

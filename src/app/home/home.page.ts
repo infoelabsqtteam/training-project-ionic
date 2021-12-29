@@ -55,7 +55,11 @@ export class HomePage implements OnInit {
 
 
   @Output() collection_name = new EventEmitter<string>();
+  plt: any;
+  pdfObj: any;
 
+
+  // download var
 
   constructor(
     private platform: Platform,

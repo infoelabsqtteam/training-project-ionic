@@ -10,9 +10,6 @@ import { AuthService, CoreUtilityService, StorageService, StorageTokenStatus, Pe
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 
-// import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-// import { LottieSplashScreen } from '@awesome-cordova-plugins/lottie-splash-screen';
-
  
 @Component({ 
   selector: 'app-root',
@@ -117,8 +114,8 @@ export class AppComponent implements OnInit, OnDestroy {
     //this.commonFunctionService.getCurrentAddress();
   }
   onLogout() {
-    this.authService.logout('/auth/signine');
     this.userInfo = '';
+    this.authService.logout('/auth/signine');
   }
 
   ngOnDestroy() {

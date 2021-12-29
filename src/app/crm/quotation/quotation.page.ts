@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Injectable } from '@angular/core';
 import { DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common';
 import { AuthService, EnvService, StorageService, LoaderService } from '@core/ionic-core';
 import { Platform, ModalController , PopoverController, IonInfiniteScroll} from '@ionic/angular';
@@ -17,7 +17,9 @@ import { CallNumber } from '@ionic-native/call-number/ngx';
   templateUrl: './quotation.page.html',
   styleUrls: ['./quotation.page.scss'],
 })
+
 export class QuotationPage implements OnInit {
+  //sampledata
   quotationdata = [
     {'quotation': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'qtnno': 'QTN No : QL/2021-2022/11/KS/Quote-00009/R0', 'quotate': 'NOV 27', 'price': '7000', 'simpleno': 'No. Of Sample - 2'}]
   
@@ -140,6 +142,7 @@ export class QuotationPage implements OnInit {
       }
       this.collectionname = this.cardDataMasterSubscription.collection_name;
       this.getcardData(this.collectionname);
+      // this.loadData(this.cardDataMasterSubscription);
 
     });  
 
@@ -352,6 +355,7 @@ export class QuotationPage implements OnInit {
     return validator;
   }
   
+  testload: any = [];
   getcardData(collection_name:any){
     this.storageService.getObject('authData').then(async (val) => {
       if (val && val.idToken != null) {
@@ -374,7 +378,6 @@ export class QuotationPage implements OnInit {
           respData => {
             this.loaderService.hideLoader();
             this.carddata = respData['data'];
-            console.log(this.carddata);
           },
           (err: HttpErrorResponse) => {
             this.loaderService.hideLoader();
@@ -571,8 +574,6 @@ export class QuotationPage implements OnInit {
       }
     }, 500);
   }
-
-  
 
 
 }
