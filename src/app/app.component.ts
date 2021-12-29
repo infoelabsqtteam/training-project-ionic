@@ -10,6 +10,9 @@ import { AuthService, CoreUtilityService, StorageService, StorageTokenStatus, Pe
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 
+// import { SplashScreen } from '@ionic-native/splash-screen/ngx';
+// import { LottieSplashScreen } from '@awesome-cordova-plugins/lottie-splash-screen';
+
  
 @Component({ 
   selector: 'app-root',
@@ -60,9 +63,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
   initializeApp() {
     this.platform.ready().then(() => {
+
       if (Capacitor.isPluginAvailable('SplashScreen')) {
-        SplashScreen.hide();
+        // SplashScreen.hide();
+        setTimeout(() => {
+          SplashScreen.hide();
+        }),3000;
       }
+
+      
 
       //this.statusBar.overlaysWebView(true);
       this.statusBar.backgroundColorByHexString('#e30010');
@@ -97,7 +106,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.userInfo = resp;
 
       this.commonFunction();
-      this.cardTypeFunction();
+      // this.cardTypeFunction();
     })
 
      
@@ -109,6 +118,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
   onLogout() {
     this.authService.logout('/auth/signine');
+    this.userInfo = '';
   }
 
   ngOnDestroy() {
@@ -157,41 +167,40 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   //for getting card type master data
-  cardTypeFunction() {
-    this.storageService.getObject('authData').then(async (val) => {
-      if (val && val.idToken != null) {
-        var header = {
-          headers: new HttpHeaders()
-            .set('Authorization', 'Bearer ' + val.idToken)
-        }
-        // this.loaderService.showLoader(null);
-        let obj = {
-          crList: [],
-          key1: "MCLR01",
-          key2: "CRM",
-          log: await this.storageService.getUserLog(),
-          pageNo: 0,
-          pageSize: 50,
-          value: "card_type_master"
-        }
-        let api = this.envService.baseUrl('GET_GRID_DATA')
-        this.http.post(api + '/' + 'null', obj, header).subscribe(
-          respData => {
-            // this.loaderService.hideLoader();
-            this.cardTypeList = respData['data'];
-            // console.log(this.cardTypeList);
-          },
-          (err: HttpErrorResponse) => {
-            // this.loaderService.hideLoader();
-            console.log(err.error);
-            // console.log(err.name);
-            // console.log(err.message);
-            // console.log(err.status);
-          }
-        )
-      }
-    })
-  }
+  // cardTypeFunction() {
+  //   this.storageService.getObject('authData').then(async (val) => {
+  //     if (val && val.idToken != null) {
+  //       var header = {
+  //         headers: new HttpHeaders()
+  //           .set('Authorization', 'Bearer ' + val.idToken)
+  //       }
+  //       this.loaderService.showLoader(null);
+  //       let obj = {
+  //         crList: [],
+  //         key1: "MCLR01",
+  //         key2: "CRM",
+  //         log: await this.storageService.getUserLog(),
+  //         pageNo: 0,
+  //         pageSize: 50,
+  //         value: "card_type_master"
+  //       }
+  //       let api = this.envService.baseUrl('GET_GRID_DATA')
+  //       this.http.post(api + '/' + 'null', obj, header).subscribe(
+  //         respData => {
+  //           this.loaderService.hideLoader();
+  //           this.cardTypeList = respData['data'];
+  //         },
+  //         (err: HttpErrorResponse) => {
+  //           this.loaderService.hideLoader();
+  //           console.log(err.error);
+  //           // console.log(err.name);
+  //           // console.log(err.message);
+  //           // console.log(err.status);
+  //         }
+  //       )
+  //     }
+  //   })
+  // }
 
   
 

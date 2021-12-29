@@ -37,7 +37,7 @@ import { IonicCoreModule } from '@core/ionic-core';
     HttpClientModule, 
     IonicModule.forRoot(), 
     IonicCoreModule.forRoot(environment),
-    AppRoutingModule, 
+    AppRoutingModule,
     ServiceWorkerModule.register('ngsw-worker.js', 
     { enabled: environment.production })
   ],

@@ -11,10 +11,17 @@ import { Subscription } from 'rxjs';
 import * as appConstants from '../../app//shared/app.constants';
 import { ProductSearchComponent } from '../component/product-search/product-search.component';
 
+import { DocumentViewer, DocumentViewerOptions } from '@ionic-native/document-viewer/ngx';
+import { File } from '@ionic-native/file/ngx';
+import { FileTransfer } from '@ionic-native/file-transfer/ngx';
+// import { FileOpener } from '@ionic-native/file-opener/ngx';
+// import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
+  providers: [DocumentViewer, File, FileTransfer],
 })
 export class HomePage implements OnInit {
   modal: any;
@@ -63,7 +70,11 @@ export class HomePage implements OnInit {
     private loaderService: LoaderService,
     private envService: EnvService,
     private permissionService: PermissionService,
-    private dataShareService: DataShareServiceService
+    private dataShareService: DataShareServiceService,    
+    // private fileOpener: FileOpener,
+    private documentViewer: DocumentViewer,
+    private file: File,
+    private fileTransfer: FileTransfer
   ) 
   {
     // below code is for slider and title name
@@ -316,5 +327,79 @@ export class HomePage implements OnInit {
   comingSoon() {
     this.storageService.presentToast('Comming Soon...');
   }
+
+  pdfurl = "https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf";
+ 
+  downloadPDF(){
+    const options: DocumentViewerOptions = {
+      title: 'My PDF'
+    }
+    this.documentViewer.viewDocument('https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf', 'application/pdf', options);
+    console.log(this.pdfurl);
+  }
+
+  // openPDF(){
+  //   const options: DocumentViewerOptions = {
+  //     title: 'My PDF'
+  //   }
+  //   this.documentViewer.viewDocument('https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf', 'application/pdf', options)
+  // }
+  
+  // downloadAndopenPDF(){
+  //   let path = null;
+
+  //   if(this.platform.is('ios')){
+  //     path = this.file.documentsDirectory;
+  //   }else{
+  //     path = this.file.dataDirectory;
+  //   }
+
+  //   const fileTransfer = this.fileTransfer.create();
+  //   fileTransfer.download('https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf', path + 'myfile.pdf').then(entry => {
+  //   let url = entry.toURL();
+  //   this.documentViewer.viewDocument(url, 'application/pdf', {});
+
+  //   })
+
+  // }
+
+  
+
+  // const writeSecretFile = async () => {
+  //   await Filesystem.writeFile({
+  //     path: 'secrets/text.txt',
+  //     data: "This is a test",
+  //     directory: Directory.Documents,
+  //     encoding: Encoding.UTF8,
+  //   });
+  // };
+  
+  // const readSecretFile = async () => {
+  //   const contents = await Filesystem.readFile({
+  //     path: 'secrets/text.txt',
+  //     directory: Directory.Documents,
+  //     encoding: Encoding.UTF8,
+  //   });
+  
+  //   console.log('secrets:', contents);
+  // };
+  
+  // const deleteSecretFile = async () => {
+  //   await Filesystem.deleteFile({
+  //     path: 'secrets/text.txt',
+  //     directory: Directory.Documents,
+  //   });
+  // };
+  
+  // const readFilePath = async () => {
+  //   // Here's an example of reading a file with a full file path. Use this to
+  //   // read binary data (base64 encoded) from plugins that return File URIs, such as
+  //   // the Camera.
+  //   const contents = await Filesystem.readFile({
+  //     path: 'file:///var/mobile/Containers/Data/Application/22A433FD-D82D-4989-8BE6-9FC49DEA20BB/Documents/text.txt'
+  //   });
+  
+  //   console.log('data:', contents);
+  // };
 
 }

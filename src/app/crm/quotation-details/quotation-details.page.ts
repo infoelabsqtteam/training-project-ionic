@@ -7,6 +7,8 @@ import { ModalController } from '@ionic/angular';
 import { filter } from 'rxjs';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
+// import { DocumentViewer, DocumentViewerOptions } from '@ionic-native/document-viewer/ngx';
+
 @Component({
   selector: 'app-quotation-details',
   templateUrl: './quotation-details.page.html',
@@ -37,7 +39,8 @@ export class QuotationDetailsPage implements OnInit {
     private http: HttpClient,
     private storageService: StorageService,
     private router: Router,
-    private currencyPipe: CurrencyPipe
+    private currencyPipe: CurrencyPipe,
+    // private documentViewer: DocumentViewer
   ) { 
     
   }
@@ -134,6 +137,16 @@ export class QuotationDetailsPage implements OnInit {
     }
     return "";
   }
+
+  // pdfurl = "https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf";
+ 
+  // downloadPDF(){
+  //   const options: DocumentViewerOptions = {
+  //     title: 'My PDF'
+  //   }
+  //   this.documentViewer.viewDocument('https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf', 'application/pdf', options);
+  //   console.log(this.pdfurl);
+  // }
 
 
 }

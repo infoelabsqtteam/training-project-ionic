@@ -16,6 +16,17 @@
     <!-- <canvas #barCanvas></canvas> -->
 
     <div class="catlist">
+        
+        <ion-buttons >
+            <!-- <ion-button (click)="downloadPDF()"><ion-icon name="download-outline" ></ion-icon>Download</ion-button> -->
+
+            <!-- <ion-button (click)="openPDF()"><ion-icon name="download-outline" ></ion-icon>Open</ion-button> -->
+
+            <!-- <ion-button (click)="downloadAndopenPDF()"><ion-icon name="download-outline" ></ion-icon>D&O PDF</ion-button> -->
+        </ion-buttons>
+
+        <!-- <a href="#" download="https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf" class="btn button">Download</a> -->
+
         <ul>
             <li *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
               <div class="caticon">

@@ -10,6 +10,7 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
+import { CallNumber } from '@ionic-native/call-number/ngx';
 
 @Component({
   selector: 'app-quotation',
@@ -54,6 +55,8 @@ export class QuotationPage implements OnInit {
   createFormgroup: boolean = true;
   openFilter: boolean = false;
 
+  // loadmore variables
+  private toplimit: number = 15;
 
   slideOptions = {
     slidesPerView:1.2,
@@ -81,7 +84,8 @@ export class QuotationPage implements OnInit {
     private dataShareService:DataShareServiceService,
     private loaderService: LoaderService,
     private CurrencyPipe: CurrencyPipe,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private callNumber: CallNumber
   ) 
   {
     // below code is for slider and title name
@@ -152,6 +156,8 @@ export class QuotationPage implements OnInit {
   }
   closefilterCard(){
     this.openFilter = false;
+  }
+  clearfilterCard(){
     this.filterForm.reset();
     this.getcardData(this.collectionname);
   }
@@ -353,7 +359,7 @@ export class QuotationPage implements OnInit {
           headers: new HttpHeaders()
             .set('Authorization', 'Bearer ' + val.idToken)
         }
-          // this.loaderService.showLoader(null);
+           this.loaderService.showLoader(null);
         let obj = {
           crList: this.getfilterCrlist(this.columnList, this.filterForm),
           key1: "MCLR01",
@@ -366,11 +372,12 @@ export class QuotationPage implements OnInit {
         let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
-            // this.loaderService.hideLoader();
+            this.loaderService.hideLoader();
             this.carddata = respData['data'];
+            console.log(this.carddata);
           },
           (err: HttpErrorResponse) => {
-            // this.loaderService.hideLoader();
+            this.loaderService.hideLoader();
             console.log(err.error);
           }
         )
@@ -542,6 +549,30 @@ export class QuotationPage implements OnInit {
   comingSoon() {
     this.storageService.presentToast('Comming Soon...');
   }
+
+  call(card,[i]) {
+    this.callNumber.callNumber(card.mobile, true)
+      .then(res => console.log('Launched dialer!' + res))
+      .catch(err => console.log('Error launching dialer ' + err));
+  }
+
+  loadData(event) {
+    setTimeout(() => {
+      // this.toplimit += 10;
+      // this.carddata = respData['data'].slice(0, this.toplimit);
+      // console.log('Done');
+      for (let i = 0; i < 25; i++) { 
+        this.carddata.push("Item number " + this.carddata.length);
+      }
+      event.target.complete();
+      
+      if (this.carddata.length == 50) {
+        event.target.disabled = true;
+      }
+    }, 500);
+  }
+
+  
 
 
 }
