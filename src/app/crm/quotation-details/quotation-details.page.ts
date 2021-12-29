@@ -1,10 +1,11 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Component, Input, OnInit } from '@angular/core';
+import { NavigationEnd, Router, RouterEvent } from '@angular/router';
+import { EnvService, LoaderService, StorageService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
+import { filter } from 'rxjs';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
-
-import { PDFGenerator, PDFGeneratorOptions } from '@awesome-cordova-plugins/pdf-generator/ngx';
-
 
 @Component({
   selector: 'app-quotation-details',
@@ -27,26 +28,19 @@ export class QuotationDetailsPage implements OnInit {
   childCardData: any;
   childDataTitle: any;
 
-  // pdf variables
-  downloadUrl = '';
-  myFiles = [];
-  downloadProgress = 0;
-  pdfurl = "https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf";
   
   constructor(
     private modalController: ModalController,
     private datePipe: DatePipe,
     private dataShareService:DataShareServiceService,
-    private currencyPipe: CurrencyPipe,
-    private pdfGenerator: PDFGenerator
-    
-    
+    private envService: EnvService,
+    private http: HttpClient,
+    private storageService: StorageService,
+    private router: Router,
+    private currencyPipe: CurrencyPipe
   ) { 
-    this.loadFiles();
+    
   }
- async loadFiles() {
-   
- }
 
   ngOnInit() {
     this.childData = this.dataShareService.getchildCardData();
@@ -139,17 +133,6 @@ export class QuotationDetailsPage implements OnInit {
       return result;
     }
     return "";
-  }
-
-  downloadPDF(){
-    const options: PDFGeneratorOptions = {
-      fileName: 'My PDF'
-    }
-    this.pdfGenerator.fromURL('https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf', options).then(base64String => console.log(base64String));
-
-
-
-    // console.log("Creatre Pdf");
   }
 
 

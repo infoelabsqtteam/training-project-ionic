@@ -15,32 +15,23 @@
 
 <ion-content class="pages quotation">
 
-  <ion-row>
-    <ion-col class="ion-no-padding">
-      <ion-item>
-        <ion-label (click)="openFilter=!openFilter" class="cursor_pointer">Filter
-          <ion-icon name="chevron-down-outline" class="ion-float-end"></ion-icon>
-        </ion-label>		
-      </ion-item>
-    </ion-col>
-  </ion-row>
+  <div class="filter">
+    <ion-label (click)="openFilter=!openFilter"><ion-icon name="funnel"></ion-icon> Filter</ion-label>
+  </div>
 
-  <div id="ion_accordian" class="ion_accordian ion-no-padding" *ngIf="openFilter">
+  <div id="ion_accordian" class="ion_accordian ion-no-padding filterdata" *ngIf="openFilter">
     <div [formGroup]="filterForm" >
       <div class="search_div ion-padding">
         <div *ngFor="let column of columnList; index as j" style="position: relative;">
-          <div  *ngIf="column.type == 'text'" [ngClass]="column.filter?'ion-show':'ion-hide'" >
-          <input type="checkbox" checked>
-          <i></i>
-          <h2>{{column.field_label}}</h2>
-          <div class="input_div">
-            <ion-input [formControlName]="column.field_name" clearInput placeholder="Search Here"></ion-input>
-          </div>
+          <div class="filteritem" *ngIf="column.type == 'text'" [ngClass]="column.filter?'ion-show':'ion-hide'" >
+                <input type="checkbox" checked disabled>
+                <ion-input class="ion-text-capitalize" [formControlName]="column.field_name" clearInput [placeholder]="column.field_label"></ion-input>
           </div>
         </div>
         <ion-buttons class="ion-padding-vertical ion-justify-content-around">
-          <ion-button fill="outline" size="" color="tertiary" shape="round" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
-          <ion-button type="submit" fill="outline" size="" color="tertiary" shape="round" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
+          <ion-button fill="outline" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
+          <ion-button fill="outline" class="ion-text-capitalize" (click)="clearfilterCard()">Clear</ion-button>
+          <ion-button type="submit" fill="outline" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
         </ion-buttons>
       </div>
     </div>    
@@ -95,7 +86,7 @@
         </ion-item>
     </ion-item-sliding>
   </ion-list>
-
+  
   <ion-list class="contactlist" *ngIf="cardType == 'invoice'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="quotationlist">
@@ -127,7 +118,7 @@
             </ion-col>
           </ion-row>
         </ion-item>
-        <ion-item-options side="end" (click)="call()"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
+        <ion-item-options side="end" (click)="call(card,[i])"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
     </ion-item-sliding>
   </ion-list>
 
@@ -135,6 +126,6 @@
     <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more data...">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
-
+  
   <!-- <div class="addmore" routerLink="../addquotation"><ion-icon name="add-outline"></ion-icon> ADD</div> -->
 </ion-content>

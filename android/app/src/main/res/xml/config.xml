@@ -6,10 +6,6 @@
     <param name="android-package" value="mx.ferreyra.callnumber.CFCallNumber"/>
   </feature>
 
-  <feature name="PDFService">
-    <param name="android-package" value="com.pdf.generator.PDFGenerator"/>
-  </feature>
-
   <feature name="Camera">
     <param name="android-package" value="org.apache.cordova.camera.CameraLauncher"/>
   </feature>
@@ -27,6 +23,10 @@
     <param name="android-package" value="io.github.pwlin.cordova.plugins.fileopener2.FileOpener2"/>
   </feature>
 
+  <feature name="FileTransfer">
+    <param name="android-package" value="org.apache.cordova.filetransfer.FileTransfer"/>
+  </feature>
+
   <feature name="Media">
     <param name="android-package" value="org.apache.cordova.media.AudioHandler"/>
   </feature>
@@ -35,24 +35,8 @@
     <param name="android-package" value="org.apache.cordova.mediacapture.Capture"/>
   </feature>
 
-  <feature name="NetworkStatus">
-    <param name="android-package" value="org.apache.cordova.networkinformation.NetworkManager"/>
-  </feature>
-
-  <feature name="Downloader">
-    <param name="android-package" value="hr.integrator.cordova.plugins.downloader.Downloader"/>
-  </feature>
-
-  <feature name="Permissions">
-    <param name="android-package" value="com.android.plugins.Permissions"/>
-  </feature>
-
   <feature name="Device">
     <param name="android-package" value="org.apache.cordova.device.Device"/>
-  </feature>
-
-  <feature name="FileTransfer">
-    <param name="android-package" value="org.apache.cordova.filetransfer.FileTransfer"/>
   </feature>
 
   <feature name="StatusBar">

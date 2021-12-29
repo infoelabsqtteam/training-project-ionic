@@ -1,11 +1,14 @@
 <ion-app>
-    <ion-menu side="start" id="main">
+    <ion-menu side="start" id="main" *ngIf="userInfo">
         <ion-content class="sidenav">
           <div class="sidebarheader">
                 <ion-menu-toggle><ion-button (click)="onLogout()"><ion-icon name="power-outline"></ion-icon></ion-button></ion-menu-toggle>
                 <div class="headerprofile">
                     <ion-avatar><img src="https://ionicframework.com/docs/demos/api/avatar/avatar.svg"/></ion-avatar>
-                    <ion-title class="ion-text-uppercase">Elabs</ion-title>
+                    <ion-title class="ion-text-uppercase">
+                        <p style="margin:0;"> {{userInfo.name}}</p>
+                       <small> {{userInfo.email}}</small>
+                    </ion-title>
                 </div>
             </div>
             <ion-list class="menulist">
@@ -27,12 +30,12 @@
                     </ion-item>
                 </ion-menu-toggle>
 
-                <ion-menu-toggle>
+                <!-- <ion-menu-toggle>
                     <ion-item lines="none" [routerLink]="['charts']">
                         <ion-icon name="bar-chart-outline"></ion-icon>
                         <ion-label class="ion-margin-start">Charts</ion-label>
                     </ion-item>
-                </ion-menu-toggle>
+                </ion-menu-toggle> -->
                 
             </ion-list>
 

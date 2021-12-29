@@ -68,6 +68,19 @@ ion-toolbar.grey-toolbar {--background-color: #EFF1F3;}
 }
 .home_icon_label {color:#3A3A3A;font-size:11px;}
 
+.filter {display:flex;justify-content:end;
+    ion-label {margin:10px 10px 0;border:1px solid #3A3A3A;border-radius:4px;font-size:11px;padding:2px 8px;display:flex;align-items:center;color:#3A3A3A;width:65px;background-color:#fff;}
+    ion-icon {margin-right:5px;}
+}
+
+.filterdata {
+    .search_div{position:absolute;overflow:hidden;background:#fff;z-index:99;right:0px;margin:10px;border-radius:5px;width:210px;box-shadow:0 0 25px #ccc;}
+        .filteritem {display:flex;align-items:center;}
+        ion-label {margin-left:10px;font-size:15px;text-transform:capitalize;}
+        input[type="checkbox"] {width:16px;height:16px;}
+        ion-input {font-size:14px;}
+}
+
 // Footer Tabs
 ion-tabs.footertab {
     ion-tab-bar {background:var(--themebg);}
