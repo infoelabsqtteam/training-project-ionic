@@ -56,6 +56,7 @@ export class QuotationPage implements OnInit {
   filterForm: FormGroup;
   createFormgroup: boolean = true;
   openFilter: boolean = false;
+  filterCount: 0;
 
   // loadmore variables
   private toplimit: number = 15;
@@ -376,8 +377,12 @@ export class QuotationPage implements OnInit {
         let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
-            this.loaderService.hideLoader();
+            setTimeout(() => {
+              this.loaderService.hideLoader();
+            }),3000;
             this.carddata = respData['data'];
+            this.filterCount = respData['data_size'];
+            this.loaderService.hideLoader();
           },
           (err: HttpErrorResponse) => {
             this.loaderService.hideLoader();
@@ -514,14 +519,8 @@ export class QuotationPage implements OnInit {
 
   }
 
-  detailModalResponce(){
-    this.childColumns = [];
-    this.childData = {};
-    this.childDataTitle = '';
-    //modalhidefunction
-  
-     this.modalController.dismiss();
-
+  goBack(){
+    this.carddata = '';
   }
 
   // go to new page 2nd method
@@ -560,19 +559,19 @@ export class QuotationPage implements OnInit {
   }
 
   loadData(event) {
-    setTimeout(() => {
-      // this.toplimit += 10;
-      // this.carddata = respData['data'].slice(0, this.toplimit);
-      // console.log('Done');
-      for (let i = 0; i < 25; i++) { 
-        this.carddata.push("Item number " + this.carddata.length);
-      }
-      event.target.complete();
+    // setTimeout(() => {
+    //   // this.toplimit += 10;
+    //   // this.carddata = respData['data'].slice(0, this.toplimit);
+    //   // console.log('Done');
+    //   for (let i = 0; i < 25; i++) { 
+    //     this.carddata.push("Item number " + this.carddata.length);
+    //   }
+    //   event.target.complete();
       
-      if (this.carddata.length == 50) {
-        event.target.disabled = true;
-      }
-    }, 500);
+    //   if (this.carddata.length == 50) {
+    //     event.target.disabled = true;
+    //   }
+    // }, 500);
   }
 
 

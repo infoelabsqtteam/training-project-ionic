@@ -48,6 +48,7 @@ export class HomePage implements OnInit {
   carddata: any;
   inValue = 0;
   myInput: string;
+  dataCount: "null";
 
   // banner data
   bannerData: any;
@@ -192,7 +193,7 @@ export class HomePage implements OnInit {
           respData => {
             // this.loaderService.hideLoader();
             //this.cardList = respData['data'];   
-            this.dataShareService.setCardList(respData['data']);        
+            this.dataShareService.setCardList(respData['data']);
             // console.log(this.cardList);
           },
           (err: HttpErrorResponse) => {
@@ -301,7 +302,8 @@ export class HomePage implements OnInit {
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             // this.loaderService.hideLoader();
-            this.carddata = respData['data'];
+            this.cardList = respData['data'];
+            this.dataCount = respData['data_size'];
           },
           (err: HttpErrorResponse) => {
             // this.loaderService.hideLoader();

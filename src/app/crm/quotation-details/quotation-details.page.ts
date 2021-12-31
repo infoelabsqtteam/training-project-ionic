@@ -56,6 +56,14 @@ export class QuotationDetailsPage implements OnInit {
     
   }
 
+  goBack(){
+    this.childColumns = [];
+    this.childData = {};
+    this.childDataTitle = '';
+    this.cardType = '';
+
+  }
+
   getValueForGrid(field, object) {
     let value = '';
     if (field.field_name != undefined && field.field_name != null && field.field_name != '') {
