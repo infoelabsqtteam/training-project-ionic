@@ -1,7 +1,7 @@
 <ion-header>
     <ion-toolbar>
         <ion-buttons slot="start"><ion-menu-button><img src="assets/img/icons/menu.svg"></ion-menu-button></ion-buttons>
-        <ion-searchbar (click)="openSearch()"></ion-searchbar>
+        <ion-searchbar [(ngModel)]="myInput" (ionInput)="search(myInput)" (ionChange)="onChangeValue(myInput)"></ion-searchbar>
         <ion-buttons slot="end" (click)="comingSoon()"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
     </ion-toolbar>
 </ion-header>
@@ -16,6 +16,11 @@
     <!-- <canvas #barCanvas></canvas> -->
 
     <div class="catlist">
+
+        <!-- <div *ngIf="dataCount == 0" class="">
+            <p><strong>No Module Found! Try adjusting your search.</strong></p>
+            <ion-button color="primary" fill="outline" size="small" (click)="commonFunction()">Try again</ion-button>
+        </div> -->
         
         <ion-buttons >
             <!-- <ion-button (click)="downloadPDF()"><ion-icon name="download-outline" ></ion-icon>Download</ion-button> -->
@@ -35,6 +40,6 @@
               </div>
               <span>{{cardItem.name}}</span>
             </li>
-          </ul>
+        </ul>
     </div>
 </ion-content>
