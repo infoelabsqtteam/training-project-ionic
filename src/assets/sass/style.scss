@@ -100,7 +100,7 @@ ion-tabs.footertab {
 // Contact Listing
 .contactlist {background:none;margin:10px;
     ion-item {border-radius:20px;--border-color:#fff;margin-bottom:5px;margin-top: 0;}
-    // ion-row{width: 100%;}
+    ion-row{width: 100%;}
     ion-avatar {width:48px;height:48px;margin:10px 15px 10px 0;color:#fff;line-height:48px;text-align:center;background:#7d7d7d;}
     h4 {font-size:16px;color:#113970;}
     h5 {margin:0;color:#292a2c;font-size:16px;}
@@ -117,6 +117,7 @@ ion-tabs.footertab {
 .addmore {position:fixed;right:20px;bottom:30px;z-index:9;background:#0851b5;color:#fff;width:48px;height:48px;border-radius:100%;text-align:center;line-height:55px;font-size:25px;}
 
 .quotationlist {
+    ion-row{width: 100%;}
     .inner_padding{padding: 10px 0;}
     .title {font-size:14px;color:#113970;text-transform: capitalize;line-height:18px;margin-bottom: 5px;}
     .small{color:#313131;font-size: 10px;}

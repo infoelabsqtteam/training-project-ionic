@@ -5,6 +5,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AuthService, StorageService,LoaderService, CoreUtilityService, NotificationService } from '@core/ionic-core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { IonLoaderService } from 'src/app/service/ion-loader.service';
 
 @Component({
   selector: 'lib-signine',
@@ -20,15 +21,14 @@ export class SignineComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private loadingCtrl: LoadingController,
-    private loaderService: LoaderService,
     private formBuilder: FormBuilder,
     private alertCtrl: AlertController,
     private http: HttpClient,
     private storageService: StorageService,
     private coreUtilService: CoreUtilityService,
     private notificationService:NotificationService,
-    private platform: Platform
+    private platform: Platform,
+    private ionLoaderService: IonLoaderService
   ) { }
 
   ngOnInit() {
