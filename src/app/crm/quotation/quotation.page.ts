@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, Injectable } from '@angular/core';
 import { DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common';
-import { AuthService, EnvService, StorageService, LoaderService } from '@core/ionic-core';
+import { AuthService, EnvService, StorageService } from '@core/ionic-core';
 import { Platform, ModalController , PopoverController, IonInfiniteScroll} from '@ionic/angular';
 import { HttpClient, HttpClientModule, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { DataService } from '../../api/data.service';
@@ -11,6 +11,7 @@ import { filter } from 'rxjs';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CallNumber } from '@ionic-native/call-number/ngx';
+import { IonLoaderService } from 'src/app/service/ion-loader.service';
 
 @Component({
   selector: 'app-quotation',
@@ -56,6 +57,7 @@ export class QuotationPage implements OnInit {
   filterForm: FormGroup;
   createFormgroup: boolean = true;
   openFilter: boolean = false;
+  filterCount: 0;
 
   // loadmore variables
   private toplimit: number = 15;
@@ -84,10 +86,10 @@ export class QuotationPage implements OnInit {
     private router: Router,
     private datePipe: DatePipe,
     private dataShareService:DataShareServiceService,
-    private loaderService: LoaderService,
     private CurrencyPipe: CurrencyPipe,
     private formBuilder: FormBuilder,
-    private callNumber: CallNumber
+    private callNumber: CallNumber,
+    private ionLoaderService: IonLoaderService
   ) 
   {
     // below code is for slider and title name
@@ -113,6 +115,7 @@ export class QuotationPage implements OnInit {
   }
 
   ngOnInit() {
+    this.carddata = '';
     this.router.events.pipe(
       filter((event: RouterEvent) => event instanceof NavigationEnd)
     ).subscribe(() => {
@@ -141,10 +144,10 @@ export class QuotationPage implements OnInit {
         }
       }
       this.collectionname = this.cardDataMasterSubscription.collection_name;
-      this.getcardData(this.collectionname);
       // this.loadData(this.cardDataMasterSubscription);
 
     });  
+    this.getcardData(this.collectionname);
 
   }
 
@@ -363,7 +366,8 @@ export class QuotationPage implements OnInit {
           headers: new HttpHeaders()
             .set('Authorization', 'Bearer ' + val.idToken)
         }
-           this.loaderService.showLoader(null);
+        this.ionLoaderService.showLoader(this.cardtitle);
+        //this.loaderService.showLoader('null');
         let obj = {
           crList: this.getfilterCrlist(this.columnList, this.filterForm),
           key1: "MCLR01",
@@ -376,11 +380,12 @@ export class QuotationPage implements OnInit {
         let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
-            this.loaderService.hideLoader();
+            this.ionLoaderService.hideLoader();
             this.carddata = respData['data'];
+            this.filterCount = respData['data_size'];
           },
           (err: HttpErrorResponse) => {
-            this.loaderService.hideLoader();
+            this.ionLoaderService.hideLoader();
             console.log(err.error);
           }
         )
@@ -514,14 +519,8 @@ export class QuotationPage implements OnInit {
 
   }
 
-  detailModalResponce(){
-    this.childColumns = [];
-    this.childData = {};
-    this.childDataTitle = '';
-    //modalhidefunction
-  
-     this.modalController.dismiss();
-
+  goBack(){
+    this.carddata = '';
   }
 
   // go to new page 2nd method
@@ -560,19 +559,19 @@ export class QuotationPage implements OnInit {
   }
 
   loadData(event) {
-    setTimeout(() => {
-      // this.toplimit += 10;
-      // this.carddata = respData['data'].slice(0, this.toplimit);
-      // console.log('Done');
-      for (let i = 0; i < 25; i++) { 
-        this.carddata.push("Item number " + this.carddata.length);
-      }
-      event.target.complete();
+    // setTimeout(() => {
+    //   // this.toplimit += 10;
+    //   // this.carddata = respData['data'].slice(0, this.toplimit);
+    //   // console.log('Done');
+    //   for (let i = 0; i < 25; i++) { 
+    //     this.carddata.push("Item number " + this.carddata.length);
+    //   }
+    //   event.target.complete();
       
-      if (this.carddata.length == 50) {
-        event.target.disabled = true;
-      }
-    }, 500);
+    //   if (this.carddata.length == 50) {
+    //     event.target.disabled = true;
+    //   }
+    // }, 500);
   }
 
 

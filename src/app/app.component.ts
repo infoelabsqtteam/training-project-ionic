@@ -9,6 +9,7 @@ import * as appConstants from './shared/app.constants';
 import { AuthService, CoreUtilityService, StorageService, StorageTokenStatus, PermissionService, LoaderService, EnvService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
+import { IonLoaderService } from './service/ion-loader.service';
 
  
 @Component({ 
@@ -47,15 +48,14 @@ export class AppComponent implements OnInit, OnDestroy {
     private loaderService: LoaderService,
     private envService: EnvService,
     private permissionService:PermissionService,
-    private dataShareService:DataShareServiceService
+    private dataShareService:DataShareServiceService,
+    private ionLoaderService: IonLoaderService
   ) {
     this.cardListSubscription = this.dataShareService.cardList.subscribe(data =>{
       this.setCardList(data);
     })
     this.initializeApp();
     this.web_site = appConstants.siteName;
-    // this.commonFunction();
-    // this.cardTypeFunction();
   }
 
   initializeApp() {
@@ -65,7 +65,7 @@ export class AppComponent implements OnInit, OnDestroy {
         // SplashScreen.hide();
         setTimeout(() => {
           SplashScreen.hide();
-        }),3000;
+        }),4000;
       }
 
       
@@ -85,8 +85,8 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.storageService.GetRefreshTokenTime() === true || this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_EXPIRED) {
       this.authService.refreshToken();
     } else if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-    //   this.commonFunction();
-    //  this.cardTypeFunction();
+   
+    //this.ionLoaderService.autohideLoader('Setting Up The App for You');
      this.router.navigateByUrl('/home');
       
     } else {
@@ -97,7 +97,6 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       
     }
-    this.authService.getUserPermission(false,'/home');
 
     this.authService._user_info.subscribe(resp => {
       this.userInfo = resp;
@@ -105,8 +104,9 @@ export class AppComponent implements OnInit, OnDestroy {
       this.commonFunction();
       // this.cardTypeFunction();
     })
-
-     
+    
+    this.authService.getUserPermission(false,'/home');
+ 
 
     
   }
@@ -114,7 +114,7 @@ export class AppComponent implements OnInit, OnDestroy {
     //this.commonFunctionService.getCurrentAddress();
   }
   onLogout() {
-    this.userInfo = '';
+    this.userInfo = !this.userInfo;
     this.authService.logout('/auth/signine');
   }
 
@@ -132,12 +132,11 @@ export class AppComponent implements OnInit, OnDestroy {
           headers: new HttpHeaders()
             .set('Authorization', 'Bearer ' + val.idToken)
         }
-        // this.loaderService.showLoader(null);
+        // this.ionLoaderService.autohideLoader('Setting Up The App for You');
         let obj = {
           crList: [],
           key1: "MCLR01",
           key2: "CRM",
-          // log: { userId: "kunalwebdeveloper11@gmail.com", appId: "DEVLP", refCode: "MCLR01" },
           log: await this.storageService.getUserLog(),
           pageNo: 0,
           pageSize: 50,
