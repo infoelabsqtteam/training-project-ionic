@@ -12,8 +12,8 @@ import * as appConstants from '../../app//shared/app.constants';
 import { ProductSearchComponent } from '../component/product-search/product-search.component';
 
 import { DocumentViewer, DocumentViewerOptions } from '@ionic-native/document-viewer/ngx';
-import { File } from '@ionic-native/file/ngx';
-import { FileTransfer } from '@ionic-native/file-transfer/ngx';
+//import { File } from '@ionic-native/file/ngx';
+//import { FileTransfer } from '@ionic-native/file-transfer/ngx';
 // import { FileOpener } from '@ionic-native/file-opener/ngx';
 // import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
@@ -21,7 +21,7 @@ import { FileTransfer } from '@ionic-native/file-transfer/ngx';
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  providers: [DocumentViewer, File, FileTransfer],
+  providers: [DocumentViewer],
 })
 export class HomePage implements OnInit {
   modal: any;
@@ -79,7 +79,7 @@ export class HomePage implements OnInit {
     // private fileOpener: FileOpener,
     private documentViewer: DocumentViewer,
     private file: File,
-    private fileTransfer: FileTransfer
+    //private fileTransfer: FileTransfer
   ) 
   {
     // below code is for slider and title name

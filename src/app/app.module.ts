@@ -16,8 +16,8 @@ import { Media } from '@ionic-native/media/ngx';
 import { File } from '@ionic-native/File/ngx';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 // import { CallLog } from '@ionic-native/call-log/ngx';
- import { DocumentViewer } from '@ionic-native/document-viewer/ngx';
- import { FileTransfer } from '@ionic-native/file-transfer/ngx';
+ //import { DocumentViewer } from '@ionic-native/document-viewer/ngx';
+ //import { FileTransfer } from '@ionic-native/file-transfer/ngx';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe, CurrencyPipe} from '@angular/common';
 import { FileOpener } from '@ionic-native/file-opener/ngx';
@@ -48,8 +48,8 @@ import { IonicCoreModule } from '@core/ionic-core';
     { enabled: environment.production })
   ],
   providers: [
-    DocumentViewer,
-    FileTransfer,
+    // DocumentViewer,
+    // FileTransfer,
     StatusBar,
     SplashScreen,
     MediaCapture,
