@@ -93,7 +93,7 @@ export class AuthPage implements OnInit {
        this.authService.login(email, password,'/home');
      } else {
       //  authObs = this.authService.signup(email, password,name,mobile);
-       this.authService.signup(email, password, name, mobile);
+      //  this.authService.signup(email, password, name, mobile);
      }
 
       //   authObs.subscribe(
@@ -142,7 +142,7 @@ export class AuthPage implements OnInit {
   onSavePassword(form: NgForm){
     let otp = form.value.veriCode;
     let password = form.value.newPassword;
-    this.authService.saveNewPassword(this.username, otp, password)
+    // this.authService.saveNewPassword(this.username, otp, password)
     
   }
   onSubmit(form: NgForm) {

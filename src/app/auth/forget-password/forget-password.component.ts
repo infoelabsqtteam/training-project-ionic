@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoadingController, AlertController, Platform } from '@ionic/angular';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { AuthService, StorageService,LoaderService, CoreUtilityService, NotificationService } from '@core/ionic-core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AuthService, StorageService,LoaderService, CoreUtilityService, NotificationService, EnvService } from '@core/ionic-core';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
 @Component({
   selector: 'app-forget-password',
@@ -11,8 +12,20 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
   styleUrls: ['./forget-password.component.scss'],
 })
 export class ForgetPasswordComponent implements OnInit {
-  loginForm: FormGroup;
-  showpassword = false;
+  fForm: FormGroup;
+  confirmpassword = false;
+  newpassword = false;
+  vForm: FormGroup;
+  username: string;
+  resetPwd: boolean = true;
+  newpwd: any;
+  passwordNotMatch: boolean;
+
+  VerifyType : boolean = false;
+  // password = false;
+  // confirmpassword = false;
+  // newpwd: any;
+  // payload: any;
 
   constructor(
     private authService: AuthService,
@@ -25,35 +38,95 @@ export class ForgetPasswordComponent implements OnInit {
     private storageService: StorageService,
     private coreUtilService: CoreUtilityService,
     private notificationService:NotificationService,
-    private platform: Platform
-  ) { }
+    private platform: Platform,
+    private envService:EnvService,
+    private dataShareService: DataShareServiceService,
+  ) { 
+    if(this.envService.getVerifyType() == "mobile"){
+      this.VerifyType = true;
+    }else{
+     this.VerifyType = false;
+    }
+    // this.appNameSubscription = this.dataShareService.appName.subscribe(data =>{
+    //   this.setAppName(data);
+    // })
+    // this.pageloded();
+  }
 
   ngOnInit() {
     this.initForm();
+    // this.pageloded();
   }
-  initForm(){
-    this.loginForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]],
+  // setAppName(data){
+  //   if (data.appName && data.appName.hasOwnProperty("appName")) {
+  //     this.appName = data.appName["appName"]
+  //   }
+  // }
+
+  initForm() {
+    this.username = "";
+    this.fForm = this.formBuilder.group({
+      'userId': ['', [Validators.required]],
+    });
+
+    if(!this.VerifyType){
+      this.fForm.get('userId').setValidators([Validators.email,Validators.required]);
+    }else{
+      this.fForm.get('userId').setValidators([Validators.required,Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]);
+    }
+
+    this.vForm = this.formBuilder.group({
+      'verifyCode': ['', [Validators.required]],
+      'password': ['', [Validators.required]],
+      'confpwd': ['', [Validators.required]],
     });
   }
-  checkValidate(){
-    return !this.loginForm.valid;
-  }
 
-  get f() { return this.loginForm.controls; }
-
-  onSubmit() {
-    if (this.loginForm.invalid) {
+  onResetPwd() {
+    if (this.fForm.invalid) {
       return;
     }
-    let loginObj = this.loginForm.value;     
-    this.authService.login(loginObj.email, loginObj.password,'/home');
-    this.loginForm.reset();
+    this.username = this.fForm.value.userId;
+    this.authService.forgetPass(this.username);
+    this.resetPwd = false;
   }
 
-  showtxtpass() {
-    this.showpassword = !this.showpassword;
+  resendCode() {
+    this.authService.forgetPass(this.username);
+  }
+  
+  onVerifyPwd() {
+    if (this.vForm.invalid) {
+      return;
+    }
+    const code = this.vForm.value.verifyCode;
+    const password = this.vForm.value.password;
+    const payload = { userId: this.username, code: code, newPassword: password };
+    this.authService.saveNewPassword(payload);   
+  }
+  get f() {return this.fForm.controls;}
+  get r() {return this.vForm.controls;}
+
+  pageloded(){
+    // this.logoPath = this.envService.getLogoPath() + "logo-signin.png";
+    // this.template = this.envService.getTemplateName();
+    // this.title = this.envService.getHostKeyValue('title');
   }
 
+  shownewpass() {
+    this.newpassword = !this.newpassword;
+  }
+  showconfirmpass() {
+    this.confirmpassword = !this.confirmpassword;
+  }
+
+  passwordmismatch(){
+    if(this.vForm.value.password !== this.vForm.value.confpwd && this.vForm.value.confpwd != '')
+    { 
+      this.passwordNotMatch = true;
+    }else{
+      this.passwordNotMatch = false;
+    }
+  }
+    
 }

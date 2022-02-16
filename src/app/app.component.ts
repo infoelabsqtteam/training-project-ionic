@@ -1,15 +1,18 @@
 import { Component, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { ModalController, Platform } from '@ionic/angular';
+import { AlertController, ModalController, Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
 import * as appConstants from './shared/app.constants';
-import { AuthService, CoreUtilityService, StorageService, StorageTokenStatus, PermissionService, LoaderService, EnvService } from '@core/ionic-core';
+import { AuthService, CoreUtilityService, StorageService, StorageTokenStatus, PermissionService, LoaderService, EnvService, App_googleService, NotificationService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 import { IonLoaderService } from './service/ion-loader.service';
+import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
+import { AndroidpermissionsService } from './service/androidpermissions.service';
+// import { Network } from '@ionic-native/network/ngx';
 
  
 @Component({ 
@@ -23,6 +26,7 @@ export class AppComponent implements OnInit, OnDestroy {
   userData: any;
   userInfo: any={};
   web_site:string='';
+  side_menu: boolean = true;
 
   gridData: any;
   cardData: any;
@@ -32,6 +36,19 @@ export class AppComponent implements OnInit, OnDestroy {
   cardTypeList: any = {};
   collectionName: any;
   collectionNameList: any = [];
+
+  // geoloaction
+  coords:any;
+  latitude: number;
+  longitude:number;
+  options: any;
+  inputaddress: any;
+  result: any;
+
+  // Network status
+  disconnectSubscription: any;
+  connectSubscription: any;
+  networkAlert:any;
 
   @Output() collection_name = new EventEmitter<string>();
 
@@ -49,32 +66,61 @@ export class AppComponent implements OnInit, OnDestroy {
     private envService: EnvService,
     private permissionService:PermissionService,
     private dataShareService:DataShareServiceService,
-    private ionLoaderService: IonLoaderService
+    private ionLoaderService: IonLoaderService,
+    private app_googleService: App_googleService,
+    private nativeGeocoder:NativeGeocoder,
+    private notificationService:NotificationService,
+    private androidpermissionsService: AndroidpermissionsService,
+    public alertController: AlertController,
+    // private network: Network
+
   ) {
-    this.cardListSubscription = this.dataShareService.cardList.subscribe(data =>{
-      this.setCardList(data);
-    })
+    // this.cardListSubscription = this.dataShareService.cardList.subscribe(data =>{
+    //   this.setCardList(data);
+    // })
+   
+    // this.checkInternetConnection();
     this.initializeApp();
-    this.web_site = appConstants.siteName;
+    // this.web_site = appConstants.siteName;
+    this.web_site = "ELABS";
   }
 
   initializeApp() {
     this.platform.ready().then(() => {
-
+      window.addEventListener('offline', () => {
+        this.androidpermissionsService.internetExceptionError();
+      });
       if (Capacitor.isPluginAvailable('SplashScreen')) {
         // SplashScreen.hide();
         setTimeout(() => {
           SplashScreen.hide();
         }),4000;
-      }
-
-      
+      }      
 
       //this.statusBar.overlaysWebView(true);
       this.statusBar.backgroundColorByHexString('#e30010');
+      // this.androidpermissionsService.internetPermission();
       this.permissionService.requestPermisiions();
+      // this.androidpermissionsService.checkPermission();
+      this.getCurrentLocation();
+
     });
 
+  }
+
+  async showNetworkAlert(){
+    const alert = await this.alertController.create({
+      header: 'No Internet Connection',
+      backdropDismiss: false,
+      message: 'You Do not have Internet Connection ',
+      buttons: [{
+        text: "OK",
+        handler: () => {
+          navigator['app'].exitApp();
+        }
+      }]
+    });
+    await alert.present();
   }
 
   setCardList(cardList){
@@ -82,39 +128,90 @@ export class AppComponent implements OnInit, OnDestroy {
   }
   
   ngOnInit() {
-    if (this.storageService.GetRefreshTokenTime() === true || this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_EXPIRED) {
-      this.authService.refreshToken();
-    } else if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
+    // if (this.storageService.GetRefreshTokenTime() === true || this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_EXPIRED) {
+    //   this.authService.refreshToken();
+    // } else 
+    if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
    
     //this.ionLoaderService.autohideLoader('Setting Up The App for You');
-     this.router.navigateByUrl('/home');
-      
-    } else {
-      if(appConstants.loginWithMobile){
-        this.router.navigateByUrl('auth/signin');
-      }else{
-        this.router.navigateByUrl('auth/signine');
-      }
-      
+    this.commonFunction();
+    this.authService.getUserPermission(false,'/home');
+      this.router.navigateByUrl('/home');      
+    } 
+    // else {
+    //   if(appConstants.loginWithMobile){
+    //     this.router.navigateByUrl('auth/signine');
+    //   }
+    else{
+      console.log("Token Not active");
+      this.router.navigateByUrl('/auth/signine');
+      // this.router.navigateByUrl('auth/signine');
     }
+      
+    // }
 
     this.authService._user_info.subscribe(resp => {
-      this.userInfo = resp;
-
-      this.commonFunction();
-      // this.cardTypeFunction();
+      if(resp!== null){
+        this.userInfo = resp;
+        this.dataShareService.setUserDetails(resp);
+      }
+      else{
+        this.userInfo = this.dataShareService.getUserDetails();
+      }
+      // console.log(this.userInfo);
     })
     
-    this.authService.getUserPermission(false,'/home');
- 
+    
 
     
   }
+  
+  async getCurrentLocation(){
+    try{
+      // const coordinates = await Geolocation.getCurrentPosition();
+      const coordinates = await this.app_googleService.getUserLocation();
+      this.coords = coordinates;
+      console.log("coords:", this.coords);
+      this.latitude = this.coords.lat;
+      this.dataShareService.setCurrentLatitude(this.latitude);
+      this.longitude = this.coords.lng;
+      this.dataShareService.setCurrentLongitude(this.longitude);
+
+      let options: NativeGeocoderOptions = {
+        useLocale: true,
+        maxResults: 1
+      };
+        this.nativeGeocoder.reverseGeocode(this.latitude, this.longitude, options)
+      .then((result: NativeGeocoderResult[]) =>{
+         this.result = (JSON.stringify(result[0]));
+         console.log(this.result);
+         
+      })
+      .catch((error: any) => console.log(error));
+
+    }catch(e) {
+      // this.notificationService.showAlert("GPS is unable to locate you.", 'Enable GPS',['OK']);
+      console.log('Error getting location: ', e);
+    }
+  }
+
+  forwardLocation(inputaddress){
+    let options: NativeGeocoderOptions = {
+      useLocale: false,
+      maxResults: 1
+    };
+    this.nativeGeocoder.forwardGeocode(inputaddress, options)
+      .then((result: NativeGeocoderResult[]) => console.log('The coordinates are latitude=' + result[0].latitude + ' and longitude=' + result[0].longitude  ))
+      .catch((error: any) => console.log(error));
+  }
+  
+  
   ionViewWillEnter() {
     //this.commonFunctionService.getCurrentAddress();
   }
   onLogout() {
-    this.userInfo = !this.userInfo;
+    // this.side_menu = false;
+    // this.userInfo = '';
     this.authService.logout('/auth/signine');
   }
 
@@ -146,7 +243,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             // this.loaderService.hideLoader();
-            //this.cardList = respData['data'];   
+            this.cardList = respData['data'];   
             this.dataShareService.setCardList(respData['data']);        
             // console.log(this.cardList);
           },

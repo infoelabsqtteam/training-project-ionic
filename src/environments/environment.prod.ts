@@ -9,5 +9,6 @@ export const environment = {
   appName: "tonicprod",
   appPlatformName: "sanjivani-enterprise",
   web_site: "E-Labs",
-  razorpay_key : "rzp_test_P7SL8C2oelMvzE"
+  razorpay_key : "rzp_test_P7SL8C2oelMvzE",
+  verify_type : "email"
 };

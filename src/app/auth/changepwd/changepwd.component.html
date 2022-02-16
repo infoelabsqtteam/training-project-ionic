@@ -1,0 +1,109 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="home"></ion-back-button></ion-buttons>
+    <!-- <ion-title class="">Change Password</ion-title> -->
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+<ion-content class="loginpage">
+  <div class="logintitle">
+      <h4>Change Password</h4>
+  </div>
+  <!-- <div class="loginlogo"> <img src="../../../assets/medicea_img/signinlogo.jpeg"></div> -->
+
+  <!-- FOR OLD and NEW password Functianallity uncomment below code-->
+  <div class="login" *ngIf="!VerifyType">
+      <form [formGroup]="changepwdform" (ngSubmit)="onSubmit()">
+          
+          <div class="formgroup">
+              <ion-item>
+                <ion-label position="floating">Old Password</ion-label>
+                  <ion-input [type]="oldpassword ? 'text': 'password'" formControlName="oldpwd" placeholder="Old Password"></ion-input>
+                  <ion-icon [name]="oldpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="showoldpass()"></ion-icon>
+              </ion-item>
+              <div *ngIf="c.oldpwd.invalid && (c.oldpwd.dirty || c.oldpwd.touched)" class="alert">
+                  <div *ngIf="c.oldpwd.errors.required" class="warning">Old Password is required.</div>
+              </div>
+          </div>
+          <div class="formgroup">
+                <ion-item>
+                    <ion-label position="floating">New Password</ion-label>
+                    <ion-input [type]="newpassword ? 'text': 'password'" formControlName="newpwd" placeholder="New Password"></ion-input>
+                    <ion-icon [name]="newpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="shownewpass()"></ion-icon>
+                </ion-item>
+                <div *ngIf="c.newpwd.invalid && (c.newpwd.dirty || c.newpwd.touched)" class="alert">
+                    <div *ngIf="c.newpwd.errors.required" class="warning">New Password is required.</div>
+                </div>
+            </div>
+            <div class="formgroup">
+                <ion-item>
+                    <ion-label position="floating">Confirm Password</ion-label>
+                    <ion-input [type]="confirmpassword ? 'text': 'password'" formControlName="confpwd" placeholder="Confirm Password" (ionChange)="oldpasswordmismatch()"></ion-input>
+                    <ion-icon [name]="confirmpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="showconfirmpass()"></ion-icon>
+                </ion-item>
+                <div *ngIf="c.confpwd.invalid && (c.confpwd.dirty || c.confpwd.touched)" class="alert">
+                    <div *ngIf="c.confpwd.errors.required" class="warning">Confirm Password is required.</div>
+                </div>
+                <div *ngIf="c.confpwd != c.newpwd && (c.confpwd.dirty || c.confpwd.touched)" class="alert">
+                    <div *ngIf="passwordNotMatch"  class="warning">Confirm password do not match</div>
+                </div>
+            </div>
+          <div class="formgroup"><ion-button type="submit" (click)="onChangePwd()">Change Password</ion-button></div>
+      </form>
+  </div>
+
+
+  <!-- // FOR OTP Functianallity uncomment below code -->
+  <div class="login" *ngIf="VerifyType">
+    <form *ngIf="resetPwd" [formGroup]="fForm">
+      <div class="formgroup">
+          <ion-item>
+              <ion-label position="floating">Mobile Number</ion-label>
+              <ion-input type="number" placeholder="Enter Registered Mobile no." readonly formControlName="userId"></ion-input>
+          </ion-item>
+          <div *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched)" class="alert">
+              <div *ngIf="f.userId.errors.required" class="warning">Mobile no. is required.</div>
+          </div>
+      </div>
+      <div class="formgroup">
+        <ion-button type="submit" [disabled]="!fForm.valid" (click)="onResetPwd()" expand="full">Change Password <ion-icon name="arrow-forward"></ion-icon></ion-button>
+      </div>
+    </form>
+    <form *ngIf="!resetPwd" class="registration-form" [formGroup]="vForm">
+        <div class="formgroup">
+          <ion-item>
+              <ion-label position="floating">VERIFICATION CODE</ion-label>
+              <ion-input type="number"  placeholder=""  formControlName="verifyCode"></ion-input>
+          </ion-item>
+          <div *ngIf="r.verifyCode.invalid && (r.verifyCode.dirty || r.verifyCode.touched)" class="alert">
+              <div *ngIf="r.verifyCode.errors.required" class="warning">OTP is required.</div>
+          </div>
+          <p position="floating" (click)="resendCode()" style="margin-top: 12px;">Resend Verification Code?</p>
+        </div>
+        <div class="formgroup">
+            <ion-item>
+                <ion-label position="floating">NEW PASSWORD</ion-label>
+                <ion-input [type]="newpassword ? 'text': 'password'"  placeholder="" formControlName="newpwd"></ion-input>
+                <ion-icon [name]="newpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="shownewpass()"></ion-icon>
+            </ion-item>
+            <div *ngIf="r.newpwd.invalid && (r.newpwd.dirty || r.newpwd.touched)" class="alert">
+                 <div *ngIf="r.newpwd.errors.required" class="warning">Password is required.</div>
+            </div>
+        </div>
+        <div class="formgroup">
+          <ion-item>
+              <ion-label position="floating">CONFIRM PASSWORD</ion-label>
+              <ion-input [type]="confirmpassword ? 'text': 'password'" formControlName="confpwd" placeholder="" (ionChange)="passwordmismatch()"></ion-input>
+              <ion-icon [name]="confirmpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="showconfirmpass()"></ion-icon>
+          </ion-item>
+          <div *ngIf="r.confpwd.invalid && (r.confpwd.dirty || r.confpwd.touched)" class="alert">
+              <div *ngIf="r.confpwd.errors.required" class="warning">Confirm Password is required.</div>
+          </div>
+          <div *ngIf="r.confpwd != r.password && (r.confpwd.dirty || r.confpwd.touched)" class="alert">
+              <div *ngIf="passwordNotMatch"  class="warning">Confirm password do not match</div>
+          </div>
+        </div>
+        <ion-button type="submit" [disabled]="!vForm.valid" (click)="onVerifyPwd()">Save New Password</ion-button>
+      </form>
+</div>
+</ion-content>
