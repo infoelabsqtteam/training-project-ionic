@@ -22,7 +22,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe, CurrencyPipe} from '@angular/common';
 import { FileOpener } from '@ionic-native/file-opener/ngx';
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
-import { NativeGeocoder, NativeGeocoderResult, NativeGeocoderOptions } from '@ionic-native/native-geocoder/ngx';
+import { NativeGeocoder} from '@ionic-native/native-geocoder/ngx';
 import { AuthInterceptor } from './shared/auth.interceptor';
 import { FocusDirective } from './directive/focus.directive';
 import { IonicCoreModule } from '@core/ionic-core';

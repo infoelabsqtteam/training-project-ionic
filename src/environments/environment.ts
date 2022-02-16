@@ -8,12 +8,15 @@ export const environment = {
   //serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
   serverhost: "https://sitserverelabs.e-labs.ai/rest/",
   // serverhost: "http://localhost:8104/rest/",
+  //serverhost: "https://servermedicea.medicea.in/rest/",
+  //  serverhost: "https://sitservermedicea.medicea.in/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "ELABS",
   appName: "tonicprod",
   appPlatformName: "sanjivani-enterprise",
   web_site: "E-Labs",
-  razorpay_key : "rzp_test_P7SL8C2oelMvzE"
+  razorpay_key : "rzp_test_P7SL8C2oelMvzE",
+  verify_type : "email"
 };
 
 /*

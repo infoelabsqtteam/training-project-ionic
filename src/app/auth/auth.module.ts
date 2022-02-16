@@ -12,6 +12,8 @@ import { AuthGuard } from './auth.guard';
 import { SignineComponent } from './signine/signine.component';
 import { SignupeComponent } from './signupe/signupe.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
+import { ChangepwdComponent } from './changepwd/changepwd.component';
+import { VerifyOtpComponent } from './verify-otp/verify-otp.component';
 
 const routes: Routes = [
   {
@@ -23,6 +25,8 @@ const routes: Routes = [
       { path: 'signine', component: SignineComponent, },
       { path: 'signupe', component: SignupeComponent },
       { path: 'forgetpassword', component: ForgetPasswordComponent },
+      { path: 'changepwd', component: ChangepwdComponent },
+      { path: 'verifyotp/:username', component: VerifyOtpComponent }
     ]
 
   }
@@ -42,7 +46,9 @@ const routes: Routes = [
     SignupComponent,
     SignineComponent,
     SignupeComponent,
-    ForgetPasswordComponent
+    ForgetPasswordComponent,
+    ChangepwdComponent,
+    VerifyOtpComponent,
   ]
 })
 export class AuthPageModule { }

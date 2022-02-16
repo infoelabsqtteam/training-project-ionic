@@ -1,16 +1,16 @@
-<ion-header>
+<!-- <ion-header>
     <ion-toolbar  class="grey-toolbar">
       <ion-buttons slot="start"><ion-back-button class="ion-text-capitalize back-button-text" text=""></ion-back-button></ion-buttons>
     </ion-toolbar>
-</ion-header>
+</ion-header> -->
 <ion-content class="loginpage">
     <div class="logintitle">
         <h4>Welcome</h4>
         <p>Sign-Up to continue</p>
     </div>
+    <!-- <div class="loginlogo"> <img src="../../../assets/medicea_img/signinlogo.jpeg"></div> -->
     <div class="login">
-        <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
-
+        <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
             <div class="formgroup">
                 <ion-item>
                     <ion-label position="floating">Name</ion-label>
@@ -18,30 +18,40 @@
                 </ion-item>
                 <div *ngIf="f.name.invalid && (f.name.dirty || f.name.touched)" class="alert"><ion-text *ngIf="f.name.errors.required" color="danger">Name is required.</ion-text></div>
             </div>
-
             <div class="formgroup">
                 <ion-item>
                     <ion-label position="floating">Email</ion-label>
-                    <ion-input type="text" formControlName="email" placeholder="Email"></ion-input>
+                    <ion-input type="email" formControlName="email" placeholder="Email"></ion-input>
                 </ion-item>
                 <div *ngIf="f.email.invalid && (f.email.dirty || f.email.touched)" class="alert">
-                    <ion-text *ngIf="f.email.errors.required" color="danger">Email no is required.</ion-text>
+                    <ion-text *ngIf="f.email.errors.required" color="danger">Email is required.</ion-text>
                     <ion-text *ngIf="f.email.errors?.email" color="danger">Invalid Email</ion-text>
                 </div>
             </div>
-
-
             <div class="formgroup">
                 <ion-item>
                     <ion-label position="floating">Password</ion-label>
                     <ion-input [type]="showpassword ? 'text': 'password'" formControlName="password" placeholder="Password"></ion-input>
-                    <ion-icon [name]="showpassword ? 'eye-off' : 'eye' " class="showpassword" (click)="showtxtpass()"></ion-icon>
+                    <ion-icon [name]="showpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="showtxtpass()"></ion-icon>
                 </ion-item>
                 <div *ngIf="f.password.invalid && (f.password.dirty || f.password.touched)" class="alert">
                     <ion-text *ngIf="f.password.errors.required" color="danger">Password is required.</ion-text>
-                    <ion-text *ngIf="f.password.errors.minlength" color="danger">Password should be minimum 6 characters</ion-text>
+                    <!-- <ion-text *ngIf="f.password.errors.minlength" color="danger">Password should be minimum 6 characters</ion-text> -->
                 </div>
             </div>
+            <div class="formgroup">
+                <ion-item>
+                    <ion-label position="floating">Confirm Password</ion-label>
+                    <ion-input [type]="confirmpassword ? 'text': 'password'" formControlName="confpwd" placeholder="Confirm Password" (ionChange)="passwordmismatch()"></ion-input>
+                    <ion-icon [name]="confirmpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="showconfirmpass()"></ion-icon>
+                </ion-item>
+                <div *ngIf="f.confpwd.invalid && (f.confpwd.dirty || f.confpwd.touched)" class="alert">
+                    <div *ngIf="f.confpwd.errors.required" class="warning">Confirm Password is required.</div>
+                </div>
+                <div *ngIf="f.confpwd != f.password && (f.confpwd.dirty || f.confpwd.touched)" class="alert">
+                    <div *ngIf="passwordNotMatch"  class="warning">Confirm password do not match</div>
+                </div>
+              </div>
             <div class="formgroup">
                 <ion-item>
                     <ion-label position="floating">Mobile Number</ion-label>
@@ -52,10 +62,10 @@
                     <ion-text *ngIf="f.mobileNo.errors?.pattern" color="danger">Mobile number should be 10 digit number.</ion-text>
                 </div>
             </div>
-            <div class="formgroup"><ion-button type="submit" [disabled]="!userForm.valid" expand="full">Sign Up <ion-icon name="arrow-forward"></ion-icon></ion-button></div>
-            <div class="formgroup ion-text-center"><ion-text class="signup" [routerLink]="['/auth/signine']">Don't have an account ? <strong>Sign-In</strong></ion-text></div>
-            <div class="signinwith ion-padding-vertical"><span><i>Or sign-in with</i></span></div>
-            <p class="ion-text-center"><span class="mailicon"><ion-icon name="mail"></ion-icon></span></p>
+            <div class="formgroup"><ion-button type="submit" [disabled]="!signUpForm.valid" expand="full">Sign Up <ion-icon name="arrow-forward"></ion-icon></ion-button></div>
+            <div class="formgroup ion-text-center"><ion-text class="signup" [routerLink]="['/auth/signine']">Already have an account ? <strong>Sign-In</strong></ion-text></div>
+            <!-- <div class="signinwith ion-padding-vertical"><span><i>Or sign-in with</i></span></div>
+            <p class="ion-text-center"><span class="mailicon"><ion-icon name="mail"></ion-icon></span></p> -->
         </form>
     </div>
 </ion-content>
