@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="home"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start"><ion-icon name="arrow-back" (click)="homenavigate()"></ion-icon></ion-buttons>
     <!-- <ion-title class="">Change Password</ion-title> -->
   </ion-toolbar>
 </ion-header>
@@ -44,6 +44,7 @@
                 <div *ngIf="c.confpwd.invalid && (c.confpwd.dirty || c.confpwd.touched)" class="alert">
                     <div *ngIf="c.confpwd.errors.required" class="warning">Confirm Password is required.</div>
                 </div>
+                <!-- <app-error-message [field]="form.get('confpwd')" error="required" message="Confirm Password is required." ></app-error-message> -->
                 <div *ngIf="c.confpwd != c.newpwd && (c.confpwd.dirty || c.confpwd.touched)" class="alert">
                     <div *ngIf="passwordNotMatch"  class="warning">Confirm password do not match</div>
                 </div>
