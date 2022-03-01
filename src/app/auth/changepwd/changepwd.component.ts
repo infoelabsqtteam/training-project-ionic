@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, EnvService, NotificationService, StorageService } from '@core/ionic-core';
-import { ErrorMessageComponent } from 'src/app/component/error-message/error-message.component';
+// import { ErrorMessageComponent } from 'src/app/component/error-message/error-message.component';
 
 @Component({
   selector: 'app-changepwd',
@@ -41,7 +41,7 @@ export class ChangepwdComponent implements OnInit {
     private notificationService:NotificationService,
     private formBuilder:FormBuilder,
     private envService:EnvService,
-    private errorMessage:ErrorMessageComponent
+    // private errorMessage:ErrorMessageComponent
   ) { 
     if(this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true;
