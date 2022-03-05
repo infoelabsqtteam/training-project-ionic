@@ -90,6 +90,7 @@ ion-tabs.footertab {
 
 // Inner Page Common Tabs
 .menutab {display:flex;align-items:center;
+    ion-slide{ max-width: 100px; display: flex;align-content: center; align-items: center;justify-content: center;}
     ion-tab-button {color:#A5A5A5;font-size:13px;}
     .active{color:#313131;border-bottom:2px solid #113970;font-weight:600;}
     ion-label {white-space:nowrap;padding:10px 0;}

@@ -59,6 +59,10 @@ export class QuotationPage implements OnInit {
   openFilter: boolean = false;
   filterCount: 0;
 
+  //common function
+  cardList: any = [];
+  selectedIndex= -1;
+
   // loadmore variables
   private toplimit: number = 15;
 
@@ -114,8 +118,10 @@ export class QuotationPage implements OnInit {
     this.platform.ready().then(() => {});
   }
 
+
   ngOnInit() {
     this.carddata = '';
+    this.commonFunction();
     this.router.events.pipe(
       filter((event: RouterEvent) => event instanceof NavigationEnd)
     ).subscribe(() => {
@@ -145,9 +151,9 @@ export class QuotationPage implements OnInit {
       }
       this.collectionname = this.cardDataMasterSubscription.collection_name;
       // this.loadData(this.cardDataMasterSubscription);
+    this.getcardData(this.collectionname);
 
     });  
-    this.getcardData(this.collectionname);
 
   }
 
@@ -366,7 +372,7 @@ export class QuotationPage implements OnInit {
           headers: new HttpHeaders()
             .set('Authorization', 'Bearer ' + val.idToken)
         }
-        this.ionLoaderService.showLoader(this.cardtitle);
+        // this.ionLoaderService.showLoader(this.cardtitle);
         //this.loaderService.showLoader('null');
         let obj = {
           crList: this.getfilterCrlist(this.columnList, this.filterForm),
@@ -574,5 +580,49 @@ export class QuotationPage implements OnInit {
     // }, 500);
   }
 
+  //Top menu for quotation page
+  commonFunction() {
+    this.storageService.getObject('authData').then(async (val) => {
+      if (val && val.idToken != null) {
+        var header = {
+          headers: new HttpHeaders()
+            .set('Authorization', 'Bearer ' + val.idToken)
+        }
+        // this.ionLoaderService.autohideLoader('Setting Up The App for You');
+        let obj = {
+          crList: [],
+          key1: "MCLR01",
+          key2: "CRM",
+          log: await this.storageService.getUserLog(),
+          pageNo: 0,
+          pageSize: 50,
+          value: "card_master"
+        }
+        let api = this.envService.baseUrl('GET_GRID_DATA')
+        this.http.post(api + '/' + 'null', obj, header).subscribe(
+          respData => {
+            // this.loaderService.hideLoader();
+            this.cardList = respData['data'];   
+            this.dataShareService.setCardList(respData['data']);        
+            // console.log(this.cardList);
+          },
+          (err: HttpErrorResponse) => {
+            // this.loaderService.hideLoader();
+            console.log(err.error);
+            // console.log(err.name);
+            // console.log(err.message);
+            // console.log(err.status);
+          }
+        )
+      }
+    })
+  }
+
+  
+  showCardTemplate(card:any, index:number){
+    this.selectedIndex = index;
+    this.router.navigate(['crm/quotation']);
+    this.dataShareService.setcardData(card);
+  }
 
 }
