@@ -94,6 +94,9 @@ ion-tabs.footertab {
     ion-tab-button {color:#A5A5A5;font-size:13px;}
     .active{color:#313131;border-bottom:2px solid #113970;font-weight:600;}
     ion-label {white-space:nowrap;padding:10px 0;}
+    .segment-button-checked{color: #313131;font-weight: 600;
+        .segment-button-indicator-background{background:var(--themebg);}
+    }
 }
 
 

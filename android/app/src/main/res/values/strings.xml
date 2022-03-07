@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">E-Labs</string>
-    <string name="title_activity_main">E-Labs</string>
-    <string name="package_name">com.hardgoodlbs.ai</string>
-    <string name="custom_url_scheme">com.hardgoodlbs.ai</string>
+    <string name="app_name">Qualitek Lab</string>
+    <string name="title_activity_main">Qualitek Lab</string>
+    <string name="package_name">com.qualiteklab.ai</string>
+    <string name="custom_url_scheme">com.qualiteklab.ai</string>
 </resources>

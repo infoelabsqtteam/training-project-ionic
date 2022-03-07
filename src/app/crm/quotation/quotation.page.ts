@@ -386,9 +386,9 @@ export class QuotationPage implements OnInit {
         let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
-            this.ionLoaderService.hideLoader();
             this.carddata = respData['data'];
             this.filterCount = respData['data_size'];
+            // this.ionLoaderService.hideLoader();
           },
           (err: HttpErrorResponse) => {
             this.ionLoaderService.hideLoader();

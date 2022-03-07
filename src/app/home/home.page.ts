@@ -85,11 +85,9 @@ export class HomePage implements OnInit {
     // below code is for slider and title name
     this.initializeApp();
     this.banner_img = [
-      'assets/img/home/banner1.png',
-      'assets/img/home/banner2.png'
-      // 'https://www.sanjivanichemist.com/assets/img/service1.jpg',
-      // 'https://www.sanjivanichemist.com/assets/img/service1.jpg',
-      // 'https://www.sanjivanichemist.com/assets/img/service1.jpg',
+      'assets/qualitek-labs/banner.png'
+      // 'assets/img/home/banner1.png',
+      // 'assets/img/home/banner2.png'
     ];
     this.web_site_name = this.envService.getWebSiteName();
     this.cardListSubscription = this.dataShareService.cardList.subscribe(data =>{
@@ -184,7 +182,6 @@ export class HomePage implements OnInit {
           crList: [],
           key1: "MCLR01",
           key2: "CRM",
-          // log: { userId: "kunalwebdeveloper11@gmail.com", appId: "DEVLP", refCode: "MCLR01" },
           log: await this.storageService.getUserLog(),
           pageNo: 0,
           pageSize: 50,
@@ -196,14 +193,10 @@ export class HomePage implements OnInit {
             // this.loaderService.hideLoader();
             //this.cardList = respData['data'];   
             this.dataShareService.setCardList(respData['data']);
-            // console.log(this.cardList);
           },
           (err: HttpErrorResponse) => {
             // this.loaderService.hideLoader();
             console.log(err.error);
-            // console.log(err.name);
-            // console.log(err.message);
-            // console.log(err.status);
           }
         )
       }
@@ -254,7 +247,6 @@ export class HomePage implements OnInit {
           crList: [],
           key1: "MCLR01",
           key2: "CRM",
-          // log: {userId: "Shyamk.babul@gmail.com", appId: "CRM", refCode: "MCLR01"},
           pageNo: 0,
           pageSize: 50,
           value: "quotation_letter"
@@ -269,9 +261,6 @@ export class HomePage implements OnInit {
           },
           (err: HttpErrorResponse) => {
             console.log(err.error);
-            console.log(err.name);
-            console.log(err.message);
-            console.log(err.status);
           }
         )
       }

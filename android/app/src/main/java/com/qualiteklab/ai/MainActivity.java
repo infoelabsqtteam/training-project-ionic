@@ -1,4 +1,4 @@
-package com.hardgoodlbs.ai;
+package com.qualiteklab.ai;
 
 import com.getcapacitor.BridgeActivity;
 
