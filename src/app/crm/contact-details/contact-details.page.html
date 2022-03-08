@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="crm/contact"></ion-back-button></ion-buttons>
-    <ion-title class="ion-no-padding ion-text-uppercase">Amit Tomer</ion-title>
+    <ion-buttons slot="start" (click)="goBack()"><ion-back-button defaultHref="/crm/quotation"></ion-back-button></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-capitalize">{{childDataTitle}} {{childLastName}}</ion-title>
     <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
     <ion-buttons slot="end" class="ion-padding-start"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
   </ion-toolbar>
@@ -9,15 +9,40 @@
 
 <div class="contactprofile">
   <div class="profileicon">AT</div>
-   <h3>Amit Tomer</h3>
-   <p>Project Manager</p>
+   <h3>{{childDataTitle}} {{childLastName}}</h3>
+   <p>{{designation}}</p>
   <div class="contactmedia">
-    <ion-button><img src="assets/img/icons/phone.svg"></ion-button>
+    <ion-button (click)="call(mobile,i)"><img src="assets/img/icons/phone.svg"></ion-button>
     <ion-button routerLink="/crm/whatsapp-chat"><img src="assets/img/icons/comment.svg"></ion-button>
     <ion-button><img src="assets/img/icons/mail.svg"></ion-button>
     <ion-button><img src="assets/img/icons/edit.svg"></ion-button>
   </div>
 </div>
+
+
+
+<!-- <ion-content class="pages">
+  <div class="contactdetails" *ngIf="cardType == 'detail1'">
+   
+    <p class="enquerylist" *ngFor="let column of childColumns; index as j">
+      <span [ngClass]="column.class_name ? column.class_name  : ''">{{column.field_label}}</span>
+
+      <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,childData)"></strong>
+      <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,childData)"></ion-button>
+    </p>
+    
+  </div>
+  
+
+
+</ion-content> -->
+
+
+
+
+
+
+
 
 <!-- <div class="menutab">
     <ion-tab-button class="active"><ion-label>Enquiry</ion-label> </ion-tab-button>

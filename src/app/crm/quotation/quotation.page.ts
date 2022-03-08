@@ -550,8 +550,11 @@ export class QuotationPage implements OnInit {
       "childcolumns": this.childColumns
     }
     this.dataShareService.setchildDataList(newobj);
+    if("cardType == 'contact'"){
+      this.router.navigate(['crm/contact-details']);
+    }else{
     this.router.navigate(['crm/quotation-details']);
-
+    }
   }
   
   comingSoon() {
