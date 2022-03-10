@@ -41,6 +41,9 @@ export class DataShareServiceService {
   childDataList: EventEmitter<any> = new EventEmitter<any>(null);
   childCardData: any = [];
 
+  ParentCardId: EventEmitter<any> = new EventEmitter<any>(null);
+  parentcardid: any = [];
+
 //Usage of search medecine 
   setmedecineData(responce){
     this.MedicineData.emit(responce);
@@ -125,6 +128,14 @@ export class DataShareServiceService {
   }
   getchildCardData(){
     return this.childCardData;
+  }
+
+  setParentCardId(responce){
+    this.ParentCardId.emit(responce);
+    this.parentcardid = responce;
+  }
+  getParentCardId(){
+    return this.parentcardid;
   }
   
 }

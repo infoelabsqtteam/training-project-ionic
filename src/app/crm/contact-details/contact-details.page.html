@@ -1,23 +1,24 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="crm/contact"></ion-back-button></ion-buttons>
-    <ion-title class="ion-no-padding ion-text-uppercase">Amit Tomer</ion-title>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/crm/quotation"></ion-back-button></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-capitalize"></ion-title>
     <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
     <ion-buttons slot="end" class="ion-padding-start"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<div class="contactprofile">
-  <div class="profileicon">AT</div>
-   <h3>Amit Tomer</h3>
-   <p>Project Manager</p>
-  <div class="contactmedia">
-    <ion-button><img src="assets/img/icons/phone.svg"></ion-button>
-    <ion-button routerLink="/crm/whatsapp-chat"><img src="assets/img/icons/comment.svg"></ion-button>
-    <ion-button><img src="assets/img/icons/mail.svg"></ion-button>
-    <ion-button><img src="assets/img/icons/edit.svg"></ion-button>
+<ion-content class="pages">
+  <div class="contactprofile" *ngIf="cardType == 'contactdetail'">
+    <div class="profileicon"  >{{profileText}}</div>
+    <h3 class="personName">{{personName}}</h3>
+    <p class="personDesignation">{{designation}}</p>
+    <div class="contactmedia">
+      <ion-button (click)="call(mobile)"><img src="assets/img/icons/phone.svg"></ion-button>
+      <ion-button (click)="comingSoon()"><img src="assets/img/icons/comment.svg"></ion-button>
+      <ion-button (click)="comingSoon()"><img src="assets/img/icons/mail.svg"></ion-button>
+      <ion-button (click)="comingSoon()"><img src="assets/img/icons/edit.svg"></ion-button>
+    </div>
   </div>
-</div>
 
 <!-- <div class="menutab">
     <ion-tab-button class="active"><ion-label>Enquiry</ion-label> </ion-tab-button>
@@ -26,8 +27,10 @@
     <ion-tab-button><ion-label>Call History</ion-label></ion-tab-button>
 </div> -->
 
-<!-- 
-<ion-content class="pages">
+<!-- <div class="contactpersonlists">
+  <ion-segment scrollable value="">
+    <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="showCardTemplate(tabItem, i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label> </ion-segment-button>
+  </ion-segment>
   <ion-list class="contactlist">
     <ion-item-sliding *ngFor="let data of enquirydata" routerLink="/crm/enquiry-details">
         <ion-item>
@@ -45,5 +48,10 @@
         <ion-item-options side="end"><ion-item-option><ion-icon name="trash"></ion-icon></ion-item-option></ion-item-options>
     </ion-item-sliding>
   </ion-list>
+
   <div class="addmore" routerLink="../add-enquiry"><ion-icon name="add-outline"></ion-icon> ADD</div>
-</ion-content> -->
+  
+</div> -->
+
+
+</ion-content>

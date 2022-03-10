@@ -13,8 +13,8 @@
       <ion-tab-button  ><ion-label>{{cardItem.name}}</ion-label> </ion-tab-button>
     </ion-slide>
   </ion-slides> -->
-  <ion-segment scrollable value="crm">
-    <ion-segment-button *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="cardItem.sidebar_menu && cardItem.name !== 'CRM'?'ion-show':'ion-hide'" value="{{cardItem.name}}" ><ion-label>{{cardItem.name}}</ion-label>
+  <ion-segment scrollable value="">
+    <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(tabItem, i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label>
     </ion-segment-button>
   </ion-segment>
 </div>
@@ -118,7 +118,7 @@
     </ion-item-sliding>
   </ion-list>
 
-  <ion-list class="contactlist" *ngIf="cardType == 'contact' || cardType == 'crm'">
+  <ion-list class="contactlist" *ngIf="cardType == 'contact'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="contactlist">
           <ion-avatar slot="start">El</ion-avatar>

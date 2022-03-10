@@ -47,6 +47,7 @@ export class QuotationPage implements OnInit {
   childColumn: any = {};
   childDataTitle: any;
   childCardType: string = "";
+  childTabMenu: any=[];
   name: any ='';
   
   // searchbar variables
@@ -62,6 +63,11 @@ export class QuotationPage implements OnInit {
   //common function
   cardList: any = [];
   selectedIndex= -1;
+  tabMenu: any = [];
+  cardDataSubscription:any;
+  cardListSubscription:any;
+  parentcardId: any;
+  parentcard: any;
 
   // loadmore variables
   private toplimit: number = 15;
@@ -105,12 +111,18 @@ export class QuotationPage implements OnInit {
     ];
     this.web_site_name = this.envService.getWebSiteName();
 
-    // this.cardDataMasterSubscription = this.dataShareService.getCardMasterData();
+    // card = this.dataShareService.getCardMasterData();
     // this.cardType = this.cardDataMasterSubscription.card_type.name;
     // this.columnList = this.cardDataMasterSubscription.fields;
     // this.collectionname = this.cardDataMasterSubscription.collection_name;
     // this.getcardData(this.collectionname);
+    this.cardDataSubscription = this.dataShareService.setCardmasterData.subscribe( data=>{
 
+    });
+    this.cardListSubscription = this.dataShareService.cardList.subscribe(data =>{
+      let card = data[0];
+      this.setCardDetails(card);
+    })
     
   }
 
@@ -121,40 +133,55 @@ export class QuotationPage implements OnInit {
 
   ngOnInit() {
     this.carddata = '';
-    this.commonFunction();
     this.router.events.pipe(
       filter((event: RouterEvent) => event instanceof NavigationEnd)
     ).subscribe(() => {
-      this.cardDataMasterSubscription = this.dataShareService.getCardMasterData();
-      this.cardtitle = this.cardDataMasterSubscription.name;
-      this.cardType = this.cardDataMasterSubscription.card_type.name;
-      this.childColumn = this.cardDataMasterSubscription.child_card;
-      this.columnList = this.cardDataMasterSubscription.fields;
-
-      // for filter
-      if(this.columnList && this.columnList.length > 0 && this.createFormgroup){
-        this.createFormgroup = false;
-        const forControl = {};
-        this.columnList.forEach(element => {
-          switch (element.type) {
-            case "abcd":            
-              break;
-          
-            default:
-              this.createFormControl(forControl, element, '', "text")
-              break;
-          }
-        });
-        if (forControl) {
-          this.filterForm = this.formBuilder.group(forControl);
-        }
-      }
-      this.collectionname = this.cardDataMasterSubscription.collection_name;
-      // this.loadData(this.cardDataMasterSubscription);
-    this.getcardData(this.collectionname);
-
+      this.getCardDataByCollection();
     });  
 
+  }
+
+  private getCardDataByCollection() {
+    const cardData = this.dataShareService.getCardMasterData();
+    this.setCardDetails(cardData);
+    
+  }
+
+  setCardDetails(card) {
+    this.cardListSubscription = this.dataShareService.gettCardList();
+    this.cardListSubscription.forEach(element => {
+      if(element._id == this.dataShareService.parentcardid){
+        this.parentcard = element;
+      }
+    });
+    this.tabMenu = this.parentcard.tab_menu;
+
+    this.cardtitle = card.name;
+    if (card.card_type !== '') {
+      this.cardType = card.card_type.name;
+    }
+    this.childColumn = card.child_card;
+    this.columnList = card.fields;
+    if (this.columnList && this.columnList.length > 0 && this.createFormgroup) {
+      this.createFormgroup = false;
+      const forControl = {};
+      this.columnList.forEach(element => {
+        switch (element.type) {
+          case "abcd":
+            break;
+
+          default:
+            this.createFormControl(forControl, element, '', "text");
+            break;
+        }
+      });
+      if (forControl) {
+        this.filterForm = this.formBuilder.group(forControl);
+      }
+    }
+    this.collectionname = card.collection_name;
+    //this.loadData(this.cardDataMasterSubscription);
+    this.getcardData(this.collectionname);
   }
 
   ionViewDidEnter() {
@@ -493,7 +520,7 @@ export class QuotationPage implements OnInit {
     }
   }
 
-  //card action Button 1st method
+  //card action Button 1st method, show data on modal
   async buttonAction(column, data){
     const cardmaster=this.dataShareService.gettCardList();
     const childColumn = this.childColumn;
@@ -538,6 +565,7 @@ export class QuotationPage implements OnInit {
         if(element._id == childColumn._id ){
           this.childColumns = element.fields;
           this.childCardType = element.card_type;
+          this.childTabMenu = element.tab_menu;
         }
       });
     }
@@ -547,11 +575,16 @@ export class QuotationPage implements OnInit {
     const newobj = {
       "childcardtype": this.childCardType,
       "childdata": this.childData,
-      "childcolumns": this.childColumns
+      "childcolumns": this.childColumns,
+      "childtabmenu": this.childTabMenu
     }
     this.dataShareService.setchildDataList(newobj);
-    this.router.navigate(['crm/quotation-details']);
-
+    // this.router.navigate(['crm/quotation-details']);
+    if(this.cardType == 'contact'){
+      this.router.navigate(['crm/contact-details']);
+    }else{
+      this.router.navigate(['crm/quotation-details']);
+    }
   }
   
   comingSoon() {
@@ -580,17 +613,48 @@ export class QuotationPage implements OnInit {
     // }, 500);
   }
 
-  //Top menu for quotation page
-  commonFunction() {
+  //Top menu for quotation page getting collection name
+  commonFunction(data:any) {
     this.storageService.getObject('authData').then(async (val) => {
       if (val && val.idToken != null) {
         var header = {
           headers: new HttpHeaders()
             .set('Authorization', 'Bearer ' + val.idToken)
         }
+        let crList = [];
+        // if(data && this.isArray(data) &&  data.length >= 1){
+        //   let idList = '';
+        //   data.forEach((id,i) => {
+        //     if((data.length-1) == i){
+        //       idList = idList + id;
+        //     }else{
+        //       idList = idList + id +":";
+        //     }
+        //   });
+        //   const criteria = {
+        //     "fName": "_id",
+        //     "fValue": idList,
+        //     "operator": "in"
+        //   }
+        //   crList.push(criteria);
+        // }else{
+        //   const criteria = {
+        //     "fName": "_id",
+        //     "fValue": data,
+        //     "operator": "eq"
+        //   }
+        //   crList.push(criteria);
+          if(data && data._id != ''){
+            let criteria = {
+                  "fName": "_id",
+                  "fValue": data._id,
+                  "operator": "eq"
+            }
+            crList.push(criteria);
+          }
         // this.ionLoaderService.autohideLoader('Setting Up The App for You');
         let obj = {
-          crList: [],
+          crList: crList,
           key1: "MCLR01",
           key2: "CRM",
           log: await this.storageService.getUserLog(),
@@ -598,30 +662,31 @@ export class QuotationPage implements OnInit {
           pageSize: 50,
           value: "card_master"
         }
-        let api = this.envService.baseUrl('GET_GRID_DATA')
+        let api = this.envService.baseUrl('GET_GRID_DATA');
+        let newtabMenu = [];
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             // this.loaderService.hideLoader();
-            this.cardList = respData['data'];   
-            this.dataShareService.setCardList(respData['data']);        
-            // console.log(this.cardList);
+            this.cardList = respData['data'];
+              // this.showCardTemplate(this.cardList[0],0);
+             this.setCardDetails(this.cardList[0]);
           },
           (err: HttpErrorResponse) => {
             // this.loaderService.hideLoader();
             console.log(err.error);
-            // console.log(err.name);
-            // console.log(err.message);
-            // console.log(err.status);
           }
         )
       }
     })
   }
 
+  tabmenuClick(data:any , index:number){
+    this.commonFunction(data);
+  }
   
   showCardTemplate(card:any, index:number){
     this.selectedIndex = index;
-    this.router.navigate(['crm/quotation']);
+    //this.router.navigate(['crm/quotation']);
     this.dataShareService.setcardData(card);
   }
 
