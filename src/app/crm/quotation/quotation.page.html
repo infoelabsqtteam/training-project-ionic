@@ -62,19 +62,6 @@
     </ion-item-sliding>
   </ion-list> -->
 
-  <div class="contactprofile" *ngIf="cardType == 'contactdetail'">
-    <div class="profileicon"  >{{profileText}}</div>
-    <h3 class="personName">{{personName}}</h3>
-    <p class="personDesignation">{{designation}}</p>
-    <div class="contactmedia">
-      <ion-button (click)="call(mobile)"><img src="assets/img/icons/phone.svg"></ion-button>
-      <ion-button (click)="sendwhatsapp()"><ion-icon name="logo-whatsapp"></ion-icon></ion-button>
-      <ion-button (click)="sendsms()"><img src="assets/img/icons/comment.svg"></ion-button>
-      <ion-button (click)="sendemail()"><img src="assets/img/icons/mail.svg"></ion-button>
-      <ion-button (click)="comingSoon()"><img src="assets/img/icons/edit.svg"></ion-button>
-    </div>
-  </div>
-
   <ion-list class="contactlist" *ngIf="cardType == 'summary'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="quotationlist">
@@ -122,7 +109,7 @@
             </ion-col>
           </ion-row>
         </ion-item>
-        <ion-item-options side="end" (click)="callInvoice(card,[i])"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
+        <ion-item-options side="end" (click)="callInvoice(card, i)"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
     </ion-item-sliding>
   </ion-list>
 
@@ -140,7 +127,7 @@
             </ion-col>
           </ion-row>
         </ion-item>
-        <ion-item-options side="end" (click)="call(card,[i])"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
+        <ion-item-options side="end" (click)="call(card, i)"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
     </ion-item-sliding>
   </ion-list>
 

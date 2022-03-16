@@ -46,7 +46,7 @@ export class ContactDetailsPage implements OnInit {
   childColumn: any = {};
   createFormgroup: boolean = true;
   filterForm: FormGroup;
-  filterCount: -1;
+  filterCount: number;
   childColumns : any;
   childCardType: string = "";
   childTabMenu: any=[];
@@ -157,7 +157,15 @@ export class ContactDetailsPage implements OnInit {
     let smslink =  "sms:" + this.mobile + "?subject=Hi,"+ this.childData.childdata.name +"Contact%20Details&body=Hello,%20I%20need%20Some%20Information.";
     window.location.href = smslink;
   }
-
+  callInvoice(card:any,Index:number) {
+    let callingNumber:any;
+    if(card.billing_mobile !=''){
+      callingNumber = card.billing_mobile;
+    }
+    this.callNumber.callNumber(callingNumber, true)
+      .then(res => console.log('Launched dialer!' + res))
+      .catch(err => console.log('Error launching dialer ' + err));
+  }
   // for cards 
   tabmenuClick(data:any , index:number){
     this.commonFunction(data);

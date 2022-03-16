@@ -517,9 +517,7 @@ export class QuotationPage implements OnInit {
   }
 
   search(myInput) {
-
     this.getcardData(this.collectionname);
-
   }
 
   onClose(myInput) {
@@ -592,31 +590,11 @@ export class QuotationPage implements OnInit {
       "childtabmenu": this.childTabMenu
     }
     this.dataShareService.setchildDataList(newobj);
-    // this.router.navigate(['crm/quotation-details']);
     if(this.cardType == 'contact'){
-      // this.getChildData();
       this.router.navigate(['crm/contact-details']);
     }else{
       this.router.navigate(['crm/quotation-details']);
     }
-  }
-
-  getChildData() {
-    this.childData = this.dataShareService.getchildCardData();
-    this.tabMenu = this.childData.childtabmenu;
-    this.childDataTitle = this.childData.childdata.first_name;
-    this.cardType = this.childData.childcardtype.name;
-    this.childLastName = this.childData.childdata.last_name;
-    if (this.childDataTitle !== '' && this.childLastName !== '') {
-      this.profileText = this.childDataTitle[0] + this.childLastName[0];
-      this.personName = this.childDataTitle + " " + this.childLastName;
-    } else {
-      this.profileText = this.childDataTitle[0];
-      this.personName = this.childDataTitle;
-    }
-    this.designation = this.childData.childdata.designation;
-    this.mobile = this.childData.childdata.mobile;
-    this.commonMsg = "Hello," + this.personName;
   }
   
   comingSoon() {

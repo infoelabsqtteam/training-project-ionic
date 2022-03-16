@@ -100,9 +100,9 @@ export class AppComponent implements OnInit, OnDestroy {
       //this.statusBar.overlaysWebView(true);
       this.statusBar.backgroundColorByHexString('#e30010');
       // this.androidpermissionsService.internetPermission();
-      this.permissionService.requestPermisiions();
+      // this.permissionService.requestPermisiions();
       // this.androidpermissionsService.checkPermission();
-      this.getCurrentLocation();
+      // this.getCurrentLocation();
 
     });
 
