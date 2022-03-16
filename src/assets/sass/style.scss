@@ -1,5 +1,6 @@
 // Common Css
 .pages {--background:#EFF1F3;font-family:Source Sans Pro;}
+.theme-color{color: var(--themebg);}
 a {text-decoration:none;}
 // Header 
 ion-header {
@@ -108,6 +109,8 @@ ion-tabs.footertab {
     ion-avatar {width:48px;height:48px;margin:10px 15px 10px 0;color:#fff;line-height:48px;text-align:center;background:#0851B5;}
     h4 {font-size:16px;color:#113970;}
     h5 {margin:0;color:#292a2c;font-size:16px;}
+    h5.name{text-transform: uppercase;}
+    h5.designation{text-transform: uppercase;}
     h6, small {color:#313131;font-size:10px;}
     ion-item-options {height:calc(100% - 7px);}
     ion-item-option {background:#0851b5;line-height:66px;border-radius:20px;color:#fff;width:50px;}
@@ -117,6 +120,7 @@ ion-tabs.footertab {
     .contact_company_name{color: #313131;font-size: 10px;text-transform: capitalize;margin-bottom:5px}
     .contact_serial_id{color: #313131;font-size: 10px;text-align: end;margin-bottom:5px}
     .contact_person_mobile{color: #313131;font-size: 10px;text-align: end;margin-bottom:5px}
+    
 }
 .crmtab{
     .segment-button-checked{
@@ -176,9 +180,10 @@ ion-tabs.footertab {
         img {width:20px}
     }
     h3.personName, .personDesignation{text-transform: uppercase;}
+    .contactmedia ion-icon{color: var(--themebg);}
 }
 .contactpersonlists{background: #ffffff;border-radius: 20px 20px 0 0;margin-top: 20px;padding: 10px 0;
-    .contactlist .ion-item{border: 1px solid #e3dfdf;}
+    .contactlist ion-item{border: 1px solid #e3dfdf;}
 }
 
 .socialdropdown {

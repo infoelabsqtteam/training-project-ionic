@@ -30,6 +30,21 @@ const routes: Routes = [
         { path: '', loadChildren: () => import('./pages/support/support.module').then(m => m.SupportPageModule), canLoad: [AuthGuard] }
       ]
     },
+    {
+      path: 'crm/quotation', children: [
+        { path: '', loadChildren: () => import('./crm/quotation/quotation.module').then(m => m.QuotationPageModule), canLoad: [AuthGuard] }
+      ]
+    },
+    {
+      path: 'crm/quotation-details', children: [
+        { path: '', loadChildren: () => import('./crm/quotation-details/quotation-details.module').then(m => m.QuotationDetailsPageModule), canLoad: [AuthGuard] }
+      ]
+    },
+    {
+      path: 'crm/contact-details', children: [
+        { path: '', loadChildren: () => import('./crm/contact-details/contact-details.module').then(m => m.ContactDetailsPageModule), canLoad: [AuthGuard] }
+      ]
+    },
     
   ]
 },

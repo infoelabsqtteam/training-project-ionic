@@ -72,8 +72,14 @@
     --ion-color-white: #ffffff;
 
 
-
-    --themebg :#113970; 
+    //custom theme 
+    --themebg :#113970;
+    --ion-color-theme: #113970;
+	--ion-color-theme-rgb: 17,57,112;
+	--ion-color-theme-contrast: #ffffff;
+	--ion-color-theme-contrast-rgb: 255,255,255;
+	--ion-color-theme-shade: #0f3263;
+	--ion-color-theme-tint: #294d7e;
 
 
 }

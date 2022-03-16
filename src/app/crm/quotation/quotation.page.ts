@@ -69,6 +69,19 @@ export class QuotationPage implements OnInit {
   parentcardId: any;
   parentcard: any;
 
+  // child contactdetails
+  result: any;
+  childLastName: any;
+  designation: any;
+  profileText: string;
+  personName: string;
+  mobile: number;
+  countryCode: string = "91";
+  whatsappNumber: string;
+  whatsappUrl: string;
+  whatsappMsg: string;
+  commonMsg: string;
+
   // loadmore variables
   private toplimit: number = 15;
 
@@ -581,18 +594,53 @@ export class QuotationPage implements OnInit {
     this.dataShareService.setchildDataList(newobj);
     // this.router.navigate(['crm/quotation-details']);
     if(this.cardType == 'contact'){
+      // this.getChildData();
       this.router.navigate(['crm/contact-details']);
     }else{
       this.router.navigate(['crm/quotation-details']);
     }
+  }
+
+  getChildData() {
+    this.childData = this.dataShareService.getchildCardData();
+    this.tabMenu = this.childData.childtabmenu;
+    this.childDataTitle = this.childData.childdata.first_name;
+    this.cardType = this.childData.childcardtype.name;
+    this.childLastName = this.childData.childdata.last_name;
+    if (this.childDataTitle !== '' && this.childLastName !== '') {
+      this.profileText = this.childDataTitle[0] + this.childLastName[0];
+      this.personName = this.childDataTitle + " " + this.childLastName;
+    } else {
+      this.profileText = this.childDataTitle[0];
+      this.personName = this.childDataTitle;
+    }
+    this.designation = this.childData.childdata.designation;
+    this.mobile = this.childData.childdata.mobile;
+    this.commonMsg = "Hello," + this.personName;
   }
   
   comingSoon() {
     this.storageService.presentToast('Comming Soon...');
   }
 
-  call(card,[i]) {
-    this.callNumber.callNumber(card.mobile, true)
+  call(card:any,Index:number) {
+    let callingNumber:any;
+    if(card.mobile !=''){
+      callingNumber = card.mobile;
+    }else {
+      callingNumber = card.billing_mobile;
+    }
+    this.callNumber.callNumber(callingNumber, true)
+      .then(res => console.log('Launched dialer!' + res))
+      .catch(err => console.log('Error launching dialer ' + err));
+  }
+
+  callInvoice(card:any,Index:number) {
+    let callingNumber:any;
+    if(card.billing_mobile !=''){
+      callingNumber = card.billing_mobile;
+    }
+    this.callNumber.callNumber(callingNumber, true)
       .then(res => console.log('Launched dialer!' + res))
       .catch(err => console.log('Error launching dialer ' + err));
   }
