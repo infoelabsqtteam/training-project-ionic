@@ -9,7 +9,7 @@
 
 <div class="menutab">
   <ion-segment scrollable value="">
-    <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(tabItem, i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label>
+    <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label>
     </ion-segment-button>
   </ion-segment>
 </div>
