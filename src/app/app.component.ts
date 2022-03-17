@@ -100,9 +100,9 @@ export class AppComponent implements OnInit, OnDestroy {
       //this.statusBar.overlaysWebView(true);
       this.statusBar.backgroundColorByHexString('#e30010');
       // this.androidpermissionsService.internetPermission();
-      this.permissionService.requestPermisiions();
+      // this.permissionService.requestPermisiions();
       // this.androidpermissionsService.checkPermission();
-      this.getCurrentLocation();
+      // this.getCurrentLocation();
 
     });
 
@@ -229,7 +229,7 @@ export class AppComponent implements OnInit, OnDestroy {
           headers: new HttpHeaders()
             .set('Authorization', 'Bearer ' + val.idToken)
         }
-        // this.ionLoaderService.autohideLoader('Setting Up The App for You');
+        this.ionLoaderService.autohideLoader('Please wait..');
         let obj = {
           crList: [],
           key1: "MCLR01",
@@ -242,17 +242,13 @@ export class AppComponent implements OnInit, OnDestroy {
         let api = this.envService.baseUrl('GET_GRID_DATA')
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
-            // this.loaderService.hideLoader();
             this.cardList = respData['data'];   
-            this.dataShareService.setCardList(respData['data']);        
-            // console.log(this.cardList);
+            this.dataShareService.setCardList(respData['data']);
+            this.loaderService.hideLoader();
           },
           (err: HttpErrorResponse) => {
-            // this.loaderService.hideLoader();
+            this.loaderService.hideLoader();
             console.log(err.error);
-            // console.log(err.name);
-            // console.log(err.message);
-            // console.log(err.status);
           }
         )
       }

@@ -29,14 +29,14 @@ export class AndroidpermissionsService {
     public alertController: AlertController,
     ) { }
 
-    requestPermisiions() {
-      this.androidPermission.requestPermissions(
-        [this.androidPermission.PERMISSION.ACCESS_NETWORK_STATE, this.androidPermission.PERMISSION.READ_EXTERNAL_STORAGE,
-        this.androidPermission.PERMISSION.WRITE_EXTERNAL_STORAGE, this.androidPermission.PERMISSION.CAMERA, this.androidPermission.PERMISSION.GET_ACCOUNTS,
-        this.androidPermission.PERMISSION.ACCESS_FINE_LOCATION, this.androidPermission.PERMISSION.ACCESS_COARSE_LOCATION,
-        this.androidPermission.PERMISSION.RECORD_AUDIO, this.androidPermission.PERMISSION.MODIFY_AUDIO_SETTINGS
-        ]);
-    }
+    // requestPermisiions() {
+    //   this.androidPermission.requestPermissions(
+    //     [this.androidPermission.PERMISSION.ACCESS_NETWORK_STATE, this.androidPermission.PERMISSION.READ_EXTERNAL_STORAGE,
+    //     this.androidPermission.PERMISSION.WRITE_EXTERNAL_STORAGE, this.androidPermission.PERMISSION.CAMERA, this.androidPermission.PERMISSION.GET_ACCOUNTS,
+    //     this.androidPermission.PERMISSION.ACCESS_FINE_LOCATION, this.androidPermission.PERMISSION.ACCESS_COARSE_LOCATION,
+    //     this.androidPermission.PERMISSION.RECORD_AUDIO, this.androidPermission.PERMISSION.MODIFY_AUDIO_SETTINGS
+    //     ]);
+    // }
 
     async internetExceptionError(){
         const alert = await this.alertController.create({

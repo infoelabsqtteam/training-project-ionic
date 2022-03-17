@@ -1,4 +1,4 @@
-package com.hardgoodlbs.ai;
+package com.elabs.ai;
 
 import com.getcapacitor.BridgeActivity;
 

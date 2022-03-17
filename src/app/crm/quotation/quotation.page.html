@@ -8,13 +8,10 @@
 </ion-header>
 
 <div class="menutab">
-  <ion-slides>
-    <ion-slide *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.active]="selectedIndex == i"  [ngClass]="cardItem.sidebar_menu && cardItem.name !== 'CRM'?'ion-show':'ion-hide'">
-      <ion-tab-button  ><ion-label>{{cardItem.name}}</ion-label> </ion-tab-button>
-    </ion-slide>
-  </ion-slides>
-    <!-- <ion-tab-button routerLink="/crm/enquiry"><ion-label>Enquiry Master</ion-label></ion-tab-button>
-    <ion-tab-button routerLink="/crm/quotation" class="active"><ion-label>Quotation</ion-label></ion-tab-button> -->
+  <ion-segment scrollable value="">
+    <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(tabItem, i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 </div>
 
 <ion-content class="pages quotation">
@@ -112,11 +109,11 @@
             </ion-col>
           </ion-row>
         </ion-item>
-        <ion-item-options side="end" (click)="call(card,[i])"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
+        <ion-item-options side="end" (click)="callInvoice(card, i)"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
     </ion-item-sliding>
   </ion-list>
 
-  <ion-list class="contactlist" *ngIf="cardType == 'contact' || cardType == 'crm'">
+  <ion-list class="contactlist" *ngIf="cardType == 'contact'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="contactlist">
           <ion-avatar slot="start">El</ion-avatar>
@@ -130,7 +127,7 @@
             </ion-col>
           </ion-row>
         </ion-item>
-        <ion-item-options side="end" (click)="call(card,[i])"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
+        <ion-item-options side="end" (click)="call(card, i)"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
     </ion-item-sliding>
   </ion-list>
 
@@ -216,10 +213,10 @@
     </ion-item-sliding>
   </ion-list>
 
-  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)" *ngIf="filterCount > 0">
+  <!-- <ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)" *ngIf="filterCount > 0">
     <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more data...">
     </ion-infinite-scroll-content>
-  </ion-infinite-scroll>
+  </ion-infinite-scroll> -->
   
   <!-- <div class="addmore" routerLink="../addquotation"><ion-icon name="add-outline"></ion-icon> ADD</div> -->
 </ion-content>

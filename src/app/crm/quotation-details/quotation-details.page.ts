@@ -43,17 +43,19 @@ export class QuotationDetailsPage implements OnInit {
   }
 
   ngOnInit() {
+    this.getChildData();    
+  }
+
+  getChildData(){
     this.childData = this.dataShareService.getchildCardData();
     this.childDataTitle = this.childData.childdata.company_name;
     this.childColumns = this.childData.childcolumns;
     this.cardType = this.childData.childcardtype.name;
-    this.childData = this.childData.childdata;
-    
+    this.childData = this.childData.childdata;   
 
     if(this.childData.childCardType && this.childData.childcardtype.name){
       this.cardType = this.childData.childcardtype.name
     }
-    
   }
 
   goBack(){

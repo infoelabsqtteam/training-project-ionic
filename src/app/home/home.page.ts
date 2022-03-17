@@ -1,4 +1,4 @@
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { DatePipe, CurrencyPipe, TitleCasePipe, Location } from '@angular/common';
 import { AuthService, CoreUtilityService, EnvService, LoaderService, PermissionService, StorageService, StorageTokenStatus } from '@core/ionic-core';
 import { Platform, ModalController , PopoverController, AlertController} from '@ionic/angular';
@@ -23,7 +23,7 @@ import { File } from '@ionic-native/file/ngx';
   styleUrls: ['./home.page.scss'],
   providers: [DocumentViewer,File],
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   modal: any;
   selectedIndex= -1;
 
@@ -85,11 +85,9 @@ export class HomePage implements OnInit {
     // below code is for slider and title name
     this.initializeApp();
     this.banner_img = [
-      'assets/img/home/banner1.png',
-      'assets/img/home/banner2.png'
-      // 'https://www.sanjivanichemist.com/assets/img/service1.jpg',
-      // 'https://www.sanjivanichemist.com/assets/img/service1.jpg',
-      // 'https://www.sanjivanichemist.com/assets/img/service1.jpg',
+      'assets/e-labs/banner.png'
+      // 'assets/img/home/banner1.png',
+      // 'assets/img/home/banner2.png'
     ];
     this.web_site_name = this.envService.getWebSiteName();
     this.cardListSubscription = this.dataShareService.cardList.subscribe(data =>{
@@ -138,6 +136,12 @@ export class HomePage implements OnInit {
     
   }
 
+  ngOnDestroy(): void {
+    if (this.cardListSubscription) {
+      this.cardListSubscription.unsubscribe();
+    }
+  }
+
   ngOnInit() {
     // if (this.storageService.GetRefreshTokenTime() === true || this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_EXPIRED) {
     //   this.authService.refreshToken();
@@ -172,7 +176,7 @@ export class HomePage implements OnInit {
   }
 
   //for getting cardmaster data
-  commonFunction() {
+  commonFunction(criteria?) {
     this.storageService.getObject('authData').then(async (val) => {
       if (val && val.idToken != null) {
         var header = {
@@ -180,11 +184,14 @@ export class HomePage implements OnInit {
             .set('Authorization', 'Bearer ' + val.idToken)
         }
         // this.loaderService.showLoader(null);
+        let crList = [];
+        if(criteria && criteria.length > 0){
+          crList = criteria;
+        }
         let obj = {
-          crList: [],
+          crList: crList,
           key1: "MCLR01",
           key2: "CRM",
-          // log: { userId: "kunalwebdeveloper11@gmail.com", appId: "DEVLP", refCode: "MCLR01" },
           log: await this.storageService.getUserLog(),
           pageNo: 0,
           pageSize: 50,
@@ -194,16 +201,22 @@ export class HomePage implements OnInit {
         this.http.post(api + '/' + 'null', obj, header).subscribe(
           respData => {
             // this.loaderService.hideLoader();
-            //this.cardList = respData['data'];   
-            this.dataShareService.setCardList(respData['data']);
-            // console.log(this.cardList);
+            //this.cardList = respData['data'];
+            if(respData && respData['data'].length > 0){
+
+              if(criteria && criteria.length > 0){
+                let card = respData['data'][0];
+                this.dataShareService.setcardData(card);
+                this.router.navigate(['crm/quotation']);
+              }else{              
+                this.dataShareService.setCardList(respData['data']);
+              }
+              
+            }
           },
           (err: HttpErrorResponse) => {
             // this.loaderService.hideLoader();
             console.log(err.error);
-            // console.log(err.name);
-            // console.log(err.message);
-            // console.log(err.status);
           }
         )
       }
@@ -213,8 +226,24 @@ export class HomePage implements OnInit {
   showCardTemplate(card:any, index:number){
     this.selectedIndex = index;
     // this.router.navigate(['cardview']);
+    let cardId = card._id;
+    if(card && card.tab_menu && card.tab_menu.length > 0){
+      let tab  = card.tab_menu[0];
+      let tabId = tab._id;
+      let crList = [
+        {
+          "fName": "_id",
+          "fValue": tabId,
+          "operator": "eq"
+        }
+      ]
+      this.commonFunction(crList);
+    }else{
+      this.dataShareService.setcardData(card);
+    }
+    this.dataShareService.setParentCardId(cardId);
     this.router.navigate(['crm/quotation']);
-    this.dataShareService.setcardData(card);
+    //this.dataShareService.setcardData(card);
   }
 
   showExitConfirm() {
@@ -254,7 +283,6 @@ export class HomePage implements OnInit {
           crList: [],
           key1: "MCLR01",
           key2: "CRM",
-          // log: {userId: "Shyamk.babul@gmail.com", appId: "CRM", refCode: "MCLR01"},
           pageNo: 0,
           pageSize: 50,
           value: "quotation_letter"
@@ -269,9 +297,6 @@ export class HomePage implements OnInit {
           },
           (err: HttpErrorResponse) => {
             console.log(err.error);
-            console.log(err.name);
-            console.log(err.message);
-            console.log(err.status);
           }
         )
       }
