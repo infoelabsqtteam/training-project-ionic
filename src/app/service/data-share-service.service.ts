@@ -94,7 +94,6 @@ export class DataShareServiceService {
     return this.userpostalcode;
   }
 
-
   setmedicineSaltList(responce){
     this.MedicineSaltList.emit(responce);
     this.medicineSaltList = responce;

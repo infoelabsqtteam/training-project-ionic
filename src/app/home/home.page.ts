@@ -1,6 +1,6 @@
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { DatePipe, CurrencyPipe, TitleCasePipe, Location } from '@angular/common';
-import { ApiService, AuthService, CoreUtilityService, DataShareService, EnvService, LoaderService, PermissionService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
+import { ApiService, AuthService, CommonDataShareService, CoreUtilityService, DataShareService, EnvService, LoaderService, PermissionService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
 import { Platform, ModalController , PopoverController, AlertController} from '@ionic/angular';
 import { HttpClient, HttpClientModule, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { NavigationExtras, Router, RouterOutlet } from '@angular/router';
@@ -17,7 +17,7 @@ import { File } from '@ionic-native/file/ngx';
   styleUrls: ['./home.page.scss'],
   providers: [DocumentViewer,File],
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   modal: any;
   selectedIndex= -1;
 
@@ -68,7 +68,8 @@ export class HomePage implements OnInit {
     private dataShareServiceService: DataShareServiceService,
     private dataShareService:DataShareService,
     private apiService:ApiService,
-    private restService:RestService
+    private restService:RestService,
+    private commonDataShareService:CommonDataShareService
   ) 
   {
     this.initializeApp();
@@ -80,6 +81,7 @@ export class HomePage implements OnInit {
     
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
       this.cardList = data.data;
+      this.commonDataShareService.setModuleList(this.cardList);
     })
   }
 
@@ -116,7 +118,15 @@ export class HomePage implements OnInit {
   }
 
 
-  
+  ngOnDestroy(): void {
+    if (this.cardListSubscription) {
+      this.cardListSubscription.unsubscribe();
+    }
+    if (this.gridDataSubscription) {
+      this.gridDataSubscription.unsubscribe();
+    }
+  }
+
   ngOnInit() {
     if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
       this.router.navigateByUrl('/home');      
@@ -148,10 +158,8 @@ export class HomePage implements OnInit {
   }
 
   showCardTemplate(card:any, index:number){
-    this.selectedIndex = index;
-    // this.router.navigate(['cardview']);
+    this.commonDataShareService.setModuleIndex(index);
     this.router.navigate(['crm/quotation']);
-    this.dataShareServiceService.setcardData(card);
   }
 
   showExitConfirm() {
