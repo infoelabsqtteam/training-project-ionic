@@ -26,7 +26,6 @@ export class QuotationPage implements OnInit {
   cardtitle: any;
 
   childColumns : any;
-  childData : any = {};
   childColumn: any = {};
   childDataTitle: any;
   childCardType: string = "";
@@ -105,16 +104,18 @@ export class QuotationPage implements OnInit {
 
   private getCardDataByCollection(i) {
     const moduleList = this.commonDataShareService.getModuleList();
-    const clicedModuleIndex = this.commonDataShareService.getModuleIndex();
-    let module:any  = {};
-    if(clicedModuleIndex >= 0){
-      module = moduleList[clicedModuleIndex];
-    }
+    // const clickedModuleIndex = this.commonDataShareService.getModuleIndex();
+    // let module:any  = {};
+    // if(clickedModuleIndex >= 0){
+    //   module = moduleList[clickedModuleIndex];
+    // }
+    let module = this.coreUtilityService.getModuleBySelectedIndex();
     if(module && module.tab_menu && module.tab_menu.length > 0){
       this.tabMenu = module.tab_menu;
       let tab:any = {};
       if(i == -1){
         tab = this.tabMenu[0];
+        this.selectedIndex = 0;
       }else{
         tab = this.tabMenu[i];
       }
@@ -132,7 +133,7 @@ export class QuotationPage implements OnInit {
     if (card.card_type !== '') {
       this.cardType = card.card_type.name;
     }
-    this.childColumn = card.child_card;
+    // this.childColumn = card.child_card;
     this.columnList = card.fields;
     if (this.columnList && this.columnList.length > 0 && this.createFormgroup) {
       this.createFormgroup = false;
@@ -184,32 +185,29 @@ export class QuotationPage implements OnInit {
 
   // go to new page 2nd method
   async detailCardButton(column, data){
-    const cardmaster=this.dataShareServiceService.gettCardList();
-    const childColumn = this.childColumn;
-    if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
-      cardmaster.forEach(element => {
-        if(element._id == childColumn._id ){
-          this.childColumns = element.fields;
-          this.childCardType = element.card_type;
-          this.childTabMenu = element.tab_menu;
-        }
-      });
-    }
-    this.childData = data;
+    //const cardmaster=this.dataShareServiceService.gettCardList();
+    // const childColumn = this.childColumn;
+    // if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
+    //   cardmaster.forEach(element => {
+    //     if(element._id == childColumn._id ){
+    //       this.childColumns = element.fields;
+    //       this.childCardType = element.card_type;
+    //       this.childTabMenu = element.tab_menu;
+    //     }
+    //   });
+    // }
+    //this.childData = data;
     
     // naviagte
     const newobj = {
-      "childcardtype": this.childCardType,
-      "childdata": this.childData,
-      "childcolumns": this.childColumns,
-      "childtabmenu": this.childTabMenu
+      //"childcardtype": this.childCardType,
+      "childdata": data,
+      "selected_tab_index": this.selectedIndex
+      //"childcolumns": this.childColumns,
+      //"childtabmenu": this.childTabMenu
     }
-    this.dataShareServiceService.setchildDataList(newobj);
-    if(this.cardType == 'contact'){
-      this.router.navigate(['crm/contact-details']);
-    }else{
-      this.router.navigate(['crm/quotation-details']);
-    }
+    this.dataShareServiceService.setchildDataList(newobj);    
+    this.router.navigate(['crm/quotation-details']);
   }
   
   comingSoon() {

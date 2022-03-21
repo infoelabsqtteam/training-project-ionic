@@ -1,14 +1,13 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
-import { DatePipe, CurrencyPipe, TitleCasePipe, Location } from '@angular/common';
-import { ApiService, AuthService, CommonDataShareService, CoreUtilityService, DataShareService, EnvService, LoaderService, PermissionService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
-import { Platform, ModalController , PopoverController, AlertController} from '@ionic/angular';
-import { HttpClient, HttpClientModule, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { NavigationExtras, Router, RouterOutlet } from '@angular/router';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { Location } from '@angular/common';
+import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, LoaderService, PermissionService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
+import { Platform, AlertController } from '@ionic/angular';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { DataShareServiceService } from '../service/data-share-service.service';
 import { Subscription } from 'rxjs';
 
-import { DocumentViewer, DocumentViewerOptions } from '@ionic-native/document-viewer/ngx';
+import { DocumentViewer } from '@ionic-native/document-viewer/ngx';
 import { File } from '@ionic-native/file/ngx';
 
 @Component({
@@ -192,10 +191,7 @@ export class HomePage implements OnInit, OnDestroy {
   search() {
     const criteria = "name;stwic;"+this.myInput+";STATIC";
     this.getGridData([criteria]);
-  }
-
-  
-  
+  } 
 
   openSearch(){
     console.log("function open searchbar");

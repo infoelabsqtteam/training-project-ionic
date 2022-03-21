@@ -1,8 +1,8 @@
-
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { CoreUtilityService, EnvService, StorageService } from '@core/ionic-core';
+import { EnvService, StorageService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { ModalController, PopoverController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -51,6 +51,17 @@ export class ContactDetailsPage implements OnInit {
   childCardType: string = "";
   childTabMenu: any=[];
 
+  // enquirydata = [
+  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
+  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
+  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
+  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
+  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
+  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
+  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
+  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'}
+  // ]
+
   constructor(
     public popoverController: PopoverController, 
     private modalController: ModalController,    
@@ -59,11 +70,12 @@ export class ContactDetailsPage implements OnInit {
     private http: HttpClient,
     private storageService: StorageService,
     private router: Router,
+    private currencyPipe: CurrencyPipe,
     private callNumber: CallNumber,
     private formBuilder: FormBuilder,
-    
-    private ionLoaderService: IonLoaderService,
-    private coreUtilityService :CoreUtilityService
+    private datePipe: DatePipe,
+    private CurrencyPipe: CurrencyPipe,
+    private ionLoaderService: IonLoaderService
   ) {}
 
   ngOnInit() {
@@ -230,7 +242,7 @@ export class ContactDetailsPage implements OnInit {
             break;
 
           default:
-            this.coreUtilityService.createFormControl(forControl, element, '', "text");
+            this.createFormControl(forControl, element, '', "text");
             break;
         }
       });
@@ -243,6 +255,123 @@ export class ContactDetailsPage implements OnInit {
     this.getcardData(this.collectionname);
   }
 
+  createFormControl(forControl, field, object, type) {
+    let disabled = field.is_disabled ? true : ((field.disable_if != undefined && field.disable_if != '') ? true : false);
+    switch (type) {
+      case "list":
+        forControl[field.field_name] = this.formBuilder.array(object, this.validator(field))
+        break;
+      case "text":
+        switch (field.type) {
+          case "gst_number":
+            forControl[field.field_name] = new FormControl({ value: object, disabled: disabled },this.validator(field))
+            break;    
+          default:
+            forControl[field.field_name] = new FormControl({ value: object, disabled: disabled }, this.validator(field))
+            break;
+        }
+        break;
+      case "group":
+        forControl[field.field_name] = this.formBuilder.group(object)
+        break;
+      default:
+        break;
+    }
+  }
+
+  validator(field) {
+    const validator = []
+    if (field.is_mandatory != undefined && field.is_mandatory) {
+      switch (field.type) {
+        case "grid_selection":
+        case "list_of_string":
+          break;
+        case "typeahead":
+          if (field.datatype != 'list_of_object') {
+            validator.push(Validators.required)
+          }
+          break;
+        default:
+          validator.push(Validators.required)
+          break;
+      }
+    }else{
+      switch (field.type){
+        case "email":
+          validator.push(Validators.email);
+          break;
+        default:
+          break; 
+      }
+    }    
+    if (field.min_length != undefined && field.min_length != null && field.min_length != '' && Number(field.min_length) && field.min_length > 0) {
+      validator.push(Validators.minLength(field.min_length))
+    }
+    if(field.max_length != undefined && field.max_length != null && field.max_length != '' && Number(field.max_length) && field.max_length > 0){
+      validator.push(Validators.maxLength(field.max_length))
+    }       
+    return validator;
+  }
+
+  getValueForGrid(field, object) {
+    let value = '';
+    if (field.field_name != undefined && field.field_name != null && field.field_name != '') {
+      value = this.getObjectValue(field.field_name, object)
+    }
+    if (!field.type) field.type = "Text";
+    switch (field.type.toLowerCase()) {
+      case 'datetime': return this.datePipe.transform(value, 'dd/MM/yyyy h:mm a');
+      case 'date': return this.datePipe.transform(value, 'dd/MM/yyyy');
+      case 'time': return this.datePipe.transform(value, 'h:mm a');
+      case "boolean": return value ? "Yes" : "No";
+      case "currency": return this.CurrencyPipe.transform(value, 'INR');
+      case "info":
+        if (value && value != '') {
+          return '<i class="fa fa-eye"></i>';
+        } else {
+          return '-';
+        }
+      case "file":
+        if (value && value != '') {
+          return '<span class="material-icons cursor-pointer">text_snippet</span>';
+        } else {
+          return '-';
+        }
+      case "template":
+        if (value && value != '') {
+          return '<i class="fa fa-file cursor-pointer" aria-hidden="true"></i>';
+        } else {
+          return '-';
+        }
+      case "image":
+        return '<img src="' + value + '" />';
+      case "icon":
+        return '<span class="material-icons cursor-pointer">' + field.field_class + '</span>';
+      case "download_file":
+        if (value && value != '') {
+          return '<span class="material-icons cursor-pointer">' + field.field_class + '</span>';
+        }else{
+          return '-';
+        }
+      case "trim_of_string":
+        if(value != undefined && value != null && value != ''){
+          if(typeof value == 'string'){
+            let stringObject = value.split('/');
+            if(stringObject.length > 0){
+              return stringObject[0]
+            }else{
+              return value;
+            } 
+          }else{
+            return value;
+          }
+        }else{
+          return value;
+        }      
+        
+      default: return value;
+    }
+  }
 
   getcardData(collection_name:any){
     this.storageService.getObject('authData').then(async (val) => {
@@ -253,7 +382,7 @@ export class ContactDetailsPage implements OnInit {
         }
         // this.ionLoaderService.showLoader(this.cardtitle);
         //this.loaderService.showLoader('null');
-        this.carddata = [];
+        this.carddata = '';
         let crList = [];
         let criteria:{};
         if(collection_name == 'invoices'){
@@ -333,12 +462,152 @@ export class ContactDetailsPage implements OnInit {
     }
   }
 
-  
-  
+  getfilterCrlist(headElements,formValue) {
+    const filterList = []
+    if(formValue != undefined){
+      const criteria = [];
+      headElements.forEach(element => {        
+        switch (element.type.toLowerCase()) {
+          case "text":
+          case "tree_view_selection":
+          case "dropdown":
+            if(formValue.value && formValue.value[element.field_name] != ''){              
+              if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
+                element.api_params_criteria.forEach(cri => {
+                  criteria.push(cri)
+                });
+              }else{
+                filterList.push(
+                  {
+                    "fName": element.field_name,
+                    "fValue": this.getddnDisplayVal(formValue.value[element.field_name]),
+                    "operator": "stwic"
+                  }
+                )
+              }
+            }
+            break;
+          case "date":
+          case "datetime":
+            if(formValue.value && formValue.value[element.field_name] != ''){
+              if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
+                element.api_params_criteria.forEach(cri => {
+                  criteria.push(cri)
+                });
+              }else{
+                filterList.push(
+                  {
+                    "fName": element.field_name,
+                    "fValue": this.dateFormat(formValue.value[element.field_name]),
+                    "operator": "eq"
+                  }
+                )
+              }
+            }
+            break;
+          case "daterange":
+            if(formValue.value && formValue.value[element.field_name].start != '' && formValue.value[element.field_name].end != null){              
+              if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
+                element.api_params_criteria.forEach(cri => {
+                  criteria.push(cri)
+                });
+              }else{
+                filterList.push(
+                  {
+                    "fName": element.field_name,
+                    "fValue": this.dateFormat(formValue.value[element.field_name].start),
+                    "operator": "gte"
+                  }
+                ) 
+              }          
+            }
+            if(formValue.value && formValue.value[element.field_name].end != '' && formValue.value[element.field_name].end != null){
+              if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
+                element.api_params_criteria.forEach(cri => {
+                  criteria.push(cri)
+                });
+              }else{
+                filterList.push(
+                  {
+                    "fName": element.field_name,
+                    "fValue": this.dateFormat(formValue.value[element.field_name].end),
+                    "operator": "lte"
+                  }
+                )
+              }
+            }
+            break;
+          default:
+            break;
+        }
+      });
+      if(criteria && criteria.length > 0){
+        const crList = this.getCriteriaList(criteria,formValue.getRawValue());
+        if(crList && crList.length > 0){
+          crList.forEach(element => {
+            filterList.push(element);
+          });
+        }
+      }
+    }
+    return filterList;
+  }
+  isArray(obj : any ) {
+    return Array.isArray(obj)
+  }
+  dateFormat(value) {
+    return this.datePipe.transform(value, 'dd/MM/yyyy')
+  }
 
-  
+  getCriteriaList(criteria,object){
+    const crList = [];    
+    criteria.forEach(element => {
+      const criteria = element.split(";");
+      const fValue = criteria[2]
+      let fvalue ='';
+      if(criteria[3] && criteria[3] == 'STATIC'){
+        fvalue = fValue;
+      }else{
+        fvalue = this.getObjectValue(fValue, object)
+      }
+      const list = {
+        "fName": criteria[0],
+        "fValue": fvalue,
+        "operator": criteria[1]
+      }
+      crList.push(list);
+    });
+    return crList;
+  }
 
-  
+  getObjectValue(field, object) {
+    let result = object;
+    if (field && field != null && field != '' && field != " ") {
+
+      let list = field.split(".")
+      for (let index = 0; index < list.length; index++) {
+        result = result[list[index]]
+        if (result === null || result === undefined) {
+          return result;
+        }
+      }
+      return result;
+    }
+    return "";
+  }
+
+
+  getddnDisplayVal(val) {
+    if (val && val.name) {
+      return val.name;
+    } else if (val && val.label) {
+      return val.label;
+    } else if (val && val.field_name) {
+      return val.field_name;
+    } else {
+      return val;
+    }
+  }
 
   comingSoon() {
     this.storageService.presentToast('Comming Soon...');
