@@ -6,6 +6,7 @@ import { TabsPage } from '../app/tabs/tabs.page';
 
 const routes: Routes = [
   // { path: '', redirectTo: 'places', pathMatch: 'full' },
+  { path: 'm-core', loadChildren: () => import('./m-core/m-core.module').then(m => m.McoreModule) },
   { path: 'auth', loadChildren: () => import('./auth/auth.module').then(m => m.AuthPageModule) },
   { path: '', loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule) },
   

@@ -1,11 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule} from '@angular/forms';
-
 import { IonicModule } from '@ionic/angular';
-
 import { CardviewPageRoutingModule } from './cardview-routing.module';
-
 import { CardviewPage } from './cardview.page';
 import { Modalh4Component } from '../../component/modalh4/modalh4.component';
 
