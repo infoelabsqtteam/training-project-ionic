@@ -238,10 +238,10 @@ export class QuotationPage implements OnInit {
       .catch(err => console.log('Error launching dialer ' + err));
   }
 
-  async getGridData(collectionName,criteria?){
+  getGridData(collectionName,criteria?){
     const crList = this.restService.getfilterCrlist(this.columnList, this.filterForm)
     const params = collectionName;
-    let data = await this.restService.getPaylodWithCriteria(params,'',[],{});
+    let data = this.restService.getPaylodWithCriteria(params,'',[],{});
     data['pageNo'] = 0;
     data['pageSize'] = 50;
     data.crList = crList;
