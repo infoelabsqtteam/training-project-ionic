@@ -82,7 +82,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // this.checkInternetConnection();
     this.initializeApp();
     // this.web_site = appConstants.siteName;
-    this.web_site = "ELABS";
+    this.web_site = this.envService.getAppName();
   }
 
   initializeApp() {

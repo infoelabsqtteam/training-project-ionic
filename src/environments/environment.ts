@@ -12,10 +12,10 @@ export const environment = {
   //serverhost: "https://servermedicea.medicea.in/rest/",
   //  serverhost: "https://sitservermedicea.medicea.in/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
-  appId: "com.elaboratory.ai",
-  appName: "E-Labs",
-  appPlatformName: "e-labs",
-  web_site: "E-Labs",
+  appId: "com.elabsdemolims.ai",
+  appName: "DemoLIMS",
+  appPlatformName: "demolims",
+  web_site: "DemoLIMS",
   razorpay_key : "rzp_test_P7SL8C2oelMvzE",
   verify_type : "email"
 };

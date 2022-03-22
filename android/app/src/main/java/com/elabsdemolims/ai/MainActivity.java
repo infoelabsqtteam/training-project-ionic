@@ -1,4 +1,4 @@
-package com.elaboratory.ai;
+package com.elabsdemolims.ai;
 
 import com.getcapacitor.BridgeActivity;
 

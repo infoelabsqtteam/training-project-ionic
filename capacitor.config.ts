@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.elaboratory.ai',
-  appName: 'E-Labs',
+  appId: 'com.elabsdemolims.ai',
+  appName: 'DemoLIMS',
   webDir: 'www',
   bundledWebRuntime: false
 };
