@@ -1,14 +1,3 @@
-<ion-header translucent>
-  <ion-toolbar>
-    <ion-title class="titleP">{{childDataTitle}} </ion-title>
-    <ion-button (click)="dismissModal()" slot="end">
-      <ion-icon slot="icon-only" name="close"></ion-icon> 
-    </ion-button>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content>
-
   <div class="contactdetails" *ngIf="cardType == 'detail1'">
    
     <p class="enquerylist" *ngFor="let column of childColumns; index as j">
@@ -37,5 +26,3 @@
       </ion-card>
     </ion-col>
   </ion-row>  -->
-
-</ion-content>
