@@ -1,6 +1,6 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit, Optional} from '@angular/core';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
-import { Platform} from '@ionic/angular';
+import { Platform, ModalController, IonRouterOutlet} from '@ionic/angular';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { filter } from 'rxjs';
@@ -65,7 +65,9 @@ export class QuotationPage implements OnInit {
     private restService:RestService,
     private coreUtilityService :CoreUtilityService,
     private dataShareService: DataShareService,
-    private commonDataShareService:CommonDataShareService
+    private commonDataShareService:CommonDataShareService,
+    public modalController: ModalController,
+    @Optional() private readonly routerOutlet?: IonRouterOutlet,
   ) 
   {
     // below code is for slider and title name
@@ -89,7 +91,8 @@ export class QuotationPage implements OnInit {
     this.router.events.pipe(
       filter((event: RouterEvent) => event instanceof NavigationEnd)
     ).subscribe(() => {
-      this.getCardDataByCollection(-1);      
+      const index = this.commonDataShareService.getSelectdTabIndex();
+      this.getCardDataByCollection(index);      
     });  
 
   }
@@ -104,27 +107,31 @@ export class QuotationPage implements OnInit {
   }
 
   private getCardDataByCollection(i) {
+    const card = this.getCard(i);
+    this.setCardDetails(card);        
+  }
+
+  getCard(index){
     const moduleList = this.commonDataShareService.getModuleList();
-    const clicedModuleIndex = this.commonDataShareService.getModuleIndex();
-    let module:any  = {};
+    const clicedModuleIndex = this.commonDataShareService.getModuleIndex();    
+    let card:any  = {};
     if(clicedModuleIndex >= 0){
-      module = moduleList[clicedModuleIndex];
+      card = moduleList[clicedModuleIndex];
     }
-    if(module && module.tab_menu && module.tab_menu.length > 0){
-      this.tabMenu = module.tab_menu;
+    if(card && card.tab_menu && card.tab_menu.length > 0){
+      this.tabMenu = card.tab_menu;
       let tab:any = {};
-      if(i == -1){
+      if(index == -1){
         tab = this.tabMenu[0];
+        this.selectedIndex = 0;
       }else{
-        tab = this.tabMenu[i];
+        tab = this.tabMenu[index];
+        this.selectedIndex = index;
       }
       const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id");
-      const tabDetail = moduleList[tabIndex];
-      this.setCardDetails(tabDetail);
-    }else{
-      this.setCardDetails(module);
+      card = moduleList[tabIndex];      
     }
-        
+    return card;
   }
 
   setCardDetails(card) {
@@ -266,6 +273,25 @@ export class QuotationPage implements OnInit {
     this.selectedIndex = index;
     //this.router.navigate(['crm/quotation']);
     this.dataShareServiceService.setcardData(card);
+  }
+
+  async addNew(){
+    this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);
+    let card = this.getCard(this.selectedIndex);
+    const id = '5f6d95da9feaa2409c3765cd';
+    this.commonDataShareService.setFormId(id);
+    this.router.navigate(['form']);
+    // const modal = await this.modalController.create({
+    //   //showBackdrop: true,
+    //   //backdropDismiss: true,
+    //   component: FormModalPage,
+    //   // componentProps: {
+    //   //   "lastName": "Welcome"
+    //   // },
+    //   //swipeToClose: true,
+    //   //cssClass: 'my-custom-class',
+    // });
+    // return await modal.present();
   }
 
 }

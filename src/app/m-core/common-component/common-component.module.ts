@@ -18,7 +18,8 @@ const components = [
         IonicModule,
         FormsModule, 
         ReactiveFormsModule, 
-        HttpClientModule
+        HttpClientModule,
+        IonicModule.forRoot(),
     ],
     providers: []
 })

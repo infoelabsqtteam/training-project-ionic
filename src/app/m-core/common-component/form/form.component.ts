@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from "@angular/forms";
 import { Router } from '@angular/router';
-import { ApiService, CoreUtilityService, DataShareService, RestService } from '@core/ionic-core';
+import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, RestService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 
@@ -20,6 +20,7 @@ export class FormComponent implements OnInit {
 
   @Input() editedRowIndex: number;
   @Input() formName: string;
+  @Input() modal: any;
 
   
   ionicForm: FormGroup;
@@ -75,7 +76,9 @@ export class FormComponent implements OnInit {
     private commonFunctionService:CoreUtilityService,
     private restService:RestService,
     private apiService:ApiService,
-    private dataShareService:DataShareService
+    private dataShareService:DataShareService,
+    private modalController:ModalController,
+    private commonDataShareService:CommonDataShareService,
     ) {
 
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
@@ -99,7 +102,7 @@ export class FormComponent implements OnInit {
     
   ngOnInit() {
     this.initForm();
-    const id = "5f6d95da9feaa2409c3765cd";
+    const id:any = this.commonDataShareService.getFormId();
     this.getNextFormById(id);
   }
 
@@ -432,6 +435,16 @@ export class FormComponent implements OnInit {
   }
   take_action_on_click(action){
     console.log(action);
+  }
+
+  dismiss() {
+    // using the injected ModalController this page
+    // can "dismiss" itself and optionally pass back data
+    this.modalController.dismiss(true,null,'form-modal');
+    this.modal.dismiss();
+  }
+  cancil(){
+    this.router.navigate(['crm/quotation']);
   }
   
 
