@@ -7,39 +7,20 @@
   </ion-toolbar>
 </ion-header>
 
-<div class="menutab">
+<!-- <div class="menutab">
   <ion-segment scrollable value="" *ngIf="tabMenu && tabMenu.length > 0" >
     <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label>
     </ion-segment-button>
   </ion-segment>
-</div>
+</div> -->
 
 <ion-content class="pages quotation">
 
-  <div class="filter ion-text-end">
-    <ion-label (click)="openFilter=!openFilter"><ion-icon name="funnel"></ion-icon> Filter</ion-label>
-  </div>
-
-  <div id="ion_accordian" class="ion_accordian ion-no-padding filterdata" *ngIf="openFilter">
-    <div [formGroup]="filterForm" >
-      <div class="search_div ion-padding">
-        <div *ngFor="let column of columnList; index as j" style="position: relative;">
-          <div class="filteritem" *ngIf="column.type == 'text'" [ngClass]="column.filter?'ion-show':'ion-hide'" >
-                <input type="checkbox" checked disabled>
-                <ion-input class="ion-text-capitalize" [formControlName]="column.field_name" clearInput [placeholder]="column.field_label"></ion-input>
-          </div>
-        </div>
-        <ion-buttons class="ion-padding-vertical ion-justify-content-around">
-          <ion-button fill="outline" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
-          <ion-button fill="outline" class="ion-text-capitalize" (click)="clearfilterCard()">Clear</ion-button>
-          <ion-button type="submit" fill="outline" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
-        </ion-buttons>
-      </div>
-    </div>    
-  </div>
-
   
-  <div *ngIf="filterCount == 0" class="nodatafound">    
+    <app-cards-layout></app-cards-layout>
+
+
+  <!-- <div *ngIf="filterCount == 0" class="nodatafound">    
     <ion-img src="../../../assets/nodatafound.png"></ion-img>
     <p>Go Back or Try adjusting your filter.</p>
     <ion-button color="primary" fill="outline" size="small" (click)="clearfilterCard()">Go Back</ion-button>
@@ -164,7 +145,7 @@
           </ion-row>
         </ion-item>
     </ion-item-sliding>
-  </ion-list>
+  </ion-list> -->
 
   <!-- <ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)" *ngIf="filterCount > 0">
     <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more data...">
@@ -172,4 +153,5 @@
   </ion-infinite-scroll> -->
   
   <!-- <div class="addmore" routerLink="../addquotation"><ion-icon name="add-outline"></ion-icon> ADD</div> -->
+
 </ion-content>

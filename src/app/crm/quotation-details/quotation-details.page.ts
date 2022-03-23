@@ -10,7 +10,7 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
 })
 export class QuotationDetailsPage implements OnInit {
 
-  cardType = "detail1"; //default Card
+  cardType = ""; //default Card
   childColumns: any = {};
   childData: any = {};
   childDataTitle: any;
@@ -22,7 +22,7 @@ export class QuotationDetailsPage implements OnInit {
   columnList: any = [];
   
   constructor(
-    private dataShareService:DataShareServiceService,
+    private dataShareServiceService:DataShareServiceService,
     private coreUtilityService :CoreUtilityService,
     private commonDataShareService:CommonDataShareService,
     private callNumber: CallNumber,
@@ -38,7 +38,7 @@ export class QuotationDetailsPage implements OnInit {
   getChildData(){
     let module = this.coreUtilityService.getModuleBySelectedIndex();
     let tabDetail:any = '';
-    this.childData = this.dataShareService.getchildCardData();
+    this.childData = this.dataShareServiceService.getchildCardData();
     let index:any = this.childData.selected_tab_index;
     const moduleList = this.commonDataShareService.getModuleList();
     if(index != -1){      

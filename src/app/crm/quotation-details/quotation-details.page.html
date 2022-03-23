@@ -16,9 +16,7 @@
     </p>
   </div>
 
-  <app-cards-layout></app-cards-layout>
-
-  <!-- <div class="contactprofile" *ngIf="cardType == 'contactdetail'">
+  <div class="contactprofile" *ngIf="cardType == 'contactdetail'">
     <div class="profileicon" >{{childDataValue.first_name}}</div>
     <h3 class="personName">{{childDataValue.first_name  +" "+ childDataValue.last_name}}</h3>
     <p class="personDesignation">{{childDataValue.designation}}</p>
@@ -29,14 +27,16 @@
       <ion-button (click)="sendemail()"><img src="assets/img/icons/mail.svg"></ion-button>
       <ion-button (click)="comingSoon()"><img src="assets/img/icons/edit.svg"></ion-button>
     </div>
-  </div>
+  </div>  
+
+  <app-cards-layout></app-cards-layout>
 
   <div class="contactpersonlists" *ngIf="tabMenu && tabMenu.length > 0" >
     <ion-segment scrollable value="">
       <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(tabItem, i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label> </ion-segment-button>
     </ion-segment>
   
-    <ion-list class="contactlist" *ngIf="cardType == 'enquiry'">
+    <!-- <ion-list class="contactlist" *ngIf="cardType == 'enquiry'">
       
       <ion-item-sliding *ngFor="let card of carddata; index as i">
           <ion-item class="quotationlist">
@@ -90,9 +90,9 @@
   
     <div *ngIf="filterCount == 0" class="nodatafound">    
       <ion-img src="../../../assets/nodatafound.png"></ion-img>
-    </div>
+    </div> -->
   
-  </div> -->
+  </div>
   
 </ion-content>
 
