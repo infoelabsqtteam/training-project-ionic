@@ -1,8 +1,9 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Ionic Forms</ion-title>
+    <ion-title>{{form.label}}</ion-title>
   </ion-toolbar>
 </ion-header>
+
 <ion-content>
   <!-- <form [formGroup]="ionicForm" (ngSubmit)="submitForm()" novalidate>
     <ion-item lines="full">
@@ -61,13 +62,13 @@
       </div>
       <div *ngIf="tableField.type == 'dropdown'">
         <ion-item *ngIf="tableField.datatype != 'object'">
-          <ion-label>Users</ion-label>
+          <ion-label>{{ tableField.label }}</ion-label>
           <ion-select  [formControlName]="tableField.field_name">
             <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item *ngIf="tableField.datatype == 'object'">
-          <ion-label>Users</ion-label>
+          <ion-label>{{ tableField.label }}</ion-label>
           <ion-select [compareWith]="compareWith" [formControlName]="tableField.field_name">
             <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
           </ion-select>
@@ -78,8 +79,9 @@
     <ion-row>
       <ion-col>
         <span *ngFor="let action_button of formFieldButtons; let i=index" > 
-          <ion-button type="button" *ngIf="action_button.type == 'button'" (click)="take_action_on_click(action_button)" color="danger" [disabled]="!templateForm.valid" expand="block">{{action_button.label}}</ion-button>
+          <ion-button type="button" *ngIf="action_button.type == 'button'" (click)="take_action_on_click(action_button)" color="danger" [disabled]="!templateForm.valid" expand="block">{{action_button.label}}</ion-button>          
         </span>
+        <ion-button type="button"  (click)="cancil()" color="danger"  expand="block">Cancil</ion-button>
       </ion-col>
     </ion-row>
   </form>
