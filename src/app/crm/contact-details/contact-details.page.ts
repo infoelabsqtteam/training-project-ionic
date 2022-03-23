@@ -64,8 +64,8 @@ export class ContactDetailsPage implements OnInit {
 
   constructor(
     public popoverController: PopoverController, 
-    private modalController: ModalController,    
-    private dataShareService:DataShareServiceService,
+    private modalController: ModalController,
+    private dataShareServiceService:DataShareServiceService,
     private envService: EnvService,
     private http: HttpClient,
     private storageService: StorageService,
@@ -90,14 +90,14 @@ export class ContactDetailsPage implements OnInit {
   }
 
   private getCardDataByCollection() {
-    const cardData = this.dataShareService.getCardMasterData();
+    const cardData = this.dataShareServiceService.getCardMasterData();
     // this.setCardDetails(cardData);
     this.getChildData();
     
   }
 
   getChildData() {
-    this.childData = this.dataShareService.getchildCardData();
+    this.childData = this.dataShareServiceService.getchildCardData();
     this.tabMenu = this.childData.childtabmenu;
     this.commonFunction(this.tabMenu[0])
     this.childDataTitle = this.childData.childdata.first_name;
@@ -136,7 +136,7 @@ export class ContactDetailsPage implements OnInit {
   showCardTemplate(card:any, index:number){
     this.selectedIndex = index;
     this.router.navigate(['crm/quotation']);
-    this.dataShareService.setcardData(card);
+    this.dataShareServiceService.setcardData(card);
   }
 
   sendemail(){
@@ -219,9 +219,9 @@ export class ContactDetailsPage implements OnInit {
   }
   
   setCardDetails(card) {
-    // this.cardListSubscription = this.dataShareService.gettCardList();
+    // this.cardListSubscription = this.dataShareServiceService.getCardList();
     // this.cardListSubscription.forEach(element => {
-    //   if(element._id == this.dataShareService.parentcardid){
+    //   if(element._id == this.dataShareServiceService.parentcardid){
     //     this.parentcard = element;
     //   }
     // });
@@ -432,7 +432,7 @@ export class ContactDetailsPage implements OnInit {
   }
 
   async detailCardButton(column, data){
-    const cardmaster=this.dataShareService.gettCardList();
+    const cardmaster=this.dataShareServiceService.getCardList();
     const childColumn = this.childColumn;
     if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
       cardmaster.forEach(element => {
@@ -452,7 +452,7 @@ export class ContactDetailsPage implements OnInit {
       "childcolumns": this.childColumns,
       "childtabmenu": this.childTabMenu
     }
-    this.dataShareService.setchildDataList(newobj);
+    this.dataShareServiceService.setchildDataList(newobj);
     // this.router.navigate(['crm/quotation-details']);
     if(this.cardType == 'contact'){
       // this.getChildData();

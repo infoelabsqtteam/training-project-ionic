@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { QuotationPageRoutingModule } from './quotation-routing.module';
 
 import { QuotationPage } from './quotation.page';
+import { CardsLayoutComponent } from 'src/app/component/cards-layout/cards-layout.component';
 
 @NgModule({
   imports: [
@@ -16,6 +17,9 @@ import { QuotationPage } from './quotation.page';
     IonicModule,
     QuotationPageRoutingModule
   ],
-  declarations: [QuotationPage]
+  declarations: [
+    QuotationPage,
+    CardsLayoutComponent
+  ]
 })
 export class QuotationPageModule {}

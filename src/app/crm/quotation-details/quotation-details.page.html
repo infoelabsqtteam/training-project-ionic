@@ -16,7 +16,9 @@
     </p>
   </div>
 
-  <div class="contactprofile" *ngIf="cardType == 'contactdetail'">
+  <app-cards-layout></app-cards-layout>
+
+  <!-- <div class="contactprofile" *ngIf="cardType == 'contactdetail'">
     <div class="profileicon" >{{childDataValue.first_name}}</div>
     <h3 class="personName">{{childDataValue.first_name  +" "+ childDataValue.last_name}}</h3>
     <p class="personDesignation">{{childDataValue.designation}}</p>
@@ -90,7 +92,7 @@
       <ion-img src="../../../assets/nodatafound.png"></ion-img>
     </div>
   
-  </div>
+  </div> -->
   
 </ion-content>
 

@@ -1,11 +1,12 @@
 import { Component, OnInit} from '@angular/core';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
-import { Platform} from '@ionic/angular';
+import { ModalController, Platform} from '@ionic/angular';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup} from '@angular/forms';
 import { CallNumber } from '@ionic-native/call-number/ngx';
+import { ModalDetailCardComponent } from 'src/app/component/modal-detail-card/modal-detail-card.component';
 
 @Component({
   selector: 'app-quotation',
@@ -64,7 +65,8 @@ export class QuotationPage implements OnInit {
     private restService:RestService,
     private coreUtilityService :CoreUtilityService,
     private dataShareService: DataShareService,
-    private commonDataShareService:CommonDataShareService
+    private commonDataShareService:CommonDataShareService,
+    private modalController: ModalController
   ) 
   {
     // below code is for slider and title name
@@ -181,6 +183,37 @@ export class QuotationPage implements OnInit {
 
   goBack(){
     this.carddata = [];
+  }
+
+  async modaldetailCardButton(column, data){
+     const cardmaster=this.dataShareServiceService.getCardList();
+    // const cardmaster = this.commonDataShareService.getModuleList();
+    const childColumn = this.childColumn;
+    if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
+      cardmaster.forEach(element => {
+        if(element._id == childColumn._id ){
+          this.childColumns = element.fields;
+          this.childCardType = element.card_type;
+        }
+      });
+    }
+    // for child header
+    this.childDataTitle = data.company_name;
+    
+    //modalShowfunction
+    const modal = await this.modalController.create({
+      component: ModalDetailCardComponent,
+      componentProps: {
+        "childData": data,
+        "childColumns": this.childColumns,
+        "childDataTitle": this.childDataTitle,
+        "childCardType" : this.childCardType
+       },
+      swipeToClose: true
+    });
+    modal.componentProps.modal = modal;
+    return await modal.present();
+
   }
 
   // go to new page 2nd method
