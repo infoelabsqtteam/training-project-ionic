@@ -24,6 +24,12 @@ export class QuotationPage implements OnInit {
 
   }
 
+  
+  goBack(){
+    const carddata = [];
+    const tabMenu = [];
+  }
+
   comingSoon() {
     this.storageService.presentToast('Comming Soon...');
   }

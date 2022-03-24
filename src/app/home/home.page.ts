@@ -140,13 +140,13 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
 
-  async getGridData(criteria?){
+  getGridData(criteria?){
     let criteriaList = [];
     if(criteria){
       criteriaList = criteria;
     }
     const params = 'card_master';
-    let data = await this.restService.getPaylodWithCriteria(params,'',criteria,{});
+    let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
     data['pageNo'] = 0;
     data['pageSize'] = 50;
     let payload = {
@@ -159,6 +159,7 @@ export class HomePage implements OnInit, OnDestroy {
   showCardTemplate(card:any, index:number){
     this.commonDataShareService.setModuleIndex(index);
     this.router.navigate(['crm/quotation']);
+    // this.router.navigate(['form']); 
   }
 
   showExitConfirm() {

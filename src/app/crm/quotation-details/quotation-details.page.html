@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start" (click)="goBack()"><ion-back-button defaultHref="/crm/quotation"></ion-back-button></ion-buttons>
-    <ion-title class="ion-no-padding ion-text-capitalize">{{childDataTitle}}</ion-title>
+    <ion-title class="ion-no-padding ion-text-capitalize"></ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -31,12 +31,12 @@
 
   <app-cards-layout></app-cards-layout>
 
-  <div class="contactpersonlists" *ngIf="tabMenu && tabMenu.length > 0" >
+  <!-- <div class="contactpersonlists" *ngIf="tabMenu && tabMenu.length > 0" >
     <ion-segment scrollable value="">
       <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(tabItem, i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label> </ion-segment-button>
     </ion-segment>
   
-    <!-- <ion-list class="contactlist" *ngIf="cardType == 'enquiry'">
+    <ion-list class="contactlist" *ngIf="cardType == 'enquiry'">
       
       <ion-item-sliding *ngFor="let card of carddata; index as i">
           <ion-item class="quotationlist">
@@ -90,9 +90,9 @@
   
     <div *ngIf="filterCount == 0" class="nodatafound">    
       <ion-img src="../../../assets/nodatafound.png"></ion-img>
-    </div> -->
+    </div>
   
-  </div>
+  </div> -->
   
 </ion-content>
 

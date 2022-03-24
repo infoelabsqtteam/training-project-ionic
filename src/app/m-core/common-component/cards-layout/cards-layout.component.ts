@@ -105,12 +105,13 @@ export class CardsLayoutComponent implements OnInit {
 
   private getCardDataByCollection(i) {
     const moduleList = this.commonDataShareService.getModuleList();
-    // const clickedModuleIndex = this.commonDataShareService.getModuleIndex();
-    // let module:any  = {};
-    // if(clickedModuleIndex >= 0){
-    //   module = moduleList[clickedModuleIndex];
-    // }
-    let module = this.coreUtilityService.getModuleBySelectedIndex();
+    const clickedModuleIndex = this.commonDataShareService.getModuleIndex();
+    let module:any  = {};
+    if(clickedModuleIndex >= 0){
+      module = moduleList[clickedModuleIndex];
+    }else{
+      module = this.coreUtilityService.getModuleBySelectedIndex();
+    }
     if(module && module.tab_menu && module.tab_menu.length > 0){
       this.tabMenu = module.tab_menu;
       let tab:any = {};

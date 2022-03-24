@@ -1,3 +1,12 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" (click)="dismissModal()"><ion-back-button defaultHref="/crm/quotation"></ion-back-button></ion-buttons>
+    <!-- <ion-title class="ion-no-padding ion-text-capitalize">{{childDataTitle}}</ion-title> -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pages">
+  
   <div class="contactdetails" *ngIf="cardType == 'detail1'">
    
     <p class="enquerylist" *ngFor="let column of childColumns; index as j">
@@ -26,3 +35,5 @@
       </ion-card>
     </ion-col>
   </ion-row>  -->
+
+</ion-content>

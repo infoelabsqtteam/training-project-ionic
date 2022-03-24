@@ -20,6 +20,8 @@ export class QuotationDetailsPage implements OnInit {
   filterCount: number = -1;
   carddata: any = [];
   columnList: any = [];
+  tabMenu:any =[];
+  selectedIndex:any =-1;
   
   constructor(
     private dataShareServiceService:DataShareServiceService,
@@ -65,8 +67,7 @@ export class QuotationDetailsPage implements OnInit {
     this.setCard(child_card);
     
   }
-  tabMenu:any =[];
-  selectedIndex:any =-1;
+
   setCard(card){
     if (card.card_type !== '') {
       this.cardType = card.card_type.name;
