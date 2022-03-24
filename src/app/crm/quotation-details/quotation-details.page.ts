@@ -1,10 +1,6 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { EnvService, LoaderService, StorageService } from '@core/ionic-core';
-import { ModalController } from '@ionic/angular';
-import { filter } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonDataShareService, CoreUtilityService, StorageService,} from '@core/ionic-core';
+import { CallNumber } from '@ionic-native/call-number/ngx';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
 @Component({
@@ -12,50 +8,90 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
   templateUrl: './quotation-details.page.html',
   styleUrls: ['./quotation-details.page.scss'],
 })
-export class QuotationDetailsPage implements OnInit {
+export class QuotationDetailsPage implements OnInit, OnDestroy {
 
-  cardType = "detail2";
-  cardDataMasterSubscription: any;
-  columnList: any = [];
-  collectionname: any = '';
-
-  
-  carddata: any;
-  cardmaster: any;
-
+  cardType = ""; //default Card
   childColumns: any = {};
   childData: any = {};
-  childCardData: any;
   childDataTitle: any;
+  childDataValue: any = {};
 
+  // 
+  filterCount: number = -1;
+  carddata: any = [];
+  columnList: any = [];
+  tabMenu:any =[];
+  card:any = {};
   
   constructor(
-    private modalController: ModalController,
-    private datePipe: DatePipe,
-    private dataShareService:DataShareServiceService,
-    private envService: EnvService,
-    private http: HttpClient,
-    private storageService: StorageService,
-    private router: Router,
-    private currencyPipe: CurrencyPipe
+    private dataShareServiceService:DataShareServiceService,
+    private coreUtilityService :CoreUtilityService,
+    private commonDataShareService:CommonDataShareService,
+    private callNumber: CallNumber,
+    private storageService: StorageService
   ) { 
     
+  }
+
+  resetVariables(){
+    this.card = {};
   }
 
   ngOnInit() {
     this.getChildData();    
   }
+  ngOnDestroy(): void {
+    this.resetVariables();
+  }
 
   getChildData(){
-    this.childData = this.dataShareService.getchildCardData();
-    this.childDataTitle = this.childData.childdata.company_name;
-    this.childColumns = this.childData.childcolumns;
-    this.cardType = this.childData.childcardtype.name;
-    this.childData = this.childData.childdata;   
-
-    if(this.childData.childCardType && this.childData.childcardtype.name){
-      this.cardType = this.childData.childcardtype.name
+    let module = this.coreUtilityService.getModuleBySelectedIndex();
+    let tabDetail:any = '';
+    this.childData = this.dataShareServiceService.getchildCardData();
+    let index:any = this.childData.selected_tab_index;
+    const moduleList = this.commonDataShareService.getModuleList();
+    if(index != -1){      
+      let tabs:any = module.tab_menu;
+      let tab:any = tabs[index];
+      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id");
+      tabDetail = moduleList[tabIndex];
     }
+    let child_card = {};
+    if(tabDetail != ''){
+      if(tabDetail && tabDetail.child_card){
+        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");        
+        child_card = moduleList[tabIndex]; 
+      }
+    }else{
+      if(module && module.child_card){
+        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,module.child_card._id,"_id");        
+        child_card = moduleList[tabIndex]; 
+      }else{
+        child_card = module;
+      }      
+    }
+    this.childDataValue = this.childData.childdata; 
+    this.setCard(child_card);
+    
+  }
+
+  setCard(card){
+    if (card.card_type !== '' && card.card_type.name && card.card_type.name != "") {
+      this.cardType = card.card_type.name;
+    }
+    this.childColumns = card.fields;
+    if(card.tab_menu && card.tab_menu.length > 0){
+      this.tabMenu = card.tab_menu;
+      const moduleList = this.commonDataShareService.getModuleList();
+      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,this.tabMenu[0]._id,"_id");        
+      const cardChild = moduleList[tabIndex]; 
+      this.card = {
+        "tabs":this.tabMenu,
+        "card" : cardChild,
+        "selectedTabIndex" : 0
+      }
+    }
+    
   }
 
   goBack(){
@@ -63,87 +99,65 @@ export class QuotationDetailsPage implements OnInit {
     this.childData = {};
     this.childDataTitle = '';
     this.cardType = '';
-
+    this.childDataValue = {};
+    this.resetVariables();
   }
 
-  getValueForGrid(field, object) {
-    let value = '';
-    if (field.field_name != undefined && field.field_name != null && field.field_name != '') {
-      value = this.getObjectValue(field.field_name, object)
+  getValueForGrid(field,object){
+    return this.coreUtilityService.getValueForGrid(field,object);
+  }
+
+  // extra code added below for error ressolve
+  call(providerNumber: any) {
+    this.callNumber.callNumber(providerNumber, true)
+      .then(res => console.log('Launched dialer!' + res))
+      .catch(err => console.log('Error launching dialer ' + err));
+      console.log(providerNumber);
+  }
+  sendemail(){
+    var link = "mailto:" + this.childData.childdata.email + "?subject=Hi,"+ this.childData.childdata.name +"Contact%20Details&body=Hello, I need Some Information.";     
+    window.location.href = link;
+  }
+  sendwhatsapp(){
+    let countryCode = "+91";
+    let mobile = "";
+    let whatsappUrl = "https://wa.me/";
+    let whatsappMsg = "?text=Hello,%20";
+    let urllink =  whatsappUrl + countryCode + mobile + whatsappMsg;
+    window.location.href = urllink;
+  }
+  sendsms(){
+    let smsMsg = "?text=Hello,";
+    let mobile = "";
+    let smslink =  "sms:" + mobile + "?subject=Hi,"+ this.childData.childdata.name +"Contact%20Details&body=Hello,%20I%20need%20Some%20Information.";
+    window.location.href = smslink;
+  }
+  callInvoice(card:any,Index:number) {
+    let callingNumber:any;
+    if(card.billing_mobile !=''){
+      callingNumber = card.billing_mobile;
     }
-    // if (field.field_label != undefined && field.field_label != null && field.field_label != '') {
-    //   value = this.getObjectValue(field.field_label, object)
-    // }
-    if (!field.type) field.type = "Text";
-    switch (field.type.toLowerCase()) {
-      case 'datetime': return this.datePipe.transform(value, 'dd/MM/yyyy h:mm a');
-      case 'date': return this.datePipe.transform(value, 'dd/MM/yyyy');
-      case 'time': return this.datePipe.transform(value, 'h:mm a');
-      case "boolean": return value ? "Yes" : "No";
-      case "currency": return this.currencyPipe.transform(value, 'INR');
-      case "info":
-        if (value && value != '') {
-          return '<i class="fa fa-eye"></i>';
-        } else {
-          return '-';
-        }
-      case "file":
-        if (value && value != '') {
-          return '<span class="material-icons cursor-pointer">text_snippet</span>';
-        } else {
-          return '-';
-        }
-      case "template":
-        if (value && value != '') {
-          return '<i class="fa fa-file cursor-pointer" aria-hidden="true"></i>';
-        } else {
-          return '-';
-        }
-      case "image":
-        return '<img src="' + value + '" />';
-      case "icon":
-        return '<span class="material-icons cursor-pointer">' + field.field_class + '</span>';
-      case "download_file":
-        if (value && value != '') {
-          return '<span class="material-icons cursor-pointer">' + field.field_class + '</span>';
-        }else{
-          return '-';
-        }
-      case "trim_of_string":
-        if(value != undefined && value != null && value != ''){
-          if(typeof value == 'string'){
-            let stringObject = value.split('/');
-            if(stringObject.length > 0){
-              return stringObject[0]
-            }else{
-              return value;
-            } 
-          }else{
-            return value;
-          }
-        }else{
-          return value;
-        }      
-        
-      default: return value;
-    }
+    this.callNumber.callNumber(callingNumber, true)
+      .then(res => console.log('Launched dialer!' + res))
+      .catch(err => console.log('Error launching dialer ' + err));
   }
   
-  getObjectValue(field, object) {
-    let result = object;
-    if (field && field != null && field != '' && field != " ") {
-
-      let list = field.split(".")
-      for (let index = 0; index < list.length; index++) {
-        result = result[list[index]]
-        if (result === null || result === undefined) {
-          return result;
-        }
-      }
-      return result;
-    }
-    return "";
+  tabmenuClick(tabItem:any,index:number){    
+    this.getCardDataByCollection(tabItem._id);
   }
 
+  private getCardDataByCollection(i) {
+    const cardWithTab = this.coreUtilityService.getCard(i); 
+    if(cardWithTab && cardWithTab.card){
+      this.card = cardWithTab
+      ;
+    }     
+  }
+  
+  async detailCardButton(column, data){}
+
+  comingSoon() {
+    this.storageService.presentToast('Comming Soon...');
+  }
 
 }

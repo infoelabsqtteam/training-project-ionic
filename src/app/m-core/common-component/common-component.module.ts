@@ -4,9 +4,13 @@ import { IonicModule } from '@ionic/angular';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormComponent } from './form/form.component';
+import { CardsLayoutComponent } from './cards-layout/cards-layout.component';
+import { ModalDetailCardComponent } from './modal-detail-card/modal-detail-card.component';
 
 const components = [
-    FormComponent
+    FormComponent,
+    CardsLayoutComponent,
+    ModalDetailCardComponent
   ];
 
 @NgModule({

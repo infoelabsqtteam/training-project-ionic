@@ -1,29 +1,41 @@
-<ion-header>
+<!-- <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start" (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
     <ion-title class="ion-no-padding ion-text-capitalize">{{cardtitle}}</ion-title>
     <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
     <ion-buttons slot="end" class="ion-padding-start" (click)="comingSoon()"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
-<!-- <div class="menutab">
+<div class="menutab">
   <ion-segment scrollable value="" *ngIf="tabMenu && tabMenu.length > 0" >
     <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label>
     </ion-segment-button>
   </ion-segment>
-</div> -->
+</div>
 
 <ion-content class="pages quotation">
 
-  
-    <app-cards-layout [card]="card" [data]="data"></app-cards-layout>
+  <div class="filter ion-text-end">
+    <ion-label (click)="openFilter=!openFilter"><ion-icon name="funnel"></ion-icon> Filter</ion-label>
+  </div>
 
-
-  <!-- <div *ngIf="filterCount == 0" class="nodatafound">    
-    <ion-img src="../../../assets/nodatafound.png"></ion-img>
-    <p>Go Back or Try adjusting your filter.</p>
-    <ion-button color="primary" fill="outline" size="small" (click)="clearfilterCard()">Go Back</ion-button>
+  <div id="ion_accordian" class="ion_accordian ion-no-padding filterdata" *ngIf="openFilter">
+    <div [formGroup]="filterForm" >
+      <div class="search_div ion-padding">
+        <div *ngFor="let column of columnList; index as j" style="position: relative;">
+          <div class="filteritem" *ngIf="column.type == 'text'" [ngClass]="column.filter?'ion-show':'ion-hide'" >
+                <input type="checkbox" checked disabled>
+                <ion-input class="ion-text-capitalize" [formControlName]="column.field_name" clearInput [placeholder]="column.field_label"></ion-input>
+          </div>
+        </div>
+        <ion-buttons class="ion-padding-vertical ion-justify-content-around">
+          <ion-button fill="outline" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
+          <ion-button fill="outline" class="ion-text-capitalize" (click)="clearfilterCard()">Clear</ion-button>
+          <ion-button type="submit" fill="outline" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
+        </ion-buttons>
+      </div>
+    </div>    
   </div>
 
   <ion-list class="contactlist" *ngIf="cardType == 'summary'">
@@ -46,7 +58,7 @@
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="quotationlist">
           <ion-row class="ion-align-items-center inner_padding">
-            <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="modaldetailCardButton(column,card)">
+            <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="detailCardButton(column,card)">
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
@@ -58,7 +70,7 @@
         </ion-item>
     </ion-item-sliding>
   </ion-list>
-  
+
   <ion-list class="contactlist" *ngIf="cardType == 'invoice'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="quotationlist">
@@ -145,17 +157,12 @@
           </ion-row>
         </ion-item>
     </ion-item-sliding>
-  </ion-list> -->
+  </ion-list>
 
-  <!-- <ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)" *ngIf="filterCount > 0">
-    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more data...">
-    </ion-infinite-scroll-content>
-  </ion-infinite-scroll> -->
-  <!-- routerLink="../addquotation" -->
-  
-  <!-- <div class="addmore" (click)="addNew()"><ion-icon name="add-outline"></ion-icon> ADD</div> -->
+  <div class="addmore" (click)="addNew()" *ngIf="addNewEnabled"><ion-icon name="add-outline"></ion-icon> ADD</div>
 
-  
-  <!-- <div class="addmore" routerLink="../addquotation"><ion-icon name="add-outline"></ion-icon> ADD</div> -->
+  <div *ngIf="filterCount == 0" class="nodatafound">    
+    <ion-img src="../../../assets/nodatafound.png"></ion-img>
+  </div>
 
 </ion-content>

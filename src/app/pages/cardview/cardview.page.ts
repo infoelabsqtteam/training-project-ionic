@@ -78,7 +78,7 @@ export class CardviewPage implements OnInit {
     private popoverController: PopoverController,
     private router: Router,
     private datePipe: DatePipe,
-    private dataShareService:DataShareServiceService,
+    private dataShareServiceService:DataShareServiceService,
     private loaderService: LoaderService,
     private CurrencyPipe: CurrencyPipe,
     private formBuilder: FormBuilder
@@ -93,7 +93,7 @@ export class CardviewPage implements OnInit {
     ];
     this.web_site_name = this.envService.getWebSiteName();
 
-    // this.cardDataMasterSubscription = this.dataShareService.getCardMasterData();
+    // this.cardDataMasterSubscription = this.dataShareServiceService.getCardMasterData();
     // this.cardType = this.cardDataMasterSubscription.card_type.name;
     // this.columnList = this.cardDataMasterSubscription.fields;
     // this.collectionname = this.cardDataMasterSubscription.collection_name;
@@ -110,7 +110,7 @@ export class CardviewPage implements OnInit {
     this.router.events.pipe(
       filter((event: RouterEvent) => event instanceof NavigationEnd)
     ).subscribe(() => {
-      this.cardDataMasterSubscription = this.dataShareService.getCardMasterData();
+      this.cardDataMasterSubscription = this.dataShareServiceService.getCardMasterData();
       this.cardtitle = this.cardDataMasterSubscription.name;
       this.cardType = this.cardDataMasterSubscription.card_type.name;
       this.childColumn = this.cardDataMasterSubscription.child_card;
@@ -478,7 +478,7 @@ export class CardviewPage implements OnInit {
 
   //card action Button 1st method
   async buttonAction(column, data){
-    const cardmaster=this.dataShareService.gettCardList();
+    const cardmaster=this.dataShareServiceService.getCardList();
     const childColumn = this.childColumn;
     if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
       cardmaster.forEach(element => {
@@ -520,7 +520,7 @@ export class CardviewPage implements OnInit {
 
   // go to new page 2nd method
   async detailCardButton(column, data){
-    const cardmaster=this.dataShareService.gettCardList();
+    const cardmaster=this.dataShareServiceService.getCardList();
     const childColumn = this.childColumn;
     if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
       cardmaster.forEach(element => {
@@ -538,7 +538,7 @@ export class CardviewPage implements OnInit {
       "childdata": this.childData,
       "childcolumns": this.childColumns
     }
-    this.dataShareService.setchildDataList(newobj);
+    this.dataShareServiceService.setchildDataList(newobj);
     this.router.navigate(['carddetailview']);
 
   }
