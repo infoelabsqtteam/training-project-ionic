@@ -7,14 +7,14 @@ import { Router } from '@angular/router';
 import { DataShareServiceService } from '../service/data-share-service.service';
 import { Subscription } from 'rxjs';
 
-import { DocumentViewer } from '@ionic-native/document-viewer/ngx';
-import { File } from '@ionic-native/file/ngx';
+import { DocumentViewer, DocumentViewerOptions } from '@ionic-native/document-viewer/ngx';
+//import { File } from '@ionic-native/file/ngx';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  providers: [DocumentViewer,File],
+  providers: [DocumentViewer],
 })
 export class HomePage implements OnInit, OnDestroy {
   modal: any;
@@ -159,7 +159,7 @@ export class HomePage implements OnInit, OnDestroy {
   showCardTemplate(card:any, index:number){
     this.commonDataShareService.setModuleIndex(index);
     this.router.navigate(['crm/quotation']);
-    // this.router.navigate(['form']); 
+    //this.router.navigate(['form']); 
   }
 
   showExitConfirm() {
