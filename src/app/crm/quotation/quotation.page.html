@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start" (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
     <ion-title class="ion-no-padding ion-text-capitalize">{{cardtitle}}</ion-title>
     <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
     <ion-buttons slot="end" class="ion-padding-start" (click)="comingSoon()"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
@@ -17,7 +17,7 @@
 <ion-content class="pages quotation">
 
   
-    <app-cards-layout></app-cards-layout>
+    <app-cards-layout [card]="card" [data]="data"></app-cards-layout>
 
 
   <!-- <div *ngIf="filterCount == 0" class="nodatafound">    
@@ -153,7 +153,7 @@
   </ion-infinite-scroll> -->
   <!-- routerLink="../addquotation" -->
   
-  <div class="addmore" (click)="addNew()"><ion-icon name="add-outline"></ion-icon> ADD</div>
+  <!-- <div class="addmore" (click)="addNew()"><ion-icon name="add-outline"></ion-icon> ADD</div> -->
 
   
   <!-- <div class="addmore" routerLink="../addquotation"><ion-icon name="add-outline"></ion-icon> ADD</div> -->

@@ -20,6 +20,8 @@ export class FormComponent implements OnInit {
 
   @Input() editedRowIndex: number;
   @Input() formName: string;
+  @Input() childData: any;  
+  @Input() addform: any;
   @Input() modal: any;
 
   
@@ -445,6 +447,10 @@ export class FormComponent implements OnInit {
   }
   cancil(){
     this.router.navigate(['crm/quotation']);
+  }
+
+  dismissModal(){
+    this.modal.dismiss({'dismissed': true});
   }
   
 

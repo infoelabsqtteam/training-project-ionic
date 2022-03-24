@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonDataShareService, CoreUtilityService, StorageService,} from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -8,7 +8,7 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
   templateUrl: './quotation-details.page.html',
   styleUrls: ['./quotation-details.page.scss'],
 })
-export class QuotationDetailsPage implements OnInit {
+export class QuotationDetailsPage implements OnInit, OnDestroy {
 
   cardType = ""; //default Card
   childColumns: any = {};
@@ -21,7 +21,7 @@ export class QuotationDetailsPage implements OnInit {
   carddata: any = [];
   columnList: any = [];
   tabMenu:any =[];
-  selectedIndex:any =-1;
+  card:any = {};
   
   constructor(
     private dataShareServiceService:DataShareServiceService,
@@ -33,8 +33,15 @@ export class QuotationDetailsPage implements OnInit {
     
   }
 
+  resetVariables(){
+    this.card = {};
+  }
+
   ngOnInit() {
     this.getChildData();    
+  }
+  ngOnDestroy(): void {
+    this.resetVariables();
   }
 
   getChildData(){
@@ -52,12 +59,12 @@ export class QuotationDetailsPage implements OnInit {
     let child_card = {};
     if(tabDetail != ''){
       if(tabDetail && tabDetail.child_card){
-        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");
+        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");        
         child_card = moduleList[tabIndex]; 
       }
     }else{
       if(module && module.child_card){
-        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,module.child_card._id,"_id");
+        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,module.child_card._id,"_id");        
         child_card = moduleList[tabIndex]; 
       }else{
         child_card = module;
@@ -69,14 +76,22 @@ export class QuotationDetailsPage implements OnInit {
   }
 
   setCard(card){
-    if (card.card_type !== '') {
+    if (card.card_type !== '' && card.card_type.name && card.card_type.name != "") {
       this.cardType = card.card_type.name;
     }
     this.childColumns = card.fields;
     if(card.tab_menu && card.tab_menu.length > 0){
       this.tabMenu = card.tab_menu;
-      this.selectedIndex = 0;
+      const moduleList = this.commonDataShareService.getModuleList();
+      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,this.tabMenu[0]._id,"_id");        
+      const cardChild = moduleList[tabIndex]; 
+      this.card = {
+        "tabs":this.tabMenu,
+        "card" : cardChild,
+        "selectedTabIndex" : 0
+      }
     }
+    
   }
 
   goBack(){
@@ -85,6 +100,7 @@ export class QuotationDetailsPage implements OnInit {
     this.childDataTitle = '';
     this.cardType = '';
     this.childDataValue = {};
+    this.resetVariables();
   }
 
   getValueForGrid(field,object){
@@ -126,10 +142,18 @@ export class QuotationDetailsPage implements OnInit {
       .catch(err => console.log('Error launching dialer ' + err));
   }
   
-  tabmenuClick(tabItem:any,index:number){
-    
-    // this.getCardDataByCollection(tabItem._id);
+  tabmenuClick(tabItem:any,index:number){    
+    this.getCardDataByCollection(tabItem._id);
   }
+
+  private getCardDataByCollection(i) {
+    const cardWithTab = this.coreUtilityService.getCard(i); 
+    if(cardWithTab && cardWithTab.card){
+      this.card = cardWithTab
+      ;
+    }     
+  }
+  
   async detailCardButton(column, data){}
 
   comingSoon() {

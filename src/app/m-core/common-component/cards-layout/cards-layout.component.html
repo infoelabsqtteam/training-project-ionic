@@ -159,6 +159,7 @@
     </ion-item-sliding>
   </ion-list>
 
+  <div class="addmore" (click)="addNew()" *ngIf="addNewEnabled"><ion-icon name="add-outline"></ion-icon> ADD</div>
 
   <div *ngIf="filterCount == 0" class="nodatafound">    
     <ion-img src="../../../assets/nodatafound.png"></ion-img>

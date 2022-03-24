@@ -28,8 +28,9 @@
       <ion-button (click)="comingSoon()"><img src="assets/img/icons/edit.svg"></ion-button>
     </div>
   </div>  
-
-  <app-cards-layout></app-cards-layout>
+  <div *ngIf="tabMenu.length > 0">
+    <app-cards-layout [card]="card" [data]="childDataValue"></app-cards-layout>
+  </div>
 
   <!-- <div class="contactpersonlists" *ngIf="tabMenu && tabMenu.length > 0" >
     <ion-segment scrollable value="">
