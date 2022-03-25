@@ -63,13 +63,13 @@
       </div>
       <div *ngIf="tableField.type == 'dropdown'">
         <ion-item *ngIf="tableField.datatype != 'object'">
-          <ion-label>{{ tableField.label }}</ion-label>
+          <ion-label position="floating">{{ tableField.label }}</ion-label>
           <ion-select  [formControlName]="tableField.field_name">
             <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item *ngIf="tableField.datatype == 'object'">
-          <ion-label>{{ tableField.label }}</ion-label>
+          <ion-label position="floating">{{ tableField.label }}</ion-label>
           <ion-select [compareWith]="compareWith" [formControlName]="tableField.field_name">
             <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
           </ion-select>
@@ -77,13 +77,13 @@
       </div>
       <div *ngIf="tableField.type == 'textarea'">
         <ion-item>
-          <ion-label>{{ tableField.label }}</ion-label>
+          <ion-label position="floating">{{ tableField.label }}</ion-label>
           <ion-textarea [formControlName]="tableField.field_name" rows="6" cols="20" [placeholder]="tableField.placeholder"></ion-textarea>
         </ion-item>
       </div>
       <div *ngIf="tableField.type == 'number'">
         <ion-item>
-          <ion-label>{{ tableField.label }}</ion-label>
+          <ion-label position="floating">{{ tableField.label }}</ion-label>
           <ion-input type="number" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-input>
         </ion-item>
       </div>
@@ -95,7 +95,7 @@
       </div>
       <div *ngIf="tableField.type == 'checkbox'">
         <ion-item>
-          <ion-label>{{ tableField.label }}</ion-label>
+          <ion-label position="floating">{{ tableField.label }}</ion-label>
           <ion-checkbox slot="end" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-checkbox>
         </ion-item>
       </div>
@@ -103,7 +103,7 @@
         <ion-list>
           <ion-radio-group [formControlName]="tableField.field_name">
             <ion-list-header>
-              <ion-label>{{ tableField.label }}</ion-label>
+              <ion-label position="floating">{{ tableField.label }}</ion-label>
             </ion-list-header>       
             <ion-item *ngFor="let staticValue of staticData[tableField.ddn_field]" >
               <ion-label [innerHtml]="getddnDisplayVal(staticValue)"></ion-label>
@@ -119,7 +119,7 @@
       <div *ngIf="tableField.type == 'date'">
         <!-- Datetime in popover with cover element -->
         <ion-item button="true" id="open-date-input">
-          <ion-label>{{ tableField.label }}</ion-label>
+          <ion-label position="floating">{{ tableField.label }}</ion-label>
           <ion-text slot="end">{{ dateValue }}</ion-text>
           <ion-popover trigger="open-date-input" show-backdrop="false">
             <ng-template>
