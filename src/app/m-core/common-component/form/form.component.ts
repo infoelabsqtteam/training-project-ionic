@@ -1,9 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from "@angular/forms";
+import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, RestService } from '@core/ionic-core';
-import { ModalController } from '@ionic/angular';
-import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
+import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService } from '@core/ionic-core';
 
 interface User {
   id: number;
@@ -16,7 +15,7 @@ interface User {
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
 })
-export class FormComponent implements OnInit {
+export class FormComponent implements OnInit, OnDestroy {
 
   @Input() editedRowIndex: number;
   @Input() formName: string;
@@ -30,7 +29,10 @@ export class FormComponent implements OnInit {
   isSubmitted = false;
 
   templateForm: FormGroup;
+
+  forms:any={};
   form:any ={};
+  formIndex:number=0;
   tableFields:any=[];
   formFieldButtons:any=[];
   currentMenu:any={};
@@ -48,39 +50,43 @@ export class FormComponent implements OnInit {
   staticData: any = {};
   copyStaticData:any={};
   dinamic_form:any={};
+  currentActionButton:any={};
+  close_form_on_success:boolean=false;
+  getSavePayload:boolean=false;
+  updateMode: boolean = false;
+  dataSaveInProgress: boolean = true;
+  showNotify: boolean = false;
+  submitted:boolean=false;
+  complete_object_payload_mode:boolean=false;
+  selectedRow: any={};
+  dataListForUpload:any = {};
+  saveResponceData:any={};
+  nextIndex:boolean = false;
+  custmizedFormValue: any = {};
+  multipleFormCollection:any=[];
+  donotResetFieldLists:any={};
+  typeAheadData: string[] = [];
+  treeViewData: any = {};
 
   dinamicFormSubscription:any;
   staticDataSubscriber:any;
   nestedFormSubscription:any;
-  users:User[] =[
-    {
-      id: 1,
-      first: 'Alice',
-      last: 'Smith',
-    },
-    {
-      id: 2,
-      first: 'Bob',
-      last: 'Davis',
-    },
-    {
-      id: 3,
-      first: 'Charlie',
-      last: 'Rosenburg',
-    }
-  ]
+  saveResponceSubscription:any;
+ 
   
 
   constructor(
     public formBuilder: FormBuilder,
-    private popoverModalService:PopoverModalService,
+    private datePipe: DatePipe,
     private router: Router,
     private commonFunctionService:CoreUtilityService,
     private restService:RestService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
-    private modalController:ModalController,
     private commonDataShareService:CommonDataShareService,
+    private permissionService:PermissionService,
+    private storageService:StorageService,
+    private notificationService:NotificationService
     ) {
 
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
@@ -95,6 +101,9 @@ export class FormComponent implements OnInit {
         this.resetFlag();
         this.setForm();
       })
+      this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
+        this.setSaveResponce(responce);
+      })
     }
 
   resetFlag(){
@@ -102,6 +111,20 @@ export class FormComponent implements OnInit {
     this.editedRowIndex = -1;
   }
     
+  ngOnDestroy() {
+    if(this.staticDataSubscriber){
+      this.staticDataSubscriber.unsubscribe();
+    }
+    if(this.dinamicFormSubscription){
+      this.dinamicFormSubscription.unsubscribe();
+    }
+    if(this.nestedFormSubscription){
+      this.nestedFormSubscription.unsubscribe();
+    }
+    if(this.templateForm){
+      this.templateForm.reset(); 
+    }
+  }
   ngOnInit() {
     this.initForm();
     const id:any = this.commonDataShareService.getFormId();
@@ -142,7 +165,108 @@ export class FormComponent implements OnInit {
       }        
     }
   }
-  async setForm(){
+  setSaveResponce(saveFromDataRsponce){
+    if (saveFromDataRsponce) {
+      if (saveFromDataRsponce.success && saveFromDataRsponce.success != '' && this.showNotify) {
+        if (saveFromDataRsponce.success == 'success' && !this.updateMode) {
+          if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick.success_msg && this.currentActionButton.onclick.success_msg != ''){
+            this.notificationService.showAlert(this.currentActionButton.onclick.success_msg,'',['Dismiss']);
+          }else if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
+            this.notificationService.showAlert(saveFromDataRsponce.success_msg,'',['Dismiss']);
+          }else{
+            this.notificationService.showAlert(" Form Data Save successfull !!!" ,'',['Dismiss']);
+          }
+          //this.templateForm.reset();
+          //this.formGroupDirective.resetForm()
+          
+          this.resetForm();
+          // this.custmizedFormValue = {};
+          this.dataListForUpload = {}
+          //this.addAndUpdateResponce.emit('add');
+          this.saveResponceData = saveFromDataRsponce.data;
+        } else if (saveFromDataRsponce.success == 'success' && this.updateMode) {
+          if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick.success_msg && this.currentActionButton.onclick.success_msg != ''){
+            this.notificationService.showAlert(this.currentActionButton.onclick.success_msg,'',['Dismiss']);
+          }else if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
+            this.notificationService.showAlert(saveFromDataRsponce.success_msg,'',['Dismiss']);
+          }else{
+            this.notificationService.showAlert(" Form Data Update successfull !!!",'',['Dismiss']);
+          }
+          //this.templateForm.reset();
+          //this.formGroupDirective.resetForm()
+          if(this.nextIndex){              
+            //this.next();
+          }else{
+            this.resetForm();
+            //this.addAndUpdateResponce.emit('update'); 
+            this.updateMode = false;
+          }                     
+          this.custmizedFormValue = {};  
+          this.dataListForUpload = {} 
+          this.saveResponceData = saveFromDataRsponce.data;
+        }
+        if(this.close_form_on_success){
+          this.close_form_on_success=false;
+          this.close();
+        }
+        else if(this.multipleFormCollection.length > 0){
+          this.close();
+        }
+        else{
+          //this.commonFunctionService.getStaticData();
+          const payload = this.restService.commanApiPayload([],this.tableFields,this.formFieldButtons,this.getFormValue(false));
+          this.apiService.getStatiData(payload);
+        }
+        // if(this.isStepper){
+        //   this.stepper.reset();
+        // }
+
+        // if(this.envService.getRequestType() == 'PUBLIC'){
+        //   this.complete_object_payload_mode = false;
+        //   let _id = this.saveResponceData["_id"];
+        //   if(this.coreFunctionService.isNotBlank(this.form["details"]) && this.coreFunctionService.isNotBlank(this.form["details"]["on_success_url_key"] != "")){
+        //     let public_key = this.form["details"]["on_success_url_key"]
+        //     const data = {
+        //       "obj":public_key,
+        //       "key":_id,
+        //       "key1": "key2",
+        //       "key2" : "key3",
+        //     }
+        //     let payloaddata = {};
+        //     this.storageService.removeDataFormStorage();
+        //     const getFormData = {
+        //       data: payloaddata,
+        //       _id:_id
+        //     }
+        //     getFormData.data=data;
+        //     this.apiService.GetForm(getFormData);
+        //     let navigation_url = "template/"+public_key+"/"+_id+"/ie09/cnf00v";
+        //     this.router.navigate([navigation_url]);
+        //   }else{
+        //     this.router.navigate(["home_page"]);
+        //   }
+         
+        // }
+        
+        //this.close()
+        this.showNotify = false;
+        this.dataSaveInProgress = true;
+        this.apiService.ResetSaveResponce()
+        this.checkOnSuccessAction();
+      }
+      else if (saveFromDataRsponce.error && saveFromDataRsponce.error != '' && this.showNotify) {
+        this.notificationService.showAlert(saveFromDataRsponce.error,'',['Dismiss']);
+        this.showNotify = false;
+        this.dataSaveInProgress = true;
+        this.apiService.ResetSaveResponce()
+      }
+      else{
+        this.notificationService.showAlert("No data return",'',['Dismiss']);
+        this.dataSaveInProgress = true;
+      }
+    }
+  }
+  setForm(){
     if(this.form.details && this.form.details.collection_name && this.form.details.collection_name != ''){
       if(this.currentMenu == undefined){
         this.currentMenu = {};
@@ -435,19 +559,395 @@ export class FormComponent implements OnInit {
   getddnDisplayVal(val) {
     return this.commonFunctionService.getddnDisplayVal(val);    
   }
-  take_action_on_click(action){
-    console.log(action);
+  take_action_on_click(action_button){
+    let api='';
+    this.currentActionButton=action_button;
+    if(this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.api && this.currentActionButton.onclick.api != null){
+      if(this.currentActionButton.onclick.close_form_on_success){
+        this.close_form_on_success = this.currentActionButton.onclick.close_form_on_success;
+      } 
+      api = this.currentActionButton.onclick.api        
+      switch (api.toLowerCase()) {
+        case "save":
+        case "update":
+          this.close_form_on_success = true;
+          this.saveFormData();
+          break; 
+        default:
+          //this.partialDataSave(action_button.onclick,null)
+          break;
+      } 
+    } 
+  }
+  getFormValue(check){    
+    let formValue = this.templateForm.getRawValue();
+    let selectedRow = { ...this.selectedRow };     
+    let modifyFormValue = {};   
+    let valueOfForm = {};
+    if (this.updateMode || this.complete_object_payload_mode){      
+      this.tableFields.forEach(element => {
+        switch (element.type) {
+          case 'stepper':
+            element.list_of_fields.forEach(step => {
+              if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
+                step.list_of_fields.forEach(data => {
+                  selectedRow[data.field_name] = formValue[step.field_name][data.field_name]
+                  if(data.tree_view_object && data.tree_view_object.field_name != ""){                  
+                    const treeViewField = data.tree_view_object.field_name;
+                    selectedRow[treeViewField] = formValue[step.field_name][treeViewField]
+                  }
+                });
+              }
+            });
+            break;
+          case 'group_of_fields':
+            element.list_of_fields.forEach(data => {
+              switch (data.type) {
+                case 'date':
+                  if(data && data.date_format && data.date_format != ''){
+                    if(typeof formValue[element.field_name][data.field_name] != 'string'){
+                      selectedRow[element.field_name][data.field_name] = this.datePipe.transform(formValue[element.field_name][data.field_name],'dd/MM/yyyy');
+                    }else{
+                      selectedRow[element.field_name] = formValue[element.field_name];
+                    }
+                  }else{
+                    selectedRow[element.field_name] = formValue[element.field_name];
+                  }            
+                  break;
+              
+                default:
+                  selectedRow[element.field_name] = formValue[element.field_name];
+                  break;
+              }
+            });
+            break;
+          // case 'gmap':
+          //   selectedRow['latitude'] = this.latitude;
+          //   selectedRow['longitude'] = this.longitude;
+          //   selectedRow['address'] = this.address;
+          //   break;
+          case 'date':
+            if(element && element.date_format && element.date_format != ''){
+              selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
+            }            
+            break;
+          default:
+            selectedRow[element.field_name] = formValue[element.field_name];
+            break;
+        }
+      });
+    }else{
+      this.tableFields.forEach(element => {
+        switch (element.type) {
+          case 'stepper':
+            element.list_of_fields.forEach(step => {
+              if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
+                step.list_of_fields.forEach(data => {
+                  modifyFormValue[data.field_name] = formValue[step.field_name][data.field_name]
+                  if(data.tree_view_object && data.tree_view_object.field_name != ""){                  
+                    const treeViewField = data.tree_view_object.field_name;
+                    modifyFormValue[treeViewField] = formValue[step.field_name][treeViewField]
+                  }
+                });
+              }
+            });
+            break;
+          case 'group_of_fields':
+            element.list_of_fields.forEach(data => {
+              switch (data.type) {
+                case 'date':
+                  if(data && data.date_format && data.date_format != ''){
+                    modifyFormValue[element.field_name][data.field_name] = this.datePipe.transform(formValue[element.field_name][data.field_name],'dd/MM/yyyy');
+                  }            
+                  break;
+              
+                default:
+                  modifyFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name];
+                  break;
+              }
+            });
+            break;
+          // case 'gmap':
+          //   modifyFormValue['latitude'] = this.latitude;
+          //   modifyFormValue['longitude'] = this.longitude;
+          //   modifyFormValue['address'] = this.address;
+          //   break;
+          case 'date':
+            if(element && element.date_format && element.date_format != ''){
+              modifyFormValue[element.field_name] = this.datePipe.transform(formValue[element.field_name],element.date_format);
+            }            
+            break;
+          default:
+            modifyFormValue = formValue;
+            break;
+        }
+      });
+    }
+    // if(check){
+    //   Object.keys(this.custmizedFormValue).forEach(key => {
+    //     if (this.updateMode || this.complete_object_payload_mode) {
+    //       if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
+    //         this.tableFields.forEach(element => {            
+    //           if(element.field_name == key){
+    //             if(element.datatype && element.datatype != null && element.datatype == 'key_value'){
+    //               selectedRow[key] = this.custmizedFormValue[key];
+    //             }else{
+    //               Object.keys(this.custmizedFormValue[key]).forEach(child =>{
+    //                 selectedRow[key][child] = this.custmizedFormValue[key][child];
+    //               })
+    //             }
+    //           }
+    //         });          
+    //       }else{
+    //           selectedRow[key] = this.custmizedFormValue[key];
+    //       }
+    //     } else {
+    //       if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
+    //         this.tableFields.forEach(element => {
+    //           if(element.field_name == key){
+    //             if(element.datatype && element.datatype != null && element.datatype == 'key_value'){
+    //               modifyFormValue[key] = this.custmizedFormValue[key];
+    //             }else{
+    //               Object.keys(this.custmizedFormValue[key]).forEach(child =>{
+    //                 modifyFormValue[key][child] = this.custmizedFormValue[key][child];
+    //               })
+    //             }
+    //           }
+    //         });          
+    //       }else{
+    //         modifyFormValue[key] = this.custmizedFormValue[key];
+    //       }       
+          
+    //     }
+    //   })
+    //   if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
+    //     this.checkBoxFieldListValue.forEach(element => {
+    //       if (this.staticData[element.ddn_field]) {
+    //         const listOfCheckboxData = [];
+    //         let data = [];
+    //         if(this.updateMode || this.complete_object_payload_mode){
+    //           if(element.parent){
+    //             data = selectedRow[element.parent][element.field_name];
+    //           }else{
+    //             data = selectedRow[element.field_name];
+    //           }
+    //         }else{
+    //           if(element.parent){
+    //             data = modifyFormValue[element.parent][element.field_name];
+    //           }else{
+    //             data = modifyFormValue[element.field_name];
+    //           }
+    //         }
+    //         let currentData = this.staticData[element.ddn_field];
+    //         if(data && data.length > 0){
+    //           data.forEach((data, i) => {
+    //             if (data) {
+    //               listOfCheckboxData.push(currentData[i]);
+    //             }
+    //           });
+    //         }
+    //         if (this.updateMode || this.complete_object_payload_mode) {
+    //           if(element.parent){
+    //             selectedRow[element.parent][element.field_name] = listOfCheckboxData;
+    //           }else{
+    //             selectedRow[element.field_name] = listOfCheckboxData;
+    //           }
+    //         } else {
+    //           if(element.parent){
+    //             modifyFormValue[element.parent][element.field_name] = listOfCheckboxData;
+    //           }else{
+    //             modifyFormValue[element.field_name] = listOfCheckboxData
+    //           }
+    //         }
+    //       }
+    //     });
+    //   }
+    //   Object.keys(this.dataListForUpload).forEach(key => {
+    //     if (this.updateMode || this.complete_object_payload_mode) {
+    //       if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
+    //         this.tableFields.forEach(element => {            
+    //           if(element.field_name == key){                
+    //             Object.keys(this.dataListForUpload[key]).forEach(child =>{
+    //               selectedRow[key][child] = this.modifyUploadFiles(this.dataListForUpload[key][child]);
+    //             })
+    //           }
+    //         });          
+    //       }else{
+    //           selectedRow[key] = this.modifyUploadFiles(this.dataListForUpload[key]);
+    //       }
+    //     } else {
+    //       if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
+    //         this.tableFields.forEach(element => {
+    //           if(element.field_name == key){                
+    //             Object.keys(this.dataListForUpload[key]).forEach(child =>{
+    //               modifyFormValue[key][child] = this.modifyUploadFiles(this.dataListForUpload[key][child]);
+    //             })
+    //           }
+    //         });          
+    //       }else{
+    //         modifyFormValue[key] = this.modifyUploadFiles(this.dataListForUpload[key]);
+    //       }       
+          
+    //     }
+    //   })
+    // } 
+
+    valueOfForm = this.updateMode || this.complete_object_payload_mode ? selectedRow : modifyFormValue;
+       
+       
+    return valueOfForm;
+  }
+  getSavePayloadData() {
+    this.getSavePayload = false;
+    this.submitted = true;
+    let hasPermission;
+    if(this.currentMenu && this.currentMenu.name){
+      hasPermission = this.permissionService.checkPermission(this.currentMenu.name.toLowerCase( ),'add')
+    }
+    if(this.updateMode){
+      hasPermission = this.permissionService.checkPermission(this.currentMenu.name.toLowerCase( ),'edit')
+    }
+    // if(this.envService.getRequestType() == 'PUBLIC'){
+    //   hasPermission = true;
+    // }
+    let formValue = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(true),false);
+       
+    if(hasPermission){      
+      if(this.templateForm.valid){
+        if(this.commonFunctionService.checkCustmizedValuValidation(this.tableFields,formValue)){
+          if (this.dataSaveInProgress) {
+            this.showNotify = true;
+            this.dataSaveInProgress = false;            
+            formValue['log'] = this.storageService.getUserLog();
+            if(!formValue['refCode'] || formValue['refCode'] == '' || formValue['refCode'] == null){
+              formValue['refCode'] = this.storageService.getRefcode();
+            } 
+            if(!formValue['appId'] || formValue['appId'] == '' || formValue['appId'] == null){
+              //formValue['appId'] = this.commonFunctionService.getAppId();
+              formValue['appId'] = this.storageService.getRefcode();
+              
+            }            
+            // this.custmizedFormValue.forEach(element => {
+            //   this.templateForm.value[element.name] = element.value;
+            // });
+            
+            // formValue = this.commonFunctionService.sanitizeObject(this.tableFields,formValue);
+            if (this.updateMode) {              
+              if(this.formName == 'cancel'){
+                formValue['status'] = 'CANCELLED';
+              }                                          
+            }              
+
+            const saveFromData = {
+              curTemp: this.currentMenu.name,
+              data: formValue
+            }
+            this.getSavePayload = true;
+            return saveFromData;
+            
+          }
+        }else{
+          this.getSavePayload = false;
+        }
+      }else{
+        this.getSavePayload = false;
+        this.notificationService.showAlert("Some fields are mendatory",'',['Dismiss']);
+      }
+    }else{
+      this.getSavePayload = false;
+      this.notificationService.showAlert("Permission denied !!!",'',['Dismiss']);
+    }
+  }
+  saveFormData(){
+    let checkValidatiaon = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(false),true,this.getFormValue(true));
+    if(typeof checkValidatiaon != 'object'){
+      const saveFromData = this.getSavePayloadData();
+      // if(this.bulkupdates){
+      //   saveFromData.data['data'] = this.bulkDataList;
+      //   saveFromData.data['bulk_update'] = true;
+      // }
+      if(this.getSavePayload){
+        if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.api && this.currentActionButton.onclick.api != null && this.currentActionButton.onclick.api.toLowerCase() == 'send_email'){
+          //this.apiService.SendEmail(saveFromData)
+        }else{
+          this.apiService.SaveFormData(saveFromData);
+        }        
+      }
+    }else{
+      this.notificationService.showAlert(checkValidatiaon.msg,'',['Dismiss']);
+    }     
   }
 
-  dismiss() {
-    // using the injected ModalController this page
-    // can "dismiss" itself and optionally pass back data
-    this.modalController.dismiss(true,null,'form-modal');
-    this.modal.dismiss();
+  resetForm(){
+    //this.formGroupDirective.resetForm();
+    //this.setPreviousFormTargetFieldData();
+    this.donotResetFieldLists = this.commonFunctionService.donotResetField(this.tableFields,this.getFormValue(true));
+    this.templateForm.reset()
+    if(Object.keys(this.donotResetFieldLists).length > 0){
+      this.custmizedFormValue = {};
+
+      //this.commonFunctionService.updateDataOnFormField(this.templateForm,this.tableFields,this.formFieldButtons,this.donotResetFieldLists,this.selectedRow,this.custmizedFormValue,this.dataListForUpload,this.treeViewData,this.copyStaticData);
+      this.donotResetFieldLists = {};
+    }else{
+      this.custmizedFormValue = {};
+    }    
+    this.tableFields.forEach(element => {
+      switch (element.type) {
+        case 'checkbox':
+          this.templateForm.controls[element.field_name].setValue(false)
+          break; 
+        case 'list_of_checkbox':
+          const controls:any = this.templateForm.get(element.field_name)['controls'];
+          if(controls && controls.length > 0){
+            controls.forEach((child,i) => {
+              controls.at(i).patchValue(false);
+              //this.templateForm.get(element.field_name).at(i).patchValue(false);
+              //(<FormArray>this.templateForm.controls[element.field_name]).controls[i].patchValue(false);
+            });
+          }
+          break;     
+        default:
+          break;
+      }
+    });
   }
-  cancil(){
-    this.router.navigate(['crm/quotation']);
+  close(){    
+    this.apiService.resetStaticAllData();
+    this.copyStaticData = {};
+    this.typeAheadData = [];
+    //this.commonFunctionService.resetStaticAllData();
+    this.selectedRow = {};
+    this.checkFormAfterCloseModel();
   }
+  checkFormAfterCloseModel(){
+    if(this.multipleFormCollection.length > 0){
+      //this.loadPreviousForm();
+    }else{      
+      this.templateForm.reset();
+      this.dismissModal();
+    }
+  }
+  checkOnSuccessAction(){
+    let actionValue = ''
+    let index = -1;
+    if(this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.action_name && this.currentActionButton.onclick.action_name != null){
+      if(this.currentActionButton.onclick.action_name != ''){
+        actionValue = this.currentActionButton.onclick.action_name;
+        if(actionValue != ''){
+          Object.keys(this.forms).forEach((key,i) => {
+            if(key == actionValue){
+              index = i;
+            }
+          });
+          if(index != -1) {
+            //this.changeNewForm(actionValue,index)
+          }    
+        }
+      }
+    }
+  };
+  
+  
 
   dismissModal(){
     this.modal.dismiss({'dismissed': true});
