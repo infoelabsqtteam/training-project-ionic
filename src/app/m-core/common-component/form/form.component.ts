@@ -72,6 +72,8 @@ export class FormComponent implements OnInit, OnDestroy {
   staticDataSubscriber:any;
   nestedFormSubscription:any;
   saveResponceSubscription:any;
+
+  dateValue:any;
  
   
 
@@ -946,6 +948,10 @@ export class FormComponent implements OnInit, OnDestroy {
       }
     }
   };
+
+  formatDate(data:any){
+    console.log(data);
+  }
   
   
 

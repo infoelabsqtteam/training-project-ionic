@@ -4,8 +4,11 @@ import { FormComponent } from './common-component/form/form.component';
 import { MCoreComponent } from './m-core.component';
 
 const routs : Routes = [
-        {path: '', component: MCoreComponent, children:[
-            {path:'form',component:FormComponent}
+        {
+            path: '', 
+            component: MCoreComponent, 
+            children:[
+                {path:'form',component:FormComponent}
             ],
             runGuardsAndResolvers: 'always'
         },
