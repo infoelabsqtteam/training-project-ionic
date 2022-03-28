@@ -180,6 +180,8 @@ export class QuotationPage implements OnInit {
 
   goBack(){
     this.carddata = [];
+    this.tabMenu = [];
+    this.openFilter = false;
   }
 
   // go to new page 2nd method

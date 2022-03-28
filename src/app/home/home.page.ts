@@ -75,6 +75,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.initializeApp();
     this.banner_img = [
       'assets/img/home/banner1.png',
+      'assets/img/home/banner2.png',
       'assets/img/home/banner2.png'
     ];
     this.web_site_name = this.envService.getWebSiteName();

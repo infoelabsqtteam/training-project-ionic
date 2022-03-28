@@ -18,6 +18,7 @@ export class SignineComponent implements OnInit {
   loginForm: FormGroup;
   showpassword = false;
   VerifyType : boolean = false;
+  // showicon = false;
 
   constructor(
     private authService: AuthService,
@@ -72,7 +73,9 @@ export class SignineComponent implements OnInit {
   showtxtpass() {
     this.showpassword = !this.showpassword;
   }
-
+  // showEmailIcon() {
+  //   this.showicon = !this.loginForm.value.userId;
+  // }
   comingSoon() {
     this.storageService.presentToast('Comming Soon...');
   }

@@ -3,42 +3,35 @@
     <ion-buttons slot="start" (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
     <ion-title class="ion-no-padding ion-text-capitalize">{{cardtitle}}</ion-title>
     <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
-    <ion-buttons slot="end" class="ion-padding-start" (click)="comingSoon()"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
+      <ion-buttons class="filter ion-text-end" slot="end" (click)="openFilter=!openFilter">
+        <img src="assets/img/icons/Filter.svg">
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
-
+<div id="ion_accordian" class="ion_accordian ion-no-padding filterdata" *ngIf="openFilter">
+  <div [formGroup]="filterForm" >
+    <div class="search_div ion-padding">
+      <div *ngFor="let column of columnList; index as j" style="position: relative;">
+        <div class="filteritem" *ngIf="column.type == 'text'" [ngClass]="column.filter?'ion-show':'ion-hide'" >
+              <input type="checkbox" checked disabled>
+              <ion-input class="ion-text-capitalize" [formControlName]="column.field_name" clearInput [placeholder]="column.field_label"></ion-input>
+        </div>
+      </div>
+      <ion-buttons class="ion-padding-vertical ion-justify-content-around">
+        <ion-button fill="outline" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
+        <ion-button fill="outline" class="ion-text-capitalize" (click)="clearfilterCard()">Clear</ion-button>
+        <ion-button type="submit" fill="outline" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
+      </ion-buttons>
+    </div>
+  </div>    
+</div>
 <div class="menutab">
-  <ion-segment scrollable value="">
+  <ion-segment>
     <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label>
     </ion-segment-button>
   </ion-segment>
 </div>
-
 <ion-content class="pages quotation">
-
-  <div class="filter ion-text-end">
-    <ion-label (click)="openFilter=!openFilter"><ion-icon name="funnel"></ion-icon> Filter</ion-label>
-  </div>
-
-  <div id="ion_accordian" class="ion_accordian ion-no-padding filterdata" *ngIf="openFilter">
-    <div [formGroup]="filterForm" >
-      <div class="search_div ion-padding">
-        <div *ngFor="let column of columnList; index as j" style="position: relative;">
-          <div class="filteritem" *ngIf="column.type == 'text'" [ngClass]="column.filter?'ion-show':'ion-hide'" >
-                <input type="checkbox" checked disabled>
-                <ion-input class="ion-text-capitalize" [formControlName]="column.field_name" clearInput [placeholder]="column.field_label"></ion-input>
-          </div>
-        </div>
-        <ion-buttons class="ion-padding-vertical ion-justify-content-around">
-          <ion-button fill="outline" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
-          <ion-button fill="outline" class="ion-text-capitalize" (click)="clearfilterCard()">Clear</ion-button>
-          <ion-button type="submit" fill="outline" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
-        </ion-buttons>
-      </div>
-    </div>    
-  </div>
-
-  
   <div *ngIf="filterCount == 0" class="nodatafound">    
     <ion-img src="../../../assets/nodatafound.png"></ion-img>
     <p>Go Back or Try adjusting your filter.</p>

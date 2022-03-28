@@ -36,14 +36,20 @@ ion-toolbar.grey-toolbar {--background-color: #EFF1F3;}
 }
 
 // Banner
-.banner {padding:10px 0;margin-bottom:20px;
-    .swiper-wrapper {margin-left:-27%;}
-    .swiper-slide.swiper-slide-active {width:85% !important;}
-    .slideshow {background:var(--themebg);width:100%;height:200px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.banner {margin-bottom:20px;
+    .slideshow {background:#fff;width:100%;height:200px;border-radius:0 0 10px 10px;display:flex;align-items:center;justify-content:center;
+        img {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 204px;
+            padding: 16px;
+        }
+    }
 }
 
 // Home page Category List
-.catlist {background:#fff;padding:10px;border-radius:20px 20px 0 0;height:calc(100% -50px);min-height:54%;
+.catlist {background:#fff;padding:10px;border-radius:20px 20px 0 0;height:calc(100% -50px);height:100%;
     ul {margin:0;padding:0;list-style:none;text-align:start;
         li {display:inline-block;margin:10px 7px;cursor: pointer;text-align:center;
             .caticon {background:#8FBFE34D;border-radius:6px;width:54px;height:54px;line-height:55px;margin:-2px;text-align: center;}
@@ -74,7 +80,7 @@ ion-toolbar.grey-toolbar {--background-color: #EFF1F3;}
 }
 
 .filterdata {
-    .search_div{position:absolute;overflow:hidden;background:#fff;z-index:99;right:0px;margin:10px;border-radius:5px;width:210px;box-shadow:0 0 25px #ccc;}
+    .search_div{position:absolute;overflow:hidden;background:#fff;z-index:99;right:0px;margin:4px;border-radius:5px;width:210px;box-shadow:0 0 25px #ccc;}
         .filteritem {display:flex;align-items:center;}
         ion-label {margin-left:10px;font-size:15px;text-transform:capitalize;}
         input[type="checkbox"] {width:16px;height:16px;}
@@ -102,8 +108,8 @@ ion-tabs.footertab {
 
 
 // Contact Listing
-.contactlist {background:none;margin:10px;
-    ion-item {border-radius:20px;--border-color:#fff;margin-bottom:5px;margin-top: 0;}
+.contactlist {background:none;margin: 8px;
+    ion-item {border-radius:14px;border:1px solid#F0F1F3;margin-bottom:4px;margin-top: 0;}
     ion-row{width: 100%;}
     ion-avatar {width:48px;height:48px;margin:10px 15px 10px 0;color:#fff;line-height:48px;text-align:center;background:#0851B5;}
     h4 {font-size:16px;color:#113970;}
@@ -188,4 +194,10 @@ ion-tabs.footertab {
 .socialdropdown {
     p {margin:15px 0;color:#3A3A3A;font-size:14px;}
     img {vertical-align:middle;}
+}
+.halfwidthcardList{border: 1.5px solid #16161D1A;border-radius: 10px;margin-bottom:5px;margin-right:5px;
+        .item-native{padding-left:0}
+        ion-avatar{}
+        img{ max-width: 30px;height: 30px;border-radius:0px;}
+        ion-label{font-size:14px!important;font-weight:500;}
 }

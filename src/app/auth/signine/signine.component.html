@@ -8,8 +8,9 @@
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
             <div class="formgroup" *ngIf="!VerifyType">
                 <ion-item>
-                    <ion-label position="floating">Mobile Number/Email</ion-label>
+                    <ion-label position="floating">E-mail</ion-label>
                     <ion-input type="email" formControlName="userId" placeholder="Email Id"></ion-input>
+                    <ion-icon  class="showicon" src="assets/img/icons/Icon-check-circle.svg"></ion-icon>
                 </ion-item>
                 <div *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched)" class="alert">
                     <div *ngIf="f.userId.errors.required" class="warning">Email Id is required.</div>
@@ -40,10 +41,10 @@
             </div>
             <!-- <div class="formgroup ion-text-end"><ion-text class="forgetpassword" [routerLink]="['/auth/forgetpassword']" >Forgot Password?</ion-text></div> -->
             <div class="formgroup ion-text-end"><ion-text class="forgetpassword" [routerLink]="['/auth/forgetpassword']">Forgot Password?</ion-text></div>
-            <div class="formgroup"><ion-button type="submit" [disabled]="checkValidate()" expand="full">Login <ion-icon name="arrow-forward"></ion-icon></ion-button></div>
+            <div class="formgroup"><ion-button type="submit" [disabled]="checkValidate()" expand="full">Login</ion-button></div>
             <div class="formgroup ion-text-center"><ion-text class="signup" [routerLink]="['/auth/signupe']">Don't have an account ? <strong>Sign-up</strong></ion-text></div>
-            <div class="signinwith ion-padding-vertical"><span><i>Or sign-in with</i></span></div>
-            <p class="ion-text-center mail-icon"><img src="assets/icon/gmail.png"></p>
+            <!-- <div class="signinwith ion-padding-vertical"><span><i>Or sign-in with</i></span></div>
+            <p class="ion-text-center mail-icon"><img src="assets/icon/gmail.png"></p> -->
         </form>
     </div>
 </ion-content>

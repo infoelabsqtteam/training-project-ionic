@@ -22,7 +22,7 @@
   </div>
 
 
-<div class="contactpersonlists">
+<!-- <div class="contactpersonlists">
   <ion-segment scrollable value="">
     <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(tabItem, i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label> </ion-segment-button>
   </ion-segment>
@@ -77,13 +77,13 @@
         </ion-item>
         <ion-item-options side="end" (click)="callInvoice(card, i)"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
     </ion-item-sliding>
-  </ion-list>
+  </ion-list> -->
 
-  <div *ngIf="filterCount == 0" class="nodatafound">    
-    <ion-img src="../../../assets/nodatafound.png"></ion-img>
+  <!-- <div *ngIf="filterCount == 0" class="nodatafound">    
+    <ion-img src="../../../assets/nodatafound.png"></ion-img> -->
     <!-- <p>Go Back or Try adjusting your filter.</p> -->
     <!-- <ion-button color="primary" fill="outline" size="small" (click)="clearfilterCard()">Go Back</ion-button> -->
-  </div>
+  <!-- </div> -->
 
   <!-- <ion-list class="contactlist">
     <ion-item-sliding *ngFor="let data of enquirydata" routerLink="/crm/enquiry-details">
@@ -105,7 +105,7 @@
 
   <!-- <div class="addmore" routerLink="../add-enquiry"><ion-icon name="add-outline"></ion-icon> ADD</div> -->
   
-</div>
+<!-- </div> -->
 
 
 </ion-content>
