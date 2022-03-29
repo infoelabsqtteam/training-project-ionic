@@ -8,7 +8,7 @@ export const environment = {
   //serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
   serverhost: "https://sitserverelabs.e-labs.ai/rest/",
   //serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
-  //serverhost: "http://localhost:8104/rest/",
+  // serverhost: "http://localhost:8104/rest/",
   //serverhost: "https://servermedicea.medicea.in/rest/",
   //  serverhost: "https://sitservermedicea.medicea.in/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",

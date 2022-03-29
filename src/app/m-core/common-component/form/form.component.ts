@@ -72,6 +72,8 @@ export class FormComponent implements OnInit, OnDestroy {
   staticDataSubscriber:any;
   nestedFormSubscription:any;
   saveResponceSubscription:any;
+
+  dateValue:any;
  
   
 
