@@ -1,21 +1,20 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
-import { DatePipe, CurrencyPipe, TitleCasePipe, Location } from '@angular/common';
-import { ApiService, AuthService, CommonDataShareService, CoreUtilityService, DataShareService, EnvService, LoaderService, PermissionService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
-import { Platform, ModalController , PopoverController, AlertController} from '@ionic/angular';
-import { HttpClient, HttpClientModule, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { NavigationExtras, Router, RouterOutlet } from '@angular/router';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { Location } from '@angular/common';
+import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, LoaderService, PermissionService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
+import { Platform, AlertController } from '@ionic/angular';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { DataShareServiceService } from '../service/data-share-service.service';
 import { Subscription } from 'rxjs';
 
 import { DocumentViewer, DocumentViewerOptions } from '@ionic-native/document-viewer/ngx';
-import { File } from '@ionic-native/file/ngx';
+//import { File } from '@ionic-native/file/ngx';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  providers: [DocumentViewer,File],
+  providers: [DocumentViewer],
 })
 export class HomePage implements OnInit, OnDestroy {
   modal: any;
@@ -142,13 +141,13 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
 
-  async getGridData(criteria?){
+  getGridData(criteria?){
     let criteriaList = [];
     if(criteria){
       criteriaList = criteria;
     }
     const params = 'card_master';
-    let data = await this.restService.getPaylodWithCriteria(params,'',criteria,{});
+    let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
     data['pageNo'] = 0;
     data['pageSize'] = 50;
     let payload = {
@@ -160,7 +159,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   showCardTemplate(card:any, index:number){
     this.commonDataShareService.setModuleIndex(index);
-    this.router.navigate(['crm/quotation']);
+    this.router.navigate(['card-view']); 
   }
 
   showExitConfirm() {
@@ -193,10 +192,7 @@ export class HomePage implements OnInit, OnDestroy {
   search() {
     const criteria = "name;stwic;"+this.myInput+";STATIC";
     this.getGridData([criteria]);
-  }
-
-  
-  
+  } 
 
   openSearch(){
     console.log("function open searchbar");

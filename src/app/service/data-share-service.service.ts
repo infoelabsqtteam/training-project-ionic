@@ -114,7 +114,7 @@ export class DataShareServiceService {
     this.cardList.emit(responce);
     this.storeCardList = responce;
   }
-  gettCardList(){
+  getCardList(){
     return this.storeCardList;
   }
   

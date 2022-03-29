@@ -1,0 +1,6 @@
+/* Works - pass "my-custom-class" in cssClass to increase specificity */
+.half-modal {
+    .modal-wrapper {
+      background: #dfe2f2;
+    }
+}

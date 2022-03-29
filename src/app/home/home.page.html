@@ -1,6 +1,10 @@
 <ion-header>
     <ion-toolbar>
-        <ion-buttons slot="start"><ion-menu-button><img src="assets/img/icons/menu.svg"></ion-menu-button></ion-buttons>
+        <ion-buttons slot="start">
+            <ion-menu-button>
+                <img src="assets/img/icons/menu.svg">
+            </ion-menu-button>
+        </ion-buttons>
         <ion-searchbar [(ngModel)]="myInput" (ionChange)="search()"></ion-searchbar>
         <ion-buttons slot="end" (click)="comingSoon()"><img src="assets/img/icons/bell-Bold.svg"></ion-buttons>
     </ion-toolbar>
@@ -28,16 +32,6 @@
             <p><strong>No Module Found! Try adjusting your search.</strong></p>
             <ion-button color="primary" fill="outline" size="small" (click)="commonFunction()">Try again</ion-button>
         </div> -->
-        
-        <!-- <ion-buttons > -->
-            <!-- <ion-button (click)="downloadPDF()"><ion-icon name="download-outline" ></ion-icon>Download</ion-button> -->
-
-            <!-- <ion-button (click)="openPDF()"><ion-icon name="download-outline" ></ion-icon>Open</ion-button> -->
-
-            <!-- <ion-button (click)="downloadAndopenPDF()"><ion-icon name="download-outline" ></ion-icon>D&O PDF</ion-button> -->
-        <!-- </ion-buttons> -->
-
-        <!-- <a href="#" download="https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf" class="btn button">Download</a> -->
 
         <ion-grid>
             <ion-row>
@@ -60,6 +54,6 @@
               </div>
               <span>{{cardItem.name}}</span>
             </li>
-        </ul> -->
+        </ul>-->
     </div>
 </ion-content>

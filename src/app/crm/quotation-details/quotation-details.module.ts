@@ -7,14 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { QuotationDetailsPageRoutingModule } from './quotation-details-routing.module';
 
 import { QuotationDetailsPage } from './quotation-details.page';
-
+import { CommonComponentModule } from 'src/app/m-core/common-component/common-component.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    QuotationDetailsPageRoutingModule
+    QuotationDetailsPageRoutingModule,
+    CommonComponentModule
   ],
   declarations: [QuotationDetailsPage]
 })

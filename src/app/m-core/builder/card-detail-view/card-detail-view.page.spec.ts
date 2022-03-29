@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { Modalh4Component } from './modalh4.component';
+import { CardDetailViewPage } from './card-detail-view.page';
 
-describe('Modalh4Component', () => {
-  let component: Modalh4Component;
-  let fixture: ComponentFixture<Modalh4Component>;
+describe('CardDetailViewPage', () => {
+  let component: CardDetailViewPage;
+  let fixture: ComponentFixture<CardDetailViewPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ Modalh4Component ],
+      declarations: [ CardDetailViewPage ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Modalh4Component);
+    fixture = TestBed.createComponent(CardDetailViewPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
