@@ -45,10 +45,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   createFormgroup: boolean = true;
   openFilter: boolean = false;
   filterCount: 0;
+  gridData:any={};
 
   //common function
   cardList: any = [];
   selectedIndex= -1;
+  public editedRowIndex:number=-1;
   tabMenu: any = [];
   cardListSubscription:any;
 
@@ -83,6 +85,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.filterCount = data.data_size;
     });
     
+  }
+
+  resetVariabls(){
+    this.editedRowIndex = -1;
+    this.gridData = {};
   }
 
   initializeApp() {
@@ -195,39 +202,43 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.carddata = [];
   }
 
-  async modaldetailCardButton(column, data){
+  async modaldetailCardButton(column, data,i){
+    if(i >= 0){
+      this.editedRow(data,i);
+    }else{
      const cardmaster=this.dataShareServiceService.getCardList();
-    // const cardmaster = this.commonDataShareService.getModuleList();
-    const childColumn = this.childColumn;
-    if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
-      cardmaster.forEach(element => {
-        if(element._id == childColumn._id ){
-          this.childColumns = element.fields;
-          this.childCardType = element.card_type;
-        }
+      // const cardmaster = this.commonDataShareService.getModuleList();
+      const childColumn = this.childColumn;
+      if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
+        cardmaster.forEach(element => {
+          if(element._id == childColumn._id ){
+            this.childColumns = element.fields;
+            this.childCardType = element.card_type;
+          }
+        });
+      }    
+      //modalShowfunction
+      const modal = await this.modalController.create({
+        component: ModalDetailCardComponent,
+        componentProps: {
+          "childData": data,
+          "childColumns": this.childColumns,
+          "childDataTitle": this.childDataTitle,
+          "childCardType" : this.childCardType,
+          "selected_tab_index": this.selectedIndex
+        },
+        swipeToClose: true
       });
-    }    
-    //modalShowfunction
-    const modal = await this.modalController.create({
-      component: ModalDetailCardComponent,
-      componentProps: {
-        "childData": data,
-        "childColumns": this.childColumns,
-        "childDataTitle": this.childDataTitle,
-        "childCardType" : this.childCardType,
-        "selected_tab_index": this.selectedIndex
-       },
-      swipeToClose: true
-    });
-    modal.componentProps.modal = modal;
-    return await modal.present();
+      modal.componentProps.modal = modal;
+      return await modal.present();
+    }
 
   }
 
   // go to new page 2nd method
   async detailCardButton(column, data){
     if(this.detailPage){
-      this.modaldetailCardButton(column,data);
+      this.modaldetailCardButton(column,data,-1);
     }else{
       const newobj = {
         "childdata": data,
@@ -320,8 +331,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     const modal = await this.modalController.create({
       component: FormComponent,
       componentProps: {
-        "childData": card,
-        "selected_tab_index": this.selectedIndex,
+        "childData": this.gridData,
+        "editedRowIndex": this.editedRowIndex,
         "addform" : form
        },
       swipeToClose: true
@@ -331,6 +342,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.getCardDataByCollection(this.selectedIndex);
     });
     return await modal.present();
+  }
+
+  editedRow(data,index){
+    this.editedRowIndex = index;
+    this.gridData = data
+    this.addNew();
   }
 
   
