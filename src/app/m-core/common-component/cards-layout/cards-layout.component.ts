@@ -120,6 +120,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   getCardDataByCollection(i) {
+    this.resetVariabls();
     const cardWithTab = this.coreUtilityService.getCard(i); 
     this.setCardAndTab(cardWithTab)
     
@@ -202,10 +203,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.carddata = [];
   }
 
-  async modaldetailCardButton(column, data,i){
-    if(i >= 0){
-      this.editedRow(data,i);
-    }else{
+  async modaldetailCardButton(column, data){    
      const cardmaster=this.dataShareServiceService.getCardList();
       // const cardmaster = this.commonDataShareService.getModuleList();
       const childColumn = this.childColumn;
@@ -231,14 +229,16 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       });
       modal.componentProps.modal = modal;
       return await modal.present();
-    }
+  
 
   }
 
   // go to new page 2nd method
   async detailCardButton(column, data){
-    if(this.detailPage){
-      this.modaldetailCardButton(column,data,-1);
+    if(this.editedRowIndex == -1){
+      const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
+      this.editedRow(data,index);
+      //this.modaldetailCardButton(column,data);
     }else{
       const newobj = {
         "childdata": data,

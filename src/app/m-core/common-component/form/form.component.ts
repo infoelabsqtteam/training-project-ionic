@@ -72,6 +72,7 @@ export class FormComponent implements OnInit, OnDestroy {
   staticDataSubscriber:any;
   nestedFormSubscription:any;
   saveResponceSubscription:any;
+  typeaheadDataSubscription:any;
 
   dateValue:any;
  
@@ -93,7 +94,7 @@ export class FormComponent implements OnInit, OnDestroy {
 
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
         this.setStaticData(data);
-      })
+      });
       this.dinamicFormSubscription = this.dataShareService.form.subscribe(form =>{
         this.setDinamicForm(form);
       });
@@ -108,7 +109,10 @@ export class FormComponent implements OnInit, OnDestroy {
       })
       this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
         this.setSaveResponce(responce);
-      })
+      });
+      this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data =>{
+        this.setTypeaheadData(data);
+      });
     }
 
   resetFlag(){
@@ -140,6 +144,13 @@ export class FormComponent implements OnInit, OnDestroy {
     this.apiService.GetNestedForm(payload);
   }
 
+  setTypeaheadData(typeAheadData){
+    if (typeAheadData.length > 0) {
+      this.typeAheadData = typeAheadData;
+    } else {
+      this.typeAheadData = [];
+    }
+  }
   setStaticData(staticData:any){
     this.staticData = staticData; 
     Object.keys(this.staticData).forEach(key => {        
@@ -296,6 +307,9 @@ export class FormComponent implements OnInit, OnDestroy {
             case "checkbox":
               this.commonFunctionService.createFormControl(forControl, element, false, "checkbox")
               break; 
+            case "typeahead":
+              this.commonFunctionService.createFormControl(forControl, element, null, "text")
+              break;
             case "date":
               let currentYear = new Date().getFullYear();
               if(element.datatype == 'object'){
@@ -544,8 +558,8 @@ export class FormComponent implements OnInit, OnDestroy {
     }
   }
 
-  compareWith(o1: User, o2: User) {
-    return o1 && o2 ? o1.id === o2.id : o1 === o2;
+  compareWith(o1: any, o2: any):boolean {
+    return o1 && o2 ? o1._id === o2._id : o1 === o2;
   }
   getddnDisplayVal(val) {
     return this.commonFunctionService.getddnDisplayVal(val);    
@@ -939,9 +953,10 @@ export class FormComponent implements OnInit, OnDestroy {
   };
   editedRowData(object) {
     this.selectedRow = JSON.parse(JSON.stringify(object)); 
-    this.updateMode = true;
-    this.updateDataOnFormField(this.selectedRow);
-    this.getStaticDataWithDependentData();    
+    this.updateMode = true;    
+    this.getStaticDataWithDependentData(); 
+    this.updateDataOnFormField(this.selectedRow); 
+     
     // if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
     //   this.setCheckboxFileListValue();
     // }
@@ -1339,6 +1354,58 @@ export class FormComponent implements OnInit, OnDestroy {
   }
   
   
+  checkValidator(action_button){
+    const field_name = action_button.field_name.toLowerCase();
+    switch (field_name) {
+      case "save":
+      case "update":
+      case "updateandnext":
+      case "send_email":
+        return !this.templateForm.valid;
+      default:
+        return;
+    }      
+  }
+
+  getTypeahead(event, parentfield, field) { 
+    const value = event.target.value;
+    this.templateForm.get(field.field_name).setValue(value);
+    let objectValue = this.getFormValue(false); 
+    // if(field.datatype == 'text'){
+    //   let typeaheadTextControl:any = {}
+    //   if(parentfield != ''){
+    //     typeaheadTextControl = this.templateForm.get(parentfield.field_name).get(field.field_name);    
+    //   }else{
+    //     typeaheadTextControl = this.templateForm.controls[field.field_name];
+    //   }  
+    //   if(objectValue[field.field_name] == null || objectValue[field.field_name] == '' || objectValue[field.field_name] == undefined){
+    //     if(field.is_mandatory){
+    //       typeaheadTextControl.setErrors({ required: true });
+    //     }else{
+    //       typeaheadTextControl.setErrors(null);
+    //     }        
+    //   }else{        
+    //     typeaheadTextControl.setErrors({ validDataText: true });
+    //   }      
+    // }
+    this.callTypeaheadData(field,objectValue);       
+
+  }
+
+  callTypeaheadData(field,objectValue){
+    this.clearTypeaheadData();   
+    const payload = [];
+    const params = field.api_params;
+    const criteria = field.api_params_criteria;
+    payload.push(this.restService.getPaylodWithCriteria(params, '', criteria, objectValue));
+    this.apiService.GetTypeaheadData(payload);    
+  }
+  clearTypeaheadData() {
+    this.apiService.clearTypeaheadData();
+  }
+  setValue(){
+    this.typeAheadData = [];
+  }
 
   dismissModal(){
     this.modal.dismiss({'dismissed': true});

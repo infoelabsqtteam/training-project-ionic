@@ -17,13 +17,13 @@
       <div *ngIf="tableField.type == 'dropdown'">
         <ion-item *ngIf="tableField.datatype != 'object'">
           <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-select  [formControlName]="tableField.field_name">
+          <ion-select [selectedText]="templateForm.get(tableField.field_name).value" [formControlName]="tableField.field_name">
             <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item *ngIf="tableField.datatype == 'object'">
           <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-select [compareWith]="compareWith" [formControlName]="tableField.field_name">
+          <ion-select [selectedText]="templateForm.get(tableField.field_name).value" [compareWith]="compareWith" [formControlName]="tableField.field_name">
             <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
           </ion-select>
         </ion-item>
@@ -52,7 +52,7 @@
           <ion-checkbox slot="end" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-checkbox>
         </ion-item>
       </div>
-      <div *ngIf="tableField.type == 'checkbox'">
+      <div *ngIf="tableField.type == 'radio'">
         <ion-list>
           <ion-radio-group [formControlName]="tableField.field_name">
             <ion-list-header>
@@ -69,17 +69,26 @@
       <div *ngIf="tableField.type == 'label'">
         <ion-label>{{ tableField.label }}</ion-label>
       </div>
+      <div *ngIf="tableField.type == 'typeahead'">
+        <ng-select [placeholder]="tableField.label" [formControlName]="tableField.field_name" notFoundText="No records found"
+        (keyup)="getTypeahead($event,'',tableField)" (ngModelChange)="setValue()">
+          <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
+       </ng-select>
+      </div>
       <div *ngIf="tableField.type == 'date'">
-        <!-- Datetime in popover with cover element -->
-        <ion-item button="true" id="open-date-input">
-          <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-text slot="end">{{ dateValue }}</ion-text>
-          <ion-popover trigger="open-date-input" show-backdrop="false">
+        <ion-item>
+          <ion-label>{{ tableField.label }}</ion-label>
+          <ion-input
+            value="{{ templateForm.get(tableField.field_name).value | date: 'dd.MM.yyyy' }}"
+            id="date"
+            class="ion-text-end"
+          ></ion-input>
+          <ion-popover trigger="date" size="cover">
             <ng-template>
-              <ion-datetime [formControlName]="tableField.field_name"
-                #popoverDatetime
+              <ion-datetime
                 presentation="date"
-                (ionChange)="dateValue = formatDate(popoverDatetime.value)"
+                [formControlName]="tableField.field_name"
+                locale="sl-SI"
               ></ion-datetime>
             </ng-template>
           </ion-popover>
@@ -90,7 +99,7 @@
     <ion-row>
       <ion-col>
         <span *ngFor="let action_button of formFieldButtons; let i=index" > 
-          <ion-button type="button" *ngIf="action_button.type == 'button'" (click)="take_action_on_click(action_button)" color="danger" [disabled]="!templateForm.valid" expand="block">{{action_button.label}}</ion-button>          
+          <ion-button type="button" *ngIf="action_button.type == 'button'" (click)="take_action_on_click(action_button)" color="danger" [disabled]="checkValidator(action_button)" expand="block">{{action_button.label}}</ion-button>          
         </span>
       </ion-col>
     </ion-row>
