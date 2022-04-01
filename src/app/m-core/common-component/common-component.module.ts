@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormComponent } from './form/form.component';
 import { CardsLayoutComponent } from './cards-layout/cards-layout.component';
 import { ModalDetailCardComponent } from './modal-detail-card/modal-detail-card.component';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 const components = [
     FormComponent,
@@ -24,6 +25,7 @@ const components = [
         ReactiveFormsModule, 
         HttpClientModule,
         IonicModule.forRoot(),
+        NgSelectModule
     ],
     providers: [],
     schemas: [

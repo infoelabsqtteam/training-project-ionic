@@ -45,10 +45,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   createFormgroup: boolean = true;
   openFilter: boolean = false;
   filterCount: 0;
+  gridData:any={};
 
   //common function
   cardList: any = [];
   selectedIndex= -1;
+  public editedRowIndex:number=-1;
   tabMenu: any = [];
   cardListSubscription:any;
 
@@ -85,6 +87,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     
   }
 
+  resetVariabls(){
+    this.editedRowIndex = -1;
+    this.gridData = {};
+  }
+
   initializeApp() {
     this.platform.ready().then(() => {});
   }
@@ -113,6 +120,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   getCardDataByCollection(i) {
+    this.resetVariabls();
     const cardWithTab = this.coreUtilityService.getCard(i); 
     this.setCardAndTab(cardWithTab)
     
@@ -195,39 +203,42 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.carddata = [];
   }
 
-  async modaldetailCardButton(column, data){
+  async modaldetailCardButton(column, data){    
      const cardmaster=this.dataShareServiceService.getCardList();
-    // const cardmaster = this.commonDataShareService.getModuleList();
-    const childColumn = this.childColumn;
-    if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
-      cardmaster.forEach(element => {
-        if(element._id == childColumn._id ){
-          this.childColumns = element.fields;
-          this.childCardType = element.card_type;
-        }
+      // const cardmaster = this.commonDataShareService.getModuleList();
+      const childColumn = this.childColumn;
+      if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
+        cardmaster.forEach(element => {
+          if(element._id == childColumn._id ){
+            this.childColumns = element.fields;
+            this.childCardType = element.card_type;
+          }
+        });
+      }    
+      //modalShowfunction
+      const modal = await this.modalController.create({
+        component: ModalDetailCardComponent,
+        componentProps: {
+          "childData": data,
+          "childColumns": this.childColumns,
+          "childDataTitle": this.childDataTitle,
+          "childCardType" : this.childCardType,
+          "selected_tab_index": this.selectedIndex
+        },
+        swipeToClose: true
       });
-    }    
-    //modalShowfunction
-    const modal = await this.modalController.create({
-      component: ModalDetailCardComponent,
-      componentProps: {
-        "childData": data,
-        "childColumns": this.childColumns,
-        "childDataTitle": this.childDataTitle,
-        "childCardType" : this.childCardType,
-        "selected_tab_index": this.selectedIndex
-       },
-      swipeToClose: true
-    });
-    modal.componentProps.modal = modal;
-    return await modal.present();
+      modal.componentProps.modal = modal;
+      return await modal.present();
+  
 
   }
 
   // go to new page 2nd method
   async detailCardButton(column, data){
-    if(this.detailPage){
-      this.modaldetailCardButton(column,data);
+    if(this.editedRowIndex == -1){
+      const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
+      this.editedRow(data,index);
+      //this.modaldetailCardButton(column,data);
     }else{
       const newobj = {
         "childdata": data,
@@ -320,8 +331,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     const modal = await this.modalController.create({
       component: FormComponent,
       componentProps: {
-        "childData": card,
-        "selected_tab_index": this.selectedIndex,
+        "childData": this.gridData,
+        "editedRowIndex": this.editedRowIndex,
         "addform" : form
        },
       swipeToClose: true
@@ -331,6 +342,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.getCardDataByCollection(this.selectedIndex);
     });
     return await modal.present();
+  }
+
+  editedRow(data,index){
+    this.editedRowIndex = index;
+    this.gridData = data
+    this.addNew();
   }
 
   
