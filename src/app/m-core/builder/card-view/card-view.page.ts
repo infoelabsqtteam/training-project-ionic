@@ -26,8 +26,6 @@ export class CardViewPage implements OnInit, OnDestroy {
     cardType = "summary"; //default cardtype
     childColumns : any;
     childColumn: any = {};
-    filterForm: FormGroup;
-    createFormgroup: boolean = true;
     collectionname: any;
   
     card:any={};
@@ -35,14 +33,26 @@ export class CardViewPage implements OnInit, OnDestroy {
   
     // new var
     gridDataSubscription: any;
-    
-    
+
+   // filter card
+  filterForm: FormGroup;
+  createFormgroup: boolean = true;
+  openFilter: boolean = false;
+  filterCount: 0;
+
+  // addNewEnabled:boolean=false;
+  // detailPage:boolean=false;
+
     constructor(
       private storageService: StorageService,
       private coreUtilityService :CoreUtilityService,
       private commonDataShareService:CommonDataShareService,
+      private restService:RestService,
+      private apiService:ApiService,
+      private formBuilder: FormBuilder,
       public modalController: ModalController,
       @Optional() private readonly routerOutlet?: IonRouterOutlet,
+      
     ) 
     {
       
@@ -53,16 +63,11 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
 
     ngOnInit() {    
-      // this.router.events.pipe(
-      //   filter((event: RouterEvent) => event instanceof NavigationEnd)
-      // ).subscribe(() => {
-      //   const index = this.commonDataShareService.getSelectdTabIndex();
-      //   this.getCardDataByCollection(index);      
-      // });
     }
   
     load(){
       this.carddata = [];
+      this.data = {};
       const index = this.commonDataShareService.getSelectdTabIndex();
       this.getCardDataByCollection(index);
     }
@@ -73,12 +78,6 @@ export class CardViewPage implements OnInit, OnDestroy {
   
     ngOnDestroy(): void {
       this.resetVariables();
-      if (this.cardListSubscription) {
-        this.cardListSubscription.unsubscribe();
-      }
-      if (this.gridDataSubscription) {
-        this.gridDataSubscription.unsubscribe();
-      }
     }
   
     private getCardDataByCollection(i) {
@@ -92,5 +91,65 @@ export class CardViewPage implements OnInit, OnDestroy {
     comingSoon() {
       this.storageService.presentToast('Comming Soon...');
     }
-  
+    goBack(){
+      this.carddata = [];
+      this.tabMenu = [];
+      this.openFilter = false;
+    }
+    open(){
+      this.openFilter=!this.openFilter
+      this.data={};
+    }
+    // filterdata
+    filterCard(){  
+      this.openFilter = false;
+      this.data = {
+        'filterFormData' : this.filterForm.getRawValue()
+      }
+    }
+    closefilterCard(){
+      this.data = {};
+      this.openFilter = false;
+    }
+    clearfilterCard(){
+      this.data = {};
+      this.filterForm.reset();
+    } 
+    columnListOutput(columnList){
+      this.columnList = columnList;
+      this.createFormgroup = true;
+      if (this.columnList && this.columnList.length > 0 && this.createFormgroup) {
+        this.createFormgroup = false;
+        const forControl = {};
+        this.columnList.forEach(element => {
+          switch (element.type) {
+            case "abcd":
+              break;
+            default:
+              this.coreUtilityService.createFormControl(forControl, element, '', "text");
+              break;
+          }
+        });
+        if (forControl) {
+          this.filterForm = this.formBuilder.group(forControl);
+        }
+      }
+    }
+    // setCardDetails(card) {  
+    //   if(card && card.add_new){
+    //     if(this.detailPage){
+    //       this.addNewEnabled = false;
+    //     }else{
+    //       this.addNewEnabled = true;
+    //     }
+    //   }else{
+    //     this.addNewEnabled = false;
+    //   } 
+    //   this.cardtitle = card.name;
+    //   if (card.card_type !== '') {
+    //     this.cardType = card.card_type.name;
+    //   }
+    //   // this.childColumn = card.child_card;
+    // }
+
   }

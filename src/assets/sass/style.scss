@@ -95,9 +95,9 @@ ion-tabs.footertab {
 }
 
 // Inner Page Common Tabs
-.menutab {display:flex;align-items:center;
+.menutab {display:flex;align-items:center;--background:none;
     ion-slide{ max-width: 100px; display: flex;align-content: center; align-items: center;justify-content: center;}
-    ion-tab-button {color:#A5A5A5;font-size:13px;}
+    ion-tab-button {color:#FFFFFF;font-size:13px;}
     .active{color:#313131;border-bottom:2px solid #113970;font-weight:600;}
     ion-label {white-space:nowrap;padding:10px 0;}
     .segment-button-checked{color: #313131;font-weight: 600;
@@ -108,8 +108,8 @@ ion-tabs.footertab {
 
 
 // Contact Listing
-.contactlist {background:none;margin: 8px;
-    ion-item {border-radius:14px;border:1px solid#F0F1F3;margin-bottom:4px;margin-top: 0;}
+.contactlist {--background:#FFFFFF;margin: 8px;
+    ion-item {border-radius:14px;border:1px solid#F0F1F3;margin-bottom:4px;margin-top: 4px;}
     ion-row{width: 100%;}
     ion-avatar {width:48px;height:48px;margin:10px 15px 10px 0;color:#fff;line-height:48px;text-align:center;background:#0851B5;}
     h4 {font-size:16px;color:#113970;}
@@ -141,7 +141,7 @@ ion-tabs.footertab {
     }
     
 }
-.addmore {position:fixed;right:20px;bottom:30px;z-index:9;background:#0851b5;color:#fff;width:48px;height:48px;border-radius:100%;text-align:center;line-height:55px;font-size:25px;}
+.addmore {position:fixed;right:20px;bottom:48px;z-index:9;background:#0851b5;color:#fff;width:48px;height:48px;border-radius:100%;text-align:center;line-height:52px;font-size:24px;}
 
 .quotationlist {
     ion-row{width: 100%;}
@@ -150,7 +150,7 @@ ion-tabs.footertab {
     .small{color:#313131;font-size: 10px;}
     .price{font-size: 14px;color: #000;margin: 0;}
     .strong{font-weight: bold;}
-    p{line-height: 20px;margin:0;}
+    p{line-height: 20px;margin:0;}item-inner
     > col{padding-top: 10px;}
     ion-button {
         --background: none;
@@ -198,7 +198,9 @@ ion-tabs.footertab {
 .halfwidthcardList{border: 1.5px solid #16161D1A;border-radius: 10px;margin-bottom:5px;margin-right:5px;
         .item-native{padding-left:0}
         ion-avatar{}
-        img{ max-width: 30px;height: 30px;border-radius:0px;}
+        img{ max-width: 32px;height: 32px;border-radius:0px;image-rendering: -webkit-optimize-contrast;}
         ion-label{font-size:14px!important;font-weight:500;}
 }
 .ion-background-white{background: #ffffff;}
+// .contactlist.bgcolor {--background:#ffffff;}
+// .menutab .bgcolour{--background:#ffffff;}
