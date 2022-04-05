@@ -31,7 +31,7 @@
           </ion-row>
         </ion-item>
         <ion-item-options side="end">
-          <ion-item-option *ngIf="addNewEnabled" (click)="edit(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -51,7 +51,7 @@
           </ion-row>
         </ion-item>
         <ion-item-options side="end" >
-          <ion-item-option *ngIf="addNewEnabled" (click)="edit(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -72,7 +72,7 @@
         </ion-item>
         <ion-item-options side="end">
           <ion-item-option (click)="callInvoice(card, i)"><ion-icon name="call"></ion-icon></ion-item-option>
-          <ion-item-option *ngIf="addNewEnabled" (click)="edit(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -93,7 +93,7 @@
         </ion-item>
         <ion-item-options side="end" >
           <ion-item-option (click)="call(card, i)"><ion-icon name="call"></ion-icon></ion-item-option>
-          <ion-item-option *ngIf="addNewEnabled" (click)="edit(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -113,7 +113,7 @@
           </ion-row>
         </ion-item>
         <ion-item-options side="end">
-          <ion-item-option *ngIf="addNewEnabled" (click)="edit(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -134,7 +134,7 @@
           </ion-row>
         </ion-item>
         <ion-item-options side="end" >
-          <ion-item-option *ngIf="addNewEnabled" (click)="edit(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -154,7 +154,7 @@
           </ion-row>
         </ion-item>
         <ion-item-options side="end" >
-          <ion-item-option *ngIf="addNewEnabled" (click)="edit(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
