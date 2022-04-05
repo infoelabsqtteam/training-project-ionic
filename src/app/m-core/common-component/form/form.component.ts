@@ -558,9 +558,12 @@ export class FormComponent implements OnInit, OnDestroy {
     }
   }
 
-  compareWith(o1: any, o2: any):boolean {
+  compareFn(o1: any, o2: any):boolean {
     return o1 && o2 ? o1._id === o2._id : o1 === o2;
   }
+  // compareFn(e1: User, e2: User): boolean {
+  //   return e1 && e2 ? e1.id === e2.id : e1 === e2;
+  // }
   getddnDisplayVal(val) {
     return this.commonFunctionService.getddnDisplayVal(val);    
   }
@@ -1115,8 +1118,9 @@ export class FormComponent implements OnInit, OnDestroy {
                   this.templateForm.controls[element.field_name].setValue('')
                 }
               }else{
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){                  
                   const value = formValue[element.field_name];
+                  this.typeAheadData = [value];
                   this.templateForm.controls[element.field_name].setValue(value)
                 }
               }  

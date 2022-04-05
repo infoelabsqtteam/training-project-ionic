@@ -23,7 +23,7 @@
         </ion-item>
         <ion-item *ngIf="tableField.datatype == 'object'">
           <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-select [selectedText]="templateForm.get(tableField.field_name).value" [compareWith]="compareWith" [formControlName]="tableField.field_name">
+          <ion-select [selectedText]="getddnDisplayVal(templateForm.get(tableField.field_name).value)" [formControlName]="tableField.field_name" [compareWith]="compareFn">
             <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
           </ion-select>
         </ion-item>
@@ -70,10 +70,16 @@
         <ion-label>{{ tableField.label }}</ion-label>
       </div>
       <div *ngIf="tableField.type == 'typeahead'">
-        <ng-select [placeholder]="tableField.label" [formControlName]="tableField.field_name" notFoundText="No records found"
-        (keyup)="getTypeahead($event,'',tableField)" (ngModelChange)="setValue()">
-          <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
-       </ng-select>
+        <div *ngIf="tableField.datatype != 'list_of_object'">
+          <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (ngModelChange)="setValue()">
+            <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
+          </ng-select>
+        </div>
+        <div *ngIf="tableField.datatype == 'list_of_object'">
+          <ng-select [multiple]="true" [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (ngModelChange)="setValue()">
+            <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
+          </ng-select>
+        </div>
       </div>
       <div *ngIf="tableField.type == 'date'">
         <ion-item>
