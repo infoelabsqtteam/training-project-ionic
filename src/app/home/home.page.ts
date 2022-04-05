@@ -74,6 +74,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.initializeApp();
     this.banner_img = [
       'assets/img/home/banner1.png',
+      'assets/img/home/banner2.png',
       'assets/img/home/banner2.png'
     ];
     this.web_site_name = this.envService.getWebSiteName();
@@ -158,8 +159,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   showCardTemplate(card:any, index:number){
     this.commonDataShareService.setModuleIndex(index);
-    this.router.navigate(['crm/quotation']);
-    //this.router.navigate(['form']); 
+    this.router.navigate(['card-view']); 
   }
 
   showExitConfirm() {

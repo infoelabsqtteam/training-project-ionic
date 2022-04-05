@@ -4,11 +4,11 @@ import { CallNumber } from '@ionic-native/call-number/ngx';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
 @Component({
-  selector: 'app-quotation-details',
-  templateUrl: './quotation-details.page.html',
-  styleUrls: ['./quotation-details.page.scss'],
+  selector: 'app-card-detail-view',
+  templateUrl: './card-detail-view.page.html',
+  styleUrls: ['./card-detail-view.page.scss'],
 })
-export class QuotationDetailsPage implements OnInit, OnDestroy {
+export class CardDetailViewPage implements OnInit, OnDestroy {
 
   cardType = ""; //default Card
   childColumns: any = {};
@@ -35,10 +35,15 @@ export class QuotationDetailsPage implements OnInit, OnDestroy {
 
   resetVariables(){
     this.card = {};
+    this.childDataValue = {};
+  }
+
+  ionViewWillEnter(){
+    this.getChildData(); 
   }
 
   ngOnInit() {
-    this.getChildData();    
+    // this.getChildData();    
   }
   ngOnDestroy(): void {
     this.resetVariables();

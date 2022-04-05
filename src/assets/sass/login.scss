@@ -1,21 +1,22 @@
-.loginpage {--background:#EFF1F3;font-family:Source Sans Pro;
+.loginpage {--background:#EFF1F3;font-family:roboto,medium;;
     .logintitle { padding:16px;padding-bottom:120px;
-        h4 {font-size:28px;font-weight:bold;color:#3A3A3A;margin-bottom:0;}
-        p {color:#777;font-size:20px;margin:8px 0;}
+        h4 {font-size:22px;font-weight:bold;color:#137CF5;margin-bottom:0;}
+        p {color:#2D2D2D;font-size:16px;margin:8px 0;}
     }
     .login {border-radius:24px 24px 0 0;padding:20px;background:#fff;position:absolute;width:100%;bottom:0;
         .formgroup {position:relative;margin-bottom:5px;}
         .label-stacked.sc-ion-label-md-h, .label-floating.sc-ion-label-md-h {color:#A5A5A5;font-size:14px;}
-        .sc-ion-input-md-h {--padding:0px;margin:0px;color:#323643;font-size:16px;position:relative;}
+        .sc-ion-input-md-h {--padding:0px;margin:0px;color:#2D2D2D;font-size:14px;position:relative;}
         .item-label-floating, .item-label-stacked {--min-height:35px;--padding-start:0px;}
         .label-floating.sc-ion-label-md-h {transform:translateY(165%);}
         .item-has-focus.label-floating.sc-ion-label-md-h, .item-has-focus .label-floating.sc-ion-label-md-h, .item-has-placeholder.sc-ion-label-md-h:not(.item-input).label-floating, .item-has-placeholder:not(.item-input) .label-floating.sc-ion-label-md-h, .item-has-value.label-floating.sc-ion-label-md-h, .item-has-value .label-floating.sc-ion-label-md-h {transform:translateY(50%) scale(0.75);}
         .alert {position:absolute;width:100%;font-size:11px;color:red;z-index:5;}
-        .item-label-stacked.sc-ion-input-md-h, .item-label-stacked .sc-ion-input-md-h, .item-label-floating.sc-ion-input-md-h, .item-label-floating .sc-ion-input-md-h {padding:0px;}
+        .item-label-stacked.sc-ion-input-md-h, .item-label-stacked .sc-ion-input-md-h, .item-label-floating.sc-ion-input-md-h, .item-label-floating .sc-ion-input-md-h {padding:0px;--padding-top: 24px;--padding-bottom: 17px;}
         .item-highlight, .item-inner-highlight {--height:1px !important;}
-        .showpassword {color:#C6CBD4;position:absolute;right:5px;top:20px;font-size:20px;}
-        .forgetpassword {color:#313131;font-size:16px;text-decoration:none;}
-        ion-button {margin-top:20px;--background:#113970;height:54px;border-radius:10px;color:#fff;position:relative;opacity:1;border-radius:10px;overflow:hidden;
+        .showicon {color:#137CF5;position:absolute;right:5px;top:35px;font-size:15px;}
+        .showpassword {color:#137CF5;position:absolute;right:5px;top:35px;font-size:20px;}
+        .forgetpassword {color:#313131;font-size:13px;text-decoration:none;}
+        ion-button {margin-top:20px;--background:#137CF5;height:48px;border-radius:10px;color:#fff;position:relative;opacity:1;border-radius:10px;overflow:hidden;
             ion-icon {position:absolute;right:10px;}
         }
         .signup {color:#313131;font-size:16px;margin-top:15px;display:block;}
@@ -30,3 +31,12 @@
     p {margin:0;}
 }
 .mail-icon{width: 48px;height: 48px;border-radius: 100%;box-shadow: 0 0 15px #00000029; padding: 9px; margin: 20px auto 0 !important;}
+.loginlogo{text-align: center;max-width: 149px;margin: 0 auto;margin-top: 53px;max-height: 127px;
+    .logintitle { padding:20px;padding-bottom:120px;padding-top: 53px;
+        h4 {font-size:24px;font-weight:bold;color:#137CF5;margin-bottom:0;}
+        p {color:#2D2D2D;font-size:22px;margin:22px 0;}
+        img{border-radius: 15px;}
+    }    
+}
+.login.forgotpwd {border-radius:24px 24px 0 0;padding:20px;background:#fff;position:absolute;width:100%;}
+.loginpage.forgotpwd {--background:#ffffff;}

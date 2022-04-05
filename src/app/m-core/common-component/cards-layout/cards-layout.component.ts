@@ -1,10 +1,10 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
 import { filter } from 'rxjs';
 import { CallNumber } from '@ionic-native/call-number/ngx';
-import { Platform, ModalController } from '@ionic/angular';
+import { Platform, ModalController, AlertController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card.component';
 import { FormComponent } from '../form/form.component';
@@ -17,7 +17,8 @@ import { FormComponent } from '../form/form.component';
 export class CardsLayoutComponent implements OnInit, OnChanges {
 
   @Input() card:any;
-  @Input() data:any;
+  @Input() data:any ={};
+  @Output() columnListOutput = new EventEmitter();
 
   web_site_name: string = '';
   list: any = [];
@@ -41,7 +42,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   myInput: string;
 
   // filter card
-  filterForm: FormGroup;
+  //filterForm: FormGroup;
+  filterForm:any = {
+    'value' : {}
+  }
   createFormgroup: boolean = true;
   openFilter: boolean = false;
   filterCount: 0;
@@ -73,7 +77,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private coreUtilityService :CoreUtilityService,
     private dataShareService: DataShareService,
     private commonDataShareService:CommonDataShareService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private alertController: AlertController
   ) 
   {
     // below code is for slider and title name
@@ -96,11 +101,17 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.platform.ready().then(() => {});
   }
   ngOnChanges(changes: SimpleChanges) {
-    if(this.card && this.card.card && this.card.card.name){
-      this.setCardAndTab(this.card)
-    }
-    if(this.data && this.data.name){
-      this.detailPage = true;
+    if(this.data && this.data.filterFormData){
+      this.filterForm['value'] = this.data.filterFormData;
+      this.getGridData(this.collectionname);
+    }else{
+      if(this.card && this.card.card && this.card.card.name){
+        this.setCardAndTab(this.card)
+      }
+      if(this.data && this.data.name){
+        this.detailPage = true;
+      }
+      this.filterForm['value'] = {};
     }
   }
 
@@ -155,38 +166,13 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     // this.childColumn = card.child_card;
     this.columnList = card.fields;
-    if (this.columnList && this.columnList.length > 0 && this.createFormgroup) {
+    if(this.createFormgroup){
       this.createFormgroup = false;
-      const forControl = {};
-      this.columnList.forEach(element => {
-        switch (element.type) {
-          case "abcd":
-            break;
-          default:
-            this.coreUtilityService.createFormControl(forControl, element, '', "text");
-            break;
-        }
-      });
-      if (forControl) {
-        this.filterForm = this.formBuilder.group(forControl);
-      }
+      this.columnListOutput.emit(this.columnList);
     }
     this.collectionname = card.collection_name;
     this.getGridData(this.collectionname);
   }
-  
-  // filterdata
-  filterCard(){  
-    this.openFilter = false;
-    this.getGridData(this.collectionname);
-  }
-  closefilterCard(){
-    this.openFilter = false;
-  }
-  clearfilterCard(){
-    this.filterForm.reset();
-    this.getGridData(this.collectionname);
-  } 
 
   search(myInput) {
     this.getGridData(this.collectionname);
@@ -201,6 +187,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   goBack(){
     this.carddata = [];
+    this.tabMenu = [];
+    this.openFilter = false;
   }
 
   async modaldetailCardButton(column, data){    
@@ -246,7 +234,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
       this.dataShareServiceService.setchildDataList(newobj);  
       this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);  
-      this.router.navigate(['crm/quotation-details']);
+      this.router.navigate(['card-detail-view']);
     }
     
   }

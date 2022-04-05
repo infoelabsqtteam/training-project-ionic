@@ -28,6 +28,7 @@ import { FocusDirective } from './directive/focus.directive';
 import { IonicCoreModule } from '@core/ionic-core';
 import { HomePageModule } from './home/home.module';
 import { McoreModule } from './m-core/m-core.module';
+import { LocationAccuracy } from '@ionic-native/location-accuracy/ngx';
 
  
 
@@ -64,6 +65,7 @@ import { McoreModule } from './m-core/m-core.module';
     FileOpener,
     AndroidPermissions,
     NativeGeocoder,
+    LocationAccuracy,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
   ],
