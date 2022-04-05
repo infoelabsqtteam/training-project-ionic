@@ -25,13 +25,28 @@
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
-              <div class="ion-text-end"><ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)"></ion-button></div>
+              
+              <div class="ion-text-end">
+
+                <ion-button [ngClass]="
+                {
+                  'completed-status':card.quotation_status == 'Completed', 
+                  'new-status':card.quotation_status == 'New', 
+                  'approved-status':card.quotation_status == 'Approved', 
+                  'regret-status':card.quotation_status == 'Regret',
+                  'column.class_name':column.class_name !=''
+                }" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)">
+                </ion-button>
+                
+                <!-- <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)"></ion-button> -->
+              
+              </div>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
             </ion-col>
           </ion-row>
         </ion-item>
         <ion-item-options side="end">
-          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -51,7 +66,7 @@
           </ion-row>
         </ion-item>
         <ion-item-options side="end" >
-          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -71,10 +86,10 @@
           </ion-row>
         </ion-item>
         <ion-item-options side="start">
-          <ion-item-option (click)="callInvoice(card, i)"><ion-icon name="call"></ion-icon></ion-item-option>
+          <ion-item-option (click)="callInvoice(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
           </ion-item-options>
         <ion-item-options side="end">
-          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -82,7 +97,7 @@
   <ion-list class="contactlist" *ngIf="cardType == 'contact'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="contactlist" lines="none">
-          <ion-avatar slot="start">El</ion-avatar>
+          <ion-avatar slot="start" class="ion-text-uppercase">{{card.first_name[0]}}</ion-avatar>
           <ion-row class="ion-align-items-center inner_padding">
             <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="detailCardButton(column,card)">
               <p [ngClass]="column.class_name ? column.class_name  : ''" class="ion-text-end" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
@@ -94,10 +109,10 @@
           </ion-row>
         </ion-item>
         <ion-item-options side="start" >
-          <ion-item-option (click)="call(card, i)"><ion-icon name="call"></ion-icon></ion-item-option>
+          <ion-item-option (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
         </ion-item-options>
         <ion-item-options side="end" >
-          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -117,7 +132,7 @@
           </ion-row>
         </ion-item>
         <ion-item-options side="end">
-          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -132,13 +147,29 @@
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'"  [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'email'" [innerHTML]="getValueForGrid(column,card)"></p>
-              <div class="ion-text-end"><ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)"></ion-button></div>
+              <div class="ion-text-end">
+                <!-- <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' && card.status =='Regret'" color="primary" [innerHTML]="getValueForGrid(column,card)"></ion-button>
+                <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' && card.status =='Move to Quotation'" color="secondary" [innerHTML]="getValueForGrid(column,card)"></ion-button>
+                <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' && card.status =='New'" color="tertiary" [innerHTML]="getValueForGrid(column,card)"></ion-button> -->
+
+                <ion-button [ngClass]="
+                {
+                  'active-status':card.status == 'Active', 
+                  'new-status':card.status == 'New', 
+                  'move-to-qutation-status':card.status == 'Move to Quotation', 
+                  'regret-status':card.status == 'Regret',
+                  'column.class_name':column.class_name !=''
+                }" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)">
+                </ion-button>
+
+                <!-- <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' && card.status !== 'Regret' && card.status !== 'Move to Quotation' && card.status !== 'New' && card.status !== 'Active'" [innerHTML]="getValueForGrid(column,card)"></ion-button> -->
+              </div>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
             </ion-col>
           </ion-row>
         </ion-item>
         <ion-item-options side="end" >
-          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -158,12 +189,19 @@
           </ion-row>
         </ion-item>
         <ion-item-options side="end" >
-          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
 
-  <div class="addmore" (click)="addNew()" *ngIf="addNewEnabled"><ion-icon name="add-outline"></ion-icon></div>
+  <!-- <div class="addmore" (click)="addNew()" *ngIf="addNewEnabled">
+    <ion-icon name="add-outline"></ion-icon>
+  </div> -->
+  <ion-fab vertical="bottom" horizontal="center" slot="fixed" *ngIf="addNewEnabled">
+    <ion-fab-button (click)="addNew()" class="addNew" >
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 
   <div *ngIf="filterCount == 0" class="nodatafound">    
     <ion-img src="../../../assets/nodatafound.png"></ion-img>

@@ -219,7 +219,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   showCardTemplate(card:any, index:number){
     this.selectedIndex = index;
-    this.router.navigate(['crm/quotation']);
+    this.router.navigate(['card-view']);
     this.dataShareServiceService.setcardData(card);
   }
 
