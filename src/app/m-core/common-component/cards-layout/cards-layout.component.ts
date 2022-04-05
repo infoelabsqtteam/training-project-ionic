@@ -105,11 +105,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.filterForm['value'] = this.data.filterFormData;
       this.getGridData(this.collectionname);
     }else{
+      if(this.data && this.data._id){
+        this.detailPage = true;
+      }
       if(this.card && this.card.card && this.card.card.name){
         this.setCardAndTab(this.card)
-      }
-      if(this.data && this.data.name){
-        this.detailPage = true;
       }
       this.filterForm['value'] = {};
     }
@@ -191,7 +191,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.openFilter = false;
   }
 
-  async modaldetailCardButton(column, data){    
+  async modaldetailCardButton(column, data){
      const cardmaster=this.dataShareServiceService.getCardList();
       // const cardmaster = this.commonDataShareService.getModuleList();
       const childColumn = this.childColumn;
@@ -217,16 +217,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       });
       modal.componentProps.modal = modal;
       return await modal.present();
-  
-
   }
 
   // go to new page 2nd method
   async detailCardButton(column, data){
-    if(this.editedRowIndex == -1){
-      const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
-      this.editedRow(data,index);
-      //this.modaldetailCardButton(column,data);
+    if(this.detailPage){
+      //const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
+      //this.editedRow(data,index);
+      this.modaldetailCardButton(column,data);
     }else{
       const newobj = {
         "childdata": data,
