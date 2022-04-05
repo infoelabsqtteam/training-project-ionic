@@ -9,7 +9,6 @@ import { QuotationDetailsPageRoutingModule } from './quotation-details-routing.m
 import { QuotationDetailsPage } from './quotation-details.page';
 import { CommonComponentModule } from 'src/app/m-core/common-component/common-component.module';
 
-
 @NgModule({
   imports: [
     CommonModule,

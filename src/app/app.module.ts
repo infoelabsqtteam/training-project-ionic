@@ -64,7 +64,7 @@ import { LocationAccuracy } from '@ionic-native/location-accuracy/ngx';
     CurrencyPipe,
     FileOpener,
     AndroidPermissions,
-    NativeGeocoder,    
+    NativeGeocoder,
     LocationAccuracy,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

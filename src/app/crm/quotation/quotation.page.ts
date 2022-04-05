@@ -60,22 +60,22 @@ export class QuotationPage implements OnInit, OnDestroy {
   ionViewWillEnter(){
     this.load();
   }
-  ngOnInit() {
-    
+
+  ngOnInit() {    
     // this.router.events.pipe(
     //   filter((event: RouterEvent) => event instanceof NavigationEnd)
     // ).subscribe(() => {
     //   const index = this.commonDataShareService.getSelectdTabIndex();
     //   this.getCardDataByCollection(index);      
-    // });  
-    
-
+    // });
   }
+
   load(){
     this.carddata = [];
     const index = this.commonDataShareService.getSelectdTabIndex();
     this.getCardDataByCollection(index);
   }
+  
   resetVariables(){
     this.card = {}
   }
@@ -100,9 +100,6 @@ export class QuotationPage implements OnInit, OnDestroy {
   
   comingSoon() {
     this.storageService.presentToast('Comming Soon...');
-  }
-  
-
-  
+  }  
 
 }
