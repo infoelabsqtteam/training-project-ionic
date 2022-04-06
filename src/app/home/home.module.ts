@@ -5,7 +5,6 @@ import { IonicModule } from '@ionic/angular';
 import { HomePageRoutingModule } from './home-routing.module';
 import { HomePage } from './home.page';
 import { SwiperModule } from 'swiper/angular';
-import { ProductSearchComponent } from '../component/product-search/product-search.component';
 
 
 
@@ -20,7 +19,6 @@ import { ProductSearchComponent } from '../component/product-search/product-sear
   ],
   declarations: [
     HomePage,
-    ProductSearchComponent
   ]
 })
 export class HomePageModule {
