@@ -39,6 +39,8 @@ export class CardViewPage implements OnInit, OnDestroy {
   createFormgroup: boolean = true;
   openFilter: boolean = false;
   filterCount: 0;
+  searching:boolean = false;
+  searchcardvalue:string = '';
 
   // addNewEnabled:boolean=false;
   // detailPage:boolean=false;
@@ -60,10 +62,19 @@ export class CardViewPage implements OnInit, OnDestroy {
   
     ionViewWillEnter(){
       this.load();
+      this.searching = false;
     }
 
-    ngOnInit() {    
+    ngOnInit() {  
     }
+    togglesearch(){
+      this.searching = !this.searching;
+      this.searchcardvalue = "";
+      if(!this.searching){
+        this.search(this.searchcardvalue);
+      }
+    }
+    
   
     load(){
       this.carddata = [];
@@ -134,6 +145,16 @@ export class CardViewPage implements OnInit, OnDestroy {
           this.filterForm = this.formBuilder.group(forControl);
         }
       }
+    }
+    Selectedcardtitle(title:any){
+      this.cardtitle = title;
+    }
+    search(searchcardvalue){
+      // if(searchcardvalue && searchcardvalue.length > 0){
+        this.data = {
+          'searchData' : searchcardvalue
+        }
+      // }
     }
     // setCardDetails(card) {  
     //   if(card && card.add_new){
