@@ -6,7 +6,7 @@
 </ion-header>
 
 <ion-content class="pages">
-  <div class="contactdetails" *ngIf="cardType == 'detail1'">
+  <div class="contactdetails"  *ngIf="cardType == 'detail1'">
    
     <p class="enquerylist" *ngFor="let column of childColumns; index as j">
       <span [ngClass]="column.class_name ? column.class_name  : ''">{{column.field_label}}</span>
@@ -16,7 +16,7 @@
     </p>
   </div>
 
-  <div class="contactprofile" *ngIf="cardType == 'contactdetail'">
+  <div class="contactprofile" style="height: 40%;" *ngIf="cardType == 'contactdetail'">
     <div class="profileicon" ><span *ngIf="childDataValue.first_name">{{childDataValue.first_name[0]}}</span><span *ngIf="childDataValue.last_name">{{childDataValue.last_name[0]}}</span></div>
     <h3 class="personName">{{childDataValue.first_name  +" "+ childDataValue.last_name}}</h3>
     <p class="personDesignation">{{childDataValue.designation}}</p>
@@ -28,8 +28,8 @@
       <ion-button (click)="comingSoon()"><img src="assets/img/icons/edit.svg"></ion-button>
     </div>
   </div>  
-  <div *ngIf="tabMenu.length > 0">
-    <app-cards-layout [card]="card" [data]="childDataValue"></app-cards-layout>
+  <div *ngIf="tabMenu.length > 0" style="height: 60%;">
+    <app-cards-layout [card]="card" [data]="childDataValue" (columnListOutput) = "columnListOutput($event)"></app-cards-layout>
   </div>
 
   <!-- <div class="contactpersonlists" *ngIf="tabMenu && tabMenu.length > 0" >

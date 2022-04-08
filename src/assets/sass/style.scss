@@ -162,10 +162,11 @@ ion-tabs.footertab {
         border-radius: 4px;
         border: 1px solid var(--themebg);
         text-align: center;
-        font-size: 11px;
+        font-size: 10px;
         padding: 3px;
         --box-shadow: none;
-        text-transform: capitalize;
+        text-transform: uppercase;
+        min-width: 80px;
     }
     // title{font-size: 14px;color: var(--themebg);text-transform: capitalize;line-height: 18px;margin-bottom: 5px;font-weight: 600;overflow: hidden;text-overflow: ellipsis;width: 180px;white-space: nowrap;}
 }
@@ -205,9 +206,58 @@ ion-tabs.footertab {
         ion-label{font-size:14px!important;font-weight:500;}
 }
 .ion-background-white{background:var(--ion-color-white);}
-ion-button.active-status{background: var(--active-bg);color: var(--ion-color-white);border: 1px solid var(--active-bg);padding: 0;--background: var(--active-bg);}
-ion-button.new-status{background: var(--new-bg);color: var(--ion-color-white);border: 1px solid var(--new-bg);padding: 0;--background: var(--new-bg);}
-ion-button.regret-status{background: var(--regret-bg);color: var(--ion-color-white);border: 1px solid var(--regret-bg);padding: 0;--background: var(--regret-bg);}
-ion-button.move-to-qutation-status{background: var(--move-to-qutation);color: var(--ion-color-white);border: 1px solid var(--move-to-qutation);padding: 0;--background: var(--move-to-qutation);}
-ion-button.completed-status{background: var(--completed-bg);color: var(--ion-color-white);border: 1px solid var(--completed-bg);padding: 0;--background: var(--completed-bg);}
-ion-button.approved-status{background: var(--approved-bg);color: var(--ion-color-white);border: 1px solid var(--approved-bg);padding: 0;--background: var(--approved-bg);}
+// button colors as per the status
+.status_button{
+    // .status_active{background: var(--active-bg);color: var(--ion-color-white);border: 1px solid var(--active-bg);padding: 0;--background: var(--active-bg);}
+    // .status_new{background: var(--new-bg);color: var(--ion-color-white);border: 1px solid var(--new-bg);padding: 0;--background: var(--new-bg);}
+    // .status_regret{background: var(--regret-bg);color: var(--ion-color-white);border: 1px solid var(--regret-bg);padding: 0;--background: var(--regret-bg);}
+    // .status_move-to-quotation{background: var(--move-to-qutation);color: var(--ion-color-white);border: 1px solid var(--move-to-qutation);padding: 0;--background: var(--move-to-qutation);}
+    // .status_Completed{background: var(--completed-bg);color: var(--ion-color-white);border: 1px solid var(--completed-bg);padding: 0;--background: var(--completed-bg);}
+    // .status_approved{background: var(--approved-bg);color: var(--ion-color-white);border: 1px solid var(--approved-bg);padding: 0;--background: var(--approved-bg);}
+    // .status_booked{background: var(--booked-bg);color: var(--ion-color-white);border: 1px solid var(--booked-bg);padding: 0;--background: var(--booked-bg);}
+    // .status_dispatching{background: var(--dispatching-bg);color: var(--ion-color-white);border: 1px solid var(--dispatching-bg);padding: 0;--background: var(--dispatching-bg);}
+    // .status_review{background: var(--review-bg);color: var(--ion-color-white);border: 1px solid var(--review-bg);padding: 0;--background: var(--review-bg);}
+    // .status_scheduling{background: var(--scheduling-bg);color: var(--ion-color-white);border: 1px solid var(--scheduling-bg);padding: 0;--background: var(--scheduling-bg);}
+    // .status_person_incharge{background: var(--person_incharge-bg);color: var(--ion-color-white);border: 1px solid var(--person_incharge-bg);padding: 0;--background: var(--person_incharge-bg);}
+    // .status_testing{background: var(--testing-bg);color: var(--ion-color-white);border: 1px solid var(--testing-bg);padding: 0;--background: var(--testing-bg);}
+    // .status_invoicing{background: var(--invoicing-bg);color: var(--ion-color-white);border: 1px solid var(--invoicing-bg);padding: 0;--background: var(--invoicing-bg);}
+    // .status_inactive{background: var(--inactive-bg);color: var(--ion-color-white);border: 1px solid var(--inactive-bg);padding: 0;--background: var(--inactive-bg);}
+}
+
+$status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move,Move,MOVE,regret,Regret,REGRET,completed,Completed,COMPLETED,approved,Approved,APPROVED,booked,Booked,BOOKED,dispatching,Dispatching,DISPATCHING,review,Review,REVIEW,scheduling,Scheduling,SCHEDULING,person_incharge,Person_Incharge,PERSON_INCHARGE,testing,Testing,TESTING,invoicing,Invoicing,INVOICING;
+
+@each $status in $status_button {
+    .status_button  .status_#{$status} {
+        background: var(--#{$status}-bg);
+        color: var(--ion-color-white);
+        border: 1px solid var(--#{$status}-bg);
+        padding: 0;
+        --background: var(--#{$status}-bg);
+      }
+}
+
+
+// $base-color: var(--theme-color-light);
+// @for $i from 1 through 3 {
+//   ul:nth-child(3n + #{$i}) {
+//     background-color: lighten($base-color, $i * 5%);
+//   }
+// }
+// cardsearch
+.cardsearch {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: space-between;
+    ion-input{
+       .native-input{padding: 5px;}
+        background: #e6e7e8;
+        border-radius: 10px;
+        color: #2e2e2e;
+        ion-icon{padding-left: 5px;}
+    }
+    .inactive-search{flex:0;display: flex;transition: 1s ease-in-out;}
+    .hidden-btn{display: none;transition: 1s ease-in-out;}
+    .active-search{flex:1;display: flex;transition: 1s ease-in-out;}
+    .visible-btn{transition: 1s ease-in-out;}
+}

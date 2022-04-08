@@ -19,6 +19,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   @Input() card:any;
   @Input() data:any ={};
   @Output() columnListOutput = new EventEmitter();
+  @Output() cardtitleOutput = new EventEmitter();
+  @Input() searchcard:any;
 
   web_site_name: string = '';
   list: any = [];
@@ -28,7 +30,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   cardType = "summary"; //default cardtype
   cardDataMasterSubscription: any;
   collectionname: any = 'request_quote';
-  cardtitle: any;
+  // cardtitle: any;
 
   childColumns : any;
   childColumn: any = {};
@@ -58,6 +60,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   tabMenu: any = [];
   cardListSubscription:any;
 
+  // db Flags
+  addCallingFeature: boolean=false;
   addNewEnabled:boolean=false;
   detailPage:boolean=false;
 
@@ -104,6 +108,17 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if(this.data && this.data.filterFormData){
       this.filterForm['value'] = this.data.filterFormData;
       this.getGridData(this.collectionname);
+    }else if(this.data && this.data.searchData && this.data.searchData.length > 0){
+      let criteria = [];
+      if(this.card && this.card.card && this.card.card){
+        let card = this.card.card;
+        if(card && card.search_field_name && card.search_field_name != ''){
+          const cr = card.search_field_name + ";stwic;" +this.data.searchData + ";STATIC";
+          criteria.push(cr);
+          this.getGridData(this.collectionname,criteria);
+        }
+      }
+      
     }else{
       if(this.data && this.data._id){
         this.detailPage = true;
@@ -117,8 +132,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
 
   ngOnInit() {
-    this.carddata = [];  
-
+    this.carddata = [];
   }
 
   ngOnDestroy(): void {
@@ -160,12 +174,23 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       this.addNewEnabled = false;
     } 
-    this.cardtitle = card.name;
+    if(card && card.add_calling){
+      if(this.detailPage){
+        this.addCallingFeature = false;
+      }else{
+        this.addCallingFeature = true;
+      }
+    }else{
+      this.addCallingFeature = false;
+    } 
+    this.cardtitleOutput.emit(card.name);
     if (card.card_type !== '') {
       this.cardType = card.card_type.name;
     }
     // this.childColumn = card.child_card;
-    this.columnList = card.fields;
+    if(card.fields && card.fields.length > 0){
+      this.columnList = card.fields;      
+    }
     if(this.createFormgroup){
       this.createFormgroup = false;
       this.columnListOutput.emit(this.columnList);
@@ -174,8 +199,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.getGridData(this.collectionname);
   }
 
-  search(myInput) {
-    this.getGridData(this.collectionname);
+  search(searchcard) {
+    // const criteria = "quotation_status;stwic;"+this.searchcard+";STATIC";
+    // this.getGridData(this.collectionname, [criteria]);
+    // this.getGridData(this.collectionname);
   }
 
   onChangeValue(myInput) {
@@ -243,10 +270,17 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   call(card:any,Index:number) {
     let callingNumber:any;
-    if(card.mobile !=''){
+    if(card.mobile && card.mobile.length >= 10 ){
       callingNumber = card.mobile;
-    }else {
+      console.log(callingNumber);
+    }else if(card.billing_mobile && card.billing_mobile  >= 10){
       callingNumber = card.billing_mobile;
+      console.log(callingNumber);
+    }else if(card.phone && card.phone  >= 10){
+      callingNumber = card.phone;
+      console.log(callingNumber);
+    }else{
+      console.log("number Not found")
     }
     this.callNumber.callNumber(callingNumber, true)
       .then(res => console.log('Launched dialer!' + res))
@@ -262,14 +296,43 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       .then(res => console.log('Launched dialer!' + res))
       .catch(err => console.log('Error launching dialer ' + err));
   }
-
+  setCriteria(listCiteria,criteria){
+    if(criteria && criteria.length > 0){
+      criteria.forEach(cr => {
+        if(listCiteria && listCiteria.length >=0 ){
+          listCiteria.push(cr);
+        }
+      });
+    }
+    return listCiteria;
+  }
   async getGridData(collectionName,criteria?){
     const crList = this.restService.getfilterCrlist(this.columnList, this.filterForm)
     const params = collectionName;
-    let data = await this.restService.getPaylodWithCriteria(params,'',[],{});
+    let cardCriteria = []
+    if(criteria && criteria.length > 0){
+      cardCriteria = this.setCriteria(cardCriteria,criteria);
+    }
+    let object = {};
+    if(this.detailPage){
+      if(this.card && this.card.card){
+        let card = this.card.card
+        if(card.api_params_criteria && card.api_params_criteria.length > 0){
+          cardCriteria = this.setCriteria(cardCriteria,card.api_params_criteria);
+          object = this.data
+        }        
+      } 
+    }
+    let data = this.restService.getPaylodWithCriteria(params,'',cardCriteria,object);
     data['pageNo'] = 0;
     data['pageSize'] = 50;
-    data.crList = crList;
+    if(crList && crList.length > 0){
+      crList.forEach(cr => {
+        if(data && data.crList && data.crList.length >= 0){
+          data.crList.push(cr);
+        }
+      });
+    }
     let payload = {
       'data':data,
       'path':null
