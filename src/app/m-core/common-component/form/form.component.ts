@@ -1395,6 +1395,9 @@ export class FormComponent implements OnInit, OnDestroy {
     this.callTypeaheadData(field,objectValue);       
 
   }
+  get templateFormControl() {
+    return this.templateForm.controls;
+  }
 
   callTypeaheadData(field,objectValue){
     this.clearTypeaheadData();   
