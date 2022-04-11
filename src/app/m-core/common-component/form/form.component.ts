@@ -67,6 +67,8 @@ export class FormComponent implements OnInit, OnDestroy {
   donotResetFieldLists:any={};
   typeAheadData: string[] = [];
   treeViewData: any = {};
+  curFileUploadField:any={}
+  curFileUploadFieldparentfield:any={};
 
   dinamicFormSubscription:any;
   staticDataSubscriber:any;
@@ -155,7 +157,73 @@ export class FormComponent implements OnInit, OnDestroy {
     this.staticData = staticData; 
     Object.keys(this.staticData).forEach(key => {        
       this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
-    })    
+    })
+    this.tableFields.forEach(element => {
+      switch (element.type) {              
+        case 'pdf_view':
+          // if(isArray(this.copyStaticData[element.ddn_field]) && this.copyStaticData[element.ddn_field] != null){
+          //   const data = this.copyStaticData[element.ddn_field][0];
+          //   if(data['bytes'] && data['bytes'] != '' && data['bytes'] != null){
+          //     const arrayBuffer = data['bytes'];
+          //     // this.pdfViewLink = encodeURIComponent(escape(window.atob( arrayBuffer )));
+          //     // this.pdfViewLink = decodeURIComponent(escape(window.atob( arrayBuffer )));
+          //     this.pdfViewLink = arrayBuffer;
+          //     this.pdfViewListData = JSON.parse(JSON.stringify(this.copyStaticData[element.ddn_field]))
+          //   }
+          // }else{
+          //   this.pdfViewLink = '';
+          // }             
+          break;
+        case 'info_html':
+        case 'html_view':
+          if(this.copyStaticData[element.ddn_field] && this.copyStaticData[element.ddn_field] != null){
+            this.templateForm.controls[element.field_name].setValue(this.copyStaticData[element.ddn_field])
+          }
+          break;
+        default:              
+          break;
+      }
+    })  
+    if(this.staticData["FORM_GROUP"] && this.staticData["FORM_GROUP"] != null){          
+      this.updateDataOnFormField(this.staticData["FORM_GROUP"]);          
+      const fieldName = {
+        "field" : "FORM_GROUP"
+      }
+      this.apiService.ResetStaticData(fieldName);
+    }
+
+    if(this.staticData["CHILD_OBJECT"] && this.staticData["CHILD_OBJECT"] != null){
+      this.updateDataOnFormField(this.staticData["CHILD_OBJECT"]); 
+      const fieldName = {
+        "field" : "CHILD_OBJECT"
+      }
+      this.apiService.ResetStaticData(fieldName);
+      
+    }
+
+    if(this.staticData["COMPLETE_OBJECT"] && this.staticData["COMPLETE_OBJECT"] != null){
+      this.updateDataOnFormField(this.staticData["COMPLETE_OBJECT"]);          
+      this.selectedRow = this.staticData["COMPLETE_OBJECT"];
+      this.complete_object_payload_mode = true;
+      const fieldName = {
+        "field" : "COMPLETE_OBJECT"
+      }
+      this.apiService.ResetStaticData(fieldName);
+      
+    }
+
+    if(this.staticData["FORM_GROUP_FIELDS"] && this.staticData["FORM_GROUP_FIELDS"] != null){
+      this.updateDataOnFormField(this.staticData["FORM_GROUP_FIELDS"]);
+      const fieldName = {
+        "field" : "FORM_GROUP_FIELDS"
+      }
+      this.apiService.ResetStaticData(fieldName);
+
+    }
+    // if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
+
+    //   this.setCheckboxFileListValue();
+    // }    
   }
   setDinamicForm(form:any){
     if(form && form.DINAMIC_FORM){
@@ -691,7 +759,7 @@ export class FormComponent implements OnInit, OnDestroy {
         }
       });
     }
-    // if(check){
+    if(check){
     //   Object.keys(this.custmizedFormValue).forEach(key => {
     //     if (this.updateMode || this.complete_object_payload_mode) {
     //       if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
@@ -770,35 +838,35 @@ export class FormComponent implements OnInit, OnDestroy {
     //       }
     //     });
     //   }
-    //   Object.keys(this.dataListForUpload).forEach(key => {
-    //     if (this.updateMode || this.complete_object_payload_mode) {
-    //       if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
-    //         this.tableFields.forEach(element => {            
-    //           if(element.field_name == key){                
-    //             Object.keys(this.dataListForUpload[key]).forEach(child =>{
-    //               selectedRow[key][child] = this.modifyUploadFiles(this.dataListForUpload[key][child]);
-    //             })
-    //           }
-    //         });          
-    //       }else{
-    //           selectedRow[key] = this.modifyUploadFiles(this.dataListForUpload[key]);
-    //       }
-    //     } else {
-    //       if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
-    //         this.tableFields.forEach(element => {
-    //           if(element.field_name == key){                
-    //             Object.keys(this.dataListForUpload[key]).forEach(child =>{
-    //               modifyFormValue[key][child] = this.modifyUploadFiles(this.dataListForUpload[key][child]);
-    //             })
-    //           }
-    //         });          
-    //       }else{
-    //         modifyFormValue[key] = this.modifyUploadFiles(this.dataListForUpload[key]);
-    //       }       
+      Object.keys(this.dataListForUpload).forEach(key => {
+        if (this.updateMode || this.complete_object_payload_mode) {
+          if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
+            this.tableFields.forEach(element => {            
+              if(element.field_name == key){                
+                Object.keys(this.dataListForUpload[key]).forEach(child =>{
+                  selectedRow[key][child] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[key][child]);
+                })
+              }
+            });          
+          }else{
+              selectedRow[key] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[key]);
+          }
+        } else {
+          if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
+            this.tableFields.forEach(element => {
+              if(element.field_name == key){                
+                Object.keys(this.dataListForUpload[key]).forEach(child =>{
+                  modifyFormValue[key][child] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[key][child]);
+                })
+              }
+            });          
+          }else{
+            modifyFormValue[key] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[key]);
+          }       
           
-    //     }
-    //   })
-    // } 
+        }
+      })
+    } 
 
     valueOfForm = this.updateMode || this.complete_object_payload_mode ? selectedRow : modifyFormValue;
        
@@ -1410,12 +1478,674 @@ export class FormComponent implements OnInit, OnDestroy {
   clearTypeaheadData() {
     this.apiService.clearTypeaheadData();
   }
-  setValue(){
-    this.typeAheadData = [];
+  // setValue(){
+  //   this.typeAheadData = [];
+  // }
+  setValue(parentfield,field, add,event?) {
+
+    let formValue = this.templateForm.getRawValue()    
+    switch (field.type) {
+      case "list_of_string":
+        // if (add) {
+        //   if(parentfield != ''){
+        //     const custmizedKey = this.commonFunctionService.custmizedKey(parentfield);   
+        //     const value = formValue[parentfield.field_name][field.field_name]
+        //     if(this.checkDataAlreadyAddedInListOrNot(field.field_name,value, this.custmizedFormValue[custmizedKey][field.field_name])){
+        //       this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
+        //     }else{
+        //       if (!this.custmizedFormValue[custmizedKey]) this.custmizedFormValue[custmizedKey] = {};
+        //       if (!this.custmizedFormValue[custmizedKey][field.field_name]) this.custmizedFormValue[custmizedKey][field.field_name] = [];
+        //       const custmizedFormValueParant = Object.assign([],this.custmizedFormValue[custmizedKey][field.field_name])
+        //       if(value != '' && value != null){
+        //         custmizedFormValueParant.push(value)            
+        //         this.custmizedFormValue[custmizedKey][field.field_name] = custmizedFormValueParant;
+        //       }
+        //       if(event){
+        //         event.value = '';
+        //       }
+        //       this.templateForm.get(parentfield.field_name).get(field.field_name).setValue("");
+        //       //(<FormGroup>this.templateForm.controls[parentfield.field_name]).controls[field.field_name].patchValue("");
+        //       this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = true;
+        //     }
+            
+        //   }else{
+        //     const value = formValue[field.field_name];
+        //     if(this.checkDataAlreadyAddedInListOrNot(field.field_name,value,this.custmizedFormValue[field.field_name])){
+        //       this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
+        //     }else{
+        //       if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+        //       const custmizedFormValue = Object.assign([],this.custmizedFormValue[field.field_name])
+        //       if(formValue[field.field_name] != '' && formValue[field.field_name] != null){
+        //         custmizedFormValue.push(formValue[field.field_name])
+        //         this.custmizedFormValue[field.field_name] = custmizedFormValue;
+        //       }
+        //       if(event){
+        //         event.value = '';
+        //       }
+        //       this.templateForm.controls[field.field_name].setValue("");
+        //       this.tempVal[field.field_name + "_add_button"] = true;
+        //     }
+        //   }  
+        // } else {
+        //   if(parentfield != ''){
+        //     if(formValue && formValue[parentfield.field_name] && formValue[parentfield.field_name][field.field_name].length > 0){
+        //       this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = false;
+        //     }else{
+        //       this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = true;
+        //     }            
+        //   }else{
+        //     if(formValue && formValue[field.field_name] && formValue[field.field_name].length > 0){
+        //       this.tempVal[field.field_name + "_add_button"] = false;
+        //     }else{
+        //       this.tempVal[field.field_name + "_add_button"] = true;
+        //     }
+        //   } 
+        // }
+        break;
+      case "typeahead":
+        if(field.datatype == 'list_of_object' || field.datatype == 'chips' || field.datatype == 'object'){
+          // if (add) {
+          //   if(parentfield != ''){
+          //     const value = formValue[parentfield.field_name][field.field_name]
+          //     const custmizedKey = this.commonFunctionService.custmizedKey(parentfield);
+          //     if(this.checkDataAlreadyAddedInListOrNot(field.field_name,value, this.custmizedFormValue[custmizedKey][field.field_name])){
+          //       this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
+          //     }else{
+          //       if (!this.custmizedFormValue[custmizedKey]) this.custmizedFormValue[custmizedKey] = {};
+          //       if (!this.custmizedFormValue[custmizedKey][field.field_name]) this.custmizedFormValue[custmizedKey][field.field_name] = [];
+          //       const custmizedFormValueParant = Object.assign([],this.custmizedFormValue[custmizedKey][field.field_name])
+          //       custmizedFormValueParant.push(value)            
+          //       this.custmizedFormValue[custmizedKey][field.field_name] = custmizedFormValueParant;
+          //       if(event){
+          //         event.value = '';
+          //       }
+          //       this.templateForm.get(parentfield.field_name).get(field.field_name).setValue("");
+          //       //(<FormGroup>this.templateForm.controls[parentfield.field_name]).controls[field.field_name].patchValue("");
+          //       this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = true;
+          //     }
+              
+          //   }else{
+          //     const value = formValue[field.field_name];
+          //       if(this.checkDataAlreadyAddedInListOrNot(field.field_name,value,this.custmizedFormValue[field.field_name])){
+          //         this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
+          //       }else{
+          //         if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+          //         const custmizedFormValue = Object.assign([],this.custmizedFormValue[field.field_name])
+          //         custmizedFormValue.push(value)
+          //         this.custmizedFormValue[field.field_name] = custmizedFormValue;
+          //         if(event){
+          //           event.value = '';
+          //         }             
+          //         this.templateForm.controls[field.field_name].setValue('');
+          //         this.tempVal[field.field_name + "_add_button"] = true;
+          //       }
+          //   }  
+          // }else {
+          //   if(parentfield != ''){
+          //     const value = formValue[parentfield.field_name][field.field_name]  
+          //     if(value == "add_new"){
+          //       this.templateForm.get(parentfield.field_name).get(field.field_name).setValue("");
+          //       //(<FormGroup>this.templateForm.controls[parentfield.field_name]).controls[field.field_name].patchValue("");
+          //       this.storeFormDetails(parentfield,field);
+          //     }else{            
+          //       this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = false;
+          //     }
+          //   }else{  
+          //     const value = formValue[field.field_name]; 
+          //     if(value == "add_new"){
+          //       this.templateForm.controls[field.field_name].setValue('');
+          //       this.storeFormDetails(parentfield,field);
+          //     }else if(field.datatype == 'object' && field.onchange_get_next_form){
+          //       this.onchangeNextForm = true;
+          //       const reqCriteria = ["_id;eq;" + value._id + ";STATIC"];
+          //       const reqParams = field.api_params;
+          //       this.getDataForNextForm(reqParams,reqCriteria);
+          //       this.tempVal[field.field_name + "_add_button"] = false;
+          //     }else{           
+          //       this.tempVal[field.field_name + "_add_button"] = false;
+          //     }
+          //   }          
+          // }
+        }else if(field.datatype == 'text'){
+          let typeaheadTextControl:any = {}
+          if(parentfield != ''){
+            typeaheadTextControl = this.templateForm.get(parentfield.field_name).get(field.field_name);    
+          }else{
+            typeaheadTextControl = this.templateForm.controls[field.field_name];
+          } 
+          typeaheadTextControl.setErrors(null);
+        }
+        break;
+      case "dropdown":
+        if(!add){
+          let value:any='';
+          if(parentfield != ''){            
+            if(field.multi_select){
+              const fValue:any = formValue[parentfield.field_name][field.field_name];
+              if(fValue && fValue.length > 0){
+                fValue.forEach(element => {
+                  if(element == "add_new"){
+                    value = "add_new";
+                  }
+                });
+              }
+            }else{
+              value = formValue[parentfield.field_name][field.field_name];              
+            } 
+            // if(value == "add_new"){
+            //   this.storeFormDetails(parentfield,field);
+            //   this.templateForm.get(parentfield.field_name).get(field.field_name).setValue("");
+            //   //(<FormGroup>this.templateForm.controls[parentfield.field_name]).controls[field.field_name].patchValue("");              
+            // }             
+          }else{ 
+            if(field.multi_select){
+              const fValue:any = formValue[field.field_name];
+              if(fValue && fValue.length > 0){
+                fValue.forEach(element => {
+                  if(element == "add_new"){
+                    value = "add_new";
+                  }
+                });
+              }
+            }else{
+              value = formValue[field.field_name];               
+            } 
+            // if(value == "add_new"){
+            //   this.storeFormDetails(parentfield,field);
+            //   this.templateForm.controls[field.field_name].setValue('');              
+            // }            
+          }
+        }
+        break;
+      case "list_of_fields":
+//         let checkValue = 0;
+//         let list_of_field_data = formValue[field.field_name]
+//         let field_control = this.templateForm.get(field.field_name);        
+//         for (let index = 0; index < field.list_of_fields.length; index++) {
+//           const element = field.list_of_fields[index];
+//           const custmizedKey = this.commonFunctionService.custmizedKey(field);
+//           let custmizedData = '';
+//           let mendatory = false;
+//           if(element.is_mandatory){
+//             if(element && element.show_if && element.show_if != ''){
+//               if(this.checkFieldShowOrHide(element)){
+//                 mendatory = true;
+//               }else{
+//                 mendatory = false;
+//               }
+//             }else{
+//               mendatory = true;
+//             }            
+//           }
+//           if(this.custmizedFormValue[custmizedKey] && this.custmizedFormValue[custmizedKey][element.field_name]){
+//             custmizedData = this.custmizedFormValue[custmizedKey][element.field_name]
+//           }         
+//           switch (element.datatype) {
+//             case 'list_of_object':              
+//               if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+//                 if(mendatory && custmizedData == ''){
+//                   if(custmizedData.length == 0){
+//                     checkValue = 1;
+//                     this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+//                     return;
+//                   }
+//                 }
+//               }else{
+//                 this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
+//                 return;
+//               }
+//               break; 
+//             case 'object':
+//               if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+//                 if(mendatory){                  
+//                   checkValue = 1;
+//                   this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+//                   return;    
+//                 }
+//               }else if(typeof list_of_field_data[element.field_name] != 'object'){
+//                 this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
+//                 return;
+//               }
+//               break;         
+//             default:
+//               break;
+//           }
+//           switch (element.type) {
+//             case 'list_of_string':
+//               if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+//                 if(mendatory && custmizedData == ''){
+//                   if(custmizedData.length == 0){
+//                     checkValue = 1;
+//                     this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+//                     return;
+//                   }
+//                 }
+//               }else{
+//                 this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
+//                 return;
+//               }
+//               break;  
+//             case 'typeahead':
+//               if(element.datatype == "text"){
+//                 if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+//                   if(mendatory){
+//                     if(custmizedData.length == 0){
+//                       checkValue = 1;
+//                       this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+//                       return;
+//                     }
+//                   }
+//                 }else if(field_control.get(element.field_name).errors?.required || field_control.get(element.field_name).errors?.validDataText){
+//                   this.notificationService.notify('bg-danger','Entered value for '+element.label+' is invalidData. !!!');
+//                   return;
+//                 }
+
+//               }
+//               break;        
+//             default:
+//               if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+//                 if(mendatory ){
+//                   checkValue = 1;
+//                   this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+//                 }
+//               }
+//               break;
+//           }
+
+
+//           if(element.primary_key_for_list){
+//             let primary_key_field_name = element.field_name;
+//             let primary_key_field_value = formValue[field.field_name][element.field_name];
+//             let list = this.custmizedFormValue[field.field_name];
+//             let alreadyAdded = this.checkDataAlreadyAddedInListOrNot(primary_key_field_name,primary_key_field_value,list);
+//             if(alreadyAdded){
+//               this.notificationService.notify('bg-danger','Entered value for '+element.label+' is already added. !!!');
+//               return;
+//             }
+//           }
+          
+//         };
+//         if (checkValue == 0) {
+//           if(this.listOfFieldsUpdateIndex != -1){
+//             //if(this.updateMode){
+//               let updateCustmizedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[field.field_name]))
+//               Object.keys(formValue[field.field_name]).forEach(key => {
+//                 updateCustmizedValue[this.listOfFieldsUpdateIndex][key] = formValue[field.field_name][key];
+//               })
+// // pending for review by vikash (from)
+//               const keyName=field.field_name+'_'+field.type;
+//               if(this.custmizedFormValue[keyName]){
+//                 Object.keys(this.custmizedFormValue[keyName]).forEach(childkey => {
+//                   updateCustmizedValue[this.listOfFieldsUpdateIndex][childkey] = this.custmizedFormValue[keyName][childkey];
+//                 })
+//               }
+//               if(this.dataListForUpload[keyName]){
+//                 Object.keys(this.dataListForUpload[keyName]).forEach(childkey => {                  
+//                   updateCustmizedValue[childkey] = this.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
+//                 })
+//               }
+//               if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
+//                 this.checkBoxFieldListValue.forEach(listofcheckboxfield => {
+//                   const fieldName = listofcheckboxfield.field_name;
+//                   if (this.staticData[listofcheckboxfield.ddn_field] && formValue[field.field_name][fieldName]) {                    
+//                     const listOfCheckboxData = [];
+//                     let data = formValue[field.field_name][fieldName];                    
+//                     let currentData = this.staticData[listofcheckboxfield.ddn_field];
+//                     if(data && data.length > 0){
+//                       data.forEach((data, i) => {
+//                         if (data) {
+//                           listOfCheckboxData.push(currentData[i]);
+//                         }
+//                       });
+//                     }
+//                     updateCustmizedValue[this.listOfFieldsUpdateIndex][fieldName] = listOfCheckboxData;                    
+//                   }
+//                 });
+//               }
+//               // pending for review by vikash (to)
+//               this.custmizedFormValue[field.field_name] =   updateCustmizedValue; 
+//               this.custmizedFormValue[keyName] = {}
+//             // }else{
+//             //   const updateCustmizedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[field.field_name]))
+//             //   updateCustmizedValue[this.listOfFieldsUpdateIndex] = JSON.parse(JSON.stringify(formValue[field.field_name]))
+//             //   this.custmizedFormValue[field.field_name] =   updateCustmizedValue  ;  
+//             //   const keyName=field.field_name+'_'+field.type;
+//             //   this.custmizedFormValue[keyName] = {}        
+//             // }
+//             this.refreshListofField(field,false);            
+//           }else{
+//             if(field.datatype == 'key_value'){
+//               if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = {};
+//               const listOfFieldData = formValue[field.field_name]
+//               if(listOfFieldData.key && listOfFieldData.key != '' && listOfFieldData.value && listOfFieldData.value != ''){
+//                 this.custmizedFormValue[field.field_name][listOfFieldData.key] = listOfFieldData.value;
+//               }              
+//             }else{
+//               if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+//               const custmizedFormValue = Object.assign([],this.custmizedFormValue[field.field_name])
+//               const listOfFieldData = JSON.parse(JSON.stringify(formValue[field.field_name]))
+//               const keyName=field.field_name+'_'+field.type;
+//               if(this.custmizedFormValue[keyName]){
+//                 Object.keys(this.custmizedFormValue[keyName]).forEach(childkey => {
+//                   listOfFieldData[childkey] = this.custmizedFormValue[keyName][childkey];
+//                 })
+//               }
+//               if(this.dataListForUpload[keyName]){
+//                 Object.keys(this.dataListForUpload[keyName]).forEach(childkey => {                 
+//                   listOfFieldData[childkey] = this.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
+//                 })
+//               }
+//               if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
+//                 this.checkBoxFieldListValue.forEach(listofcheckboxfield => {
+//                   const fieldName = listofcheckboxfield.field_name;
+//                   if (this.staticData[listofcheckboxfield.ddn_field] && formValue[field.field_name][fieldName]) {                    
+//                     const listOfCheckboxData = [];
+//                     let data = formValue[field.field_name][fieldName];                    
+//                     let currentData = this.staticData[listofcheckboxfield.ddn_field];
+//                     if(data && data.length > 0){
+//                       data.forEach((data, i) => {
+//                         if (data) {
+//                           listOfCheckboxData.push(currentData[i]);
+//                         }
+//                       });
+//                     }
+//                     listOfFieldData[fieldName] = listOfCheckboxData;                    
+//                   }
+//                 });
+//               }
+              
+//               custmizedFormValue.push(listOfFieldData);
+//               this.custmizedFormValue[field.field_name] = custmizedFormValue;
+//               // if (field.onchange_api_params && field.onchange_call_back_field) {
+//               //   const value = this.getFormValue(false);
+//               //   this.changeDropdown(field.onchange_api_params, field.onchange_call_back_field, field.onchange_api_params_criteria, value,field.onchange_data_template);
+//               // }
+//               this.custmizedFormValue[keyName] = {}              
+//             }
+//             this.refreshListofField(field,true);
+//           }
+//           if(field.do_not_refresh_on_add && this.listOfFieldsUpdateIndex == -1){
+//             this.tableFields.forEach(tablefield => {
+//               if(tablefield.field_name == field.field_name){
+//                 tablefield.list_of_fields.forEach(fld => {
+//                   if(!fld.do_not_refresh_on_add){
+//                     this.templateForm.get(tablefield.field_name).get(fld.field_name).setValue('');
+//                   }
+//                 });
+//               }
+//             });
+//           }else{
+//             this.templateForm.get(field.field_name).reset(); 
+//           }         
+//         }
+        break;
+      case 'grid_selection':
+      case 'grid_selection_vertical':
+        // this.curTreeViewField = field;
+        // this.currentTreeViewFieldParent = parentfield;
+        // if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+        // const gridModalData = {
+        //   "field": this.curTreeViewField,
+        //   "selectedData":this.custmizedFormValue[field.field_name],
+        //   "object": this.getFormValue(true)
+        // }
+        // this.modalService.open('grid-selection-modal', gridModalData);
+        break;
+      default:
+        break;
+    }
+    
+    if (field.onchange_api_params && field.onchange_call_back_field) {
+      let formValue = this.getFormValue(false);
+      this.changeDropdown(field, formValue,field.onchange_data_template);
+    }
+
+    // if (field.onchange_function && field.onchange_function_param && field.onchange_function_param != "") {
+    //   switch (field.onchange_function_param) {        
+    //       case 'autopopulateFields':
+    //         this.commonFunctionService.autopopulateFields(this.templateForm);
+    //         break;
+    //     default:
+    //       this.inputOnChangeFunc(field);
+    //   }
+    // }
+    let objectValue:string = "";
+    let supporting_field_type = "";
+    if(typeof formValue[field.field_name] == 'object'){
+      if('COMPLETE_OBJECT' in formValue[field.field_name]){
+        objectValue =formValue[field.field_name]["COMPLETE_OBJECT"];
+        delete formValue[field.field_name]["COMPLETE_OBJECT"]
+        this.selectedRow = objectValue;
+        this.complete_object_payload_mode = true;
+        supporting_field_type = "COMPLETE_OBJECT";
+      } 
+      if('FORM_FIELDS' in formValue[field.field_name]){
+        objectValue =formValue[field.field_name]["FORM_FIELDS"];
+        delete formValue[field.field_name]["FORM_FIELDS"]
+      }
+      if('STATIC_FIELDS' in formValue[field.field_name]){
+        objectValue =formValue[field.field_name]["STATIC_FIELDS"];
+        delete formValue[field.field_name]["STATIC_FIELDS"]
+      }
+      if(objectValue != '' && typeof objectValue == 'object'){
+        this.updateDataOnFormField(objectValue);   
+        if(supporting_field_type == "COMPLETE_OBJECT") {
+          this.getStaticDataWithDependentData();     
+        }    
+      }      
+    }  
+    else if(parentfield && typeof formValue[parentfield.field_name][field.field_name] == 'object'){
+      if('COMPLETE_OBJECT' in formValue[parentfield.field_name][field.field_name]){
+        objectValue =formValue[parentfield.field_name][field.field_name]["COMPLETE_OBJECT"];
+        delete formValue[parentfield.field_name][field.field_name]["COMPLETE_OBJECT"]
+        this.selectedRow = objectValue;
+        this.complete_object_payload_mode = true;
+      } 
+      if('FORM_FIELDS' in formValue[parentfield.field_name][field.field_name]){
+        objectValue =formValue[parentfield.field_name][field.field_name]["FORM_FIELDS"];
+        delete formValue[parentfield.field_name][field.field_name]["FORM_FIELDS"]
+      }
+     if(objectValue != '' && typeof objectValue == 'object'){
+
+      Object.keys(objectValue).forEach(key => {
+        this.templateForm.get(parentfield.field_name).get(key).setValue(objectValue[key]);
+        //(<FormGroup>this.templateForm.controls[parentfield.field_name]).controls[key].patchValue(objectValue[key]);
+      });
+        // this.updateDataOnFormField(objectValue);   
+        // this.getStaticDataWithDependentData();     
+      }      
+    }  
+ 
+    if (field.type == 'typeahead') {
+      this.clearTypeaheadData();
+    }
+
+  }
+  changeDropdown(field, object,data_template) {
+    let params = field.onchange_api_params;
+    let callback = field.onchange_call_back_field;
+    let criteria = field.onchange_api_params_criteria;
+    const paramlist = params.split(";");
+    if(paramlist.length>1){
+      
+    }else{
+      // if(callback != ''){        
+      //   const fieldName = {
+      //     "field" : callback
+      //   }
+      //   this.commonFunctionService.resetStaticDataByKey(fieldName);
+      // }
+      const staticModal = []
+      
+      if( params.indexOf("CLTFN") >= 0){
+        // const calculatedCost =  this.commonFunctionService.calculateAdditionalCost(this.getFormValue(true));
+        // this.updateDataOnFormField(calculatedCost);
+      }
+      else{
+        staticModal.push(this.restService.getPaylodWithCriteria(params, callback, criteria, object))      
+        if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
+          if(field && field.formValueAsObjectForQtmp){
+            staticModal[0]["data"]=this.getFormValue(false);
+          }else{
+            staticModal[0]["data"]=this.getFormValue(true);
+          }
+        }
+        // this.store.dispatch(
+        //   new CusTemGenAction.GetStaticData(staticModal)
+        // )
+        this.apiService.getStatiData(staticModal);
+      }
+   }
   }
 
   dismissModal(){
     this.modal.dismiss({'dismissed': true});
+  }
+
+  fileDrop: boolean = false;
+  /**
+	 * handle file from browsing
+	 */
+   fileBrowseHandler(parent,field,files) {
+    this.curFileUploadField = field;
+    this.curFileUploadFieldparentfield = parent;
+    this.fileDrop = false;
+    this.prepareFilesList(files);
+  }
+
+	/**
+	 * Delete file from files list
+	 * @param index (File index)
+	 */
+  deleteFile(index: number) {
+    this.uploadData.splice(index, 1);
+  }
+
+	/**
+	 * Simulate the upload process
+	 */
+
+
+
+	/**
+	 * Convert Files list to normal array list
+	 * @param files (Files List)
+	 */
+   files: any[] = [];
+  public xtr: any;
+  public obj: any = {};
+  public uploadData: any = []
+  public uploadFilesData: any = [];
+  prepareFilesList(files: Array<any>) {
+    for (const item of files) {
+      item.progress = 0;
+      this.files.push(item);
+    }
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+      this.uploadFilesData.push(file);
+      var reader = new FileReader();
+      reader.onload = this.readNoticeFile
+      reader.readAsDataURL(file);
+    }
+    // console.log(this.files);
+    // console.log(this.uploadData);
+    this.fileUploadResponce(this.uploadData)
+
+  }
+  readNoticeFile = (e) => {
+    var rxFile = this.uploadFilesData[0];
+    this.uploadFilesData.splice(0, 1);
+    this.uploadData.push({
+      fileData: e.target.result.split(',')[1],
+      fileName: rxFile.name,
+      fileExtn:  rxFile.name.split(".").pop(),
+      // size: rxFile.size,
+      innerBucketPath: rxFile.name,
+      log: this.storageService.getUserLog()
+    });
+
+  }
+  fileUploadResponce(response) {
+
+    if(this.curFileUploadFieldparentfield != ''){
+      const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);            
+      if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
+      if (!this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]) this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] = [];
+      this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] = response;
+    }else{
+      if (!this.dataListForUpload[this.curFileUploadField.field_name]) this.dataListForUpload[this.curFileUploadField.field_name] = [];
+      this.dataListForUpload[this.curFileUploadField.field_name] = response;
+    }
+    
+    if(this.curFileUploadFieldparentfield != ''){
+      const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield); 
+      if(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] && this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name].length > 0){
+        let fileName = this.commonFunctionService.modifyFileSetValue(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]);        
+        this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue(fileName);
+      }else{
+        this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue('');
+      }
+    }else{    
+      if(this.dataListForUpload[this.curFileUploadField.field_name] && this.dataListForUpload[this.curFileUploadField.field_name].length > 0){
+        let fileName = this.commonFunctionService.modifyFileSetValue(this.dataListForUpload[this.curFileUploadField.field_name]);
+        this.templateForm.get(this.curFileUploadField.field_name).setValue(fileName);
+      }else{
+        this.templateForm.get(this.curFileUploadField.field_name).setValue('');
+      }
+    }
+    // if(this.dataListForUpload[this.curFileUploadField.field_name] && this.dataListForUpload[this.curFileUploadField.field_name].length > 0){
+    //   this.dataListForUpload[this.curFileUploadField.field_name].forEach(element => {
+    //     this.uploadFilesList = Object.assign([], this.uploadFilesList);
+    //     if(element._id){
+    //       this.uploadFilesList.push(element)
+    //     }else{
+    //       this.uploadFilesList.push({uploadData:[element]})
+    //     }        
+    //   });
+    // } 
+    // for(var i=0 ; i<response.length ; i++){ 
+    //   let element = response[i];
+    //   //this.dataListForUpload[this.curFileUploadField.field_name].push(response[i]); 
+    //   this.uploadFilesList = Object.assign([], this.uploadFilesList);
+    //     if(element._id){
+    //       this.uploadFilesList.push(element)
+    //     }else{
+    //       this.uploadFilesList.push({uploadData:[element]})
+    //     }    
+    //   var item = response[i];
+    //   var obj = {uploadData:[item]};      
+    //   this.uploadFilesList.push(obj)
+    // }       
+    
+    // Object.keys(this.templateForm.value).forEach(key => {   
+    //   let list = []
+    //   let array = [];
+
+    //   if(this.dataListForUpload[key] != "" && this.dataListForUpload[key] != null && this.dataListForUpload[key].length > 0){
+    //     this.dataListForUpload[key].forEach(element => {
+    //       if(element._id){
+    //         array.push(element);
+    //       }
+    //       else{
+    //         array.push({uploadData:[element]})
+    //       }
+    //       // var obj = {uploadData:[element]}; 
+    //       // this.dataListForUpload[key].push(obj)
+    //     });
+    //   }
+     
+    //   if(key != this.curFileUploadField.field_name && array.length > 0){
+    //     this.templateForm.controls[key].setValue(array);
+    //   }
+    // })
+
+    //this.templateForm.controls[this.curFileUploadField.field_name].setValue(this.uploadFilesList);
+    //this.uploadFilesList = [];
+    // if (response && response.length > 0) {
+    //   this.notificationService.notify("bg-success", response.length + " Documents Uploaded successfull !!!");      
+    // }
+    // this.curFileUploadField = {};
   }
   
 
