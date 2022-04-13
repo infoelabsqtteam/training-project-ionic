@@ -19,7 +19,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   @Input() card:any;
   @Input() data:any ={};
   @Output() columnListOutput = new EventEmitter();
-  @Output() cardtitleOutput = new EventEmitter();
   @Input() searchcard:any;
 
   web_site_name: string = '';
@@ -183,7 +182,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       this.addCallingFeature = false;
     } 
-    this.cardtitleOutput.emit(card.name);
     if (card.card_type !== '') {
       this.cardType = card.card_type.name;
     }

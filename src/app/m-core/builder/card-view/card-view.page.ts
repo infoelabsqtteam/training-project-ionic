@@ -146,9 +146,6 @@ export class CardViewPage implements OnInit, OnDestroy {
         }
       }
     }
-    Selectedcardtitle(title:any){
-      this.cardtitle = title;
-    }
     search(searchcardvalue){
       // if(searchcardvalue && searchcardvalue.length > 0){
         this.data = {
