@@ -138,6 +138,8 @@ export class FormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     const id:any = this.commonDataShareService.getFormId();
     this.getNextFormById(id);
+    this.handleDisabeIf();
+    this.formControlChanges();
   }
   getNextFormById(id: string) {
     const params = "form";
@@ -2146,6 +2148,156 @@ export class FormComponent implements OnInit, OnDestroy {
     //   this.notificationService.notify("bg-success", response.length + " Documents Uploaded successfull !!!");      
     // }
     // this.curFileUploadField = {};
+  }
+  isDisable(parent,chield){
+    const  formValue = this.getFormValue(true); 
+    let tobedesabled;
+    if(parent == ''){
+      tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
+      if(tobedesabled){
+        if(!this.templateForm.get(chield.field_name).disabled){
+          this.templateForm.get(chield.field_name).disable()
+        }        
+      }else{
+        if(this.templateForm.get(chield.field_name).disabled){
+          this.templateForm.get(chield.field_name).enable()
+        }        
+      }
+    }else{
+      tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
+      if(tobedesabled){
+        this.templateForm.get(parent).get(chield.field_name).disable()
+      }else{
+        this.templateForm.get(parent).get(chield.field_name).enable()
+      }
+    }   
+        
+    return tobedesabled;
+  }
+  handleDisabeIf(){
+    // if(this.checkFormFieldAutfocus && this.tableFields.length > 0){
+    //   if(this.previousFormFocusField && this.previousFormFocusField._id){
+    //     this.focusField("",this.previousFormFocusField)        
+    //   }else{
+    //     if(this.previousFormFocusField == undefined || this.previousFormFocusField._id == undefined){
+    //       for (const key of this.tableFields) {
+    //         if(key.type == "stepper"){
+    //           if(key.list_of_fields && key.list_of_fields != null && key.list_of_fields.length > 0){
+    //             for (const step of key.list_of_fields) {
+    //               if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
+    //                 for (const field of step.list_of_fields) {
+    //                   if (field.field_name) {
+    //                     this.focusField(step,field);  
+    //                     break;
+    //                   }
+    //                 }
+    //               }                
+    //             }
+    //           }
+    //         }else if (key.field_name) {
+    //           this.focusField("",key);  
+    //           break;
+    //         }              
+    //       }
+    //     }
+    //   }
+    // }
+    if(this.disableIfFieldList.length > 0){
+      this.disableIfFieldList.forEach(element => {
+        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+          this.isDisable(element.parent,element);
+        }else{
+          this.isDisable('',element)
+        }
+      });
+    }
+    if(this.showIfFieldList.length > 0){
+      this.showIfFieldList.forEach(element => {
+        let id = '';
+        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+          id = element._id;
+        }else{
+          id = element._id;
+        }
+        let elementDetails = document.getElementById(id);
+        if(!this.showIf(element)){          
+          if(elementDetails && elementDetails != null){
+            const classes = Array.from(elementDetails.classList)
+            if(!classes.includes('d-none')){
+              this.removeClass(elementDetails,' d-inline-block');
+              elementDetails.className += " d-none";
+              element['show'] = false;
+              const objectValue = this.templateForm.getRawValue();
+              if(element.type != "group_of_fields" && element.type != "list_of_fields" && objectValue[element.field_name] && objectValue[element.field_name] != ''){
+                this.templateForm.get(element.field_name).setValue('');
+              } 
+              if(element.type == "group_of_fields" || element.type == "list_of_fields"){
+                this.templateForm.get(element.field_name).reset();
+                element.list_of_fields.forEach(field => {
+                  if(field.type == 'list_of_string' || field.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
+                    const custmizedKey = this.commonFunctionService.custmizedKey(element);            
+                    if (this.custmizedFormValue[custmizedKey]){ 
+                      if (this.custmizedFormValue[custmizedKey][field.field_name]) this.custmizedFormValue[custmizedKey][field.field_name] = [];
+                    }
+                  }
+                });
+              }  
+              if(element.type == 'list_of_string' || element.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
+                if (this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = [];
+              }         
+              if(element.is_mandatory){
+                if(this.templateFormControl[element.field_name].status == 'INVALID'){
+                  this.templateForm.get(element.field_name).clearValidators();
+                  this.templateForm.get(element.field_name).updateValueAndValidity();
+                }              
+              }
+            }            
+          }                
+        }else{          
+          if(elementDetails && elementDetails != null){
+            const classes = Array.from(elementDetails.classList)
+            if(!classes.includes('d-inline-block')){
+              this.removeClass(elementDetails,' d-none');
+              elementDetails.className += " d-inline-block"; 
+              element['show'] = true;
+              if(element.is_mandatory){
+                if(this.templateFormControl[element.field_name].status == 'VALID'){
+                  this.templateForm.get(element.field_name).setValidators([Validators.required]);
+                  this.templateForm.get(element.field_name).updateValueAndValidity();
+                }              
+              }
+            }            
+          }
+        }
+      });
+      return true;
+    }
+    if(this.disableIfFieldList.length == 0 && this.showIfFieldList.length == 0){
+      return true;
+    }    
+    
+  }
+  removeClass = (element, name) => {    
+    element.className = element.className.replace(name, "");
+  }
+  showIf(field){
+    const  objectc = this.selectedRow?this.selectedRow:{}
+    const object = JSON.parse(JSON.stringify(objectc));
+    Object.keys(this.templateForm.getRawValue()).forEach(key => {
+      object[key] = this.templateForm.getRawValue()[key];
+    })
+    const display = this.commonFunctionService.showIf(field,object);
+    const modifiedField = JSON.parse(JSON.stringify(field));
+    modifiedField['display'] = display; 
+    field = modifiedField;
+    return display;
+  }
+  formControlChanges(){
+    if(this.templateForm && this.templateForm.valueChanges && this.templateForm.valueChanges != null){
+      this.templateForm.valueChanges.subscribe(val => {
+        this.handleDisabeIf();
+      });
+    }    
   }
   
 
