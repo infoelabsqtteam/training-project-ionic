@@ -1,0 +1,50 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
+    <ion-title>
+      Images Upload
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+ 
+<ion-content>
+
+  <!-- <app-image-picker  [imagePick]="imagePick"></app-image-picker> -->
+
+  <ion-row>
+    <ion-col
+      size="6"
+      *ngFor="let img of images; let i = index;"
+      class="ion-text-center"
+    >
+      <ion-label>
+        {{ img.name }}
+        <p>{{ img.createdAt | date:'short' }}</p>
+      </ion-label>
+ 
+      <img [src]="img.url" />
+      <ion-fab vertical="bottom" horizontal="end">
+        <ion-fab-button
+          color="danger"
+          size="small"
+          (click)="deleteImage(img, i)"
+        >
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </ion-col>
+  </ion-row>
+ 
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <input
+      type="file" id="fileInput"
+      #fileInput
+      (change)="uploadFile($event.target)"
+      hidden="true"
+      accept="image/*"
+    />
+    <ion-fab-button (click)="selectImageSource()" class="addNew">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
