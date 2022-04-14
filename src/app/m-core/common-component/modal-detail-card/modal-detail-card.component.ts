@@ -10,7 +10,7 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
 })
 export class ModalDetailCardComponent implements OnInit {
 
-  cardType = "detail1";
+  cardType = "demo";
 
   @Input() childColumns:any;
   @Input() childDataTitle:any;
@@ -20,7 +20,12 @@ export class ModalDetailCardComponent implements OnInit {
   @Input() modal: any;
   childDataValue: any = {};
   
-  
+  // test array
+  columnlistNew :any =
+      [
+          {"cardType":"demo","company_name":"abc pvt ltd","final_amount":0.00,"quotation_no":"B01-220405RQ00001","contact_person":"Aggregate Bedding Sand 2","mobile":"3887722","email":"jhduy@gmail.com","address1":"patel nagar/delhi","country":"india","state":"Delhi","department_name":"building","class_name":"test"}
+      ]
+
   constructor(
     private modalController: ModalController,
     private dataShareServiceService: DataShareServiceService,
@@ -35,7 +40,11 @@ export class ModalDetailCardComponent implements OnInit {
     //   this.cardType = this.childCardType.name
     // }
   }
-
+  ionViewWillEnter(){ 
+  }
+  ionViewDidEnter(){ 
+  }
+  
   getChildData(){
     let module = this.coreUtilityService.getModuleBySelectedIndex();
     let tabDetail:any = '';
@@ -77,12 +86,6 @@ export class ModalDetailCardComponent implements OnInit {
       this.tabMenu = card.tab_menu;
       this.selectedIndex = 0;
     }
-  }
-
-  dismiss() {
-    this.modalController.dismiss({
-      'dismissed': true
-    });
   }
   
   getValueForGrid(field,object){
