@@ -78,12 +78,12 @@
         </div>
         <div *ngIf="tableField.type == 'typeahead'">
           <div *ngIf="tableField.datatype != 'list_of_object'">
-            <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (ngModelChange)="setValue('',tableField)">
+            <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (change)="setValue('',tableField)">
               <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
             </ng-select>
           </div>
           <div *ngIf="tableField.datatype == 'list_of_object'">
-            <ng-select [multiple]="true" [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (ngModelChange)="setValue('',tableField)">
+            <ng-select [multiple]="true" [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (change)="setValue('',tableField)">
               <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
             </ng-select>
           </div>
