@@ -1254,7 +1254,7 @@ export class FormComponent implements OnInit, OnDestroy {
                       break;
                     case "date":
                       if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                        if(typeof ChildFieldData[data.field_name] === 'string'){
+                        if(data.date_format && data.date_format !="" && typeof ChildFieldData[data.field_name] === 'string'){
                           const date = ChildFieldData[data.field_name];
                           const dateMonthYear = date.split('/');
                           const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
@@ -1367,7 +1367,7 @@ export class FormComponent implements OnInit, OnDestroy {
                 break;
             case "date":
               if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                if(typeof object === 'string'){
+                if(element.date_format && element.date_format != '' && typeof object === 'string'){
                   const date = object[element.field_name];
                   const dateMonthYear = date.split('/');
                   const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
@@ -1913,7 +1913,7 @@ export class FormComponent implements OnInit, OnDestroy {
     // }
     let objectValue:string = "";
     let supporting_field_type = "";
-    if(typeof formValue[field.field_name] == 'object'){
+    if(formValue[field.field_name] && typeof formValue[field.field_name] == 'object'){
       if('COMPLETE_OBJECT' in formValue[field.field_name]){
         objectValue =formValue[field.field_name]["COMPLETE_OBJECT"];
         delete formValue[field.field_name]["COMPLETE_OBJECT"]
