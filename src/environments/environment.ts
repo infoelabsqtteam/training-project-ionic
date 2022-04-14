@@ -18,7 +18,7 @@ export const environment = {
   web_site: "E-Labs",
   razorpay_key : "rzp_test_P7SL8C2oelMvzE",
   verify_type : "email",
-  app_Version : "@2021 Elabs v",
+  app_Version : "@2021 Elabs v1.0.0",
   privacy_policy: "",
   app_share: ""
 };
