@@ -261,3 +261,14 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
     .active-search{flex:1;display: flex;transition: 1s ease-in-out;}
     .visible-btn{transition: 1s ease-in-out;}
 }
+.error{
+    color: red;
+    margin: 0px 0px 0px 10px;
+    font-size: 11px;
+}
+.d-none{
+    display: none;
+}
+.d-inline-block{
+    display: inline-block;
+}

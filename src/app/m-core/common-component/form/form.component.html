@@ -7,100 +7,117 @@
 
 <ion-content>
   <form [formGroup]="templateForm" *ngIf="tableFields.length > 0" novalidate>
-    <div *ngFor="let tableField of tableFields; let i = index">
-      <div *ngIf="tableField.type == 'text'">
-        <ion-item>
-          <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-input [formControlName]="tableField.field_name" type="text"></ion-input>
-        </ion-item>
-      </div>
-      <div *ngIf="tableField.type == 'dropdown'">
-        <ion-item *ngIf="tableField.datatype != 'object'">
-          <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-select [selectedText]="templateForm.get(tableField.field_name).value" [formControlName]="tableField.field_name">
-            <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-item *ngIf="tableField.datatype == 'object'">
-          <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-select [selectedText]="getddnDisplayVal(templateForm.get(tableField.field_name).value)" [formControlName]="tableField.field_name" [compareWith]="compareFn">
-            <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
-          </ion-select>
-        </ion-item>
-      </div>
-      <div *ngIf="tableField.type == 'textarea'">
-        <ion-item>
-          <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-textarea [formControlName]="tableField.field_name" rows="6" cols="20" [placeholder]="tableField.placeholder"></ion-textarea>
-        </ion-item>
-      </div>
-      <div *ngIf="tableField.type == 'number'">
-        <ion-item>
-          <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-input type="number" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-input>
-        </ion-item>
-      </div>
-      <div *ngIf="tableField.type == 'email'">
-        <ion-item>
-          <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-input type="email" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-input>
-        </ion-item>
-      </div>
-      <div *ngIf="tableField.type == 'checkbox'">
-        <ion-item>
-          <ion-label position="floating">{{ tableField.label }}</ion-label>
-          <ion-checkbox slot="end" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-checkbox>
-        </ion-item>
-      </div>
-      <div *ngIf="tableField.type == 'radio'">
-        <ion-list>
-          <ion-radio-group [formControlName]="tableField.field_name">
-            <ion-list-header>
-              <ion-label position="floating">{{ tableField.label }}</ion-label>
-            </ion-list-header>       
-            <ion-item *ngFor="let staticValue of staticData[tableField.ddn_field]" >
-              <ion-label [innerHtml]="getddnDisplayVal(staticValue)"></ion-label>
-              <ion-radio slot="start" [value]="staticValue"></ion-radio>
-            </ion-item>       
-            
-          </ion-radio-group>
-        </ion-list>
-      </div>
-      <div *ngIf="tableField.type == 'label'">
-        <ion-label>{{ tableField.label }}</ion-label>
-      </div>
-      <div *ngIf="tableField.type == 'typeahead'">
-        <div *ngIf="tableField.datatype != 'list_of_object'">
-          <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (ngModelChange)="setValue()">
-            <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
-          </ng-select>
+    <div *ngIf="handleDisabeIf()">
+      <div *ngFor="let tableField of tableFields; let i = index" [id]="tableField._id">
+        <div *ngIf="tableField.type == 'text'">
+          <ion-item>
+            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-input [formControlName]="tableField.field_name" type="text"></ion-input>
+          </ion-item>
         </div>
-        <div *ngIf="tableField.datatype == 'list_of_object'">
-          <ng-select [multiple]="true" [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (ngModelChange)="setValue()">
-            <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
-          </ng-select>
+        <div *ngIf="tableField.type == 'file'">
+          <ion-item>
+            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-input [formControlName]="tableField.field_name" type="file" multiple (change)="fileBrowseHandler('',tableField,$event.target.files)"></ion-input>
+          </ion-item>
         </div>
-      </div>
-      <div *ngIf="tableField.type == 'date'">
-        <ion-item>
+        <div *ngIf="tableField.type == 'dropdown'">
+          <ion-item *ngIf="tableField.datatype != 'object'">
+            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-select [selectedText]="templateForm.get(tableField.field_name).value" [formControlName]="tableField.field_name" (ionChange)="setValue('',tableField)">
+              <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item *ngIf="tableField.datatype == 'object'">
+            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-select [selectedText]="getddnDisplayVal(templateForm.get(tableField.field_name).value)" [formControlName]="tableField.field_name" [compareWith]="compareFn" (ionChange)="setValue('',tableField)">
+              <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+        <div *ngIf="tableField.type == 'textarea'">
+          <ion-item>
+            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-textarea [formControlName]="tableField.field_name" rows="6" cols="20" [placeholder]="tableField.placeholder"></ion-textarea>
+          </ion-item>
+        </div>
+        <div *ngIf="tableField.type == 'number'">
+          <ion-item>
+            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-input type="number" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-input>
+          </ion-item>
+        </div>
+        <div *ngIf="tableField.type == 'email'">
+          <ion-item>
+            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-input type="email" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-input>
+          </ion-item>
+        </div>
+        <div *ngIf="tableField.type == 'checkbox'">
+          <ion-item>
+            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-checkbox slot="end" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-checkbox>
+          </ion-item>
+        </div>
+        <div *ngIf="tableField.type == 'radio'">
+          <ion-list>
+            <ion-radio-group [formControlName]="tableField.field_name">
+              <ion-list-header>
+                <ion-label>{{ tableField.label }}</ion-label>
+              </ion-list-header>       
+              <ion-item *ngFor="let staticValue of staticData[tableField.ddn_field]" >
+                <ion-label [innerHtml]="getddnDisplayVal(staticValue)"></ion-label>
+                <ion-radio slot="start" [value]="staticValue"></ion-radio>
+              </ion-item>       
+              
+            </ion-radio-group>
+          </ion-list>
+        </div>
+        <div *ngIf="tableField.type == 'label'">
           <ion-label>{{ tableField.label }}</ion-label>
-          <ion-input
-            value="{{ templateForm.get(tableField.field_name).value | date: 'dd.MM.yyyy' }}"
-            id="date"
-            class="ion-text-end"
-          ></ion-input>
-          <ion-popover trigger="date" size="cover">
-            <ng-template>
-              <ion-datetime
-                presentation="date"
-                [formControlName]="tableField.field_name"
-                locale="sl-SI"
-              ></ion-datetime>
-            </ng-template>
-          </ion-popover>
-        </ion-item>
-      </div>
-    </div> 
+        </div>
+        <div *ngIf="tableField.type == 'typeahead'">
+          <div *ngIf="tableField.datatype != 'list_of_object'">
+            <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (ngModelChange)="setValue('',tableField)">
+              <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
+            </ng-select>
+          </div>
+          <div *ngIf="tableField.datatype == 'list_of_object'">
+            <ng-select [multiple]="true" [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (ngModelChange)="setValue('',tableField)">
+              <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
+            </ng-select>
+          </div>
+        </div>
+        <div *ngIf="tableField.type == 'date'">
+          <ion-item>
+            <ion-label>{{ tableField.label }}</ion-label>
+            <ion-input
+              value="{{ templateForm.get(tableField.field_name).value | date: 'dd.MM.yyyy' }}"
+              id="date"
+              class="ion-text-end"
+            ></ion-input>
+            <ion-popover trigger="date" size="cover">
+              <ng-template>
+                <ion-datetime
+                  presentation="date"
+                  [formControlName]="tableField.field_name"
+                  locale="sl-SI"
+                ></ion-datetime>
+              </ng-template>
+            </ion-popover>
+          </ion-item>
+        </div>
+        <div *ngIf="tableField.type == 'gst_number'">
+          <ion-item>
+            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-input [formControlName]="tableField.field_name" type="text"></ion-input>          
+          </ion-item>
+          <p class="error" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.invalidGSTNumber">
+            {{ tableField.label | titlecase}} is <strong>invalidGSTNumber</strong>
+          </p>
+        </div>
+      </div> 
+    </div>  
     
     <ion-row>
       <ion-col>
