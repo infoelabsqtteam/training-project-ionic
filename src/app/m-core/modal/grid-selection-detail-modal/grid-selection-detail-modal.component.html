@@ -16,7 +16,7 @@
     </ion-card-content>
   </ion-card> -->
   
-  <div class="contactdetails">   
+  <div class="contactdetails" *ngIf="cardType == 'demo1'">   
     <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
       <span [ngClass]="column.class_name ? column.class_name  : ''">Company Name</span>
       <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.company_name}}</strong>
