@@ -13,7 +13,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   @Input() modal: any;
 
   cardType:any;
-  columnlistNew :any;
+  columnlistNew :any = [];
 
 
   constructor(
