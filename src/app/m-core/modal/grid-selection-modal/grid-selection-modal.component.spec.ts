@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { GridSelectionModelComponent } from './grid-selection-model.component';
+import { GridSelectionModalComponent } from './grid-selection-modal.component';
 
-describe('GridSelectionModelComponent', () => {
-  let component: GridSelectionModelComponent;
-  let fixture: ComponentFixture<GridSelectionModelComponent>;
+describe('GridSelectionModalComponent', () => {
+  let component: GridSelectionModalComponent;
+  let fixture: ComponentFixture<GridSelectionModalComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ GridSelectionModelComponent ],
+      declarations: [ GridSelectionModalComponent ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(GridSelectionModelComponent);
+    fixture = TestBed.createComponent(GridSelectionModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

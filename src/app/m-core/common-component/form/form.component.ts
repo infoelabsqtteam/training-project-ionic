@@ -4,7 +4,7 @@ import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common
 import { Router } from '@angular/router';
 import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
-import { GridSelectionModelComponent } from '../../modal/grid-selection-model/grid-selection-model/grid-selection-model.component';
+import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 
 interface User {
   id: number;
@@ -2305,7 +2305,7 @@ export class FormComponent implements OnInit, OnDestroy {
 
   async  openGridSelectionModal(){
     const modal = await this.modalController.create({
-      component: GridSelectionModelComponent,
+      component: GridSelectionModalComponent,
       componentProps: {
         "Data": this.staticData,
       },

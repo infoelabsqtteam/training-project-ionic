@@ -17,52 +17,6 @@
     </p>
   </div>
 
-  <div class="contactdetails" *ngIf="childCardType == 'demo1'">   
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">Company Name</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.company_name}}</strong>
-    </p>
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">Final Amount</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.final_amount}}</strong>
-    </p>
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">Quotation No.</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.quotation_no}}</strong>
-    </p>
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">Contact Person</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.contact_person}}</strong>
-    </p>
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">Mobile</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.mobile}}</strong>
-    </p>
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">Email</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.email}}</strong>
-    </p>
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">Address1</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.address1}}</strong>
-    </p>
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">Country</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.country}}</strong>
-    </p>
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">State</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.state}}</strong>
-    </p>
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">Department Name</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.department_name}}</strong>
-    </p>
-    <p class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">Building</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.building}}</strong>
-    </p>
-  </div>
 
   <!-- <ion-row *ngIf="cardType == 'detail1'" >
     <ion-col size="12">

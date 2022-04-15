@@ -20,12 +20,6 @@ export class ModalDetailCardComponent implements OnInit {
   @Input() modal: any;
   childDataValue: any = {};
   
-  // test array
-  columnlistNew :any =
-      [
-          {"cardType":"demo","company_name":"abc pvt ltd","final_amount":0.00,"quotation_no":"B01-220405RQ00001","contact_person":"Aggregate Bedding Sand 2","mobile":"3887722","email":"jhduy@gmail.com","address1":"patel nagar/delhi","country":"india","state":"Delhi","department_name":"building","class_name":"test"}
-      ]
-
   constructor(
     private modalController: ModalController,
     private dataShareServiceService: DataShareServiceService,
