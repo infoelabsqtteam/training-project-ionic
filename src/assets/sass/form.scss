@@ -40,5 +40,8 @@ ng-select.ng-select {
             padding: 0 15px;
         }
     }
+    .ng-dropdown-panel.ng-select-bottom{
+        top:calc(100% - .25em);
+    }
     
 }

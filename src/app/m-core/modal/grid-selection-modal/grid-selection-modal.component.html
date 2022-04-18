@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" (click)="dismissModal()"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-capitalize"></ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pages">
+  <ion-card *ngFor="let data of gridData; let i = index">
+    <ion-card-header>
+      <ion-card-subtitle>Card Subtitle</ion-card-subtitle>
+      <ion-card-title>Card Title</ion-card-title>
+    </ion-card-header>
+  
+    <ion-item>
+      <ion-icon name="information-circle-outline" slot="end" (click)="addremoveparticipant()"></ion-icon>
+      <ion-label>ion-item in a card, icon left, button right</ion-label>
+    </ion-item>
+  
+    <ion-card-content>
+      This is content, without any paragraph or header tags,
+      within an ion-card-content element.
+    </ion-card-content>
+  </ion-card>
+  
+</ion-content>

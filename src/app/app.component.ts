@@ -4,7 +4,7 @@ import { AlertController, Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
-import { AuthService, StorageService, StorageTokenStatus,App_googleService, RestService, ApiService, DataShareService } from '@core/ionic-core';
+import { AuthService, StorageService, StorageTokenStatus,App_googleService, RestService, ApiService, DataShareService, EnvService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
@@ -22,6 +22,7 @@ export class AppComponent implements OnInit, OnDestroy {
   userInfo: any={};
   web_site:string='';
   side_menu: boolean = true;
+  app_Version: String = '';
 
   gridData: any;
   cardData: any;
@@ -63,13 +64,14 @@ export class AppComponent implements OnInit, OnDestroy {
     private alertController: AlertController,
     private restService: RestService,
     private apiService: ApiService,
-    private dataShareService: DataShareService
+    private dataShareService: DataShareService,
+    private env: EnvService
 
   ) {
     
     this.initializeApp();
     // this.web_site = appConstants.siteName;
-    this.web_site = "ELABS";
+    this.app_Version  = this.env.getAppVersion();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
       this.cardList = data.data;
     })

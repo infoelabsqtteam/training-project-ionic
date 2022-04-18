@@ -201,13 +201,13 @@ ion-tabs.footertab {
 }
 .halfwidthcardList{border: 1.5px solid #16161D1A;border-radius: 10px;margin-bottom:5px;margin-right:5px;
         .item-native{padding-left:0}
-        ion-avatar{}
         img{ max-width: 32px;height: 32px;border-radius:0px;image-rendering: -webkit-optimize-contrast;}
         ion-label{font-size:14px!important;font-weight:500;}
 }
 .ion-background-white{background:var(--ion-color-white);}
 // button colors as per the status
 .status_button{
+    margin: auto;
     // .status_active{background: var(--active-bg);color: var(--ion-color-white);border: 1px solid var(--active-bg);padding: 0;--background: var(--active-bg);}
     // .status_new{background: var(--new-bg);color: var(--ion-color-white);border: 1px solid var(--new-bg);padding: 0;--background: var(--new-bg);}
     // .status_regret{background: var(--regret-bg);color: var(--ion-color-white);border: 1px solid var(--regret-bg);padding: 0;--background: var(--regret-bg);}

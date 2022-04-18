@@ -3,6 +3,8 @@ import { FormGroup, FormBuilder, Validators } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
 import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService } from '@core/ionic-core';
+import { ModalController } from '@ionic/angular';
+import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 
 interface User {
   id: number;
@@ -91,7 +93,8 @@ export class FormComponent implements OnInit, OnDestroy {
     private commonDataShareService:CommonDataShareService,
     private permissionService:PermissionService,
     private storageService:StorageService,
-    private notificationService:NotificationService
+    private notificationService:NotificationService,
+    private modalController: ModalController,
     ) {
 
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
@@ -1892,6 +1895,7 @@ export class FormComponent implements OnInit, OnDestroy {
         //   "object": this.getFormValue(true)
         // }
         // this.modalService.open('grid-selection-modal', gridModalData);
+        this.openGridSelectionModal(field);
         break;
       default:
         break;
@@ -2298,6 +2302,24 @@ export class FormComponent implements OnInit, OnDestroy {
         this.handleDisabeIf();
       });
     }    
+  }
+
+  async  openGridSelectionModal(field){
+    if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+    const gridModalData = {
+      "field": field,
+      "selectedData":this.custmizedFormValue[field.field_name],
+      "object": this.getFormValue(true)
+    }
+    const modal = await this.modalController.create({
+      component: GridSelectionModalComponent,
+      componentProps: {
+        "Data": gridModalData,
+      },
+      swipeToClose: false
+    });
+    modal.componentProps.modal = modal;
+    return await modal.present();
   }
   
 
