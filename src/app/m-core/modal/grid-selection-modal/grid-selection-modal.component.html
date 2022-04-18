@@ -6,7 +6,7 @@
 </ion-header>
 
 <ion-content class="pages">
-  <ion-card>
+  <ion-card *ngFor="let data of gridData; let i = index">
     <ion-card-header>
       <ion-card-subtitle>Card Subtitle</ion-card-subtitle>
       <ion-card-title>Card Title</ion-card-title>
