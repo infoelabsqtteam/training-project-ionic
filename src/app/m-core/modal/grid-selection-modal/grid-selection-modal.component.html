@@ -1,26 +1,76 @@
-<ion-header>
+<ion-header collapse="fade" class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start" (click)="dismissModal()"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
-    <ion-title class="ion-no-padding ion-text-capitalize"></ion-title>
+    <!-- <ion-title class="ion-no-padding ion-text-capitalize">Header</ion-title> -->
+      <ion-searchbar></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="pages">
-  <ion-card *ngFor="let data of gridData; let i = index">
-    <ion-card-header>
-      <ion-card-subtitle>Card Subtitle</ion-card-subtitle>
-      <ion-card-title>Card Title</ion-card-title>
-    </ion-card-header>
+  <ion-header collapse="condense">
+    <ion-toolbar> <ion-searchbar></ion-searchbar>
+    </ion-toolbar>
+  </ion-header>
   
-    <ion-item>
-      <ion-icon name="information-circle-outline" slot="end" (click)="addremoveparticipant()"></ion-icon>
-      <ion-label>ion-item in a card, icon left, button right</ion-label>
+  <!-- <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of gridData; let i = index"> -->
+    <div class="app-grid_selection ion-margin-start ion-margin-end">
+    <ion-item class=""  lines="none">
+        <ion-buttons slot="start"><ion-checkbox checked="true" color="appcolor" class="left icon" name=""></ion-checkbox></ion-buttons>
+        <ion-buttons slot="end">
+          <!-- <ion-icon name="expand-outline" color="appcolor" class="right icon" (click)="addremoveparticipant()"></ion-icon> -->
+          <ion-img [src]="expandicon" (click)="addremoveparticipant()"></ion-img>
+        </ion-buttons>
     </ion-item>
-  
-    <ion-card-content>
-      This is content, without any paragraph or header tags,
-      within an ion-card-content element.
-    </ion-card-content>
-  </ion-card>
+    <ion-row>
+        <ion-col size="6">
+            <ion-item lines="none" class="">
+                <ion-label slot="start" class="grid-label">Param
+                    <span class="colon-seperator">:</span>
+                </ion-label>
+                <ion-label class="content">Caoting Thickness</ion-label>
+            </ion-item>
+        </ion-col>
+        <ion-col size="6">
+            <ion-item lines="none" class="">
+                <ion-label slot="start" class="grid-label">Method
+                    <span class="colon-seperator">:</span>
+                </ion-label>
+                <ion-label class="content">In House</ion-label>
+            </ion-item>
+        </ion-col>
+        <ion-col size="6">
+            <ion-item lines="none" class="">
+                <ion-label slot="start" class="grid-label">M U
+                    <span class="colon-seperator">:</span>
+                </ion-label>
+                <ion-label class="content">Min/Axis</ion-label>
+            </ion-item>
+        </ion-col>
+        <ion-col size="6">
+            <ion-item lines="none" class="">
+                <ion-label slot="start" class="grid-label">Feasibility
+                    <span class="colon-seperator">:</span>
+                </ion-label>
+                <ion-label class="content">Yes</ion-label>
+            </ion-item>
+        </ion-col>
+        <ion-col size="6">
+            <ion-item lines="none" class="">
+                <ion-label slot="start" class="grid-label">Dis (%)
+                    <span class="colon-seperator">:</span>
+                </ion-label>
+                <ion-input type="number" inputmode="numeric" name="form-name" readonly="true" value="1"></ion-input>
+            </ion-item>
+        </ion-col>
+        <ion-col size="6">
+            <ion-item lines="none" class="">
+                <ion-label slot="start" class="grid-label">Sale Rate
+                    <span class="colon-seperator">:</span>
+                </ion-label>
+                <ion-input type="number" inputmode="numeric" name="form-name"  value="1"></ion-input>
+            </ion-item>
+        </ion-col>
+    </ion-row>
+  </div>
   
 </ion-content>

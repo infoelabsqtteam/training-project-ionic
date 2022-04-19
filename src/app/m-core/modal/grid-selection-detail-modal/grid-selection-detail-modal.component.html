@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start" (click)="dismissModal()"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
-    <ion-title class="ion-no-padding ion-text-capitalize"></ion-title>
+    <ion-title class="ion-no-padding ion-text-capitalize">Quotation Details</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -16,7 +16,7 @@
     </ion-card-content>
   </ion-card> -->
   
-  <div class="contactdetails" *ngIf="cardType == 'demo1'">   
+  <div class="contactdetails app-grid_selection" *ngIf="cardType == 'demo1'">   
     <p class="enquerylist" >
       <span >Company Name</span>
       <strong >{{columnlistNew.company_name}}</strong>
@@ -54,12 +54,36 @@
       <strong >{{columnlistNew.state}}</strong>
     </p>
     <p class="enquerylist" >
-      <span >Department Name</span>
+      <span >Branch</span>
+      <strong ><ion-input type="text" inputmode="text" name="form-name" readonly="true" value="Panchkula"></ion-input></strong>
+    </p>
+    <p class="enquerylist" >
+      <span >Sample Name</span>
+      <strong >{{columnlistNew.sample_name}}</strong>
+    </p>
+    <p class="enquerylist" >
+      <span >Department</span>
       <strong >{{columnlistNew.department_name}}</strong>
     </p>
     <p class="enquerylist" >
-      <span >Building</span>
-      <strong >{{columnlistNew.building}}</strong>
+      <span >Department Id</span>
+      <strong >{{columnlistNew.department_id}}</strong>
+    </p>
+    <p class="enquerylist" >
+      <span >No. of Unit</span>
+      <strong ><ion-input type="text" inputmode="number" name="form-name" readonly="true" value="1"></ion-input></strong>
+    </p>
+    <p class="enquerylist" >
+      <span >Sample Quantity</span>
+      <strong ><ion-input type="text" inputmode="number" name="form-name" readonly="true" value="3"></ion-input></strong>
+    </p>
+    <p class="enquerylist" >
+      <span >Discount %</span>
+      <strong ><ion-input type="text" inputmode="number" name="form-name" readonly="true" value="5.06"></ion-input></strong>
+    </p>
+    <p class="enquerylist" >
+      <span >Net Amount</span>
+      <strong >{{columnlistNew.net_amt}}</strong>
     </p>
   </div>
 
