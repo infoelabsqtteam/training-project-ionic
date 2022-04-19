@@ -71,6 +71,8 @@ export class FormComponent implements OnInit, OnDestroy {
   treeViewData: any = {};
   curFileUploadField:any={}
   curFileUploadFieldparentfield:any={};
+  public curTreeViewField: any = {};
+  currentTreeViewFieldParent:any = {};
 
   dinamicFormSubscription:any;
   staticDataSubscriber:any;
@@ -765,42 +767,42 @@ export class FormComponent implements OnInit, OnDestroy {
       });
     }
     if(check){
-    //   Object.keys(this.custmizedFormValue).forEach(key => {
-    //     if (this.updateMode || this.complete_object_payload_mode) {
-    //       if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
-    //         this.tableFields.forEach(element => {            
-    //           if(element.field_name == key){
-    //             if(element.datatype && element.datatype != null && element.datatype == 'key_value'){
-    //               selectedRow[key] = this.custmizedFormValue[key];
-    //             }else{
-    //               Object.keys(this.custmizedFormValue[key]).forEach(child =>{
-    //                 selectedRow[key][child] = this.custmizedFormValue[key][child];
-    //               })
-    //             }
-    //           }
-    //         });          
-    //       }else{
-    //           selectedRow[key] = this.custmizedFormValue[key];
-    //       }
-    //     } else {
-    //       if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
-    //         this.tableFields.forEach(element => {
-    //           if(element.field_name == key){
-    //             if(element.datatype && element.datatype != null && element.datatype == 'key_value'){
-    //               modifyFormValue[key] = this.custmizedFormValue[key];
-    //             }else{
-    //               Object.keys(this.custmizedFormValue[key]).forEach(child =>{
-    //                 modifyFormValue[key][child] = this.custmizedFormValue[key][child];
-    //               })
-    //             }
-    //           }
-    //         });          
-    //       }else{
-    //         modifyFormValue[key] = this.custmizedFormValue[key];
-    //       }       
+      Object.keys(this.custmizedFormValue).forEach(key => {
+        if (this.updateMode || this.complete_object_payload_mode) {
+          if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
+            this.tableFields.forEach(element => {            
+              if(element.field_name == key){
+                if(element.datatype && element.datatype != null && element.datatype == 'key_value'){
+                  selectedRow[key] = this.custmizedFormValue[key];
+                }else{
+                  Object.keys(this.custmizedFormValue[key]).forEach(child =>{
+                    selectedRow[key][child] = this.custmizedFormValue[key][child];
+                  })
+                }
+              }
+            });          
+          }else{
+              selectedRow[key] = this.custmizedFormValue[key];
+          }
+        } else {
+          if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
+            this.tableFields.forEach(element => {
+              if(element.field_name == key){
+                if(element.datatype && element.datatype != null && element.datatype == 'key_value'){
+                  modifyFormValue[key] = this.custmizedFormValue[key];
+                }else{
+                  Object.keys(this.custmizedFormValue[key]).forEach(child =>{
+                    modifyFormValue[key][child] = this.custmizedFormValue[key][child];
+                  })
+                }
+              }
+            });          
+          }else{
+            modifyFormValue[key] = this.custmizedFormValue[key];
+          }       
           
-    //     }
-    //   })
+        }
+      })
     //   if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
     //     this.checkBoxFieldListValue.forEach(element => {
     //       if (this.staticData[element.ddn_field]) {
@@ -1886,8 +1888,8 @@ export class FormComponent implements OnInit, OnDestroy {
         break;
       case 'grid_selection':
       case 'grid_selection_vertical':
-        // this.curTreeViewField = field;
-        // this.currentTreeViewFieldParent = parentfield;
+        this.curTreeViewField = field;
+        this.currentTreeViewFieldParent = parentfield;
         // if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
         // const gridModalData = {
         //   "field": this.curTreeViewField,
@@ -2287,9 +2289,11 @@ export class FormComponent implements OnInit, OnDestroy {
   showIf(field){
     const  objectc = this.selectedRow?this.selectedRow:{}
     const object = JSON.parse(JSON.stringify(objectc));
-    Object.keys(this.templateForm.getRawValue()).forEach(key => {
-      object[key] = this.templateForm.getRawValue()[key];
-    })
+    if(this.templateForm){
+      Object.keys(this.templateForm.getRawValue()).forEach(key => {
+        object[key] = this.templateForm.getRawValue()[key];
+      })
+    }
     const display = this.commonFunctionService.showIf(field,object);
     const modifiedField = JSON.parse(JSON.stringify(field));
     modifiedField['display'] = display; 
@@ -2319,7 +2323,100 @@ export class FormComponent implements OnInit, OnDestroy {
       swipeToClose: false
     });
     modal.componentProps.modal = modal;
+    modal.onDidDismiss()
+      .then((data) => {
+        const object = data['data']; // Here's your selected user!
+        if(object['data'] && object['data'].length > 0){
+          this.gridSelectionResponce(object['data']);
+        }        
+    });
     return await modal.present();
+  }
+  gridSelectionResponce(responce){ 
+
+    if (!this.custmizedFormValue[this.curTreeViewField.field_name]) this.custmizedFormValue[this.curTreeViewField.field_name] = [];
+    this.custmizedFormValue[this.curTreeViewField.field_name] = JSON.parse(JSON.stringify(responce));
+
+    if(this.curTreeViewField && this.curTreeViewField.onchange_function && this.curTreeViewField.onchange_function_param){
+      // if(this.currentTreeViewFieldParent != ''){
+      //   this.templateForm.get([this.currentTreeViewFieldParent.field_name]).get([this.curTreeViewField.field_name]).setValue(this.custmizedFormValue[this.curTreeViewField.field_name]);
+      // }else{
+      //   this.templateForm.controls[this.curTreeViewField.field_name].setValue(this.custmizedFormValue[this.curTreeViewField.field_name]);
+      // }      
+      // this.templateForm = this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue, this.curTreeViewField);
+      let function_name = this.curTreeViewField.onchange_function_param;
+      switch(function_name){
+        case "calculation_of_script_for_tds":
+          const payload = this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField);   
+          this.apiService.getStatiData(payload);
+          break;
+        case "calculateQquoteAmount":
+          this.custmizedFormValue[this.curTreeViewField.field_name].forEach(element => {
+            element["qty"] = this.templateForm.getRawValue()["qty"];
+            this.commonFunctionService.calculateNetAmount(element, {field_name: "qty"},"legacyQuotationParameterCalculation");
+          });
+          this.updateDataOnFormField(this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField)); 
+          break;
+        case "calculateAutomotiveLimsQuotation":
+          this.custmizedFormValue[this.curTreeViewField.field_name].forEach(element => {
+            // element["qty"] = this.templateForm.getRawValue()["qty"];
+            this.commonFunctionService.calculateNetAmount(element, {field_name: "qty"},"calculateQuotationParameterAmountForAutomotiveLims");
+          });
+          // this.updateDataOnFormField(this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField)); 
+          this.updateDataOnFormField(this.commonFunctionService.calculate_quotation(this.getFormValue(true),"automotive" ,{field_name:"parameter_array"}));
+          break;
+        case "calculateLimsQuotation":
+          this.custmizedFormValue[this.curTreeViewField.field_name].forEach(element => {
+            element["qty"] = this.templateForm.getRawValue()["qty"];
+            this.commonFunctionService.calculateNetAmount(element, {field_name: "qty"}, "calculateQuotationParameterAmountForLims");
+          });
+          // this.updateDataOnFormField(this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField)); 
+          this.updateDataOnFormField(this.commonFunctionService.calculate_quotation(this.getFormValue(true),"standard" ,{field_name:"parameter_array"}));
+          break;    
+        case 'quote_amount_via_sample_no':
+          let val = this.commonFunctionService.quote_amount_via_sample_no(this.getFormValue(true),this.custmizedFormValue['quotation_param_methods']);
+          this.updateDataOnFormField(val);
+          break;
+        case 'calculate_lims_invoice':
+          let val1 = this.commonFunctionService.calculate_lims_invoice(this.getFormValue(true),'','');
+          this.updateDataOnFormField(val1);
+          break;
+        default:
+          if(this.commonFunctionService[this.curTreeViewField.onchange_function_param]){      
+            this.templateForm = this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.templateForm, this.curTreeViewField);
+            const calTemplateValue= this.templateForm.getRawValue()
+            this.updateDataOnFormField(calTemplateValue);
+          }
+      }
+
+    }
+    if(this.curTreeViewField && this.curTreeViewField.onchange_function_param != ''){
+      if(this.curTreeViewField.onchange_function_param.indexOf('QTMP') >= 0){
+        const staticModalGroup = []
+        staticModalGroup.push(this.restService.getPaylodWithCriteria(this.curTreeViewField.onchange_function_param,'',[],this.getFormValue(true)));
+        //this.commonFunctionService.getStaticData(staticModalGroup);
+        this.apiService.getStatiData(staticModalGroup);
+      }
+    }
+
+
+
+
+    // if(this.templateForm.controls['quotation_param_methods']){
+    //   this.templateForm.controls['quotation_param_methods'].setValue(this.custmizedFormValue['quotation_param_methods']);
+    //   this.templateForm = this.commonFunctionService.calculateQquoteAmount(this.templateForm, this.curTreeViewField);
+    //   const tamplateValue = this.templateForm.getRawValue();
+    //   this.custmizedFormValue['quotation_param_methods'] = tamplateValue['quotation_param_methods'];
+    // }
+    // else if(this.templateForm.controls['items_list']){
+    //   this.templateForm.controls['items_list'].setValue(this.custmizedFormValue['items_list']);
+    //   this.templateForm = this.commonFunctionService.calculateInvoiceOrderAmount(this.templateForm, this.curTreeViewField);
+    //   const tamplateValue = this.templateForm.getRawValue();
+    //   this.custmizedFormValue['items_list'] = tamplateValue['items_list'];
+    // }
+
+    this.curTreeViewField = {};
+    this.currentTreeViewFieldParent = {};
   }
   
 

@@ -1,66 +1,20 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start" (click)="dismissModal()"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
+    <ion-buttons slot="start" (click)="dismissModal({})"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
     <ion-title class="ion-no-padding ion-text-capitalize"></ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="pages">
-
-  <!-- <ion-card class="contactdetails" *ngIf="cardType == 'demo1'">
-    <ion-card-content>
-      <ion-label class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-          <span [ngClass]="column.class_name ? column.class_name  : ''">Company Name</span>
-          <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.company_name}}</strong>
-      </ion-label>
-    </ion-card-content>
-  </ion-card> -->
   
   <div class="contactdetails" *ngIf="cardType == 'demo1'">   
-    <p class="enquerylist" >
-      <span >Company Name</span>
-      <strong >{{columnlistNew.company_name}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Final Amount</span>
-      <strong >{{columnlistNew.final_amount}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Quotation No.</span>
-      <strong >{{columnlistNew.quotation_no}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Contact Person</span>
-      <strong >{{columnlistNew.contact_person}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Mobile</span>
-      <strong >{{columnlistNew.mobile}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Email</span>
-      <strong >{{columnlistNew.email}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Address1</span>
-      <strong >{{columnlistNew.address1}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Country</span>
-      <strong >{{columnlistNew.country}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >State</span>
-      <strong >{{columnlistNew.state}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Department Name</span>
-      <strong >{{columnlistNew.department_name}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Building</span>
-      <strong >{{columnlistNew.building}}</strong>
+    <p class="enquerylist" *ngFor="let column of columnList">
+      <span [title]="column.label">{{column.label}}: -</span>
+      <strong [innerHtml]="getValueForGrid(column,data)"></strong>
     </p>
   </div>
+  <span > 
+    <ion-button type="button"  (click)="select()" color="primary" expand="block">Add</ion-button>          
+  </span> 
 
 </ion-content>
