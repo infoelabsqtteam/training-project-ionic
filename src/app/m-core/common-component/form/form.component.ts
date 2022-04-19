@@ -1895,6 +1895,7 @@ export class FormComponent implements OnInit, OnDestroy {
         //   "object": this.getFormValue(true)
         // }
         // this.modalService.open('grid-selection-modal', gridModalData);
+        this.openGridSelectionModal(field);
         break;
       default:
         break;
@@ -2303,11 +2304,17 @@ export class FormComponent implements OnInit, OnDestroy {
     }    
   }
 
-  async  openGridSelectionModal(){
+  async  openGridSelectionModal(field){
+    if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+    const gridModalData = {
+      "field": field,
+      "selectedData":this.custmizedFormValue[field.field_name],
+      "object": this.getFormValue(true)
+    }
     const modal = await this.modalController.create({
       component: GridSelectionModalComponent,
       componentProps: {
-        "Data": this.staticData,
+        "Data": gridModalData,
       },
       swipeToClose: false
     });

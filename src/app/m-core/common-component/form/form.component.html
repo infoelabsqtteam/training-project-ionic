@@ -17,7 +17,7 @@
         </div>
         <div *ngIf="tableField.type == 'grid_selection'">
           <div>
-            <ion-button expand="block" fill="outline" (click)="openGridSelectionModal()" [formControlName]="tableField.field_name">{{ tableField.label }}</ion-button>
+            <ion-button expand="block" fill="outline" (click)="setValue('',tableField)" [formControlName]="tableField.field_name">{{ tableField.label }}</ion-button>
           </div>
         </div>
         <!-- <div *ngIf="tableField.type == 'upload_camera_file'">
