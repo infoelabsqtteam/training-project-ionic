@@ -5,6 +5,7 @@ import { LoadingController, Platform, ToastController } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
 import { finalize } from 'rxjs/operators';
 
+// --------------------1
 export interface ApiImage {
   _id: string;
   name: string;
@@ -12,6 +13,7 @@ export interface ApiImage {
   url: string;
 }
 
+// ------------------2
 const IMAGE_DIR = 'stored-images';
 
 interface LocalFile {
@@ -199,7 +201,7 @@ async uploadData(formData: FormData) {
 // }
  
 
-  // ------2nd method
+  // ------1st method
   uploadImage(blobData, name, ext) {
     const formData = new FormData();
     formData.append('file', blobData, `myimage.${ext}`);

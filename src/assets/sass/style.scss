@@ -30,7 +30,7 @@ ion-toolbar.grey-toolbar {--background-color: #EFF1F3;}
     ion-icon {color:#96b1d7;}
     ion-item {--background:rgba(0,0,0,0.08);--color:#96b1d7;margin-bottom:1px;}
 }
-.sidenavfooter {position:absolute;left:0;bottom:0;width:100%;background:rgba(0,0,0,0.05);padding:10px;text-align:center;
+.sidenavfooter {position:absolute;left:0;bottom:0;width:100%;background:var(--themebg);padding:10px;text-align:center;
     ion-icon {color:#9ebae1;font-size:20px;margin:8px 10px;}
     ion-note {color:#929bd7;margin:5px 0 0;display:block;font-size:11px;}
 }

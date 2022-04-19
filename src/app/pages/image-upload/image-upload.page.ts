@@ -21,8 +21,8 @@ export class ImageUploadPage implements OnInit {
     private actionSheetCtrl: ActionSheetController
   ) 
     {
-      this.cameraService.loadFiles();
-    // this.loadImages();
+      // this.cameraService.loadFiles();
+    this.loadImages();
   }
 
   ngOnInit(){
@@ -44,7 +44,7 @@ export class ImageUploadPage implements OnInit {
         }
       },
       {
-        text: 'Choose From Photos Photo',
+        text: 'Choose From Photos',
         icon: 'image',
         handler: () => {
           this.addImage(CameraSource.Photos);
@@ -82,20 +82,23 @@ export class ImageUploadPage implements OnInit {
     });
  
     const blobData = this.b64toBlob(image.base64String, `image/${image.format}`);
-    const imageName = 'test-kc';
+    const time = new Date().getTime();
+    const imageName = 'Give a Name';
  
     this.cameraService.uploadImage(blobData, imageName, image.format).subscribe((newImage: ApiImage) => {
       this.images.push(newImage);
+      // let img:any = newImage;
     });
   }
  
   // Used for browser direct file upload
-  uploadFile(event: EventTarget) {
-    const eventObj: any = event as any;
-    const target: HTMLInputElement = eventObj.target as HTMLInputElement;
-    const file: File = target.files[0];
+  uploadFile(event: any) {
+    // const eventObj: any = event as any;
+    // const target: HTMLInputElement = eventObj.target as HTMLInputElement;
+    const file: File = event.files[0];
     this.cameraService.uploadImageFile(file).subscribe((newImage: ApiImage) => {
       this.images.push(newImage);
+      // let img:any = newImage;
     });
   }
  

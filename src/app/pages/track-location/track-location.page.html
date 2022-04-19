@@ -1,0 +1,96 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button></ion-back-button></ion-buttons>
+    <ion-title>
+      Track Me
+    </ion-title>
+    <ion-buttons slot="end"><ion-toggle color="danger" [(ngModel)]="canUseGPS" (ionChange)="checkGPS()"></ion-toggle></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <!-- <ion-button size="small" color="warning" (click)="requestPermissions()">
+    Geolocation Permissions
+  </ion-button> -->
+
+  <!-- <ion-card>
+    <ion-card-header>
+      <ion-button size="small" (click)="getCurrentCoordinate()">
+        Current Coordinate
+      </ion-button>
+    </ion-card-header>
+    <ion-card-content>
+      Lat: {{coordinate?.latitude }}
+      Long:{{ coordinate?.longitude }}
+    </ion-card-content>
+  </ion-card> -->
+
+  <ion-card>
+    <ion-card-header>
+      <ion-button size="small" *ngIf="!locationWatchStarted;" color="warning" (click)="requestPermissions()">
+        Track Me
+      </ion-button>
+      <ion-button size="small" *ngIf="locationWatchStarted;" color="warning">
+        Watch Position
+      </ion-button>
+    </ion-card-header>
+    <ion-card-content>
+      <!-- Lat: {{watchCoordinate?.latitude }}
+      Long: {{ watchCoordinate?.longitude }} -->
+      <ion-list>
+
+        <ion-item *ngFor="let location of locationTraces">
+          <ion-label class="ion-text-wrap">
+            <ion-label>Time: {{location.timestamp | date:'M/d/yy, h:mm a'}}</ion-label>
+            <ion-label>Latitude: {{location.latitude}} </ion-label>
+            <ion-label>Longitude: {{location.longitude}}</ion-label>
+            <ion-label>Accuracy: {{location.accuracy}}</ion-label>
+          </ion-label>
+        </ion-item>
+    
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-button size="small" color="tertiary" (click)="clearWatch()">Clear Watch</ion-button>
+</ion-content>
+
+<!-- <ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button></ion-back-button></ion-buttons>
+    <ion-title>
+      Track Me
+    </ion-title>
+    <ion-buttons slot="end"><ion-toggle color="danger"></ion-toggle></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <ion-list>
+
+    <ion-item *ngFor="let location of locationTraces">
+      <ion-label class="ion-text-wrap">
+        <ion-label>Time: {{location.timestamp | date:'M/d/yy, h:mm a'}}</ion-label>
+        <ion-label>Latitude: {{location.latitude}} </ion-label>
+        <ion-label>Longitude: {{location.longitude}}</ion-label>
+        <ion-label>Accuracy: {{location.accuracy}}</ion-label>
+      </ion-label>
+    </ion-item>
+
+  </ion-list>
+
+  <div class="ion-text-center">
+
+    <ng-container *ngIf="!locationWatchStarted; else elseTemplate">
+      <ion-button color="primary" (click)="trackme()">Start Location</ion-button>
+    </ng-container>
+    <ng-template #elseTemplate>
+      Location Watch Started!
+    </ng-template>
+
+  </div>
+
+
+
+
+</ion-content> -->
