@@ -179,6 +179,10 @@ export class GridSelectionModalComponent implements OnInit {
     }
   }
 
+  getValueForGrid(field, object) {
+    return this.coreFunctionService.getValueForGrid(field, object);
+  }
+
   async addremoveparticipant(data){
     const modal = await this.modalController.create({
       component: GridSelectionDetailModalComponent,

@@ -27,15 +27,31 @@
         </ion-buttons>
     </ion-item>
     <ion-row>
-        <ion-col size="6">
-            <ion-item lines="none" class="">
-                <ion-label slot="start" class="grid-label">Param
-                    <span class="colon-seperator">:</span>
-                </ion-label>
-                <ion-label class="content">Caoting Thickness</ion-label>
-            </ion-item>
+        <ion-col size="6" *ngFor="let column of listOfGridFieldName">
+            <div *ngIf="!column.editable">
+                <ion-item lines="none" class="">
+                    <ion-label slot="start" class="grid-label">{{ column.label }}
+                        <span class="colon-seperator">:</span>
+                    </ion-label>
+                    <ion-label class="content" [innerHtml]="getValueForGrid(column,data)"></ion-label>
+                </ion-item>
+            </div>
+            <div *ngIf="column.editable">
+                <ion-item lines="none" class="">
+                    <ion-label slot="start" class="grid-label">{{ column.label }}
+                        <span class="colon-seperator">:</span>
+                    </ion-label>
+                    <div *ngIf="column.type.toLowerCase() == 'text'">
+                        <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" >
+                    </div>
+                    <div *ngIf="column.type.toLowerCase() == 'number'">
+                      <input  type="number" style="min-width: 50px;" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
+                    </div>
+                    <ion-label class="content">Caoting Thickness</ion-label>
+                </ion-item>
+            </div>            
         </ion-col>
-        <ion-col size="6">
+        <!-- <ion-col size="6">
             <ion-item lines="none" class="">
                 <ion-label slot="start" class="grid-label">Method
                     <span class="colon-seperator">:</span>
@@ -74,7 +90,7 @@
                 </ion-label>
                 <ion-input type="number" inputmode="numeric" name="form-name"  value="1"></ion-input>
             </ion-item>
-        </ion-col>
+        </ion-col> -->
     </ion-row>
   </div>
   <span > 
