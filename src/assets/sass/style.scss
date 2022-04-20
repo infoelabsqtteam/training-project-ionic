@@ -299,7 +299,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         font-weight: 600;
     }
 }
-.button_position{position: absolute;bottom: 0;width: 100%;left: 0;z-index: 7;
+.button_position{position: fixed;bottom: 0;width: 100%;left: 0;z-index: 7;
     .flex_grid{display: flex;justify-content: space-between;
         ion-button{min-width: 48%;text-transform: capitalize;}
     }
