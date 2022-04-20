@@ -14,7 +14,7 @@
     </p>
   </div> -->
   
-  <div class="contactdetails app-grid_selection" *ngIf="cardType == 'demo1'">   
+  <div class="contactdetails app-grid_selection fixed_button" *ngIf="cardType == 'demo1'">   
     <p class="enquerylist" >
       <span >Company Name</span>
       <strong >{{columnlistNew.company_name}}</strong>
@@ -84,8 +84,14 @@
       <strong >{{columnlistNew.net_amt}}</strong>
     </p>
   </div>
-  <span > 
+  <!-- <span > 
     <ion-button type="button"  (click)="select()" color="appcolor" expand="block">Add</ion-button>          
-  </span> 
+  </span>  -->
+  <div class="button_position">
+      <div class="flex_grid">
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" expand="full" >Add</ion-button>
+      <ion-button type="button" color="appcolor" [disabled]="dismissModal()" expand="full" >Cancel</ion-button>
+      </div>
+  </div>
 
 </ion-content>

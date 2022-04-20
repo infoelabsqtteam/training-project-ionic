@@ -291,3 +291,16 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         ion-label.content{font-size: 11px;line-height:18px;}
     }
 }
+.app-grid_selection.fixed_button{margin-bottom: 4rem;}
+.grid_selection_tab{
+    ion-segment-button{font-size:14px;color:#3A3A3A;text-transform:capitalize;
+    }
+    .segment-button-checked{
+        font-weight: 600;
+    }
+}
+.button_position{position: absolute;bottom: 0;width: 100%;left: 0;z-index: 7;
+    .flex_grid{display: flex;justify-content: space-between;
+        ion-button{min-width: 48%;text-transform: capitalize;}
+    }
+}
