@@ -20,6 +20,19 @@
             <ion-button expand="block" fill="outline" (click)="setValue('',tableField)">{{ tableField.label }}</ion-button>
           </div>
         </div>
+        <!-- <div *ngIf="tableField.type == 'upload_camera_file'">
+          <div>
+            <input type="file" id="fileInput" [formControlName]="tableField.field_name" #fileInput (change)="uploadFile($event.target)" hidden="true" accept="image/*" />
+            <ion-button expand="block" fill="outline" (click)="selectImageSource()" [formControlName]="tableField.field_name">{{ tableField.label }}</ion-button>
+          </div>
+        </div> -->
+        <!-- <div *ngIf="tableField.type == 'file'">
+          <ion-item>
+            <ion-label position="">{{ tableField.label }}</ion-label>
+            <ion-input [formControlName]="tableField.field_name" type="file" multiple (change)="fileBrowseHandler('',tableField,$event.target.files)" hidden="true"></ion-input>
+            <ion-button expand="block" fill="outline" slot="end" (click)="selectImageSource()" [formControlName]="tableField.field_name">{{ tableField.label }}</ion-button>
+          </ion-item>
+        </div> -->
         <div *ngIf="tableField.type == 'file'">
           <ion-item>
             <ion-label position="floating">{{ tableField.label }}</ion-label>

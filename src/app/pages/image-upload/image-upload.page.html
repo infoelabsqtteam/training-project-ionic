@@ -9,14 +9,16 @@
  
 <ion-content>
 
-  <!-- <app-image-picker  [imagePick]="imagePick"></app-image-picker> -->
-
   <ion-row>
     <ion-col
       size="6"
       *ngFor="let img of images; let i = index;"
       class="ion-text-center"
     >
+    <!-- <ion-col
+      size="6"
+      class="ion-text-center"
+    > -->
       <ion-label>
         {{ img.name }}
         <p>{{ img.createdAt | date:'short' }}</p>

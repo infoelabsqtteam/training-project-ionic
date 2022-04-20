@@ -52,6 +52,10 @@ const routes: Routes = [
     path: 'image-upload',
     loadChildren: () => import('./pages/image-upload/image-upload.module').then( m => m.ImageUploadPageModule)
   },
+  {
+    path: 'track-location',
+    loadChildren: () => import('./pages/track-location/track-location.module').then( m => m.TrackLocationPageModule)
+  },
 
 
 
