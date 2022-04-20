@@ -16,10 +16,18 @@
       <ion-label>ion-item in a card, icon left, button right</ion-label>
     </ion-item> 
   </ion-card> -->
+  <ion-segment class="grid_selection_tab" value="New" color="appcolor">
+    <ion-segment-button value="New">
+        <ion-label>New</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="Added">
+        <ion-label>Added</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
-  <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of gridData; let i = index">
+  <div class="app-grid_selection ion-margin-start ion-margin-end" >
     <ion-item class=""  lines="none">
-        <ion-buttons slot="start" *ngIf="grid_row_selection">
+        <ion-buttons slot="start" >
           <ion-checkbox checked="true" color="appcolor" class="left icon" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox>
         </ion-buttons>
         <ion-buttons slot="end">
@@ -77,7 +85,12 @@
         </ion-col>
     </ion-row>
   </div>
-  <span > 
-    <ion-button type="button"  (click)="selectGridData()" color="appcolor" [disabled]="checkValidator()" expand="block">{{ field.label }}</ion-button>          
-  </span>  
+  <div class="button_position">
+      <div class="flex_grid">
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" expand="full" >Add</ion-button>
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" expand="full" >Cancel</ion-button>
+      </div>
+  </div>
+  
+   
 </ion-content>
