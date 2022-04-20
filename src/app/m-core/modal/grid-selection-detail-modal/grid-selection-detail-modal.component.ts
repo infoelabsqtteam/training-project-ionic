@@ -52,5 +52,21 @@ export class GridSelectionDetailModalComponent implements OnInit {
   select(){
     this.dismissModal(this.data);
   }
+  checkValidator(){
+    return false;
+  }
+  isDisable(field,object){
+    const updateMode = false;
+    if(field.is_disabled){
+      return true;
+    }else if(field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != ''){
+      return this.CommonFunctionService.isDisable(field.etc_fields,updateMode,object);
+    }
+    return false;
+  }
+  calculateNetAmount(data, fieldName, index){
+
+    this.CommonFunctionService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
+  }
 
 }

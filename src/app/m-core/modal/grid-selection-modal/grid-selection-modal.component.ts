@@ -179,6 +179,23 @@ export class GridSelectionModalComponent implements OnInit {
     }
   }
 
+  getValueForGrid(field, object) {
+    return this.coreFunctionService.getValueForGrid(field, object);
+  }
+  isDisable(field,object){
+    const updateMode = false;
+    if(field.is_disabled){
+      return true;
+    }else if(field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != ''){
+      return this.coreFunctionService.isDisable(field.etc_fields,updateMode,object);
+    }
+    return false;
+  }
+  calculateNetAmount(data, fieldName, index){
+
+    this.coreFunctionService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
+  }
+
   async addremoveparticipant(data){
     const modal = await this.modalController.create({
       component: GridSelectionDetailModalComponent,
