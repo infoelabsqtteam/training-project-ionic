@@ -94,10 +94,10 @@
 }
 
 .ion-color-appcolor {
-    --ion-color-base: var(--ion-color-appcolor);
-    --ion-color-base-rgb: var(--ion-color-appcolor-rgb);
-    --ion-color-contrast: var(--ion-color-appcolor-contrast);
-    --ion-color-contrast-rgb: var(--ion-color-appcolor-contrast-rgb);
-    --ion-color-shade: var(--ion-color-appcolor-shade);
-    --ion-color-tint: var(--ion-color-appcolor-tint);
+    --ion-color-base: var(--ion-color-appcolor, --ion-color-white);
+    --ion-color-base-rgb: var(--ion-color-appcolor-rgb, --ion-color-white);
+    --ion-color-contrast: var(--ion-color-appcolor-contrast, --ion-color-white);
+    --ion-color-contrast-rgb: var(--ion-color-appcolor-contrast-rgb, --ion-color-white);
+    --ion-color-shade: var(--ion-color-appcolor-shade, --ion-color-white);
+    --ion-color-tint: var(--ion-color-appcolor-tint, --ion-color-white);
   }
