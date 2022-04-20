@@ -1,21 +1,11 @@
 <ion-header collapse="fade" class="ion-no-border">
   <ion-toolbar>
-    <ion-buttons slot="start" (click)="dismissModal()"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
-    <!-- <ion-title class="ion-no-padding ion-text-capitalize">Header</ion-title> -->
+    <ion-buttons slot="start" (click)="dismissModal([])"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
       <ion-searchbar></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="pages">
-  <!-- <ion-card *ngFor="let data of gridData; let i = index">
-    <ion-item>
-      <ion-checkbox *ngIf="grid_row_selection" color="secondary" checked slot="start" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox>
-    </ion-item>
-    <ion-item>
-      <ion-icon name="information-circle-outline" slot="end" (click)="addremoveparticipant(data)"></ion-icon>
-      <ion-label>ion-item in a card, icon left, button right</ion-label>
-    </ion-item> 
-  </ion-card> -->
   <ion-segment class="grid_selection_tab" value="New" color="appcolor">
     <ion-segment-button value="New">
         <ion-label>New</ion-label>
@@ -25,7 +15,7 @@
     </ion-segment-button>
   </ion-segment>
 
-  <div class="app-grid_selection ion-margin-start ion-margin-end" >
+  <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of gridData; let i = index">
     <ion-item class=""  lines="none">
         <ion-buttons slot="start" >
           <ion-checkbox checked="true" color="appcolor" class="left icon" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox>
@@ -41,7 +31,7 @@
                     <ion-label slot="start" class="grid-label">{{ column.label }}
                         <span class="colon-seperator">:</span>
                     </ion-label>
-                    <ion-label class="content" [innerHtml]="getValueForGrid(column,data)"></ion-label>
+                    <ion-label  class="content" [innerHtml]="getValueForGrid(column,data)"></ion-label>
                 </ion-item>
             </div>
             <div *ngIf="column.editable">
@@ -55,56 +45,15 @@
                     <div *ngIf="column.type.toLowerCase() == 'number'">
                       <input  type="number" style="min-width: 50px;" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
                     </div>
-                    <ion-label class="content">Caoting Thickness</ion-label>
                 </ion-item>
             </div>            
-        </ion-col>
-        <!-- <ion-col size="6">
-            <ion-item lines="none" class="">
-                <ion-label slot="start" class="grid-label">Method
-                    <span class="colon-seperator">:</span>
-                </ion-label>
-                <ion-label class="content">In House</ion-label>
-            </ion-item>
-        </ion-col>
-        <ion-col size="6">
-            <ion-item lines="none" class="">
-                <ion-label slot="start" class="grid-label">M U
-                    <span class="colon-seperator">:</span>
-                </ion-label>
-                <ion-label class="content">Min/Axis</ion-label>
-            </ion-item>
-        </ion-col>
-        <ion-col size="6">
-            <ion-item lines="none" class="">
-                <ion-label slot="start" class="grid-label">Feasibility
-                    <span class="colon-seperator">:</span>
-                </ion-label>
-                <ion-label class="content">Yes</ion-label>
-            </ion-item>
-        </ion-col>
-        <ion-col size="6">
-            <ion-item lines="none" class="">
-                <ion-label slot="start" class="grid-label">Dis (%)
-                    <span class="colon-seperator">:</span>
-                </ion-label>
-                <ion-input type="number" inputmode="numeric" name="form-name" readonly="true" value="1"></ion-input>
-            </ion-item>
-        </ion-col>
-        <ion-col size="6">
-            <ion-item lines="none" class="">
-                <ion-label slot="start" class="grid-label">Sale Rate
-                    <span class="colon-seperator">:</span>
-                </ion-label>
-                <ion-input type="number" inputmode="numeric" name="form-name"  value="1"></ion-input>
-            </ion-item>
-        </ion-col> -->
+        </ion-col>        
     </ion-row>
   </div>
   <div class="button_position">
       <div class="flex_grid">
-      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" expand="full" >Add</ion-button>
-      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" expand="full" >Cancel</ion-button>
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()"  (click)="selectGridData()" expand="full" >Add</ion-button>
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal([])" expand="full" >Cancel</ion-button>
       </div>
   </div>
   

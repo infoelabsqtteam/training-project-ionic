@@ -1,96 +1,33 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start" (click)="dismissModal()"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
+    <ion-buttons slot="start" (click)="dismissModal({})"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
     <ion-title class="ion-no-padding ion-text-capitalize">Quotation Details</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="pages">
   
-  <!-- <div class="contactdetails" *ngIf="cardType == 'demo1'">   
-    <p class="enquerylist" *ngFor="let column of columnList">
-      <span [title]="column.label">{{column.label}}: -</span>
-      <strong [innerHtml]="getValueForGrid(column,data)"></strong>
-    </p>
-  </div> -->
-  
   <div class="contactdetails app-grid_selection fixed_button" *ngIf="cardType == 'demo1'">   
-    <p class="enquerylist" >
-      <span >Company Name</span>
-      <strong >{{columnlistNew.company_name}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Final Amount</span>
-      <strong >{{columnlistNew.final_amount}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Quotation No.</span>
-      <strong >{{columnlistNew.quotation_no}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Contact Person</span>
-      <strong >{{columnlistNew.contact_person}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Mobile</span>
-      <strong >{{columnlistNew.mobile}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Email</span>
-      <strong >{{columnlistNew.email}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Address1</span>
-      <strong >{{columnlistNew.address1}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Country</span>
-      <strong >{{columnlistNew.country}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >State</span>
-      <strong >{{columnlistNew.state}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Branch</span>
-      <strong ><ion-input type="text" inputmode="text" name="form-name" readonly="true" value="Panchkula"></ion-input></strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Sample Name</span>
-      <strong >{{columnlistNew.sample_name}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Department</span>
-      <strong >{{columnlistNew.department_name}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Department Id</span>
-      <strong >{{columnlistNew.department_id}}</strong>
-    </p>
-    <p class="enquerylist" >
-      <span >No. of Unit</span>
-      <strong ><ion-input type="text" inputmode="number" name="form-name" readonly="true" value="1"></ion-input></strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Sample Quantity</span>
-      <strong ><ion-input type="text" inputmode="number" name="form-name" readonly="true" value="3"></ion-input></strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Discount %</span>
-      <strong ><ion-input type="text" inputmode="number" name="form-name" readonly="true" value="5.06"></ion-input></strong>
-    </p>
-    <p class="enquerylist" >
-      <span >Net Amount</span>
-      <strong >{{columnlistNew.net_amt}}</strong>
-    </p>
+    <div class="enquerylist" *ngFor="let column of columnList">
+      <div *ngIf="!column.editable">
+        <span [title]="column.label">{{column.label}}: -</span>
+        <strong [innerHtml]="getValueForGrid(column,data)"></strong>
+      </div>
+      <div *ngIf="column.editable">
+        <span [title]="column.label">{{column.label}}: -</span>        
+        <span *ngIf="column.type.toLowerCase() == 'text'">
+            <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" >
+        </span>
+        <span *ngIf="column.type.toLowerCase() == 'number'">
+          <input  type="number" style="min-width: 50px;" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
+        </span>
+      </div>
+    </div>
   </div>
-  <!-- <span > 
-    <ion-button type="button"  (click)="select()" color="appcolor" expand="block">Add</ion-button>          
-  </span>  -->
   <div class="button_position">
       <div class="flex_grid">
-      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" expand="full" >Add</ion-button>
-      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" expand="full" >Cancel</ion-button>
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="select()" expand="full" >Add</ion-button>
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal({})" expand="full" >Cancel</ion-button>
       </div>
   </div>
 
