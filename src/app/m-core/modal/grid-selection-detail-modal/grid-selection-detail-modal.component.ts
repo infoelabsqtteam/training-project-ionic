@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { CoreUtilityService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 
 @Component({
@@ -13,26 +14,43 @@ export class GridSelectionDetailModalComponent implements OnInit {
   @Input() modal: any;
 
   cardType:any;
-  columnlistNew :any = [];
+  columnList :any = [];
+  data:any={};
 
 
   constructor(
-    private modalController: ModalController
+    private modalController: ModalController,
+    private CommonFunctionService:CoreUtilityService
   ) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.onload();
+  }
   
   ionViewWillEnter(){
-    this.cardType = this.childCardType;
-    this.columnlistNew = this.Data[0];
+    // this.cardType = this.childCardType;
+    // this.columnlistNew = this.Data[0];
   }
   ionViewDidEnter(){}
   ionViewWillLeave(){}  
   ionViewDidLeave(){}
 
-  
-  dismissModal(){
-    this.modal.dismiss({'dismissed': true});
+  onload(){
+    this.cardType = this.childCardType;
+    this.columnList = this.Data['column'];
+    this.data = this.Data['value'];
+  }  
+  getValueForGrid(field, object) {
+    return this.CommonFunctionService.getValueForGrid(field, object);
+  }
+  dismissModal(data){
+    this.modal.dismiss({
+      'data':data,
+      'dismissed': true
+    });
+  }
+  select(){
+    this.dismissModal(this.data);
   }
 
 }

@@ -6,15 +6,13 @@
 </ion-header>
 
 <ion-content class="pages">
-
-  <!-- <ion-card class="contactdetails" *ngIf="cardType == 'demo1'">
-    <ion-card-content>
-      <ion-label class="enquerylist" *ngFor="let column of columnlistNew; index as j">
-          <span [ngClass]="column.class_name ? column.class_name  : ''">Company Name</span>
-          <strong [ngClass]="column.class_name ? column.class_name  : ''">{{column.company_name}}</strong>
-      </ion-label>
-    </ion-card-content>
-  </ion-card> -->
+  
+  <!-- <div class="contactdetails" *ngIf="cardType == 'demo1'">   
+    <p class="enquerylist" *ngFor="let column of columnList">
+      <span [title]="column.label">{{column.label}}: -</span>
+      <strong [innerHtml]="getValueForGrid(column,data)"></strong>
+    </p>
+  </div> -->
   
   <div class="contactdetails app-grid_selection" *ngIf="cardType == 'demo1'">   
     <p class="enquerylist" >
@@ -86,5 +84,8 @@
       <strong >{{columnlistNew.net_amt}}</strong>
     </p>
   </div>
+  <span > 
+    <ion-button type="button"  (click)="select()" color="appcolor" expand="block">Add</ion-button>          
+  </span> 
 
 </ion-content>
