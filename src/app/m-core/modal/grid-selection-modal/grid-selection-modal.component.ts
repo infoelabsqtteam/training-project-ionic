@@ -28,6 +28,8 @@ export class GridSelectionModalComponent implements OnInit {
   grid_row_selection:boolean = false;
   grid_row_refresh_icon:boolean = false;
 
+  selectedTab:string = "new";
+
   
   // test array
   data :any =
@@ -62,6 +64,7 @@ export class GridSelectionModalComponent implements OnInit {
     })
   }
   onload(){
+    this.selectedTab = "new";
     this.selecteData = [];  
     this.selecteData = this.Data.selectedData; 
     this.field = this.Data.field;
@@ -325,6 +328,12 @@ export class GridSelectionModalComponent implements OnInit {
     //   }
     // }
     return false;
+  }
+
+  segmentChanged(ev: any) {
+    // console.log('Segment changed', ev);
+    this.selectedTab = ev.target.value;
+    console.log( this.selectedTab);
   }
 
 }
