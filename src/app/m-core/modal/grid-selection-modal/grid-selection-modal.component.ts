@@ -66,7 +66,7 @@ export class GridSelectionModalComponent implements OnInit {
   onload(){
     this.selectedTab = "new";
     this.selecteData = [];  
-    this.selecteData = this.Data.selectedData; 
+    this.selecteData = JSON.parse(JSON.stringify(this.Data.selectedData)); 
     this.field = this.Data.field;
     if(this.Data.object){
       this.parentObject = this.Data.object;
@@ -331,9 +331,20 @@ export class GridSelectionModalComponent implements OnInit {
   }
 
   segmentChanged(ev: any) {
-    // console.log('Segment changed', ev);
     this.selectedTab = ev.target.value;
-    console.log( this.selectedTab);
+  }
+  getSelectedData(){
+    const selectedData = [];
+    if(this.gridData && this.gridData.length > 0){
+      this.gridData.forEach(element => {
+        if(element && element.selected){
+          selectedData.push(element);
+        }
+      });
+      return selectedData;
+    }else{
+      return selectedData;
+    }
   }
 
 }

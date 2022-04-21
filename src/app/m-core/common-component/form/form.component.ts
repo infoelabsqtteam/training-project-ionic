@@ -2310,9 +2310,10 @@ export class FormComponent implements OnInit, OnDestroy {
 
   async  openGridSelectionModal(field){
     if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+    let selectedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[field.field_name]))
     const gridModalData = {
       "field": field,
-      "selectedData":this.custmizedFormValue[field.field_name],
+      "selectedData":selectedValue,
       "object": this.getFormValue(true)
     }
     const modal = await this.modalController.create({
@@ -2417,6 +2418,15 @@ export class FormComponent implements OnInit, OnDestroy {
 
     this.curTreeViewField = {};
     this.currentTreeViewFieldParent = {};
+  }
+
+  getNumberOfSelectedRecord(field){
+    if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+    if(this.custmizedFormValue[field.field_name] && this.custmizedFormValue[field.field_name].length > 0){
+      return "( "+this.custmizedFormValue[field.field_name].length+" )";
+    }else{
+      return '';
+    }
   }
   
 
