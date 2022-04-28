@@ -125,7 +125,7 @@
   <ion-list class="contactlist" *ngIf="cardType == 'contact'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="contactlist" lines="none">
-          <ion-avatar slot="start" class="ion-text-uppercase">{{card.first_name[0]}}</ion-avatar>
+          <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="card.first_name != ''" [innerHTML]="getFirstCharOfString(card.first_name)"></span></ion-avatar>
           <ion-row class="ion-align-items-center inner_padding" *ngIf="columnList && columnList.length > 0">
             <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="detailCardButton(column,card)">
               <p [ngClass]="column.class_name ? column.class_name  : ''" class="ion-text-end" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>

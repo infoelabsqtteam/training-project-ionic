@@ -396,6 +396,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.gridData = data
     this.addNew();
   }
+  getFirstCharOfString(char:any){
+    return this.coreUtilityService.getFirstCharOfString(char);
+  }
 
   
 
