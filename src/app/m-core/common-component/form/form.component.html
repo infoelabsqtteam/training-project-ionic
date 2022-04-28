@@ -62,7 +62,7 @@
         <div *ngIf="tableField.type == 'number'">
           <ion-item>
             <ion-label position="floating">{{ tableField.label }}</ion-label>
-            <ion-input type="number" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-input>
+            <ion-input type="number" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (keyup)="inputOnChangeFunc(tableField)"></ion-input>
           </ion-item>
         </div>
         <div *ngIf="tableField.type == 'email'">
@@ -74,12 +74,12 @@
         <div *ngIf="tableField.type == 'checkbox'">
           <ion-item>
             <ion-label position="floating">{{ tableField.label }}</ion-label>
-            <ion-checkbox slot="end" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder"></ion-checkbox>
+            <ion-checkbox slot="end" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc(tableField)"></ion-checkbox>
           </ion-item>
         </div>
         <div *ngIf="tableField.type == 'radio'">
           <ion-list>
-            <ion-radio-group [formControlName]="tableField.field_name">
+            <ion-radio-group [formControlName]="tableField.field_name" (ionChange)="inputOnChangeFunc(tableField)">
               <ion-list-header>
                 <ion-label>{{ tableField.label }}</ion-label>
               </ion-list-header>       
