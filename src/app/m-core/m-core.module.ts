@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonComponentModule } from './common-component/common-component.module';
 import { McoreRoutingModule } from './m-core-routing.module';
 import { ModalModule } from './modal/modal.module';
@@ -12,6 +12,10 @@ import { ModalModule } from './modal/modal.module';
         McoreRoutingModule,
         CommonComponentModule,
         ModalModule
+    ],
+    schemas: [
+        CUSTOM_ELEMENTS_SCHEMA,
+        NO_ERRORS_SCHEMA
     ]
 
 })
