@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from "@angular/forms";
+import { FormGroup, FormBuilder, Validators, AsyncValidatorFn } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
 import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService } from '@core/ionic-core';
@@ -30,7 +30,7 @@ export class FormComponent implements OnInit, OnDestroy {
   defaultDate = "1987-06-30";
   isSubmitted = false;
 
-  templateForm: FormGroup;
+  templateForm!: FormGroup;
 
   forms:any={};
   form:any ={};
@@ -2004,6 +2004,186 @@ export class FormComponent implements OnInit, OnDestroy {
         this.apiService.getStatiData(staticModal);
       }
    }
+  }
+  inputOnChangeFunc(field) {
+    if(field.type == 'checkbox'){
+      if (field.onchange_api_params && field.onchange_call_back_field) {        
+        let formValue = this.getFormValue(false);
+        this.changeDropdown(field,  formValue,field.data_template);       
+      }
+    }
+    if (field.onchange_function && field.onchange_function_param && field.onchange_function_param != "") {
+      let toatl = 0;
+      let update_field = "";
+      let tamplateFormValue = this.getFormValue(true);
+      let tamplateFormValue1 = this.getFormValue(false);
+      let tamplateFormValue3 = this.custmizedFormValue;
+      let calFormValue = {};
+      let list_of_populated_fields = [];
+      switch (field.onchange_function_param) {        
+        case 'calculate_quote_amount':          
+          calFormValue = this.commonFunctionService.calculate_quotation(tamplateFormValue,"standard", field);
+          this.updateDataOnFormField(calFormValue);
+          break;
+
+          case 'calculate_automotive_quotation':          
+          calFormValue = this.commonFunctionService.calculate_quotation(tamplateFormValue,"automotive" ,field);
+          this.updateDataOnFormField(calFormValue);
+          break;
+          case 'calculate_po_row_item':          
+          calFormValue = this.commonFunctionService.calculate_po_row_item(tamplateFormValue1,"automotive" ,field);
+          this.updateDataOnFormField(calFormValue);
+          break;
+          case 'update_invoice_total_on_custom_field':          
+          calFormValue = this.commonFunctionService.update_invoice_total_on_custom_field(tamplateFormValue,"automotive" ,field);
+          this.updateDataOnFormField(calFormValue);
+          break;
+      
+          case 'calculate_lims_invoice':          
+          calFormValue = this.commonFunctionService.calculate_lims_invoice(tamplateFormValue,"automotive" ,field);
+          this.updateDataOnFormField(calFormValue);
+          break;
+      
+          case 'calculate_lims_invoice_with_po_items':
+           let val = this.commonFunctionService.calculate_lims_invoice_with_po_items(tamplateFormValue,"","");
+            this.updateDataOnFormField(val);
+            break;
+
+      //   case 'quote_amount_via_sample_no':
+      //       calFormValue = this.commonFunctionService.quote_amount_via_sample_no(tamplateFormValue,this.custmizedFormValue['quotation_param_methods']);
+      //       this.updateDataOnFormField(calFormValue);
+      //       break;
+      //  case 'quote_amount_via_discount_percent':
+      //       calFormValue = this.commonFunctionService.quote_amount_via_discount_percent(this.custmizedFormValue['quotation_param_methods'], tamplateFormValue);
+      //       this.updateDataOnFormField(calFormValue);
+      //       break;
+        case 'samplingAmountAddition':          
+            calFormValue = this.commonFunctionService.samplingAmountAddition(tamplateFormValue);
+            this.updateDataOnFormField(calFormValue);          
+            break;
+       
+          case 'populate_fields':
+            list_of_populated_fields = [
+              {"from":"fax","to":"billing_fax"},
+              {"from":"mobile","to":"billing_mobile"},
+              {"from":"phone","to":"billing_tel"},
+              {"from":"city","to":"billing_city"},
+              {"from":"state","to":"billing_state"},
+              {"from":"country","to":"billing_country"},
+              {"from":"address_line2","to":"billing_address_line2"},
+              {"from":"gst_no","to":"billing_gst"},
+              {"from":"email","to":"billing_contact_person_email"},
+              {"from":"address_line1","to":"billing_address"},
+              {"from":"pincode","to":"billing_pincode"},
+              {"from":"first_name+last_name+ ","to":"billing_contact_person"},
+              {"from":"account.name","to":"billing_company"},
+          
+            ]
+            calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+            this.updateDataOnFormField(calFormValue); 
+          break;
+case 'populate_fields_for_new_order_flow':
+            list_of_populated_fields = [
+              {"from":"fax","to":"billing_fax"},
+              {"from":"mobile","to":"billing_mobile"},
+              {"from":"phone","to":"billing_tel"},
+              {"from":"city","to":"billing_city"},
+              {"from":"state","to":"billing_state"},
+              {"from":"country","to":"billing_country"},
+              {"from":"address_line2","to":"billing_address_line2"},
+              {"from":"gst_no","to":"billing_gst"},
+              {"from":"email","to":"billing_contact_person_email"},
+              {"from":"address_line1","to":"billing_address"},
+              {"from":"pincode","to":"billing_pincode"},
+              {"from":"first_name+last_name+ ","to":"billing_contact_person"},
+              {"from":"sample_booking.name","to":"billing_company"},
+
+            ]
+            calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+            this.updateDataOnFormField(calFormValue); 
+          break;
+        case 'populate_fields_for_report':
+           list_of_populated_fields = [
+            {"from":"mobile","to":"reporting_mobile"},
+            {"from":"phone","to":"reporting_tel"},
+            {"from":"city","to":"reporting_city"},
+            {"from":"state","to":"reporting_state"},
+            {"from":"country","to":"reporting_country"},
+            {"from":"gst_no","to":"reporting_gst"},
+            {"from":"email","to":"reporting_contact_person_email"},
+            {"from":"address_line1","to":"reporting_address"},
+            {"from":"pincode","to":"reporting_pincode"},
+            {"from":"first_name+last_name+ ","to":"reporting_contact_person"},
+            {"from":"account.name","to":"reporting_company"},
+          ]
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          this.updateDataOnFormField(calFormValue); 
+          // this.commonFunctionService.populate_fields_for_report(this.templateForm);
+          break;
+case 'populate_fields_for_report_for_new_order_flow':
+           list_of_populated_fields = [
+            {"from":"mobile","to":"reporting_mobile"},
+            {"from":"phone","to":"reporting_tel"},
+            {"from":"city","to":"reporting_city"},
+            {"from":"state","to":"reporting_state"},
+            {"from":"country","to":"reporting_country"},
+            {"from":"gst_no","to":"reporting_gst"},
+            {"from":"email","to":"reporting_contact_person_email"},
+            {"from":"address_line1","to":"reporting_address"},
+            {"from":"pincode","to":"reporting_pincode"},
+            {"from":"first_name+last_name+ ","to":"reporting_contact_person"},
+            {"from":"sample_booking.name","to":"reporting_company"},
+          ]
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          this.updateDataOnFormField(calFormValue);
+          // this.commonFunctionService.populate_fields_for_report(this.templateForm);
+          break;
+        case 'manufactured_as_customer':
+          list_of_populated_fields = [
+            {"from":"account.name", "to":"sample_details.mfg_by"}
+          ]
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          this.updateDataOnFormField(calFormValue);
+          // this.commonFunctionService.manufactured_as_customer(this.templateForm);
+          break;
+  case 'manufactured_as_customer_for_new_order_flow':
+          list_of_populated_fields = [
+            {"from":"sample_booking.name", "to":"sample_details.mfg_by"}
+          ]
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          this.updateDataOnFormField(calFormValue);
+          // this.commonFunctionService.manufactured_as_customer(this.templateForm);
+          break;
+        case 'supplied_as_customer':
+          list_of_populated_fields = [
+            {"from":"account.name", "to":"sample_details.supplied_by"}
+]
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          this.updateDataOnFormField(calFormValue);
+          // this.commonFunctionService.supplied_as_customer(this.templateForm);
+          break;
+          case 'supplied_as_customer_for_new_order_flow':
+          list_of_populated_fields = [
+            {"from":"sample_booking.name", "to":"sample_details.supplied_by"}
+          ]
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          this.updateDataOnFormField(calFormValue);
+          // this.commonFunctionService.supplied_as_customer(this.templateForm);
+          break;
+        case 'buggetForcastCalc':
+          this.commonFunctionService.buggetForcastCalc(this.templateForm.getRawValue());
+          break;
+       case 'calculate_next_calibration_due_date':
+            this.commonFunctionService.calculate_next_calibration_due_date(this.templateForm.getRawValue());
+            break;
+
+        default:
+          break;
+
+
+      }
+    }
+
   }
 
   dismissModal(){
