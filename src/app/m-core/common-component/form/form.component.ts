@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
@@ -6,10 +6,25 @@ import { ApiService, CommonDataShareService, CoreUtilityService, DataShareServic
 import { ModalController } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 
+import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
+import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { finalize } from 'rxjs';
+import { CameraService } from 'src/app/service/camera-service/camera.service';
+import { HttpClient } from '@angular/common/http';
+
 interface User {
   id: number;
   first: string;
   last: string;
+}
+
+const IMAGE_DIR = 'stored-images';
+export interface LocalFile {
+  name: string;
+  path: string;
+  data: string;
+  createdAt: Date;
 }
 
 @Component({
@@ -25,6 +40,11 @@ export class FormComponent implements OnInit, OnDestroy {
   @Input() addform: any;
   @Input() modal: any;
 
+  
+  @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
+  images: any = [];
+  nfiles: LocalFile[] = [];
+  selectedphotos:any= [];
   
   ionicForm: FormGroup;
   defaultDate = "1987-06-30";
@@ -97,6 +117,11 @@ export class FormComponent implements OnInit, OnDestroy {
     private storageService:StorageService,
     private notificationService:NotificationService,
     private modalController: ModalController,
+    private cameraService: CameraService, 
+    private plt: Platform, 
+    private actionSheetCtrl: ActionSheetController,
+    private loadingCtrl: LoadingController,
+    private http: HttpClient
     ) {
 
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
@@ -2608,6 +2633,269 @@ case 'populate_fields_for_report_for_new_order_flow':
       return '';
     }
   }
+
+
+  // cameraimages array upload------------------
+  async selectImageSource(parent,field) {
+    this.curFileUploadField = field;
+    this.curFileUploadFieldparentfield = parent;
+    const buttons = [
+      {
+        text: 'Take Photo',
+        icon: 'camera',
+        handler: () => {
+          // this.addImage(CameraSource.Camera);
+          this.selectImage(CameraSource.Camera);
+        }
+      },
+      {
+        text: 'Choose From Photos',
+        icon: 'images',
+        handler: () => {
+          // this.selectImage(CameraSource.Photos);
+          this.selectMultipleImages();
+        }
+      }
+    ];
+ 
+    // Only allow file selection inside a browser
+    // if (!this.plt.is('hybrid')) {
+    //   buttons.push({
+    //     text: 'Choose a File',
+    //     icon: 'attach',
+    //     handler: () => {
+    //       this.fileInput.nativeElement.click();
+    //     }
+    //   });
+    // }
+ 
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Select Image Source',
+      buttons
+    });
+    await actionSheet.present();
+  }
+
+  async selectImage(source: CameraSource) {
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Uri,
+      // resultType: CameraResultType.Base64,
+      source: source,      
+      correctOrientation: true,
+      saveToGallery: true
+    });
+
+    console.log('Selected Image : ', image);
+    let arrayimages:any = []; 
+    arrayimages.push(image);
+    if (arrayimages && arrayimages.length > 0) {
+        this.saveImages(arrayimages)
+        // this.saveImage(image);
+    }
+  }
+
+  // async saveImage(photo: Photo) {
+  //   const base64Data = await this.readAsBase64(photo); 
+  //   console.log('Base64Data: ', base64Data);
+
+  //   const fileName = new Date().getTime() + '.jpeg';
+  //   const savedFile = await Filesystem.writeFile({
+  //       path: `${IMAGE_DIR}/${fileName}`,
+  //       data: base64Data,
+  //       directory: Directory.Data
+  //   });
+    
+  //   console.log("saved: ", savedFile)
+  //   this.cameraService.presentToast("Image Added");
+  //   // Improve by only loading for the new image and unshifting array!
+  //   await this.loadFiles();
+  // }
+
+  async selectMultipleImages(){
+    
+    const multipleImagesOption:GalleryImageOptions = {
+      quality: 100,
+      limit: 0,     
+      correctOrientation: true,
+      presentationStyle: "popover"
+    } 
+    const multipleImages = await Camera.pickImages(multipleImagesOption).then(res => {
+      console.log(res);
+      let arrayimages = res.photos;
+      this.saveImages(arrayimages)
+    },
+    error => {
+         console.log(error)
+      });
+  }
+
+  async saveImages(photos:any) {
+    let base64Data:any;
+    let fileName:any;
+    this.selectedphotos=[];
+    photos.forEach(async (photo:any) => {
+      base64Data = await this.readAsBase64(photo); 
+      console.log('Base64Data: ', base64Data);
+      fileName = new Date().getTime() + '.jpeg';
+      this.selectedphotos.push({
+        fileData: base64Data,
+        fileName: fileName,
+        fileExtn:  photo.format,
+        // size: rxFile.size,
+        innerBucketPath: fileName,
+        log: this.storageService.getUserLog()
+      })
+      if(this.curFileUploadField){
+        
+      }
+      // this.fileUploadResponce(this.selected);
+      
+      // savedFile = Filesystem.writeFile({
+      //     path: `${IMAGE_DIR}/${fileName}`,
+      //     data: base64Data,
+      //     directory: Directory.Data
+      // });
+    });
+    
+    this.cameraService.presentToast("Image Added");
+    // Reload the file list
+    // Improve by only loading for the new image and unshifting array!
+    // await this.loadFiles();
+  }
+
+  async readAsBase64(photo: Photo) {
+    if (this.plt.is('hybrid')) {
+        const file = await Filesystem.readFile({
+            path: photo.path
+        });
+ 
+        return file.data;
+    }
+    else {
+        // Fetch the photo, read as a blob, then convert to base64 format
+        const response = await fetch(photo.webPath);
+        const blob = await response.blob();
+        return await this.convertBlobToBase64(blob) as string;
+    }
+  }
+ 
+  // Helper function
+  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
+      const reader = new FileReader;
+      reader.onerror = reject;
+      reader.onload = () => {
+          resolve(reader.result);
+      };
+      reader.readAsDataURL(blob);
+  });
+ 
+  async startUpload(file: LocalFile) {
+    const response = await fetch(file.data);
+    const blob = await response.blob();
+    const formData = new FormData();
+    formData.append('file', blob, file.name);
+    this.uploadData(formData);
+  }
+ 
+  // Upload the formData to your API
+  async uploadCameraData(formData: FormData) {
+    const loading = await this.loadingCtrl.create({
+        message: 'Uploading image...',
+    });
+    await loading.present();
+
+    // Use your own API!
+    const url = 'http://192.168.1.22:8100/images/upload.php';
+
+    this.http.post(url, formData)
+      .pipe(
+          finalize(() => {
+              loading.dismiss();
+          })
+      )
+      .subscribe(res => {
+          if (res['success']) {
+              this.cameraService.presentToast('File upload complete.')
+          } else {
+              this.cameraService.presentToast('File upload failed.')
+          }
+    });
+  }
+
+  async deleteSelectedImage(file: LocalFile) {
+    await Filesystem.deleteFile({
+        directory: Directory.Data,
+        path: file.path
+    });
+    this.loadFiles();
+    this.cameraService.presentToast('File removed.');
+  }
   
+  async loadFiles() {
+    this.files = [];
+ 
+    const loading = await this.loadingCtrl.create({
+      message: 'Loading Images...',
+    });
+    await loading.present();
+ 
+    Filesystem.readdir({
+      path: IMAGE_DIR,
+      directory: Directory.Data,
+    }).then(result => {
+      // console.log('Result Derectory : ' , result );
+      this.loadFileData(result.files);
+    },
+      async (err) => {
+        // Folder does not yet exists!
+        await Filesystem.mkdir({
+          path: IMAGE_DIR,
+          directory: Directory.Data,
+        });
+      }
+    ).then(_ => {
+      loading.dismiss();
+    });
+  }
+
+  // Get the actual base64 data of an image
+  async loadFileData(fileNames: string[]) {
+    for (let f of fileNames) {
+      const filePath = `${IMAGE_DIR}/${f}`;
+ 
+      const readFile = await Filesystem.readFile({
+        path: filePath,
+        directory: Directory.Data,
+      });
+ 
+      this.files.push({
+        name: f,
+        path: filePath,
+        data: `data:image/jpeg;base64,${readFile.data}`,
+        createdAt: new Date(),
+      });
+    }
+  }
+
+  // Used for browser direct file upload
+  uploadFile(event: any) {
+    // const eventObj: any = event as any;
+    // const target: HTMLInputElement = eventObj.target as HTMLInputElement;
+    const file: File = event.files[0];
+    this.cameraService.uploadImageFile(file).subscribe((newImage: any) => {
+      this.images.push(newImage);
+      // let img:any = newImage;
+    });
+  }
+ 
+  deleteImage(index) {
+    // this.cameraService.deleteImage(index).subscribe(res => {
+    //   this.images.splice(index, 1);
+    // });
+    this.selectedphotos.splice(index, 1);
+    this.cameraService.presentToast('File removed.');
+  }
 
 }
