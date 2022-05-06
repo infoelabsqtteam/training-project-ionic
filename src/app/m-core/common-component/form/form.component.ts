@@ -12,7 +12,6 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { finalize } from 'rxjs';
 import { CameraService } from 'src/app/service/camera-service/camera.service';
 import { HttpClient } from '@angular/common/http';
-import { isArray } from 'util';
 
 interface User {
   id: number;
@@ -2842,7 +2841,7 @@ case 'populate_fields_for_report_for_new_order_flow':
           } 
         }
       }
-      if(this.selectedphotos && isArray(this.selectedphotos) && this.selectedphotos.length > 0){
+      if(this.selectedphotos && this.selectedphotos.length > 0){
         this.selectedphotos.forEach(element => {
           uploadData.push(element);
         });
