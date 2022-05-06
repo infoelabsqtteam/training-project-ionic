@@ -150,6 +150,16 @@
             {{ tableField.label | titlecase}} is <strong>invalidGSTNumber</strong>
           </p>
         </div>
+        <div *ngIf="tableField.type == 'list_of_string'">
+          <ion-item>
+            <ion-label>{{ tableField.label }}</ion-label>
+            <ion-chip *ngFor="let item of custmizedFormValueData('',tableField); let i = index;">
+            <ion-label>{{getddnDisplayVal(item)}}</ion-label>
+            <ion-icon name="close-outline" (click)="openModal('confirm-modal',i,'',tableField,item,'delete')"></ion-icon>
+          </ion-chip>
+          <ion-input type="text" [formControlName]="tableField.field_name" (keyup.Space)= "setValue('',tableField,true,$event)"></ion-input>
+          </ion-item>
+        </div>
       </div> 
     </div>  
     

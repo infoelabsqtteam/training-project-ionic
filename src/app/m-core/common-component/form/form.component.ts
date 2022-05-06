@@ -93,6 +93,7 @@ export class FormComponent implements OnInit, OnDestroy {
   curFileUploadFieldparentfield:any={};
   public curTreeViewField: any = {};
   currentTreeViewFieldParent:any = {};
+  public tempVal = {};
 
   dinamicFormSubscription:any;
   staticDataSubscriber:any;
@@ -101,6 +102,9 @@ export class FormComponent implements OnInit, OnDestroy {
   typeaheadDataSubscription:any;
 
   dateValue:any;
+  public deleteIndex:any = '';
+  public deletefieldName = {};
+  
  
   
 
@@ -1518,61 +1522,61 @@ export class FormComponent implements OnInit, OnDestroy {
     let formValue = this.templateForm.getRawValue()    
     switch (field.type) {
       case "list_of_string":
-        // if (add) {
-        //   if(parentfield != ''){
-        //     const custmizedKey = this.commonFunctionService.custmizedKey(parentfield);   
-        //     const value = formValue[parentfield.field_name][field.field_name]
-        //     if(this.checkDataAlreadyAddedInListOrNot(field.field_name,value, this.custmizedFormValue[custmizedKey][field.field_name])){
-        //       this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
-        //     }else{
-        //       if (!this.custmizedFormValue[custmizedKey]) this.custmizedFormValue[custmizedKey] = {};
-        //       if (!this.custmizedFormValue[custmizedKey][field.field_name]) this.custmizedFormValue[custmizedKey][field.field_name] = [];
-        //       const custmizedFormValueParant = Object.assign([],this.custmizedFormValue[custmizedKey][field.field_name])
-        //       if(value != '' && value != null){
-        //         custmizedFormValueParant.push(value)            
-        //         this.custmizedFormValue[custmizedKey][field.field_name] = custmizedFormValueParant;
-        //       }
-        //       if(event){
-        //         event.value = '';
-        //       }
-        //       this.templateForm.get(parentfield.field_name).get(field.field_name).setValue("");
-        //       //(<FormGroup>this.templateForm.controls[parentfield.field_name]).controls[field.field_name].patchValue("");
-        //       this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = true;
-        //     }
+        if (add) {
+          if(parentfield != ''){
+            const custmizedKey = this.commonFunctionService.custmizedKey(parentfield);   
+            const value = formValue[parentfield.field_name][field.field_name]
+            if(this.commonFunctionService.checkDataAlreadyAddedInListOrNot(field.field_name,value, this.custmizedFormValue[custmizedKey][field.field_name])){
+              //this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
+            }else{
+              if (!this.custmizedFormValue[custmizedKey]) this.custmizedFormValue[custmizedKey] = {};
+              if (!this.custmizedFormValue[custmizedKey][field.field_name]) this.custmizedFormValue[custmizedKey][field.field_name] = [];
+              const custmizedFormValueParant = Object.assign([],this.custmizedFormValue[custmizedKey][field.field_name])
+              if(value != '' && value != null){
+                custmizedFormValueParant.push(value)            
+                this.custmizedFormValue[custmizedKey][field.field_name] = custmizedFormValueParant;
+              }
+              if(event){
+                event.value = '';
+              }
+              this.templateForm.get(parentfield.field_name).get(field.field_name).setValue("");
+              //(<FormGroup>this.templateForm.controls[parentfield.field_name]).controls[field.field_name].patchValue("");
+              this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = true;
+            }
             
-        //   }else{
-        //     const value = formValue[field.field_name];
-        //     if(this.checkDataAlreadyAddedInListOrNot(field.field_name,value,this.custmizedFormValue[field.field_name])){
-        //       this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
-        //     }else{
-        //       if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
-        //       const custmizedFormValue = Object.assign([],this.custmizedFormValue[field.field_name])
-        //       if(formValue[field.field_name] != '' && formValue[field.field_name] != null){
-        //         custmizedFormValue.push(formValue[field.field_name])
-        //         this.custmizedFormValue[field.field_name] = custmizedFormValue;
-        //       }
-        //       if(event){
-        //         event.value = '';
-        //       }
-        //       this.templateForm.controls[field.field_name].setValue("");
-        //       this.tempVal[field.field_name + "_add_button"] = true;
-        //     }
-        //   }  
-        // } else {
-        //   if(parentfield != ''){
-        //     if(formValue && formValue[parentfield.field_name] && formValue[parentfield.field_name][field.field_name].length > 0){
-        //       this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = false;
-        //     }else{
-        //       this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = true;
-        //     }            
-        //   }else{
-        //     if(formValue && formValue[field.field_name] && formValue[field.field_name].length > 0){
-        //       this.tempVal[field.field_name + "_add_button"] = false;
-        //     }else{
-        //       this.tempVal[field.field_name + "_add_button"] = true;
-        //     }
-        //   } 
-        // }
+          }else{
+            const value = formValue[field.field_name];
+            if(this.commonFunctionService.checkDataAlreadyAddedInListOrNot(field.field_name,value,this.custmizedFormValue[field.field_name])){
+              //this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
+            }else{
+              if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+              const custmizedFormValue = Object.assign([],this.custmizedFormValue[field.field_name])
+              if(formValue[field.field_name] != '' && formValue[field.field_name] != null){
+                custmizedFormValue.push(formValue[field.field_name])
+                this.custmizedFormValue[field.field_name] = custmizedFormValue;
+              }
+              if(event){
+                event.value = '';
+              }
+              this.templateForm.controls[field.field_name].setValue("");
+              this.tempVal[field.field_name + "_add_button"] = true;
+            }
+          }  
+        } else {
+          if(parentfield != ''){
+            if(formValue && formValue[parentfield.field_name] && formValue[parentfield.field_name][field.field_name].length > 0){
+              this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = false;
+            }else{
+              this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = true;
+            }            
+          }else{
+            if(formValue && formValue[field.field_name] && formValue[field.field_name].length > 0){
+              this.tempVal[field.field_name + "_add_button"] = false;
+            }else{
+              this.tempVal[field.field_name + "_add_button"] = true;
+            }
+          } 
+        }
         break;
       case "typeahead":
         if(field.datatype == 'list_of_object' || field.datatype == 'chips' || field.datatype == 'object'){
@@ -2633,9 +2637,106 @@ case 'populate_fields_for_report_for_new_order_flow':
       return '';
     }
   }
+  checkCustmizedFormValueData(parent,chield){
+    let check = false;
+    if(parent != '' && parent != undefined && parent != null){
+      const parentKey = this.commonFunctionService.custmizedKey(parent);
+      if(this.custmizedFormValue[parentKey] && this.custmizedFormValue[parentKey][chield.field_name]){
+        check = true;
+      }
+    }else{
+      if(this.custmizedFormValue[chield.field_name]){
+        check = true;
+      }
+    }
+    return check;
+  }
+  custmizedFormValueData(parent,chield): Array<any>{
+    let data = [];    
+    if(parent != '' && parent != undefined && parent != null){
+      const parentKey = this.commonFunctionService.custmizedKey(parent); 
+      if(this.checkCustmizedFormValueData(parent,chield)){
+        data = this.custmizedFormValue[parentKey][chield.field_name] 
+      }       
+    }else {
+      if(this.checkCustmizedFormValueData('',chield)){
+        data = this.custmizedFormValue[chield.field_name]
+      }      
+    }
+     return data;
+  }
+  openModal(id, index, parent,child, data, alertType) {
+    this.deleteIndex = index;
+    if(parent != ''){
+      this.deletefieldName['parent'] = parent;
+      this.deletefieldName['child'] = child;
+    }else{
+      this.deletefieldName['child'] = child;
+    }
+    this.alertResponce(true);
+    // console.log(this.deletefieldName);
+    // console.log(this.deleteIndex);
+    // this.alertData = {
+    //   "event": true,
+    //   "type": alertType,
+    //   "data": data
+    // }
+    // this.modalService.open(id, this.alertData);
+    //this.commonFunctionService.openAlertModal(id,alertType,'Are You Sure ?','Delete This record.');
+  }
+  alertResponce(responce) {
+    if (responce) {
+      this.deleteitem()
+    } else {
+      this.cancel();
+    }
+  }
+  deleteitem() {
+    const custmizedKeyChild = this.deletefieldName['child'].field_name;
+    if(this.deletefieldName['parent'] != undefined && this.deletefieldName['parent'] != null && this.deletefieldName['parent'] != ''){
+      const custmizedKeyParent = this.commonFunctionService.custmizedKey(this.deletefieldName['parent']) 
+      let deleteCustmizedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[custmizedKeyParent][custmizedKeyChild]))
+      deleteCustmizedValue.splice(this.deleteIndex, 1);
+      this.custmizedFormValue[custmizedKeyParent][custmizedKeyChild] = deleteCustmizedValue;
+    }else{
 
-
-  // cameraimages array upload------------------
+      if(this.deletefieldName['child'].datatype == 'key_value'){
+        delete this.custmizedFormValue[custmizedKeyChild][this.deleteIndex];
+      }else{
+        let deleteCustmizedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[custmizedKeyChild]))
+        deleteCustmizedValue.splice(this.deleteIndex, 1);
+        this.custmizedFormValue[custmizedKeyChild] = deleteCustmizedValue;
+        const field = this.deletefieldName['child']
+        if(field.onchange_api_params != null && field.onchange_api_params != ''){
+          // if( field.onchange_api_params.indexOf("CLTFN") >= 0){
+          //   const calculatedCost = this.commonFunctionService.calculateAdditionalCost(this.getFormValue(true));
+          //   this.updateDataOnFormField(calculatedCost);
+          // }
+          if (field.onchange_call_back_field != '') {
+            switch (field.type) {
+              case 'list_of_fields':
+                let formValue = this.getFormValue(true);
+                this.changeDropdown(field, formValue,field.onchange_data_template);
+                break;              
+              default:
+                break;
+            }
+          }
+        }
+        if(field.onchange_function && field.onchange_function_param && field.onchange_function_param != ""){
+          this.inputOnChangeFunc(field);
+        }
+        
+      }        
+    }
+    this.cancel()
+  }
+  cancel() {    
+    this.deleteIndex = "";
+    this.deletefieldName = {};
+  }
+  
+  // camera upload files
   async selectImageSource(parent,field) {
     this.curFileUploadField = field;
     this.curFileUploadFieldparentfield = parent;
@@ -2644,7 +2745,6 @@ case 'populate_fields_for_report_for_new_order_flow':
         text: 'Take Photo',
         icon: 'camera',
         handler: () => {
-          // this.addImage(CameraSource.Camera);
           this.selectImage(CameraSource.Camera);
         }
       },
@@ -2652,7 +2752,6 @@ case 'populate_fields_for_report_for_new_order_flow':
         text: 'Choose From Photos',
         icon: 'images',
         handler: () => {
-          // this.selectImage(CameraSource.Photos);
           this.selectMultipleImages();
         }
       }
@@ -2681,7 +2780,6 @@ case 'populate_fields_for_report_for_new_order_flow':
       quality: 90,
       allowEditing: false,
       resultType: CameraResultType.Uri,
-      // resultType: CameraResultType.Base64,
       source: source,      
       correctOrientation: true,
       saveToGallery: true
@@ -2790,106 +2888,7 @@ case 'populate_fields_for_report_for_new_order_flow':
       };
       reader.readAsDataURL(blob);
   });
- 
-  async startUpload(file: LocalFile) {
-    const response = await fetch(file.data);
-    const blob = await response.blob();
-    const formData = new FormData();
-    formData.append('file', blob, file.name);
-    this.uploadData(formData);
-  }
- 
-  // Upload the formData to your API
-  async uploadCameraData(formData: FormData) {
-    const loading = await this.loadingCtrl.create({
-        message: 'Uploading image...',
-    });
-    await loading.present();
-
-    // Use your own API!
-    const url = 'http://192.168.1.22:8100/images/upload.php';
-
-    this.http.post(url, formData)
-      .pipe(
-          finalize(() => {
-              loading.dismiss();
-          })
-      )
-      .subscribe(res => {
-          if (res['success']) {
-              this.cameraService.presentToast('File upload complete.')
-          } else {
-              this.cameraService.presentToast('File upload failed.')
-          }
-    });
-  }
-
-  async deleteSelectedImage(file: LocalFile) {
-    await Filesystem.deleteFile({
-        directory: Directory.Data,
-        path: file.path
-    });
-    this.loadFiles();
-    this.cameraService.presentToast('File removed.');
-  }
-  
-  async loadFiles() {
-    this.files = [];
- 
-    const loading = await this.loadingCtrl.create({
-      message: 'Loading Images...',
-    });
-    await loading.present();
- 
-    Filesystem.readdir({
-      path: IMAGE_DIR,
-      directory: Directory.Data,
-    }).then(result => {
-      // console.log('Result Derectory : ' , result );
-      this.loadFileData(result.files);
-    },
-      async (err) => {
-        // Folder does not yet exists!
-        await Filesystem.mkdir({
-          path: IMAGE_DIR,
-          directory: Directory.Data,
-        });
-      }
-    ).then(_ => {
-      loading.dismiss();
-    });
-  }
-
-  // Get the actual base64 data of an image
-  async loadFileData(fileNames: string[]) {
-    for (let f of fileNames) {
-      const filePath = `${IMAGE_DIR}/${f}`;
- 
-      const readFile = await Filesystem.readFile({
-        path: filePath,
-        directory: Directory.Data,
-      });
- 
-      this.files.push({
-        name: f,
-        path: filePath,
-        data: `data:image/jpeg;base64,${readFile.data}`,
-        createdAt: new Date(),
-      });
-    }
-  }
-
-  // Used for browser direct file upload
-  uploadFile(event: any) {
-    // const eventObj: any = event as any;
-    // const target: HTMLInputElement = eventObj.target as HTMLInputElement;
-    const file: File = event.files[0];
-    this.cameraService.uploadImageFile(file).subscribe((newImage: any) => {
-      this.images.push(newImage);
-      // let img:any = newImage;
-    });
-  }
- 
+  //delecte selected image
   deleteImage(index) {
     // this.cameraService.deleteImage(index).subscribe(res => {
     //   this.images.splice(index, 1);
@@ -2897,5 +2896,6 @@ case 'populate_fields_for_report_for_new_order_flow':
     this.selectedphotos.splice(index, 1);
     this.cameraService.presentToast('File removed.');
   }
+ 
 
 }
