@@ -12,6 +12,7 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { finalize } from 'rxjs';
 import { CameraService } from 'src/app/service/camera-service/camera.service';
 import { HttpClient } from '@angular/common/http';
+import { isArray } from 'util';
 
 interface User {
   id: number;
@@ -2790,26 +2791,8 @@ case 'populate_fields_for_report_for_new_order_flow':
     arrayimages.push(image);
     if (arrayimages && arrayimages.length > 0) {
         this.saveImages(arrayimages)
-        // this.saveImage(image);
     }
   }
-
-  // async saveImage(photo: Photo) {
-  //   const base64Data = await this.readAsBase64(photo); 
-  //   console.log('Base64Data: ', base64Data);
-
-  //   const fileName = new Date().getTime() + '.jpeg';
-  //   const savedFile = await Filesystem.writeFile({
-  //       path: `${IMAGE_DIR}/${fileName}`,
-  //       data: base64Data,
-  //       directory: Directory.Data
-  //   });
-    
-  //   console.log("saved: ", savedFile)
-  //   this.cameraService.presentToast("Image Added");
-  //   // Improve by only loading for the new image and unshifting array!
-  //   await this.loadFiles();
-  // }
 
   async selectMultipleImages(){
     
@@ -2841,34 +2824,42 @@ case 'populate_fields_for_report_for_new_order_flow':
         fileData: base64Data,
         fileName: fileName,
         fileExtn:  photo.format,
-        // size: rxFile.size,
         innerBucketPath: fileName,
         log: this.storageService.getUserLog()
       })
+      let uploadData = [];
       if(this.curFileUploadField){
-        
+        if(this.curFileUploadFieldparentfield != ''){
+          const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
+          const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]
+          if(data && data.length > 0){
+            uploadData = data;
+          }        
+        }else{ 
+          const data = this.dataListForUpload[this.curFileUploadField.field_name];
+          if(data && data.length > 0){
+            uploadData = data;
+          } 
+        }
       }
-      // this.fileUploadResponce(this.selected);
-      
-      // savedFile = Filesystem.writeFile({
-      //     path: `${IMAGE_DIR}/${fileName}`,
-      //     data: base64Data,
-      //     directory: Directory.Data
-      // });
+      if(this.selectedphotos && isArray(this.selectedphotos) && this.selectedphotos.length > 0){
+        this.selectedphotos.forEach(element => {
+          uploadData.push(element);
+        });
+      }
+      if(uploadData && uploadData.length > 0){
+        this.fileUploadResponce(uploadData);
+      }
     });
     
     this.cameraService.presentToast("Image Added");
-    // Reload the file list
-    // Improve by only loading for the new image and unshifting array!
-    // await this.loadFiles();
   }
 
   async readAsBase64(photo: Photo) {
     if (this.plt.is('hybrid')) {
         const file = await Filesystem.readFile({
             path: photo.path
-        });
- 
+        }); 
         return file.data;
     }
     else {
