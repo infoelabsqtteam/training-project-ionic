@@ -19,14 +19,6 @@ interface User {
   last: string;
 }
 
-const IMAGE_DIR = 'stored-images';
-export interface LocalFile {
-  name: string;
-  path: string;
-  data: string;
-  createdAt: Date;
-}
-
 @Component({
   selector: 'app-form',
   templateUrl: './form.component.html',
@@ -42,8 +34,6 @@ export class FormComponent implements OnInit, OnDestroy {
 
   
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
-  images: any = [];
-  nfiles: LocalFile[] = [];
   selectedphotos:any= [];
   
   ionicForm: FormGroup;
@@ -2801,8 +2791,7 @@ case 'populate_fields_for_report_for_new_order_flow':
       correctOrientation: true,
       presentationStyle: "popover"
     } 
-    const multipleImages = await Camera.pickImages(multipleImagesOption).then(res => {
-      console.log(res);
+    await Camera.pickImages(multipleImagesOption).then(res => {
       let arrayimages = res.photos;
       this.saveImages(arrayimages)
     },
@@ -2811,45 +2800,45 @@ case 'populate_fields_for_report_for_new_order_flow':
       });
   }
 
-  async saveImages(photos:any) {
+  async saveImages(photos) {
     let base64Data:any;
     let fileName:any;
     this.selectedphotos=[];
-    photos.forEach(async (photo:any) => {
-      base64Data = await this.readAsBase64(photo); 
-      console.log('Base64Data: ', base64Data);
+    photos.forEach(async (img:any) => {
+      base64Data = await this.readAsBase64(img);
       fileName = new Date().getTime() + '.jpeg';
       this.selectedphotos.push({
         fileData: base64Data,
         fileName: fileName,
-        fileExtn:  photo.format,
+        fileExtn:  img.format,
         innerBucketPath: fileName,
         log: this.storageService.getUserLog()
-      })
-      let uploadData = [];
-      if(this.curFileUploadField){
-        if(this.curFileUploadFieldparentfield != ''){
-          const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
-          const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]
-          if(data && data.length > 0){
-            uploadData = data;
-          }        
-        }else{ 
-          const data = this.dataListForUpload[this.curFileUploadField.field_name];
-          if(data && data.length > 0){
-            uploadData = data;
-          } 
-        }
-      }
-      if(this.selectedphotos && this.selectedphotos.length > 0){
-        this.selectedphotos.forEach(element => {
-          uploadData.push(element);
-        });
-      }
-      if(uploadData && uploadData.length > 0){
-        this.fileUploadResponce(uploadData);
-      }
+      })     
     });
+    console.log(this.selectedphotos);
+    let uploadData = [];
+    if(this.curFileUploadField){
+      if(this.curFileUploadFieldparentfield != ''){
+        const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
+        const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]
+        if(data && data.length > 0){
+          uploadData = data;
+        }        
+      }else{ 
+        const data = this.dataListForUpload[this.curFileUploadField.field_name];
+        if(data && data.length > 0){
+          uploadData = data;
+        } 
+      }
+    }
+    if(this.selectedphotos && this.selectedphotos.length > 0){
+      this.selectedphotos.forEach(element => {
+        uploadData.push(element);
+      });
+    }
+    if(uploadData && uploadData.length > 0){
+      this.fileUploadResponce(uploadData);
+    }
     
     this.cameraService.presentToast("Image Added");
   }
