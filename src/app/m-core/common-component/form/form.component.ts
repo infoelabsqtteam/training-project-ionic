@@ -2825,33 +2825,39 @@ case 'populate_fields_for_report_for_new_order_flow':
         fileExtn:  photo.format,
         innerBucketPath: fileName,
         log: this.storageService.getUserLog()
-      })
-      let uploadData = [];
-      if(this.curFileUploadField){
-        if(this.curFileUploadFieldparentfield != ''){
-          const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
-          const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]
-          if(data && data.length > 0){
-            uploadData = data;
-          }        
-        }else{ 
-          const data = this.dataListForUpload[this.curFileUploadField.field_name];
-          if(data && data.length > 0){
-            uploadData = data;
-          } 
-        }
-      }
-      if(this.selectedphotos && this.selectedphotos.length > 0){
-        this.selectedphotos.forEach(element => {
-          uploadData.push(element);
-        });
-      }
-      if(uploadData && uploadData.length > 0){
-        this.fileUploadResponce(uploadData);
-      }
-    });
+      }) 
+      if(photos.length == this.selectedphotos.length){
+        this.setFile();
+      }     
+    });  
     
     this.cameraService.presentToast("Image Added");
+  }
+
+  setFile(){
+    let uploadData = [];
+    if(this.curFileUploadField){
+      if(this.curFileUploadFieldparentfield != ''){
+        const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
+        const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]
+        if(data && data.length > 0){
+          uploadData = data;
+        }        
+      }else{ 
+        const data = this.dataListForUpload[this.curFileUploadField.field_name];
+        if(data && data.length > 0){
+          uploadData = data;
+        } 
+      }
+    }
+    if(this.selectedphotos && this.selectedphotos.length > 0){
+      this.selectedphotos.forEach(element => {
+        uploadData.push(element);
+      });
+    }
+    if(uploadData && uploadData.length > 0){
+      this.fileUploadResponce(uploadData);
+    }
   }
 
   async readAsBase64(photo: Photo) {
