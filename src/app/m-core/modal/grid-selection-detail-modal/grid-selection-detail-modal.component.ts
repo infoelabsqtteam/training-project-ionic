@@ -64,7 +64,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
     return false;
   }
-  calculateNetAmount(data, fieldName, index){
+  calculateNetAmount(data, fieldName, index:number){
 
     this.CommonFunctionService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
   }

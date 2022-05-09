@@ -1492,7 +1492,7 @@ export class FormComponent implements OnInit, OnDestroy {
   // setValue(){
   //   this.typeAheadData = [];
   // }
-  setValue(parentfield,field, add,event?) {
+  setValue(parentfield,field, add?,event?) {
 
     let formValue = this.templateForm.getRawValue()    
     switch (field.type) {
@@ -2202,7 +2202,7 @@ case 'populate_fields_for_report_for_new_order_flow':
     this.curFileUploadField = field;
     this.curFileUploadFieldparentfield = parent;
     this.fileDrop = false;
-    this.prepareFilesList(files);
+    this.prepareFilesList(files.files);
   }
 
 	/**
