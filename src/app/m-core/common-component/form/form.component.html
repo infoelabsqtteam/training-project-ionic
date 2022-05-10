@@ -20,7 +20,7 @@
             <ion-button expand="block" fill="outline" (click)="setValue('',tableField)">{{ tableField.label }} <span [innerHtml]="getNumberOfSelectedRecord(tableField)"></span></ion-button>
           </div>
         </div>
-        <!-- <div *ngIf="tableField.type == 'file'">
+        <div *ngIf="tableField.type == 'file'">
             <ion-list>
               <ion-item *ngFor="let img of selectedphotos; let i = index;">
                 <ion-thumbnail slot="start">
@@ -35,8 +35,8 @@
             <div class="ion-padding-start ion-padding-end">
               <input type="file" id="fileInput" [formControlName]="tableField.field_name" multiple #fileInput (change)="fileBrowseHandler('',tableField,$event.target.files)" hidden="true" accept="image/*" />
             <ion-button expand="block" color="primary" fill="outline" [size]="" (click)="selectImageSource('',tableField)" [formControlName]="tableField.field_name">{{ tableField.label }}</ion-button></div>
-        </div> -->
-        <div *ngIf="tableField.type == 'file'">
+        </div>
+        <!-- <div *ngIf="tableField.type == 'file'">
           <ion-list>
             <ion-item *ngFor="let img of uploadData; let i = index;">
               <ion-thumbnail slot="start">
@@ -52,7 +52,7 @@
               <ion-input [formControlName]="tableField.field_name" type="file" multiple (change)="fileBrowseHandler('',tableField,$event.target.files)"></ion-input>
             </ion-item>
           </ion-list>
-        </div>
+        </div> -->
         <div *ngIf="tableField.type == 'dropdown'">
           <ion-item *ngIf="tableField.datatype != 'object'">
             <ion-label position="floating">{{ tableField.label }}</ion-label>

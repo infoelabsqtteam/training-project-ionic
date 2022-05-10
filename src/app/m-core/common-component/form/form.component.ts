@@ -2802,10 +2802,12 @@ case 'populate_fields_for_report_for_new_order_flow':
 
   async saveImages(photos) {
     let base64Data:any;
+    let base64dataSplit:any;
     let fileName:any;
     this.selectedphotos=[];
     photos.forEach(async (img:any) => {
-      base64Data = await this.readAsBase64(img);
+      base64dataSplit = await this.readAsBase64(img);
+      base64Data = base64dataSplit.split(',')[1];
       fileName = new Date().getTime() + '.jpeg';
       this.selectedphotos.push({
         fileData: base64Data,
@@ -2813,9 +2815,16 @@ case 'populate_fields_for_report_for_new_order_flow':
         fileExtn:  img.format,
         innerBucketPath: fileName,
         log: this.storageService.getUserLog()
-      })     
+      }) 
+      if(photos.length == this.selectedphotos.length){
+        this.setFile();
+      }     
     });
-    console.log(this.selectedphotos);
+    
+    this.cameraService.presentToast("Image Added");
+  }
+
+  setFile(){
     let uploadData = [];
     if(this.curFileUploadField){
       if(this.curFileUploadFieldparentfield != ''){
@@ -2839,8 +2848,6 @@ case 'populate_fields_for_report_for_new_order_flow':
     if(uploadData && uploadData.length > 0){
       this.fileUploadResponce(uploadData);
     }
-    
-    this.cameraService.presentToast("Image Added");
   }
 
   async readAsBase64(photo: Photo) {
@@ -2854,7 +2861,7 @@ case 'populate_fields_for_report_for_new_order_flow':
         // Fetch the photo, read as a blob, then convert to base64 format
         const response = await fetch(photo.webPath);
         const blob = await response.blob();
-        return await this.convertBlobToBase64(blob) as string;
+        return await this.convertBlobToBase64(blob);
     }
   }
  
@@ -2863,7 +2870,8 @@ case 'populate_fields_for_report_for_new_order_flow':
       const reader = new FileReader;
       reader.onerror = reject;
       reader.onload = () => {
-          resolve(reader.result);
+        let base64 = reader.result;
+          resolve(base64);
       };
       reader.readAsDataURL(blob);
   });
