@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">E-Labs</string>
-    <string name="title_activity_main">E-Labs</string>
-    <string name="package_name">com.elabs.ai</string>
-    <string name="custom_url_scheme">com.elabs.ai</string>
+    <string name="app_name">Itc Uat</string>
+    <string name="title_activity_main">Itc Uat</string>
+    <string name="package_name">com.itcuat.ai</string>
+    <string name="custom_url_scheme">com.itcuat.ai</string>
 </resources>

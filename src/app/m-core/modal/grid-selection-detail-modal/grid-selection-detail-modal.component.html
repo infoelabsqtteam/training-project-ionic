@@ -8,7 +8,7 @@
 <ion-content class="pages">
   
   <div class="contactdetails app-grid_selection fixed_button" *ngIf="cardType == 'demo1'">   
-    <div class="enquerylist" *ngFor="let column of columnList">
+    <div class="enquerylist" *ngFor="let column of columnList; let i = index">
       <div *ngIf="!column.editable">
         <span [title]="column.label">{{column.label}}: -</span>
         <strong [innerHtml]="getValueForGrid(column,data)"></strong>

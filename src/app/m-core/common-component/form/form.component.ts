@@ -1,10 +1,14 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
 import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService } from '@core/ionic-core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
+
+import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
+import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 interface User {
   id: number;
@@ -24,6 +28,9 @@ export class FormComponent implements OnInit, OnDestroy {
   @Input() childData: any;  
   @Input() addform: any;
   @Input() modal: any;
+
+  @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
+  selectedphotos:any= [];
 
   
   ionicForm: FormGroup;
@@ -101,6 +108,9 @@ export class FormComponent implements OnInit, OnDestroy {
     private storageService:StorageService,
     private notificationService:NotificationService,
     private modalController: ModalController,
+    private plt: Platform, 
+    private actionSheetCtrl: ActionSheetController,
+    private toastCtrl: ToastController,
     ) {
 
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
@@ -1492,7 +1502,7 @@ export class FormComponent implements OnInit, OnDestroy {
   // setValue(){
   //   this.typeAheadData = [];
   // }
-  setValue(parentfield,field, add,event?) {
+  setValue(parentfield,field, add?,event?) {
 
     let formValue = this.templateForm.getRawValue()    
     switch (field.type) {
@@ -2202,7 +2212,7 @@ case 'populate_fields_for_report_for_new_order_flow':
     this.curFileUploadField = field;
     this.curFileUploadFieldparentfield = parent;
     this.fileDrop = false;
-    this.prepareFilesList(files);
+    this.prepareFilesList(files.files);
   }
 
 	/**
@@ -2709,6 +2719,174 @@ case 'populate_fields_for_report_for_new_order_flow':
   cancel() {    
     this.deleteIndex = "";
     this.deletefieldName = {};
+  }
+
+  // camera upload files
+  async selectImageSource(parent,field) {
+    this.curFileUploadField = field;
+    this.curFileUploadFieldparentfield = parent;
+    const buttons = [
+      {
+        text: 'Take Photo',
+        icon: 'camera',
+        handler: () => {
+          this.selectImage(CameraSource.Camera);
+        }
+      },
+      {
+        text: 'Choose From Photos',
+        icon: 'images',
+        handler: () => {
+          this.selectMultipleImages();
+        }
+      }
+    ];
+ 
+    // Only allow file selection inside a browser
+    // if (!this.plt.is('hybrid')) {
+    //   buttons.push({
+    //     text: 'Choose a File',
+    //     icon: 'attach',
+    //     handler: () => {
+    //       this.fileInput.nativeElement.click();
+    //     }
+    //   });
+    // }
+ 
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Select Image Source',
+      buttons
+    });
+    await actionSheet.present();
+  }
+
+  async selectImage(source: CameraSource) {
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Uri,
+      source: source,      
+      correctOrientation: true,
+      saveToGallery: true
+    });
+
+    console.log('Selected Image : ', image);
+    let arrayimages:any = []; 
+    arrayimages.push(image);
+    if (arrayimages && arrayimages.length > 0) {
+        this.saveImages(arrayimages)
+    }
+  }
+
+  async selectMultipleImages(){
+    
+    const multipleImagesOption:GalleryImageOptions = {
+      quality: 100,
+      limit: 0,     
+      correctOrientation: true,
+      presentationStyle: "popover"
+    } 
+    await Camera.pickImages(multipleImagesOption).then(res => {
+      let arrayimages = res.photos;
+      this.saveImages(arrayimages)
+    },
+    error => {
+         console.log(error)
+      });
+  }
+
+  async saveImages(photos) {
+    let base64Data:any;
+    let base64dataSplit:any;
+    let fileName:any;
+    this.selectedphotos=[];
+    photos.forEach(async (img:any) => {
+      base64dataSplit = await this.readAsBase64(img);
+      base64Data = base64dataSplit.split(',')[1];
+      fileName = new Date().getTime() + '.jpeg';
+      this.selectedphotos.push({
+        fileData: base64Data,
+        fileName: fileName,
+        fileExtn:  img.format,
+        innerBucketPath: fileName,
+        log: this.storageService.getUserLog()
+      }) 
+      if(photos.length == this.selectedphotos.length){
+        this.setFile();
+      }     
+    });
+    
+    this.presentToast("Image Added");
+  }
+
+  setFile(){
+    let uploadData = [];
+    if(this.curFileUploadField){
+      if(this.curFileUploadFieldparentfield != ''){
+        const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
+        const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]
+        if(data && data.length > 0){
+          uploadData = data;
+        }        
+      }else{ 
+        const data = this.dataListForUpload[this.curFileUploadField.field_name];
+        if(data && data.length > 0){
+          uploadData = data;
+        } 
+      }
+    }
+    if(this.selectedphotos && this.selectedphotos.length > 0){
+      this.selectedphotos.forEach(element => {
+        uploadData.push(element);
+      });
+    }
+    if(uploadData && uploadData.length > 0){
+      this.fileUploadResponce(uploadData);
+    }
+  }
+
+  async readAsBase64(photo: Photo) {
+    if (this.plt.is('hybrid')) {
+        const file = await Filesystem.readFile({
+            path: photo.path
+        }); 
+        return file.data;
+    }
+    else {
+        // Fetch the photo, read as a blob, then convert to base64 format
+        const response = await fetch(photo.webPath);
+        const blob = await response.blob();
+        return await this.convertBlobToBase64(blob);
+    }
+  }
+ 
+  // Helper function
+  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
+      const reader = new FileReader;
+      reader.onerror = reject;
+      reader.onload = () => {
+        let base64 = reader.result;
+          resolve(base64);
+      };
+      reader.readAsDataURL(blob);
+  });
+  //delecte selected image
+  deleteImage(index) {
+    // this.cameraService.deleteImage(index).subscribe(res => {
+    //   this.images.splice(index, 1);
+    // });
+    this.selectedphotos.splice(index, 1);
+    this.presentToast('File removed.');
+  }
+
+  // Little helper
+  async presentToast(text) {
+    const toast = await this.toastCtrl.create({
+      message: text,
+      duration: 3000,
+      color: "primary"
+    });
+    toast.present();
   }
   
 

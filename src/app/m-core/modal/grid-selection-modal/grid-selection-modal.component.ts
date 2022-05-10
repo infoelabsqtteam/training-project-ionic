@@ -36,7 +36,7 @@ export class GridSelectionModalComponent implements OnInit {
       [
           {"cardType":"demo","company_name":"abc pvt ltd","final_amount":0.00,"quotation_no":"B01-220405RQ00001","contact_person":"Aggregate Bedding Sand 2","mobile":"3887722","email":"jhduy@gmail.com","address1":"patel nagar/delhi","country":"india","state":"Delhi","department_name":"Other","class_name":"test","sample_name":"Urea","department_id":"5fdb24b60715230bd","net_amt":"₹ 7000"}
       ]
-  expandicon: any = "assets/e-labs/icon/expand-icon.png";
+  expandicon: any = "assets/itc-labs/icon/expand-icon.png";
 
   constructor(
     private modalController: ModalController,
