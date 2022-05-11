@@ -20,20 +20,23 @@
             <ion-button expand="block" fill="outline" (click)="setValue('',tableField)">{{ tableField.label }} <span [innerHtml]="getNumberOfSelectedRecord(tableField)"></span></ion-button>
           </div>
         </div>
-        <div *ngIf="tableField.type == 'file'">
+        <div *ngIf="tableField.type == 'file'" class="camera_file_upload">
             <ion-list>
-              <ion-item *ngFor="let img of selectedphotos; let i = index;">
-                <ion-thumbnail slot="start">
+              <ion-item *ngFor="let img of dataListForUpload[tableField.field_name]; let i = index;">
+                <!-- <ion-thumbnail slot="start">
                   <ion-img [src]="'data:image/png;base64,'+img.fileData"></ion-img>
-                </ion-thumbnail>
-                <ion-label>{{img.fileName}}</ion-label>
-                <ion-button slot="end" fill="clear" (click)="deleteImage(i)">
+                </ion-thumbnail> -->
+                <ion-label>{{img.rollName}}</ion-label>
+                <ion-button slot="end" class="" fill="clear" (click)="removeAttachedDataFromList(i,tableField.field_name)">
                   <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
+                </ion-button>
+                <ion-button slot="end" class="" fill="clear" (click)="imageDownload(img)">
+                  <ion-icon slot="icon-only" name="download" color=""></ion-icon>
                 </ion-button>
               </ion-item>
             </ion-list>
             <div class="ion-padding-start ion-padding-end">
-              <input type="file" id="fileInput" [formControlName]="tableField.field_name" multiple #fileInput (change)="fileBrowseHandler('',tableField,$event.target.files)" hidden="true" accept="image/*" />
+              <input type="file" id="fileInput" [formControlName]="tableField.field_name" multiple #fileInput (change)="fileBrowseHandler('',tableField,$event.target)" hidden="true" accept="image/*" />
             <ion-button expand="block" color="primary" fill="outline" [size]="" (click)="selectImageSource('',tableField)" [formControlName]="tableField.field_name">{{ tableField.label }}</ion-button></div>
         </div>
         <!-- <div *ngIf="tableField.type == 'file'">

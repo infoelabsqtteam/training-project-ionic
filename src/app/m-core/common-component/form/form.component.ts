@@ -34,7 +34,8 @@ export class FormComponent implements OnInit, OnDestroy {
 
   
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
-  selectedphotos:any= [];
+  selectedphotos:any= [];  
+  downloadClick='';
   
   ionicForm: FormGroup;
   defaultDate = "1987-06-30";
@@ -90,6 +91,8 @@ export class FormComponent implements OnInit, OnDestroy {
   nestedFormSubscription:any;
   saveResponceSubscription:any;
   typeaheadDataSubscription:any;
+  fileDataSubscription:any;
+  fileDownloadUrlSubscription:any;
 
   dateValue:any;
   public deleteIndex:any = '';
@@ -139,6 +142,9 @@ export class FormComponent implements OnInit, OnDestroy {
       this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data =>{
         this.setTypeaheadData(data);
       });
+      this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
+        this.setFileDownloadUrl(data);
+      })
     }
 
   resetFlag(){
@@ -158,6 +164,9 @@ export class FormComponent implements OnInit, OnDestroy {
     if(this.templateForm){
       this.templateForm.reset(); 
     }
+    if(this.fileDownloadUrlSubscription){
+      this.fileDownloadUrlSubscription.unsubscribe();
+    } 
   }
   ngOnInit() {
     const id:any = this.commonDataShareService.getFormId();
@@ -1507,7 +1516,7 @@ export class FormComponent implements OnInit, OnDestroy {
   // setValue(){
   //   this.typeAheadData = [];
   // }
-  setValue(parentfield,field, add,event?) {
+  setValue(parentfield,field, add?,event?) {
 
     let formValue = this.templateForm.getRawValue()    
     switch (field.type) {
@@ -2217,7 +2226,7 @@ case 'populate_fields_for_report_for_new_order_flow':
     this.curFileUploadField = field;
     this.curFileUploadFieldparentfield = parent;
     this.fileDrop = false;
-    this.prepareFilesList(files);
+    this.prepareFilesList(files.files);
   }
 
 	/**
@@ -2802,18 +2811,19 @@ case 'populate_fields_for_report_for_new_order_flow':
 
   async saveImages(photos) {
     let base64Data:any;
-    let base64dataSplit:any;
+    let kbytes:any;
     let fileName:any;
     this.selectedphotos=[];
     photos.forEach(async (img:any) => {
-      base64dataSplit = await this.readAsBase64(img);
-      base64Data = base64dataSplit.split(',')[1];
-      fileName = new Date().getTime() + '.jpeg';
+      base64Data = await this.readAsBase64(img);
+      const dateTime = this.datePipe.transform(new Date(), 'yyyyMMdd') + "_" + this.datePipe.transform(new Date(), 'hhmmss');
+      fileName = "IMG_" + dateTime + '.'+ img.format;
       this.selectedphotos.push({
         fileData: base64Data,
         fileName: fileName,
         fileExtn:  img.format,
         innerBucketPath: fileName,
+        rollName: fileName,
         log: this.storageService.getUserLog()
       }) 
       if(photos.length == this.selectedphotos.length){
@@ -2870,7 +2880,7 @@ case 'populate_fields_for_report_for_new_order_flow':
       const reader = new FileReader;
       reader.onerror = reject;
       reader.onload = () => {
-        let base64 = reader.result;
+        let base64 = (<string>reader.result).split(',').pop();
           resolve(base64);
       };
       reader.readAsDataURL(blob);
@@ -2883,6 +2893,51 @@ case 'populate_fields_for_report_for_new_order_flow':
     this.selectedphotos.splice(index, 1);
     this.cameraService.presentToast('File removed.');
   }
- 
+  removeAttachedDataFromList(index,fieldName){
+    this.dataListForUpload[fieldName].splice(index,1)
+  }
+  imageDownload(img) {    
+    this.downloadClick = img.rollName;
+    const payload = {
+      path: 'download',
+      data: img
+    }
+    this.apiService.DownloadFile(payload);
+  }
+  setFileData(getfileData){
+    // if (getfileData != '' && getfileData != null && this.checkForDownloadReport) {
+    //   let link = document.createElement('a');
+    //   link.setAttribute('type', 'hidden');
+
+    //   const file = new Blob([getfileData.data], { type: "application/pdf" });
+    //   const url = window.URL.createObjectURL(file);
+    //   link.href = url;
+    //   link.download = getfileData.filename;
+    //   document.body.appendChild(link);
+    //   link.click();
+    //   link.remove();
+    //   // this.downloadPdfCheck = '';
+    //   this.dataSaveInProgress = true;
+    //   this.checkForDownloadReport = false;
+    //   this.dataSaveInProgress = true;
+    //   this.apiService.ResetFileData();
+    // }
+  }
+  setFileDownloadUrl(fileDownloadUrl){
+    if (fileDownloadUrl != '' && fileDownloadUrl != null && this.downloadClick != '') {
+      let link = document.createElement('a');
+      link.setAttribute('type', 'hidden');
+      // const file = new Blob([exportExcelLink], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      // const url = window.URL.createObjectURL(file);
+      link.href = fileDownloadUrl;
+      link.download = this.downloadClick;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      this.downloadClick = '';
+      this.dataSaveInProgress = true;
+      this.apiService.ResetDownloadUrl();
+    }
+  }
 
 }
