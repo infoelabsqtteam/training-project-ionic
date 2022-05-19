@@ -112,7 +112,7 @@ ion-tabs.footertab {
     ion-item-sliding{margin-bottom:6px;margin-top: 6px;}
     ion-item {border-radius:14px;border:1px solid #F0F1F3;}
     ion-row{width: 100%;border-style: none;}
-    ion-avatar {width:48px;height:48px;margin:12px 12px 12px -8px;color:#fff;text-align:center;background:#348EF7;font:500 26px/48px Roboto, sans-serif;}
+    ion-avatar {width:48px;height:48px;margin:12px 12px 12px -8px;color:#fff;text-align:center;background:var(--theme-color-rgb);font:500 26px/48px Roboto, sans-serif;}
     h4 {font-size:16px;color:var(--themebg);}
     h5 {margin:0;color:#292a2c;font-size:16px;}
     h5.name{text-transform: uppercase;}

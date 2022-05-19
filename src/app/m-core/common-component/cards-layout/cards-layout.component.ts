@@ -8,6 +8,8 @@ import { Platform, ModalController, AlertController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card.component';
 import { FormComponent } from '../form/form.component';
+import { DatePipe } from '@angular/common';
+import { CallDataRecordFormComponent } from '../../modal/call-data-record-form/call-data-record-form.component';
 
 @Component({
   selector: 'app-cards-layout',
@@ -20,6 +22,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   @Input() data:any ={};
   @Output() columnListOutput = new EventEmitter();
   @Input() searchcard:any;
+
 
   web_site_name: string = '';
   list: any = [];
@@ -63,6 +66,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   addCallingFeature: boolean=false;
   addNewEnabled:boolean=false;
   detailPage:boolean=false;
+  callStatus:boolean=false;
 
   // new var
   gridDataSubscription: any;
@@ -81,7 +85,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private dataShareService: DataShareService,
     private commonDataShareService:CommonDataShareService,
     private modalController: ModalController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private datePipe: DatePipe
   ) 
   {
     // below code is for slider and title name
@@ -101,8 +106,24 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   initializeApp() {
-    this.platform.ready().then(() => {});
+    this.platform.ready().then(() => {
+
+      // this.callLog.hasReadPermission().then(hasPermission => {
+      //   if (!hasPermission) {
+      //     this.callLog.requestReadPermission().then(results => {
+      //       this.getContacts("type","1","==");
+      //     })
+      //       .catch(e => console.log(" requestReadPermission " + JSON.stringify(e)));
+      //   } else {
+      //     this.getContacts("type", "1", "==");
+      //   }
+      // })
+      //   .catch(e => console.log(" hasReadPermission " + JSON.stringify(e)));
+
+    });
+
   }
+
   ngOnChanges(changes: SimpleChanges) {
     if(this.data && this.data.filterFormData){
       this.filterForm['value'] = this.data.filterFormData;
@@ -182,6 +203,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       this.addCallingFeature = false;
     } 
+    if(card && card.call_status){
+      if(this.detailPage){
+        this.callStatus = false;
+      }else{
+        this.callStatus = true;
+      }
+    }else{
+      this.callStatus = false;
+    } 
     if (card.card_type !== '') {
       this.cardType = card.card_type.name;
     }
@@ -190,7 +220,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.columnList = card.fields;      
     }
     if(this.createFormgroup){
-      this.createFormgroup = false;
+      // this.createFormgroup = false;
       this.columnListOutput.emit(this.columnList);
     }
     this.collectionname = card.collection_name;
@@ -268,21 +298,23 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   call(card:any,Index:number) {
     let callingNumber:any;
+    let startTime: any = new Date();
+    let startTimeMs:any = startTime.getTime(startTime);
+    this.editedRowIndex = Index;
     if(card.mobile && card.mobile.length >= 10 ){
       callingNumber = card.mobile;
-      console.log(callingNumber);
     }else if(card.billing_mobile && card.billing_mobile  >= 10){
       callingNumber = card.billing_mobile;
-      console.log(callingNumber);
     }else if(card.phone && card.phone  >= 10){
       callingNumber = card.phone;
-      console.log(callingNumber);
     }else{
-      console.log("number Not found")
+      console.log("Number Not found or Valid")
     }
     this.callNumber.callNumber(callingNumber, true)
       .then(res => console.log('Launched dialer!' + res))
       .catch(err => console.log('Error launching dialer ' + err));
+
+      this.callDetailRecord(card, startTimeMs);
   }
 
   callInvoice(card:any,Index:number) {
@@ -381,8 +413,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         "childData": this.gridData,
         "editedRowIndex": this.editedRowIndex,
         "addform" : form
-       },
-      swipeToClose: true
+      },
+      swipeToClose: true,
+      showBackdrop:true,
+      backdropDismiss:false,
     });
     modal.componentProps.modal = modal;
     modal.onDidDismiss().then((result) => {
@@ -400,6 +434,24 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     return this.coreUtilityService.getFirstCharOfString(char);
   }
 
+  async callDetailRecord(data:any, startTime:any){
+    const modal = await this.modalController.create({
+      component: CallDataRecordFormComponent,
+      cssClass: 'my-custom-modal-css',
+      componentProps: { 
+        "cardData": data,
+        "selectedRowIndex": this.editedRowIndex,
+        "startTime" : startTime,
+      },
+      showBackdrop:true,
+      backdropDismiss:false,
+    });
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss().then((result) => {
+      this.getCardDataByCollection(this.selectedIndex);
+    });
+    return await modal.present();
+  }
   
 
 }

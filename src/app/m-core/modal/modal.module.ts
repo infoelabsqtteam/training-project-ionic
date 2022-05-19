@@ -5,11 +5,14 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { GridSelectionModalComponent } from './grid-selection-modal/grid-selection-modal.component';
 import { GridSelectionDetailModalComponent } from './grid-selection-detail-modal/grid-selection-detail-modal.component';
 import { BrowserModule } from '@angular/platform-browser';
+import { IonicModule } from '@ionic/angular';
+import { CallDataRecordFormComponent } from './call-data-record-form/call-data-record-form.component';
 
 const modal =[
   FormModalComponent,
   GridSelectionModalComponent,
-  GridSelectionDetailModalComponent
+  GridSelectionDetailModalComponent,
+  CallDataRecordFormComponent
 ]
 
 @NgModule({
@@ -17,7 +20,8 @@ const modal =[
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    BrowserModule
+    BrowserModule,
+    IonicModule.forRoot(),
   ],
   declarations: modal,
   exports:modal,
