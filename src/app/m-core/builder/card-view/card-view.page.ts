@@ -41,6 +41,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   filterCount: 0;
   searching:boolean = false;
   searchcardvalue:string = '';
+  selectedLeave : string = '';
 
   // addNewEnabled:boolean=false;
   // detailPage:boolean=false;
@@ -57,6 +58,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       
     ) 
     {
+      
       
     }
   
@@ -106,6 +108,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.carddata = [];
       this.tabMenu = [];
       this.openFilter = false;
+      this.filterForm.reset();
     }
     open(){
       this.openFilter=!this.openFilter
@@ -118,6 +121,12 @@ export class CardViewPage implements OnInit, OnDestroy {
         'filterFormData' : this.filterForm.getRawValue()
       }
     }
+    // filterCard(){  
+    //   this.openFilter = false;
+    //   this.data = {
+    //     'filterFormData' : this.filterForm.getRawValue()
+    //   }
+    // }
     closefilterCard(){
       this.data = {};
       this.openFilter = false;
@@ -128,6 +137,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     } 
     columnListOutput(columnList){
       this.columnList = columnList;
+      console.log(this.columnList[0])
       this.createFormgroup = true;
       if (this.columnList && this.columnList.length > 0 && this.createFormgroup) {
         this.createFormgroup = false;
@@ -147,6 +157,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       }
     }
     search(searchcardvalue){
+      console.log(searchcardvalue);
       // if(searchcardvalue && searchcardvalue.length > 0){
         this.data = {
           'searchData' : searchcardvalue

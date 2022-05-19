@@ -1,9 +1,23 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
+    <!-- <ion-item class="item-leave-height">
+      <ion-label>SELECT LEAVE</ion-label>
+      <ion-select [(ngModel)]="selectedLeave" class="custom-options">
+          <ion-option value="CASUAL LEAVE">Casual Leave</ion-option>
+          <ion-option value="CASUAL LEAVE">Leave</ion-option>
+      </ion-select>
+  </ion-item> -->
+  <ion-item>
+    <ion-label>Search Card</ion-label>
+    <ion-select interface="popover" >
+      <div *ngFor="let columns of columnList; index as j">
+      <ion-select-option value="nes" >{{columns.field_label}}</ion-select-option></div>
+    </ion-select>
+  </ion-item>
     <div class="cardsearch">
       <ion-title class="ion-no-padding ion-text-capitalize" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>
-      <ion-input placeholder="Search" [(ngModel)]="searchcardvalue" (keyup)="search(searchcardvalue)" animated="true"
+      <ion-input placeholder="Search" [(ngModel)]="searchcardvalue" (ionChange)="search(searchcardvalue)" clearInput [placeholder] animated="true"
       [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
         <ion-icon name="search" size="small"></ion-icon>
       </ion-input>
@@ -11,6 +25,12 @@
         <ion-icon name="search" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}"></ion-icon>
         <ion-icon name="close-outline" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon>
       </ion-buttons>
+      <!-- <ion-list class="ion-no-padding">
+        <ion-item class="medicine" *ngFor="let item of columnList;let i = index" (click)="addsalt(item, i)" [ngClass]="saltList.length > 0?'ion-show':'ion-hide'">
+            <ion-label class="ion-text-uppercase" >{{item.name}}</ion-label>
+            <ion-icon name="add-outline" color="success"></ion-icon>
+        </ion-item>
+      </ion-list> -->
     </div>
     <ion-buttons class="filter ion-text-end" slot="end" (click)="open()">
         <img src="assets/img/icons/Filter.svg">
