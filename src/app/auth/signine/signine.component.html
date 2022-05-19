@@ -10,7 +10,7 @@
                 <ion-item>
                     <ion-label position="floating">E-mail</ion-label>
                     <ion-input type="email" formControlName="userId" placeholder="Email Id"></ion-input>
-                    <ion-icon  class="showicon" src="assets/img/icons/Icon-check-circle.svg"></ion-icon>
+                    <ion-icon class="showpassword" name="checkmark-circle"></ion-icon>
                 </ion-item>
                 <div *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched)" class="alert">
                     <div *ngIf="f.userId.errors.required" class="warning">Email Id is required.</div>

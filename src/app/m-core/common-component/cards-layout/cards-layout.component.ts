@@ -190,7 +190,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.columnList = card.fields;      
     }
     if(this.createFormgroup){
-      this.createFormgroup = false;
+      // this.createFormgroup = false;
       this.columnListOutput.emit(this.columnList);
     }
     this.collectionname = card.collection_name;
