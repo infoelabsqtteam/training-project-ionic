@@ -8,18 +8,18 @@
 <ion-content class="pages">
   
   <div class="contactdetails app-grid_selection fixed_button" *ngIf="cardType == 'demo1'">   
-    <div class="enquerylist" *ngFor="let column of columnList">
-      <div *ngIf="!column.editable">
-        <span [title]="column.label">{{column.label}}: -</span>
+    <div class="" *ngFor="let column of columnList; let i = index">
+      <div *ngIf="!column.editable" class="enquerylist ">
+        <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>
         <strong [innerHtml]="getValueForGrid(column,data)"></strong>
       </div>
-      <div *ngIf="column.editable">
-        <span [title]="column.label">{{column.label}}: -</span>        
-        <span *ngIf="column.type.toLowerCase() == 'text'">
+      <div *ngIf="column.editable" class="enquerylist">
+        <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>        
+        <span *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
             <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" >
         </span>
-        <span *ngIf="column.type.toLowerCase() == 'number'">
-          <input  type="number" style="min-width: 50px;" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
+        <span *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
+          <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
         </span>
       </div>
     </div>

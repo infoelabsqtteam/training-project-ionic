@@ -47,9 +47,11 @@ export class ModalDetailCardComponent implements OnInit {
     const moduleList = this.commonDataShareService.getModuleList();
     if(index != -1){      
       let tabs:any = module.tab_menu;
+      if(tabs && tabs.length > 0){
       let tab:any = tabs[index];
       const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id");
       tabDetail = moduleList[tabIndex];
+      }
     }
     let child_card = {};
     if(tabDetail != ''){
