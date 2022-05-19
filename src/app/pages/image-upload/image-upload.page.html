@@ -9,27 +9,52 @@
  
 <ion-content>
 
+  <h4 *ngIf="files.length == 0">Please Select Image</h4>
+
+  <ion-list>
+    <ion-item *ngFor="let img of files; let i = index;">
+      <ion-thumbnail slot="start">
+        <ion-img [src]="img.data"></ion-img>
+      </ion-thumbnail>
+      <ion-label>{{img.name}}</ion-label>
+      <!-- <ion-button slot="end" fill="clear" (click)="startUpload(img)">
+        <ion-icon slot="icon-only" name="cloud-upload" color=""></ion-icon>
+      </ion-button> -->
+      <ion-button slot="end" fill="clear" (click)="deleteSelectedImage(img)">
+        <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
+      </ion-button>
+    </ion-item>
+    <ion-item *ngFor="let img of selectedphotos; let i = index;">
+      <ion-thumbnail slot="start">
+        <ion-img [src]="img"></ion-img>
+      </ion-thumbnail>
+      <ion-label>{{img.name}}</ion-label>
+      <!-- <ion-button slot="end" fill="clear" (click)="startUpload(img)">
+        <ion-icon slot="icon-only" name="cloud-upload" color=""></ion-icon>
+      </ion-button> -->
+      <ion-button slot="end" fill="clear" (click)="deleteSelectedImage(img)">
+        <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
   <ion-row>
     <ion-col
       size="6"
       *ngFor="let img of images; let i = index;"
       class="ion-text-center"
     >
-    <!-- <ion-col
-      size="6"
-      class="ion-text-center"
-    > -->
       <ion-label>
         {{ img.name }}
         <p>{{ img.createdAt | date:'short' }}</p>
       </ion-label>
  
-      <img [src]="img.url" />
+      <img [src]="img" />
       <ion-fab vertical="bottom" horizontal="end">
         <ion-fab-button
           color="danger"
           size="small"
-          (click)="deleteImage(img, i)"
+          (click)="deleteImage(i)"
         >
           <ion-icon name="trash-outline"></ion-icon>
         </ion-fab-button>
@@ -39,7 +64,7 @@
  
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <input
-      type="file" id="fileInput"
+      type="file" id="fileInput" multiple
       #fileInput
       (change)="uploadFile($event.target)"
       hidden="true"

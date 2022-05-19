@@ -21,7 +21,7 @@
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="quotationlist" lines="none">
           <ion-row class="ion-align-items-center inner_padding">
-            <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="detailCardButton(column,card)">
+            <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="modaldetailCardButton(column,card)">
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
@@ -140,6 +140,7 @@
           <ion-item-option *ngIf="addCallingFeature" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
         </ion-item-options>
         <ion-item-options side="end" >
+          <ion-item-option *ngIf="callStatus" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="chatbox-ellipses-outline"></ion-icon></ion-item-option>
           <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
