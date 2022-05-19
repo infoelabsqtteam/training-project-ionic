@@ -1,10 +1,17 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
 import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
+
+import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
+import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { finalize } from 'rxjs';
+import { CameraService } from 'src/app/service/camera-service/camera.service';
+import { HttpClient } from '@angular/common/http';
 
 interface User {
   id: number;
@@ -25,6 +32,10 @@ export class FormComponent implements OnInit, OnDestroy {
   @Input() addform: any;
   @Input() modal: any;
 
+  
+  @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
+  selectedphotos:any= [];  
+  downloadClick='';
   
   ionicForm: FormGroup;
   defaultDate = "1987-06-30";
@@ -80,6 +91,8 @@ export class FormComponent implements OnInit, OnDestroy {
   nestedFormSubscription:any;
   saveResponceSubscription:any;
   typeaheadDataSubscription:any;
+  fileDataSubscription:any;
+  fileDownloadUrlSubscription:any;
 
   dateValue:any;
   public deleteIndex:any = '';
@@ -101,6 +114,11 @@ export class FormComponent implements OnInit, OnDestroy {
     private storageService:StorageService,
     private notificationService:NotificationService,
     private modalController: ModalController,
+    private cameraService: CameraService, 
+    private plt: Platform, 
+    private actionSheetCtrl: ActionSheetController,
+    private loadingCtrl: LoadingController,
+    private http: HttpClient
     ) {
 
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
@@ -124,6 +142,9 @@ export class FormComponent implements OnInit, OnDestroy {
       this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data =>{
         this.setTypeaheadData(data);
       });
+      this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
+        this.setFileDownloadUrl(data);
+      })
     }
 
   resetFlag(){
@@ -143,6 +164,9 @@ export class FormComponent implements OnInit, OnDestroy {
     if(this.templateForm){
       this.templateForm.reset(); 
     }
+    if(this.fileDownloadUrlSubscription){
+      this.fileDownloadUrlSubscription.unsubscribe();
+    } 
   }
   ngOnInit() {
     const id:any = this.commonDataShareService.getFormId();
@@ -2711,5 +2735,209 @@ case 'populate_fields_for_report_for_new_order_flow':
     this.deletefieldName = {};
   }
   
+  // camera upload files
+  async selectImageSource(parent,field) {
+    this.curFileUploadField = field;
+    this.curFileUploadFieldparentfield = parent;
+    const buttons = [
+      {
+        text: 'Take Photo',
+        icon: 'camera',
+        handler: () => {
+          this.selectImage(CameraSource.Camera);
+        }
+      },
+      {
+        text: 'Choose From Photos',
+        icon: 'images',
+        handler: () => {
+          this.selectMultipleImages();
+        }
+      }
+    ];
+ 
+    // Only allow file selection inside a browser
+    // if (!this.plt.is('hybrid')) {
+    //   buttons.push({
+    //     text: 'Choose a File',
+    //     icon: 'attach',
+    //     handler: () => {
+    //       this.fileInput.nativeElement.click();
+    //     }
+    //   });
+    // }
+ 
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Select Image Source',
+      buttons
+    });
+    await actionSheet.present();
+  }
+
+  async selectImage(source: CameraSource) {
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Uri,
+      source: source,      
+      correctOrientation: true,
+      saveToGallery: true
+    });
+
+    console.log('Selected Image : ', image);
+    let arrayimages:any = []; 
+    arrayimages.push(image);
+    if (arrayimages && arrayimages.length > 0) {
+        this.saveImages(arrayimages)
+    }
+  }
+
+  async selectMultipleImages(){
+    
+    const multipleImagesOption:GalleryImageOptions = {
+      quality: 100,
+      limit: 0,     
+      correctOrientation: true,
+      presentationStyle: "popover"
+    } 
+    await Camera.pickImages(multipleImagesOption).then(res => {
+      let arrayimages = res.photos;
+      this.saveImages(arrayimages)
+    },
+    error => {
+         console.log(error)
+      });
+  }
+
+  async saveImages(photos) {
+    let base64Data:any;
+    let kbytes:any;
+    let fileName:any;
+    this.selectedphotos=[];
+    photos.forEach(async (img:any) => {
+      base64Data = await this.readAsBase64(img);
+      const dateTime = this.datePipe.transform(new Date(), 'yyyyMMdd') + "_" + this.datePipe.transform(new Date(), 'hhmmss');
+      fileName = "IMG_" + dateTime + '.'+ img.format;
+      this.selectedphotos.push({
+        fileData: base64Data,
+        fileName: fileName,
+        fileExtn:  img.format,
+        innerBucketPath: fileName,
+        rollName: fileName,
+        log: this.storageService.getUserLog()
+      }) 
+      if(photos.length == this.selectedphotos.length){
+        this.setFile();
+      }     
+    });
+    
+    this.cameraService.presentToast("Image Added");
+  }
+
+  setFile(){
+    let uploadData = [];
+    if(this.curFileUploadField){
+      if(this.curFileUploadFieldparentfield != ''){
+        const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
+        const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]
+        if(data && data.length > 0){
+          uploadData = data;
+        }        
+      }else{ 
+        const data = this.dataListForUpload[this.curFileUploadField.field_name];
+        if(data && data.length > 0){
+          uploadData = data;
+        } 
+      }
+    }
+    if(this.selectedphotos && this.selectedphotos.length > 0){
+      this.selectedphotos.forEach(element => {
+        uploadData.push(element);
+      });
+    }
+    if(uploadData && uploadData.length > 0){
+      this.fileUploadResponce(uploadData);
+    }
+  }
+
+  async readAsBase64(photo: Photo) {
+    if (this.plt.is('hybrid')) {
+        const file = await Filesystem.readFile({
+            path: photo.path
+        }); 
+        return file.data;
+    }
+    else {
+        // Fetch the photo, read as a blob, then convert to base64 format
+        const response = await fetch(photo.webPath);
+        const blob = await response.blob();
+        return await this.convertBlobToBase64(blob);
+    }
+  }
+ 
+  // Helper function
+  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
+      const reader = new FileReader;
+      reader.onerror = reject;
+      reader.onload = () => {
+        let base64 = (<string>reader.result).split(',').pop();
+          resolve(base64);
+      };
+      reader.readAsDataURL(blob);
+  });
+  //delecte selected image
+  deleteImage(index) {
+    // this.cameraService.deleteImage(index).subscribe(res => {
+    //   this.images.splice(index, 1);
+    // });
+    this.selectedphotos.splice(index, 1);
+    this.cameraService.presentToast('File removed.');
+  }
+  removeAttachedDataFromList(index,fieldName){
+    this.dataListForUpload[fieldName].splice(index,1)
+  }
+  imageDownload(img) {    
+    this.downloadClick = img.rollName;
+    const payload = {
+      path: 'download',
+      data: img
+    }
+    this.apiService.DownloadFile(payload);
+  }
+  setFileData(getfileData){
+    // if (getfileData != '' && getfileData != null && this.checkForDownloadReport) {
+    //   let link = document.createElement('a');
+    //   link.setAttribute('type', 'hidden');
+
+    //   const file = new Blob([getfileData.data], { type: "application/pdf" });
+    //   const url = window.URL.createObjectURL(file);
+    //   link.href = url;
+    //   link.download = getfileData.filename;
+    //   document.body.appendChild(link);
+    //   link.click();
+    //   link.remove();
+    //   // this.downloadPdfCheck = '';
+    //   this.dataSaveInProgress = true;
+    //   this.checkForDownloadReport = false;
+    //   this.dataSaveInProgress = true;
+    //   this.apiService.ResetFileData();
+    // }
+  }
+  setFileDownloadUrl(fileDownloadUrl){
+    if (fileDownloadUrl != '' && fileDownloadUrl != null && this.downloadClick != '') {
+      let link = document.createElement('a');
+      link.setAttribute('type', 'hidden');
+      // const file = new Blob([exportExcelLink], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      // const url = window.URL.createObjectURL(file);
+      link.href = fileDownloadUrl;
+      link.download = this.downloadClick;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      this.downloadClick = '';
+      this.dataSaveInProgress = true;
+      this.apiService.ResetDownloadUrl();
+    }
+  }
 
 }

@@ -106,6 +106,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.carddata = [];
       this.tabMenu = [];
       this.openFilter = false;
+      this.filterForm.reset();
     }
     open(){
       this.openFilter=!this.openFilter

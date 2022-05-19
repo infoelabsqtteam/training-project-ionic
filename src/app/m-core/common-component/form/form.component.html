@@ -20,25 +20,42 @@
             <ion-button expand="block" fill="outline" (click)="setValue('',tableField)">{{ tableField.label }} <span [innerHtml]="getNumberOfSelectedRecord(tableField)"></span></ion-button>
           </div>
         </div>
-        <!-- <div *ngIf="tableField.type == 'upload_camera_file'">
-          <div>
-            <input type="file" id="fileInput" [formControlName]="tableField.field_name" #fileInput (change)="uploadFile($event.target)" hidden="true" accept="image/*" />
-            <ion-button expand="block" fill="outline" (click)="selectImageSource()" [formControlName]="tableField.field_name">{{ tableField.label }}</ion-button>
-          </div>
-        </div> -->
-        <!-- <div *ngIf="tableField.type == 'file'">
-          <ion-item>
-            <ion-label position="">{{ tableField.label }}</ion-label>
-            <ion-input [formControlName]="tableField.field_name" type="file" multiple (change)="fileBrowseHandler('',tableField,$event.target.files)" hidden="true"></ion-input>
-            <ion-button expand="block" fill="outline" slot="end" (click)="selectImageSource()" [formControlName]="tableField.field_name">{{ tableField.label }}</ion-button>
-          </ion-item>
-        </div> -->
-        <div *ngIf="tableField.type == 'file'">
-          <ion-item>
-            <ion-label position="floating">{{ tableField.label }}</ion-label>
-            <ion-input [formControlName]="tableField.field_name" type="file" multiple (change)="fileBrowseHandler('',tableField,$event.target)"></ion-input>
-          </ion-item>
+        <div *ngIf="tableField.type == 'file'" class="camera_file_upload">
+            <ion-list>
+              <ion-item *ngFor="let img of dataListForUpload[tableField.field_name]; let i = index;">
+                <!-- <ion-thumbnail slot="start">
+                  <ion-img [src]="'data:image/png;base64,'+img.fileData"></ion-img>
+                </ion-thumbnail> -->
+                <ion-label>{{img.rollName}}</ion-label>
+                <ion-button slot="end" class="" fill="clear" (click)="removeAttachedDataFromList(i,tableField.field_name)">
+                  <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
+                </ion-button>
+                <ion-button slot="end" class="" fill="clear" (click)="imageDownload(img)">
+                  <ion-icon slot="icon-only" name="download" color=""></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-list>
+            <div class="ion-padding-start ion-padding-end">
+              <input type="file" id="fileInput" [formControlName]="tableField.field_name" multiple #fileInput (change)="fileBrowseHandler('',tableField,$event.target)" hidden="true" accept="image/*" />
+            <ion-button expand="block" color="primary" fill="outline" [size]="" (click)="selectImageSource('',tableField)" [formControlName]="tableField.field_name">{{ tableField.label }}</ion-button></div>
         </div>
+        <!-- <div *ngIf="tableField.type == 'file'">
+          <ion-list>
+            <ion-item *ngFor="let img of uploadData; let i = index;">
+              <ion-thumbnail slot="start">
+                <ion-img [src]="'data:image/png;base64,'+ img.fileData"></ion-img>
+              </ion-thumbnail>
+              <ion-label>{{img.fileName}}</ion-label>
+              <ion-button slot="end" fill="clear" (click)="deleteFile(i)">
+                <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
+              </ion-button>
+            </ion-item>
+            <ion-item>
+              <ion-label position="floating">{{ tableField.label }}</ion-label>
+              <ion-input [formControlName]="tableField.field_name" type="file" multiple (change)="fileBrowseHandler('',tableField,$event.target.files)"></ion-input>
+            </ion-item>
+          </ion-list>
+        </div> -->
         <div *ngIf="tableField.type == 'dropdown'">
           <ion-item *ngIf="tableField.datatype != 'object'">
             <ion-label position="floating">{{ tableField.label }}</ion-label>
@@ -119,7 +136,7 @@
                 <ion-datetime
                   presentation="date"
                   [formControlName]="tableField.field_name"
-                  locale="sl-SI"
+                  locale="en-GB"
                 ></ion-datetime>
               </ng-template>
             </ion-popover>

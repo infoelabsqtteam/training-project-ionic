@@ -5,7 +5,7 @@ import { LoadingController, Platform, ToastController } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
 import { finalize } from 'rxjs/operators';
 
-// --------------------1
+// M--------------------1
 export interface ApiImage {
   _id: string;
   name: string;
@@ -13,10 +13,10 @@ export interface ApiImage {
   url: string;
 }
 
-// ------------------2
+// M------------------2
 const IMAGE_DIR = 'stored-images';
 
-interface LocalFile {
+export interface LocalFile {
   name: string;
   path: string;
   data: string;
@@ -29,14 +29,15 @@ interface LocalFile {
 
 export class CameraService {
 
-  url = 'http://localhost:3000';
-  images: LocalFile[] = [];
+  url = 'http://192.168.1.22:8100';
+
+  files: LocalFile[] = [];
 
   constructor(
     private plt: Platform,
     private http: HttpClient,    
     private loadingCtrl: LoadingController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
     ) { }
  
   getImages() {
@@ -44,7 +45,7 @@ export class CameraService {
   }
 
   async loadFiles() {
-    this.images = [];
+    this.files = [];
  
     const loading = await this.loadingCtrl.create({
       message: 'Loading Images...',
@@ -55,6 +56,7 @@ export class CameraService {
       path: IMAGE_DIR,
       directory: Directory.Data,
     }).then(result => {
+      console.log('Result Derectory : ' , result );
       this.loadFileData(result.files);
     },
       async (err) => {
@@ -70,7 +72,6 @@ export class CameraService {
   }
 
   // Get the actual base64 data of an image
-  // base on the name of the file
   async loadFileData(fileNames: string[]) {
     for (let f of fileNames) {
       const filePath = `${IMAGE_DIR}/${f}`;
@@ -80,7 +81,7 @@ export class CameraService {
         directory: Directory.Data,
       });
  
-      this.images.push({
+      this.files.push({
         name: f,
         path: filePath,
         data: `data:image/jpeg;base64,${readFile.data}`,
@@ -94,21 +95,23 @@ export class CameraService {
     const toast = await this.toastCtrl.create({
       message: text,
       duration: 3000,
+      color: "primary"
     });
     toast.present();
   }
  
-  async selectImage() {
+  async selectImage(source: CameraSource) {
     const image = await Camera.getPhoto({
       quality: 90,
       allowEditing: false,
-      // resultType: CameraResultType.Uri,
-      resultType: CameraResultType.Base64,
-      source: CameraSource.Prompt,      
+      resultType: CameraResultType.Uri,
+      // resultType: CameraResultType.Base64,
+      source: source,      
       correctOrientation: true,
       saveToGallery: true
-      // source: CameraSource.Photos // Camera, Photos or Prompt!
     });
+
+    console.log('Selected Image : ', image);
 
     if (image) {
         this.saveImage(image)
@@ -116,21 +119,23 @@ export class CameraService {
   }
 
   async saveImage(photo: Photo) {
-    const base64Data = await this.readAsBase64(photo);
- 
+    const base64Data = await this.readAsBase64(photo); 
+    console.log('Base64Data: ', base64Data);
+
     const fileName = new Date().getTime() + '.jpeg';
     const savedFile = await Filesystem.writeFile({
         path: `${IMAGE_DIR}/${fileName}`,
         data: base64Data,
         directory: Directory.Data
     });
- 
+    
+    console.log("saved: ", savedFile)
+    this.presentToast("image saved");
     // Reload the file list
     // Improve by only loading for the new image and unshifting array!
     this.loadFiles();
-}
+  }
  
-  // https://ionicframework.com/docs/angular/your-first-app/3-saving-photos
   private async readAsBase64(photo: Photo) {
     if (this.plt.is('hybrid')) {
         const file = await Filesystem.readFile({
@@ -142,21 +147,20 @@ export class CameraService {
     else {
         // Fetch the photo, read as a blob, then convert to base64 format
         const response = await fetch(photo.webPath);
-        const blob = await response.blob();
- 
+        const blob = await response.blob(); 
         return await this.convertBlobToBase64(blob) as string;
     }
-}
+  }
  
-// Helper function
-convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
-    const reader = new FileReader;
-    reader.onerror = reject;
-    reader.onload = () => {
-        resolve(reader.result);
-    };
-    reader.readAsDataURL(blob);
-});
+  // Helper function
+  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
+      const reader = new FileReader;
+      reader.onerror = reject;
+      reader.onload = () => {
+          resolve(reader.result);
+      };
+      reader.readAsDataURL(blob);
+  });
  
   async startUpload(file: LocalFile) {
     const response = await fetch(file.data);
@@ -167,16 +171,16 @@ convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
   }
  
   // Upload the formData to our API
-async uploadData(formData: FormData) {
-  const loading = await this.loadingCtrl.create({
-      message: 'Uploading image...',
-  });
-  await loading.present();
+  async uploadData(formData: FormData) {
+    const loading = await this.loadingCtrl.create({
+        message: 'Uploading image...',
+    });
+    await loading.present();
 
-  // Use your own API!
-  const url = 'http://localhost:8888/images/upload.php';
+    // Use your own API!
+    const url = 'http://localhost:8888/images/upload.php';
 
-  this.http.post(url, formData)
+    this.http.post(url, formData)
       .pipe(
           finalize(() => {
               loading.dismiss();
@@ -188,17 +192,17 @@ async uploadData(formData: FormData) {
           } else {
               this.presentToast('File upload failed.')
           }
-      });
-}
+    });
+  }
 
-// async deleteImage(file: LocalFile) {
-//   await Filesystem.deleteFile({
-//       directory: Directory.Data,
-//       path: file.path
-//   });
-//   this.loadFiles();
-//   this.presentToast('File removed.');
-// }
+  async deleteSelectedImage(file: LocalFile) {
+    await Filesystem.deleteFile({
+        directory: Directory.Data,
+        path: file.path
+    });
+    this.loadFiles();
+    this.presentToast('File removed.');
+  }
  
 
   // ------1st method
