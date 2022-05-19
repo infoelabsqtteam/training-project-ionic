@@ -29,22 +29,24 @@
                 <ion-col size="6" *ngFor="let column of listOfGridFieldName">
                     <div *ngIf="!column.editable">
                         <ion-item lines="none" class="">
-                            <ion-label slot="start" class="grid-label">{{ column.label }}
+                            <ion-label slot="start" class="grid-content">
+                                <span class="label">{{ column.label }}</span>
                                 <span class="colon-seperator">:</span>
                             </ion-label>
-                            <ion-label  class="content" [innerHtml]="getValueForGrid(column,data)"></ion-label>
+                            <ion-label  class="value" [innerHtml]="getValueForGrid(column,data)"></ion-label>
                         </ion-item>
                     </div>
                     <div *ngIf="column.editable">
                         <ion-item lines="none" class="">
-                            <ion-label slot="start" class="grid-label">{{ column.label }}
+                            <ion-label slot="start" class="grid-content">
+                                <span class="label">{{ column.label }}</span>
                                 <span class="colon-seperator">:</span>
                             </ion-label>
-                            <div *ngIf="column.type.toLowerCase() == 'text'">
+                            <div *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
                                 <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" >
                             </div>
-                            <div *ngIf="column.type.toLowerCase() == 'number'">
-                            <input  type="number" style="min-width: 50px;" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
+                            <div *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
+                            <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
                             </div>
                         </ion-item>
                     </div>            
@@ -53,7 +55,7 @@
         </div>        
     </div>
 
-    <div *ngIf="selectedTab == 'added'">
+    <div *ngIf="selectedTab == 'added'" >
         <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of getSelectedData(); let i = index">
             <ion-item class=""  lines="none">
                 <ion-buttons slot="start" >
@@ -67,22 +69,24 @@
                 <ion-col size="6" *ngFor="let column of listOfGridFieldName">
                     <div *ngIf="!column.editable">
                         <ion-item lines="none" class="">
-                            <ion-label slot="start" class="grid-label">{{ column.label }}
+                            <ion-label slot="start" class="grid-content">
+                                <span class="label">{{ column.label }}</span>
                                 <span class="colon-seperator">:</span>
                             </ion-label>
-                            <ion-label  class="content" [innerHtml]="getValueForGrid(column,data)"></ion-label>
+                            <ion-label  class="value" [innerHtml]="getValueForGrid(column,data)"></ion-label>
                         </ion-item>
                     </div>
                     <div *ngIf="column.editable">
                         <ion-item lines="none" class="">
-                            <ion-label slot="start" class="grid-label">{{ column.label }}
+                            <ion-label slot="start" class="grid-content">
+                                <span class="label">{{ column.label }}</span>
                                 <span class="colon-seperator">:</span>
                             </ion-label>
-                            <div *ngIf="column.type.toLowerCase() == 'text'">
+                            <div *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
                                 <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" >
                             </div>
-                            <div *ngIf="column.type.toLowerCase() == 'number'">
-                            <input  type="number" style="min-width: 50px;" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
+                            <div *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
+                            <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
                             </div>
                         </ion-item>
                     </div>            

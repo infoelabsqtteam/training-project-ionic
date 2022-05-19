@@ -271,6 +271,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         swipeToClose: true
       });
       modal.componentProps.modal = modal;
+      modal.onDidDismiss().then((result) => {
+        this.detailPage = false;
+      });
       return await modal.present();
   }
 
