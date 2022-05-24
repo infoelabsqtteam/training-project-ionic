@@ -36,11 +36,12 @@ export class CardViewPage implements OnInit, OnDestroy {
 
    // filter card
   filterForm: FormGroup;
+  filterFormAgain: FormGroup;
   createFormgroup: boolean = true;
   openFilter: boolean = false;
   filterCount: 0;
   searching:boolean = false;
-  searchcardvalue:string = '';
+  searchcardvalue:any;
   selectedLeave : string = '';
 
   // addNewEnabled:boolean=false;
@@ -73,7 +74,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.searching = !this.searching;
       this.searchcardvalue = "";
       if(!this.searching){
-        this.search(this.searchcardvalue);
+        this.filterCardAgain();
       }
     }
     
@@ -121,12 +122,13 @@ export class CardViewPage implements OnInit, OnDestroy {
         'filterFormData' : this.filterForm.getRawValue()
       }
     }
-    // filterCard(){  
-    //   this.openFilter = false;
-    //   this.data = {
-    //     'filterFormData' : this.filterForm.getRawValue()
-    //   }
-    // }
+    filterCardAgain(){  
+      console.log(this.searchcardvalue);
+    
+      this.data = {
+        'filterFormData' : this.filterFormAgain.getRawValue()
+      }
+    }
     closefilterCard(){
       this.data = {};
       this.openFilter = false;
@@ -137,7 +139,6 @@ export class CardViewPage implements OnInit, OnDestroy {
     } 
     columnListOutput(columnList){
       this.columnList = columnList;
-      console.log(this.columnList[0])
       this.createFormgroup = true;
       if (this.columnList && this.columnList.length > 0 && this.createFormgroup) {
         this.createFormgroup = false;
@@ -153,6 +154,7 @@ export class CardViewPage implements OnInit, OnDestroy {
         });
         if (forControl) {
           this.filterForm = this.formBuilder.group(forControl);
+          this.filterFormAgain=this.formBuilder.group(forControl);
         }
       }
     }
