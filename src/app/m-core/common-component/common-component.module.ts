@@ -7,11 +7,15 @@ import { FormComponent } from './form/form.component';
 import { CardsLayoutComponent } from './cards-layout/cards-layout.component';
 import { ModalDetailCardComponent } from './modal-detail-card/modal-detail-card.component';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { ChartComponent } from './chart/chart.component';
+import { NgChartsModule } from 'ng2-charts';
+import { GoogleChartsModule } from 'angular-google-charts';
 
 const components = [
     FormComponent,
     CardsLayoutComponent,
-    ModalDetailCardComponent
+    ModalDetailCardComponent,
+    ChartComponent
   ];
 
 @NgModule({
@@ -25,7 +29,10 @@ const components = [
         ReactiveFormsModule, 
         HttpClientModule,
         IonicModule.forRoot(),
-        NgSelectModule
+        NgSelectModule,
+        NgChartsModule,
+        GoogleChartsModule
+        
     ],
     providers: [],
     schemas: [

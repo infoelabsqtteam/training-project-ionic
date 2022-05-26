@@ -4,7 +4,7 @@ import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
 import { filter } from 'rxjs';
 import { CallNumber } from '@ionic-native/call-number/ngx';
-import { Platform, ModalController, AlertController } from '@ionic/angular';
+import { Platform, ModalController, AlertController, PopoverController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card.component';
 import { FormComponent } from '../form/form.component';
@@ -60,7 +60,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   selectedIndex= -1;
   public editedRowIndex:number=-1;
   tabMenu: any = [];
-  cardListSubscription:any;
+  // cardListSubscription:any;
 
   // db Flags
   addCallingFeature: boolean=false;
@@ -86,7 +86,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private commonDataShareService:CommonDataShareService,
     private modalController: ModalController,
     private alertController: AlertController,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
   ) 
   {
     // below code is for slider and title name
@@ -156,9 +156,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   ngOnDestroy(): void {
-    if (this.cardListSubscription) {
-      this.cardListSubscription.unsubscribe();
-    }
+    // if (this.cardListSubscription) {
+    //   this.cardListSubscription.unsubscribe();
+    // }
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }

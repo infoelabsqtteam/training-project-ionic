@@ -23,7 +23,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   // get local data of card
   private authSub: Subscription;
-  cardListSubscription;
+  // cardListSubscription;
   private previousAuthState = false;
   userData: any;
   userInfo: any={};
@@ -119,9 +119,9 @@ export class HomePage implements OnInit, OnDestroy {
 
 
   ngOnDestroy(): void {
-    if (this.cardListSubscription) {
-      this.cardListSubscription.unsubscribe();
-    }
+    // if (this.cardListSubscription) {
+    //   this.cardListSubscription.unsubscribe();
+    // }
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
