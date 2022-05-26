@@ -5,7 +5,8 @@
 export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
-  serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
+  // serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
+  serverhost: "http://localhost:8104/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.itcuat.ai",
   appName: "ITC Uat",

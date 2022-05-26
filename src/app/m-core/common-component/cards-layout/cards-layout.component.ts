@@ -185,6 +185,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   setCardDetails(card) {  
+    let criteria:any = [];
+    let parentcard:any = {};
     if(card && card.add_new){
       if(this.detailPage){
         this.addNewEnabled = false;
@@ -223,8 +225,17 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       // this.createFormgroup = false;
       this.columnListOutput.emit(this.columnList);
     }
+    if(card && card.parent_criteria){
+      if (card.api_params_criteria && card.api_params_criteria.length > 0 ) {
+        // card.api_params_criteria.forEach(cr => {
+        //   criteria.push(cr);
+        // });
+        criteria = card.api_params_criteria;
+        parentcard = card;
+      }
+    }
     this.collectionname = card.collection_name;
-    this.getGridData(this.collectionname);
+    this.getGridData(this.collectionname, criteria, parentcard);
   }
 
   search(searchcard) {
@@ -339,14 +350,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     return listCiteria;
   }
-  async getGridData(collectionName,criteria?){
+  async getGridData(collectionName,criteria?,parentCard?){
     const crList = this.restService.getfilterCrlist(this.columnList, this.filterForm)
     const params = collectionName;
-    let cardCriteria = []
+    let cardCriteria = [];
+    let object = {};
     if(criteria && criteria.length > 0){
       cardCriteria = this.setCriteria(cardCriteria,criteria);
+      object = parentCard;
     }
-    let object = {};
     if(this.detailPage){
       if(this.card && this.card.card){
         let card = this.card.card
@@ -355,6 +367,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           object = this.data
         }        
       } 
+    }else{
+      //  if(this.card && this.card.card){
+      //   let card = this.card.card
+      //   if(card.api_params_criteria && card.api_params_criteria.length > 0){
+      //     cardCriteria = this.setCriteria(cardCriteria,card.api_params_criteria);
+      //     object = this.data
+      //   }        
+      // } 
+
     }
     let data = this.restService.getPaylodWithCriteria(params,'',cardCriteria,object);
     data['pageNo'] = 0;
@@ -366,6 +387,13 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       });
     }
+    // else if(cardCriteria && cardCriteria.length > 0){
+    //   cardCriteria.forEach(cr => {
+    //     if(data && data.crList && data.crList.length >= 0){
+    //       data.crList.push(cr);
+    //     }
+    //   });
+    // }
     let payload = {
       'data':data,
       'path':null
