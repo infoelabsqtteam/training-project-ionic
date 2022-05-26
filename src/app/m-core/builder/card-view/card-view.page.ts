@@ -19,7 +19,6 @@ export class CardViewPage implements OnInit, OnDestroy {
     cardList: any = [];
     selectedIndex= -1;
     tabMenu: any = [];
-    cardListSubscription:any;
     columnList: any = [];
     carddata: any;
     cardtitle: any;

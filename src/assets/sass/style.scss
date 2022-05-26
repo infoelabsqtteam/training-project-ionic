@@ -314,3 +314,20 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         ion-button{min-width: 48%;text-transform: capitalize;}
     }
 }
+.chartcard{
+    ion-card-header{padding: 10px 10px 0;
+        ion-card-title{font-size: 14px;}
+    }
+    
+    .chartbody {
+        max-height: 275px;
+        overflow-y: scroll;
+        overflow-x: scroll;
+        .google-visualization-table-table td {
+            font-size: 10px;
+            white-space: nowrap;
+
+        }
+    }
+
+}
