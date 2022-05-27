@@ -35,6 +35,7 @@ export class ChartComponent implements OnInit{
   
   total: number;
   showfilter:boolean = false;
+  clickFilter:boolean = false;
   
 
   constructor(
@@ -84,15 +85,7 @@ export class ChartComponent implements OnInit{
 
   ngOnInit() {
     this.getDataForGrid();
-    this.getChartList();
-    // Object.keys(chartdata).forEach(key => {                    
-    //   this.chartDatasets[key] = chartdata[key]['datasets']; 
-    //   this.chartLabels[key] = chartdata[key]['label'];
-    //   this.chartType[key]=chartdata[key]['type'];
-    //   this.chartLegend[key]=chartdata[key]['legend'];
-    //   this.chartOptions[key]=chartdata[key]['option'];
-    // })
-    
+    this.getChartList();    
   }
   ngOnChanges(changes: SimpleChanges) {
     if(this.isShow){
@@ -212,9 +205,6 @@ export class ChartComponent implements OnInit{
     this.apiService.getStatiData([payload]);
   }
 
-
-
-  clickFilter:boolean = false;
   filterchart() {    
     if(this.filterValue && this.filterValue.length > 0 && this.filterValue.length <= this.itemNumOfGrid) {
       this.clickFilter = true;
