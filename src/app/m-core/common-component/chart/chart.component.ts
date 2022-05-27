@@ -24,7 +24,7 @@ export class ChartComponent implements OnInit{
   elements:any=[];  
   staticData: any = {};
   copyStaticData:any={};
-
+  noOfItems:any = [6,9,12,15,18,21,24];
   gridDataSubscription:any;
   staticDataSubscription:any;
   dashletDataSubscription:any;
@@ -35,6 +35,7 @@ export class ChartComponent implements OnInit{
   
   total: number;
   showfilter:boolean = false;
+  clickFilter:boolean = false;
   
 
   constructor(
@@ -204,5 +205,41 @@ export class ChartComponent implements OnInit{
     this.apiService.getStatiData([payload]);
   }
 
-  
+  filterchart() {    
+    if(this.filterValue && this.filterValue.length > 0 && this.filterValue.length <= this.itemNumOfGrid) {
+      this.clickFilter = true;
+      let value = "";
+      this.filterValue.forEach((element,i) => {
+        if((this.filterValue.length - 1) == i){
+          value = value + element;
+        }else{
+          value = value + element + ":";
+        }
+      });
+      let cr = "_id;in;"+value+";STATIC";
+      this.getPage(1,[cr]);
+    }    
+  }
+  checkFilter(){
+    if(this.filterValue && this.filterValue.length == 0){
+      this.getPage(1)
+    }
+  }
+  resetFilter(){
+    this.filterValue = [];
+    if(this.clickFilter){
+      this.clickFilter = false;
+      this.checkFilter();
+    }
+  }
+  selectNoOfItem(){
+    this.getPage(1);
+  }
+  onKey(value){
+    this.copyStaticData['chart_list'] = this.search(value)
+  }
+  search(value: string) { 
+    let filter = value.toLowerCase();
+    return this.staticData['chart_list'].filter(option => option.name.toLowerCase().startsWith(filter));
+  }
 }
