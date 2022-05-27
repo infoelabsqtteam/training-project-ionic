@@ -33,7 +33,7 @@
             <ion-button color="primary" fill="outline" size="small" (click)="commonFunction()">Try again</ion-button>
         </div> -->
 
-        <ion-grid>
+        <ion-grid *ngIf="!onlyiconsList">
             <ion-row>
               <ion-col size="6" *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
                     <ion-item lines="none" class="halfwidthcardList">
@@ -46,14 +46,14 @@
             </ion-row>
         </ion-grid>
 
-        <!-- <ul>
+        <ul *ngIf="onlyiconsList">
             <li *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
-              <div class="caticon"> -->
+              <div class="caticon">
                 <!-- <ion-img [src]="cardItem.image_src"></ion-img> -->
-                <!-- <img [src]="cardItem.image_src" >
+                <img [src]="cardItem.image_src" >
               </div>
               <span>{{cardItem.name}}</span>
             </li>
-        </ul>-->
+        </ul>
     </div>
 </ion-content>
