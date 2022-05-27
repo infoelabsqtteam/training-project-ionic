@@ -36,6 +36,7 @@ export class HomePage implements OnInit, OnDestroy {
   cardList: any = [];
   img_src: any = "./assets/expense.png";
   col_size: number = 3;
+  onlyiconsList:boolean =false;
   
   // for search
   carddata: any;
@@ -53,7 +54,6 @@ export class HomePage implements OnInit, OnDestroy {
   pdfObj: any;
   gridDataSubscription;
 
-  // download var
 
   constructor(
     private platform: Platform,
