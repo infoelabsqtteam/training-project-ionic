@@ -26,6 +26,9 @@ import { NativeGeocoder} from '@ionic-native/native-geocoder/ngx';
 import { AuthInterceptor } from './shared/auth.interceptor';
 import { FocusDirective } from './directive/focus.directive';
 import { IonicCoreModule } from '@core/ionic-core';
+import { HomePageModule } from './home/home.module';
+import { McoreModule } from './m-core/m-core.module';
+import { LocationAccuracy } from '@ionic-native/location-accuracy/ngx';
 
  
 
@@ -45,7 +48,8 @@ import { IonicCoreModule } from '@core/ionic-core';
     IonicCoreModule.forRoot(environment),
     AppRoutingModule,
     ServiceWorkerModule.register('ngsw-worker.js', 
-    { enabled: environment.production })
+    { enabled: environment.production }),
+    McoreModule
   ],
   providers: [
     // DocumentViewer,
@@ -61,6 +65,7 @@ import { IonicCoreModule } from '@core/ionic-core';
     FileOpener,
     AndroidPermissions,
     NativeGeocoder,
+    LocationAccuracy,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
   ],

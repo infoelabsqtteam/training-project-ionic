@@ -6,18 +6,22 @@ export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
   //serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
-  serverhost: "https://sitserverelabs.e-labs.ai/rest/",
-  // serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
+  // serverhost: "https://sitserverelabs.e-labs.ai/rest/",
+  //serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
   // serverhost: "http://localhost:8104/rest/",
   //serverhost: "https://servermedicea.medicea.in/rest/",
   //  serverhost: "https://sitservermedicea.medicea.in/rest/",
+  serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.elabsdemolims.ai",
   appName: "DemoLIMS",
   appPlatformName: "demolims",
   web_site: "DemoLIMS",
   razorpay_key : "rzp_test_P7SL8C2oelMvzE",
-  verify_type : "email"
+  verify_type : "email",
+  app_Version : "@2021 Elabs v1.0.0",
+  privacy_policy: "",
+  app_share: ""
 };
 
 /*

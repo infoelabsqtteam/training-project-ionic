@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { QuotationPageRoutingModule } from './quotation-routing.module';
 
 import { QuotationPage } from './quotation.page';
+import { CommonComponentModule } from 'src/app/m-core/common-component/common-component.module';
 
 @NgModule({
   imports: [
@@ -14,8 +15,11 @@ import { QuotationPage } from './quotation.page';
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
-    QuotationPageRoutingModule
+    QuotationPageRoutingModule,
+    CommonComponentModule
   ],
-  declarations: [QuotationPage]
+  declarations: [
+    QuotationPage,
+  ]
 })
 export class QuotationPageModule {}

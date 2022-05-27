@@ -11,5 +11,8 @@ export const environment = {
   appPlatformName: "demolims",
   web_site: "DemoLIMS",
   razorpay_key : "rzp_test_P7SL8C2oelMvzE",
-  verify_type : "email"
+  verify_type : "email",
+  app_Version : "@2021 Elabs v1.0.0",
+  privacy_policy: "",
+  app_share: ""
 };

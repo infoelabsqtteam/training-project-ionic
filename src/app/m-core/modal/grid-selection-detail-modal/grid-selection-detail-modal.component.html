@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" (click)="dismissModal({})"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-capitalize">Quotation Details</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pages">
+  
+  <div class="contactdetails app-grid_selection fixed_button" *ngIf="cardType == 'demo1'">   
+    <div class="" *ngFor="let column of columnList; let i = index">
+      <div *ngIf="!column.editable" class="enquerylist ">
+        <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>
+        <strong [innerHtml]="getValueForGrid(column,data)"></strong>
+      </div>
+      <div *ngIf="column.editable" class="enquerylist">
+        <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>        
+        <span *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
+            <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" >
+        </span>
+        <span *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
+          <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="button_position">
+      <div class="flex_grid">
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="select()" expand="full" >Add</ion-button>
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal({})" expand="full" >Cancel</ion-button>
+      </div>
+  </div>
+
+</ion-content>

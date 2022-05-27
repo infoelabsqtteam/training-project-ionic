@@ -5,8 +5,8 @@
 </ion-header> -->
 <ion-content class="loginpage">
     <div class="logintitle">
-        <h4>Welcome</h4>
-        <p>Sign-Up to continue</p>
+        <h4>Sign-Up</h4>
+        <!-- <p>Sign-Up to continue</p> -->
     </div>
     <!-- <div class="loginlogo"> <img src="../../../assets/medicea_img/signinlogo.jpeg"></div> -->
     <div class="login">
@@ -22,10 +22,21 @@
                 <ion-item>
                     <ion-label position="floating">Email</ion-label>
                     <ion-input type="email" formControlName="email" placeholder="Email"></ion-input>
+                    <ion-icon  class="showicon" src="assets/img/icons/Icon-check-circle.svg"></ion-icon>
                 </ion-item>
                 <div *ngIf="f.email.invalid && (f.email.dirty || f.email.touched)" class="alert">
                     <ion-text *ngIf="f.email.errors.required" color="danger">Email is required.</ion-text>
                     <ion-text *ngIf="f.email.errors?.email" color="danger">Invalid Email</ion-text>
+                </div>
+            </div>
+            <div class="formgroup">
+                <ion-item>
+                    <ion-label position="floating">Mobile Number</ion-label>
+                    <ion-input type="number" formControlName="mobileNo" placeholder="Mobile Number"></ion-input>
+                </ion-item>
+                <div *ngIf="f.mobileNo.invalid && (f.mobileNo.dirty || f.mobileNo.touched)" class="alert">
+                    <ion-text *ngIf="f.mobileNo.errors.required" color="danger">Mobile no is required.</ion-text>
+                    <ion-text *ngIf="f.mobileNo.errors?.pattern" color="danger">Mobile number should be 10 digit number.</ion-text>
                 </div>
             </div>
             <div class="formgroup">
@@ -52,17 +63,8 @@
                     <div *ngIf="passwordNotMatch"  class="warning">Confirm password do not match</div>
                 </div>
               </div>
-            <div class="formgroup">
-                <ion-item>
-                    <ion-label position="floating">Mobile Number</ion-label>
-                    <ion-input type="number" formControlName="mobileNo" placeholder="Mobile Number"></ion-input>
-                </ion-item>
-                <div *ngIf="f.mobileNo.invalid && (f.mobileNo.dirty || f.mobileNo.touched)" class="alert">
-                    <ion-text *ngIf="f.mobileNo.errors.required" color="danger">Mobile no is required.</ion-text>
-                    <ion-text *ngIf="f.mobileNo.errors?.pattern" color="danger">Mobile number should be 10 digit number.</ion-text>
-                </div>
-            </div>
-            <div class="formgroup"><ion-button type="submit" [disabled]="!signUpForm.valid" expand="full">Sign Up <ion-icon name="arrow-forward"></ion-icon></ion-button></div>
+              <div class="formgroup ion-text-end"><ion-text class="forgetpassword" [routerLink]="['/auth/forgetpassword']">Forgot Password?</ion-text></div>
+            <div class="formgroup"><ion-button type="submit" [disabled]="!signUpForm.valid" expand="full">Sign Up</ion-button></div>
             <div class="formgroup ion-text-center"><ion-text class="signup" [routerLink]="['/auth/signine']">Already have an account ? <strong>Sign-In</strong></ion-text></div>
             <!-- <div class="signinwith ion-padding-vertical"><span><i>Or sign-in with</i></span></div>
             <p class="ion-text-center"><span class="mailicon"><ion-icon name="mail"></ion-icon></span></p> -->

@@ -30,3 +30,19 @@
         small {display:block;color:#3A3A3A;}
     }
 }
+
+ng-select.ng-select {
+    padding: 0;
+    .ng-select-container{
+        padding: 0 15px;
+
+        .ng-value-container .ng-input>input{
+            padding: 0 15px;
+            line-height: 30px;
+        }
+    }
+    .ng-dropdown-panel.ng-select-bottom{
+        top:calc(100% - .25em);
+    }
+    
+}

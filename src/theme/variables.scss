@@ -4,19 +4,18 @@
 /** Ionic CSS Variables **/
 
 :root {
-    // --ion-color-primary: #4c26f7;
-    // --ion-color-primary-rgb: 247, 38, 100;
-    // --ion-color-primary-contrast: #ffffff;
-    // --ion-color-primary-contrast-rgb: 255, 255, 255;
-    // --ion-color-primary-shade: #4c26f7;
-    // --ion-color-primary-tint:#4c26f7;
-    // --ion-color-primary: #edeff9;
-    --ion-color-primary: #7d7d7d;
-    --ion-color-primary-rgb: 117, 204, 83;
-    --ion-color-primary-contrast: #2f2f31;
-    --ion-color-primary-contrast-rgb: 0, 0, 0;
-    --ion-color-primary-shade: #edeff9;
-    --ion-color-primary-tint: #edeff9;
+    --ion-color-primary: #4c26f7;
+    --ion-color-primary-rgb: 247, 38, 100;
+    --ion-color-primary-contrast: #ffffff;
+    --ion-color-primary-contrast-rgb: 255, 255, 255;
+    --ion-color-primary-shade: #4c26f7;
+    --ion-color-primary-tint:#4c26f7;
+    --ion-color-appcolor: #137CF5;
+	--ion-color-appcolor-rgb: 19,124,245;
+	--ion-color-appcolor-contrast: #ffffff;
+	--ion-color-appcolor-contrast-rgb: 255,255,255;
+	--ion-color-appcolor-shade: #116dd8;
+	--ion-color-appcolor-tint: #2b89f6;
     --ion-color-secondary: #ac0e86;
     --ion-color-secondary-rgb: 172, 14, 134;
     --ion-color-secondary-contrast: #ffffff;
@@ -73,28 +72,32 @@
 
 
 
-    --themebg :#113970; 
+    --themebg :#113970;
+    --theme-color-light : #0851b5;
+    --theme-color-rgb : #348EF7;
 
+    --active-bg : #0fc6e3;--Active-bg : #0fc6e3;--ACTIVE-bg : #0fc6e3;
+    --regret-bg : #ffb732;--Regret-bg : #ffb732;--Regret-bg : #ffb732;
+    --new-bg : #0a75d2;--New-bg : #0a75d2;--NEW-bg : #0a75d2;
+    --move-bg : #08be6a;--Move-bg : #08be6a;--MOVE-bg : #08be6a;
+    --completed-bg : #0fc6e3;--Completed-bg : #0fc6e3;--COMPLETED-bg : #0fc6e3;
+    --approved-bg : #08be6a;--Approved-bg : #08be6a;--APPROVED-bg : #08be6a;
+    --booked-bg : #08be6a;--Booked-bg : #08be6a;--BOOKED-bg : #08be6a;
+    --dispatching-bg : #0851b5;--Dispatching-bg : #0851b5;--DISPATCHING-bg : #0851b5;
+    --review-bg : #348EF7;--Review-bg : #348EF7;--REVIEW-bg : #348EF7;
+    --scheduling-bg : #0fc6e3;--Scheduling-bg : #0fc6e3;--SCHEDULING-bg : #0fc6e3;
+    --person_incharge-bg : #ffb732;--Person_Incharge-bg : #ffb732;--PERSON_INCHARGE-bg : #ffb732;
+    --testing-bg : #0a75d2;--Testing-bg : #0a75d2;--TESTING-bg : #0a75d2;
+    --invoicing-bg : #08be6a; --Invoicing-bg : #08be6a; --INVOICING-bg : #08be6a;
+    --inactive-bg : #0fc6e3;--Inactive-bg : #0fc6e3;--INACTIVE-bg : #0fc6e3;
 
 }
 
-// ion-toolbar {
-//     ion-button,
-//     ion-back-button,
-//     ion-menu-button,
-//     .sc-ion-back-button-ios-h {
-//         --color: white;
-//     }
-// }
-
-// .alert-radio-label.sc-ion-alert-md {
-//     white-space: pre-line !important;
-// }
-
-// .alert-radio-label.sc-ion-alert-ios {
-//     white-space: pre-line !important;
-// }
-
-// .alert-button.sc-ion-alert-md {
-//     color: #FE6F61;
-// }
+.ion-color-appcolor {
+    --ion-color-base: var(--ion-color-appcolor, --ion-color-white);
+    --ion-color-base-rgb: var(--ion-color-appcolor-rgb, --ion-color-white);
+    --ion-color-contrast: var(--ion-color-appcolor-contrast, --ion-color-white);
+    --ion-color-contrast-rgb: var(--ion-color-appcolor-contrast-rgb, --ion-color-white);
+    --ion-color-shade: var(--ion-color-appcolor-shade, --ion-color-white);
+    --ion-color-tint: var(--ion-color-appcolor-tint, --ion-color-white);
+  }

@@ -30,7 +30,7 @@ export class IonLoaderService {
 
   // Dismiss loader
   async hideLoader() {
-    const loading = await this.loadingController.dismiss().then((response) => {
+    await this.loadingController.dismiss().then((response) => {
       console.log('Loader closed!', response);
     }).catch((err) => {
       console.log('Error occured : ', err);

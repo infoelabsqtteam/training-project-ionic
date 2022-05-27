@@ -1,27 +1,20 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
-import { DatePipe, CurrencyPipe, TitleCasePipe, Location } from '@angular/common';
-import { AuthService, CoreUtilityService, EnvService, LoaderService, PermissionService, StorageService, StorageTokenStatus } from '@core/ionic-core';
-import { Platform, ModalController , PopoverController, AlertController} from '@ionic/angular';
-import { HttpClient, HttpClientModule, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { DataService } from '../api/data.service';
-import { NavigationExtras, Router, RouterOutlet } from '@angular/router';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { Location } from '@angular/common';
+import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, LoaderService, PermissionService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
+import { Platform, AlertController } from '@ionic/angular';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { DataShareServiceService } from '../service/data-share-service.service';
 import { Subscription } from 'rxjs';
-import * as appConstants from '../../app//shared/app.constants';
-import { ProductSearchComponent } from '../component/product-search/product-search.component';
 
 import { DocumentViewer, DocumentViewerOptions } from '@ionic-native/document-viewer/ngx';
-import { File } from '@ionic-native/file/ngx';
-//import { FileTransfer } from '@ionic-native/file-transfer/ngx';
-// import { FileOpener } from '@ionic-native/file-opener/ngx';
-// import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+//import { File } from '@ionic-native/file/ngx';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  providers: [DocumentViewer,File],
+  providers: [DocumentViewer],
 })
 export class HomePage implements OnInit, OnDestroy {
   modal: any;
@@ -30,7 +23,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   // get local data of card
   private authSub: Subscription;
-  cardListSubscription;
+  // cardListSubscription;
   private previousAuthState = false;
   userData: any;
   userInfo: any={};
@@ -58,40 +51,37 @@ export class HomePage implements OnInit, OnDestroy {
   @Output() collection_name = new EventEmitter<string>();
   plt: any;
   pdfObj: any;
-
+  gridDataSubscription;
 
   // download var
 
   constructor(
     private platform: Platform,
     private authService: AuthService,
-    private coreUtilService: CoreUtilityService,
     private storageService:StorageService,
     private router: Router,
     private _location: Location,
     public alertController: AlertController,
-    private statusBar: StatusBar,
     private http: HttpClient,
-    private loaderService: LoaderService,
     private envService: EnvService,
-    private permissionService: PermissionService,
-    private dataShareService: DataShareServiceService,    
-    // private fileOpener: FileOpener,
-    // private documentViewer: DocumentViewer,
-    private file: File,
-    //private fileTransfer: FileTransfer
+    private dataShareServiceService: DataShareServiceService,
+    private dataShareService:DataShareService,
+    private apiService:ApiService,
+    private restService:RestService,
+    private commonDataShareService:CommonDataShareService
   ) 
   {
-    // below code is for slider and title name
     this.initializeApp();
     this.banner_img = [
-      'assets/e-labs/banner.png'
-      // 'assets/img/home/banner1.png',
-      // 'assets/img/home/banner2.png'
+      'assets/img/home/banner1.png',
+      'assets/img/home/banner2.png',
+      'assets/img/home/banner2.png'
     ];
     this.web_site_name = this.envService.getWebSiteName();
-    this.cardListSubscription = this.dataShareService.cardList.subscribe(data =>{
-      this.setCardList(data);
+    
+    this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
+      this.cardList = data.data;
+      this.commonDataShareService.setModuleList(this.cardList);
     })
   }
 
@@ -127,123 +117,49 @@ export class HomePage implements OnInit, OnDestroy {
 
   }
 
-  setCardList(cardList){
-    this.cardList = cardList;
-  }
-
-  // show modal, showing detail of card
-  async presentModal() {
-    
-  }
 
   ngOnDestroy(): void {
-    if (this.cardListSubscription) {
-      this.cardListSubscription.unsubscribe();
+    // if (this.cardListSubscription) {
+    //   this.cardListSubscription.unsubscribe();
+    // }
+    if (this.gridDataSubscription) {
+      this.gridDataSubscription.unsubscribe();
     }
   }
 
   ngOnInit() {
-    // if (this.storageService.GetRefreshTokenTime() === true || this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_EXPIRED) {
-    //   this.authService.refreshToken();
-    // } else 
-    
     if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-    //   this.commonFunction();
-    //  this.cardTypeFunction();
-      this.router.navigateByUrl('/home');
-      
-    } else {
-      // if(appConstants.loginWithMobile){
-      //   this.router.navigateByUrl('auth/signin');
-      // }else{
-        this.router.navigateByUrl('auth/signine');
-      // }
-      
+      this.router.navigateByUrl('/home');      
+    }else {
+      this.router.navigateByUrl('auth/signine');      
     }
     this.authService.getUserPermission(false,'/home');
-
     this.authService._user_info.subscribe(resp => {
       this.userInfo = resp;
-
-      this.commonFunction();
-      // this.cardTypeFunction();
-      // this.getBannersData();
+      this.getGridData();
     })
-
-    
-
-    
   }
 
-  //for getting cardmaster data
-  commonFunction(criteria?) {
-    this.storageService.getObject('authData').then(async (val) => {
-      if (val && val.idToken != null) {
-        var header = {
-          headers: new HttpHeaders()
-            .set('Authorization', 'Bearer ' + val.idToken)
-        }
-        // this.loaderService.showLoader(null);
-        let crList = [];
-        if(criteria && criteria.length > 0){
-          crList = criteria;
-        }
-        let obj = {
-          crList: crList,
-          key1: "MCLR01",
-          key2: "CRM",
-          log: await this.storageService.getUserLog(),
-          pageNo: 0,
-          pageSize: 50,
-          value: "card_master"
-        }
-        let api = this.envService.baseUrl('GET_GRID_DATA')
-        this.http.post(api + '/' + 'null', obj, header).subscribe(
-          respData => {
-            // this.loaderService.hideLoader();
-            //this.cardList = respData['data'];
-            if(respData && respData['data'].length > 0){
 
-              if(criteria && criteria.length > 0){
-                let card = respData['data'][0];
-                this.dataShareService.setcardData(card);
-                this.router.navigate(['crm/quotation']);
-              }else{              
-                this.dataShareService.setCardList(respData['data']);
-              }
-              
-            }
-          },
-          (err: HttpErrorResponse) => {
-            // this.loaderService.hideLoader();
-            console.log(err.error);
-          }
-        )
-      }
-    })
+  getGridData(criteria?){
+    let criteriaList = [];
+    if(criteria){
+      criteriaList = criteria;
+    }
+    const params = 'card_master';
+    let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
+    data['pageNo'] = 0;
+    data['pageSize'] = 50;
+    let payload = {
+      'data':data,
+      'path':null
+    }
+    this.apiService.getGridData(payload);
   }
 
   showCardTemplate(card:any, index:number){
-    this.selectedIndex = index;
-    // this.router.navigate(['cardview']);
-    let cardId = card._id;
-    if(card && card.tab_menu && card.tab_menu.length > 0){
-      let tab  = card.tab_menu[0];
-      let tabId = tab._id;
-      let crList = [
-        {
-          "fName": "_id",
-          "fValue": tabId,
-          "operator": "eq"
-        }
-      ]
-      this.commonFunction(crList);
-    }else{
-      this.dataShareService.setcardData(card);
-    }
-    this.dataShareService.setParentCardId(cardId);
-    this.router.navigate(['crm/quotation']);
-    //this.dataShareService.setcardData(card);
+    this.commonDataShareService.setModuleIndex(index);
+    this.router.navigate(['card-view']); 
   }
 
   showExitConfirm() {
@@ -271,87 +187,12 @@ export class HomePage implements OnInit, OnDestroy {
       });
   }
 
-  getBannersData() {
-    this.storageService.getObject('authData').then((val) => {
-      if (val && val.idToken != null) {
-        var header = {
-          headers: new HttpHeaders()
-            .set('Authorization', 'Bearer ' + val.idToken)
-        }
-
-        let obj = {
-          crList: [],
-          key1: "MCLR01",
-          key2: "CRM",
-          pageNo: 0,
-          pageSize: 50,
-          value: "quotation_letter"
-        }
-        this.storageService.getUserLog().then((val) => {
-          obj['log'] = val;
-        })
-        let api = this.envService.baseUrl('GET_APP_BANNERS')
-        this.http.post(api, obj, header).subscribe(
-          (respData) => {
-            this.bannerData = respData['success'];
-          },
-          (err: HttpErrorResponse) => {
-            console.log(err.error);
-          }
-        )
-      }
-    })
-
-  }
+  
   // search module below
-  search(myInput) {
-    this.storageService.getObject('authData').then(async (val) => {
-      if (val && val.idToken != null) {
-        var header = {
-          headers: new HttpHeaders()
-            .set('Authorization', 'Bearer ' + val.idToken)
-        }
-        //  this.loaderService.showLoader(null);
-        let obj = {
-          crList: [{
-            fName: "name",
-            fValue: myInput,
-            operator: "stwic"
-          }],
-          key1: "MCLR01",
-          key2: "CRM",
-          log: await this.storageService.getUserLog(),
-          pageNo: 0,
-          pageSize: 50,
-          value: "card_master"
-        }
-        let api = this.envService.baseUrl('GET_GRID_DATA')
-        this.http.post(api + '/' + 'null', obj, header).subscribe(
-          respData => {
-            // this.loaderService.hideLoader();
-            this.cardList = respData['data'];
-            this.dataCount = respData['data_size'];
-          },
-          (err: HttpErrorResponse) => {
-            // this.loaderService.hideLoader();
-            console.log(err.error);
-          }
-        )
-      }
-    })
-    
-  }
-
-  onClose(myInput) {
-    this.commonFunction();
-  }
-
-  onChangeValue(myInput) {
-    this.inValue = myInput.length;
-    if (this.inValue <= 0) {
-      this.commonFunction();
-    }
-  }
+  search() {
+    const criteria = "name;stwic;"+this.myInput+";STATIC";
+    this.getGridData([criteria]);
+  } 
 
   openSearch(){
     console.log("function open searchbar");
@@ -363,12 +204,5 @@ export class HomePage implements OnInit, OnDestroy {
 
   pdfurl = "https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf";
  
-  // downloadPDF(){
-  //   const options: DocumentViewerOptions = {
-  //     title: 'My PDF'
-  //   }
-  //   this.documentViewer.viewDocument('https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf', 'application/pdf', options);
-  //   console.log(this.pdfurl);
-  // }
-
+  
 }
