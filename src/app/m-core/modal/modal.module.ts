@@ -7,12 +7,17 @@ import { GridSelectionDetailModalComponent } from './grid-selection-detail-modal
 import { BrowserModule } from '@angular/platform-browser';
 import { IonicModule } from '@ionic/angular';
 import { CallDataRecordFormComponent } from './call-data-record-form/call-data-record-form.component';
+import { ChartFilterComponent } from './chart-filter/chart-filter.component';
+import { NgChartsModule } from 'ng2-charts';
+import { GoogleChartsModule } from 'angular-google-charts';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 const modal =[
   FormModalComponent,
   GridSelectionModalComponent,
   GridSelectionDetailModalComponent,
-  CallDataRecordFormComponent
+  CallDataRecordFormComponent,
+  ChartFilterComponent
 ]
 
 @NgModule({
@@ -22,6 +27,9 @@ const modal =[
     ReactiveFormsModule,
     BrowserModule,
     IonicModule.forRoot(),
+    NgChartsModule,
+    GoogleChartsModule,
+    NgSelectModule
   ],
   declarations: modal,
   exports:modal,

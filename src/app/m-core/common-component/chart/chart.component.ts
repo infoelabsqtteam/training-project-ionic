@@ -1,5 +1,7 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { ApiService, DataShareService, RestService } from '@core/ionic-core';
+import { ModalController } from '@ionic/angular';
+import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
 
 @Component({
   selector: 'app-chart',
@@ -41,38 +43,40 @@ export class ChartComponent implements OnInit{
     private restService: RestService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
+    private modalController: ModalController
 
   ) {
     // this.onLoadSubscribe();
     this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
       this.setGridData(data);
-      console.log("setGridData: ",data);
+      //console.log("setGridData: ",data);
     })
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
-      console.log("setStaticData: ",data);
+      //console.log("setStaticData: ",data);
     })
     this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
       this.setDashLetData(data);
+      //console.log("setDashLetData: ",data);
     }) 
    }
 
    ionViewWillEnter(){}
    ionViewDidEnter(){}
 
-   onLoadSubscribe(){
-    this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
-      this.setGridData(data);
-      console.log("setGridData: ",data);
-    })
-    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
-      this.setStaticData(data);
-      console.log("setStaticData: ",data);
-    })
-    this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
-      this.setDashLetData(data);
-    }) 
-   }
+  //  onLoadSubscribe(){
+  //   this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
+  //     this.setGridData(data);
+  //     console.log("setGridData: ",data);
+  //   })
+  //   this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
+  //     this.setStaticData(data);
+  //     console.log("setStaticData: ",data);
+  //   })
+  //   this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
+  //     this.setDashLetData(data);
+  //   }) 
+  //  }
   
    setChartData(chartData){
     if (chartData) {
@@ -94,6 +98,8 @@ export class ChartComponent implements OnInit{
     // })
     
   }
+
+  
   ngOnChanges(changes: SimpleChanges) {
     if(this.isShow){
       this.getPage(1)
@@ -251,5 +257,24 @@ export class ChartComponent implements OnInit{
   search(value: string) { 
     let filter = value.toLowerCase();
     return this.staticData['chart_list'].filter(option => option.name.toLowerCase().startsWith(filter));
+  }
+
+  async chartmodel(data:any, filter:any, index:number){
+    this.showfilter = true;
+    const modal = await this.modalController.create({
+      component: ChartFilterComponent,
+      cssClass: 'my-custom-modal-css',
+      componentProps: { 
+        'dashboardItem' : data,
+        'dashletData' : this.dashletData,
+        'filter':filter,
+        'selectedIndex': index,
+        'staticData': this.staticData
+      },
+      showBackdrop:true,
+      backdropDismiss:false,
+    });
+    modal.componentProps.modal = modal;
+    return await modal.present();
   }
 }

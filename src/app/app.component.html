@@ -20,14 +20,14 @@
                 </ion-menu-toggle>
                 <ion-menu-toggle>
                     <ion-item lines="none" [routerLink]="['/auth/changepwd']">
-                        <ion-icon name="card-outline"></ion-icon>
+                        <ion-icon name="key-outline"></ion-icon>
                         <ion-label class="ion-margin-start">Change Password</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
                 <ion-menu-toggle>
-                    <ion-item lines="none" [routerLink]="['/charts']">
-                        <ion-icon name="navigate"></ion-icon>
-                        <ion-label class="ion-margin-start">Chart Js</ion-label>
+                    <ion-item lines="none" [routerLink]="['charts']">
+                        <ion-icon name="bar-chart-outline"></ion-icon>
+                        <ion-label class="ion-margin-start">Charts</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
                 <!-- <ion-menu-toggle>
@@ -47,13 +47,6 @@
                     detail="false" [class.selected]="selectedIndex == i" [ngClass]="cardItem.sidebar_menu?'ion-show':'ion-hide'">
                         <ion-icon name="return-down-forward-outline"></ion-icon>
                         <ion-label class="ion-margin-start">{{cardItem.name}}</ion-label>
-                    </ion-item>
-                </ion-menu-toggle>
-
-                <ion-menu-toggle>
-                    <ion-item lines="none" [routerLink]="['charts']">
-                        <ion-icon name="bar-chart-outline"></ion-icon>
-                        <ion-label class="ion-margin-start">Charts</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
                 

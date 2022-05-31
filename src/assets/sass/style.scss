@@ -315,20 +315,13 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
     }
 }
 .chartcard{
-    ion-card-header{padding: 10px 10px 0;
-        ion-card-title{font-size:13px;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    }
+    ion-card-header{display:flex;align-items:center;
+    ion-card-title{font-size:13px;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    ion-icon {margin:0 5px;font-size:16px;}
+}
     
-    .chartbody {
-        max-height: 160px;
-        min-height: 160px;
-        overflow-y: scroll;
-        overflow-x: scroll;
-        .google-visualization-table-table td {
-            font-size: 10px;
-            white-space: nowrap;
-
-        }
+    .chartbody {max-height:175px;min-height:175px;
+        .google-visualization-table-table td {font-size:10px;white-space:nowrap;}
         .spinner {display:flex;align-items:center;justify-content:center;height:100%;position:absolute;width:100%;left:0;top:0;}
     }
 
@@ -338,3 +331,9 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
     ion-button {margin:15px 0 0 15px;}
     select {border:none;}
 }
+.chartfiltertitle {width:95%;font-size:15px;}
+.w-100 {width:100%;}
+.singlechatlist {overflow-x:scroll;
+    .google-visualization-table-table td {white-space:nowrap;}
+}
+

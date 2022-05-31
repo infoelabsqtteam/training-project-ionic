@@ -16,16 +16,17 @@
 
   <div class="filtermenu">
     <ion-button size="small" [disabled]="filterValue.length == 0 || filterValue.length > itemNumOfGrid" (click)="filterchart()">Filter</ion-button>
-    <ion-button size="small" [disabled]="filterValue.length == 0" (click)="resetFilter()">Reset Filter</ion-button>
+    <ion-button size="small" fill="outline" [disabled]="filterValue.length == 0" (click)="resetFilter()">Reset Filter</ion-button>
   </div>
 </div>
 
 
-<div class="row" *ngIf="filteredDashboardData.length >0">
-  <div class="" *ngFor="let item of filteredDashboardData; let j = index">
+<div *ngIf="filteredDashboardData.length >0">
+  <div *ngFor="let item of filteredDashboardData; let j = index">
     <ion-card class="chartcard">
       <ion-card-header class="charthead" *ngIf="item.fields && item.fields.length > 0">
         <ion-card-title>{{item.name}}</ion-card-title>
+        <ion-icon (click)="chartmodel(item,true,j)" name="funnel-outline"></ion-icon>
       </ion-card-header>
       <ion-card-content class="chartbody">
         <ng-container *ngIf="chartType[item.call_back_field]">
