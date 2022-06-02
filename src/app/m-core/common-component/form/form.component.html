@@ -90,7 +90,7 @@
         </div>
         <div *ngIf="tableField.type == 'checkbox'">
           <ion-item>
-            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-label position="">{{ tableField.label }}</ion-label>
             <ion-checkbox slot="end" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc(tableField)"></ion-checkbox>
           </ion-item>
         </div>

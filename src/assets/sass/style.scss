@@ -49,7 +49,7 @@ ion-toolbar.grey-toolbar {--background-color: #EFF1F3;}
 }
 
 // Home page Category List
-.catlist {background:#fff;padding:10px;border-radius:20px 20px 0 0;height:calc(100% - 30%);
+.catlist {background:#fff;padding:10px;border-radius:20px 20px 0 0;height:calc(100% - 22%);
     ul {margin:0;padding:0;list-style:none;text-align:start;
         li {display:inline-block;margin:10px 7px;cursor: pointer;text-align:center;
             .caticon {background:#8FBFE34D;border-radius:6px;width:54px;height:54px;line-height:55px;margin:-2px;text-align: center;}
@@ -224,7 +224,7 @@ ion-tabs.footertab {
     // .status_inactive{background: var(--inactive-bg);color: var(--ion-color-white);border: 1px solid var(--inactive-bg);padding: 0;--background: var(--inactive-bg);}
 }
 
-$status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move,Move,MOVE,regret,Regret,REGRET,completed,Completed,COMPLETED,approved,Approved,APPROVED,booked,Booked,BOOKED,dispatching,Dispatching,DISPATCHING,review,Review,REVIEW,scheduling,Scheduling,SCHEDULING,person_incharge,Person_Incharge,PERSON_INCHARGE,testing,Testing,TESTING,invoicing,Invoicing,INVOICING;
+$status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move,Move,MOVE,regret,Regret,REGRET,completed,Completed,COMPLETED,approved,Approved,APPROVED,booked,Booked,BOOKED,dispatching,Dispatching,DISPATCHING,review,Review,REVIEW,scheduling,Scheduling,SCHEDULING,person_incharge,Person_Incharge,PERSON_INCHARGE,testing,Testing,TESTING,invoicing,Invoicing,INVOICING,feasibility,Feasibility,FEASIBILITY,approve,Approve,APPROVE,reject,Reject,REJECT;
 
 @each $status in $status_button {
     .status_button  .status_#{$status} {
