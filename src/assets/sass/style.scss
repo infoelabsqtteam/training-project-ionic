@@ -30,7 +30,7 @@ ion-toolbar.grey-toolbar {--background-color: #EFF1F3;}
     ion-icon {color:#96b1d7;}
     ion-item {--background:rgba(0,0,0,0.08);--color:#96b1d7;margin-bottom:1px;}
 }
-.sidenavfooter {position:absolute;left:0;bottom:0;width:100%;background:var(--themebg);padding:10px;text-align:center;
+.sidenavfooter {width:100%;background:var(--themebg);padding:10px;text-align:center;
     ion-icon {color:#9ebae1;font-size:20px;margin:8px 10px;}
     ion-note {color:#929bd7;margin:5px 0 0;display:block;font-size:11px;}
 }
@@ -313,4 +313,28 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
     .flex_grid{display: flex;justify-content: space-between;
         ion-button{min-width: 48%;text-transform: capitalize;}
     }
+}
+.chartcard{
+    ion-card-header{padding: 10px 10px 0;
+        ion-card-title{font-size:13px;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    }
+    
+    .chartbody {
+        max-height: 160px;
+        min-height: 160px;
+        overflow-y: scroll;
+        overflow-x: scroll;
+        .google-visualization-table-table td {
+            font-size: 10px;
+            white-space: nowrap;
+
+        }
+        .spinner {display:flex;align-items:center;justify-content:center;height:100%;position:absolute;width:100%;left:0;top:0;}
+    }
+
+}
+.chartfilter {margin-bottom:30px;
+    ion-label, ion-select {font-size:14px !important;}
+    ion-button {margin:15px 0 0 15px;}
+    select {border:none;}
 }

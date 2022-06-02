@@ -25,6 +25,12 @@
                     </ion-item>
                 </ion-menu-toggle>
                 <ion-menu-toggle>
+                    <ion-item lines="none" [routerLink]="['charts']">
+                        <ion-icon name="bar-chart-outline"></ion-icon>
+                        <ion-label class="ion-margin-start">Charts</ion-label>
+                    </ion-item>
+                </ion-menu-toggle>
+                <!-- <ion-menu-toggle>
                     <ion-item lines="none" [routerLink]="['/track-location']">
                         <ion-icon name="navigate"></ion-icon>
                         <ion-label class="ion-margin-start">Track Me</ion-label>
@@ -35,19 +41,12 @@
                         <ion-icon name="camera-outline"></ion-icon>
                         <ion-label class="ion-margin-start">Camera</ion-label>
                     </ion-item>
-                </ion-menu-toggle>
+                </ion-menu-toggle> -->
                 <ion-menu-toggle auto-hide="false">
                     <ion-item lines="none"  *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" lines="none"
                     detail="false" [class.selected]="selectedIndex == i" [ngClass]="cardItem.sidebar_menu?'ion-show':'ion-hide'">
                         <ion-icon name="return-down-forward-outline"></ion-icon>
                         <ion-label class="ion-margin-start">{{cardItem.name}}</ion-label>
-                    </ion-item>
-                </ion-menu-toggle>
-
-                <ion-menu-toggle>
-                    <ion-item lines="none" [routerLink]="['charts']">
-                        <ion-icon name="bar-chart-outline"></ion-icon>
-                        <ion-label class="ion-margin-start">Charts</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
                 

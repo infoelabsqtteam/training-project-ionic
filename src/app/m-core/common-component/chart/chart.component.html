@@ -1,0 +1,49 @@
+<div class="chartfilter">
+
+  <ion-item>
+    <ion-label>Chart List</ion-label>
+    <ion-select multiple="true" [(ngModel)]="filterValue" (change)="checkFilter()">
+      <ion-select-option *ngFor="let staticValue of copyStaticData['chart_list']; index as i" [value]="staticValue._id">{{staticValue.name}}</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>No. Of Charts</ion-label>
+    <select [(ngModel)]="itemNumOfGrid" (change)="selectNoOfItem()">
+      <option *ngFor="let numverOfItem of noOfItems" [value]="numverOfItem">{{numverOfItem}}</option>
+    </select>
+  </ion-item>
+
+  <div class="filtermenu">
+    <ion-button size="small" [disabled]="filterValue.length == 0 || filterValue.length > itemNumOfGrid" (click)="filterchart()">Filter</ion-button>
+    <ion-button size="small" [disabled]="filterValue.length == 0" (click)="resetFilter()">Reset Filter</ion-button>
+  </div>
+</div>
+
+
+<div class="row" *ngIf="filteredDashboardData.length >0">
+  <div class="" *ngFor="let item of filteredDashboardData; let j = index">
+    <ion-card class="chartcard">
+      <ion-card-header class="charthead" *ngIf="item.fields && item.fields.length > 0">
+        <ion-card-title>{{item.name}}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="chartbody">
+        <ng-container *ngIf="chartType[item.call_back_field]">
+          <canvas baseChart *ngIf="item.package_name == 'chart_js'" [chartType]="chartType[item.call_back_field]"
+            [datasets]="chartDatasets[item.call_back_field]" [labels]="chartLabels[item.call_back_field]"
+            [colors]="chartColors[item.call_back_field]" [options]="chartOptions[item.call_back_field]"
+            [legend]="chartLegend[item.call_back_field]">
+          </canvas>
+          <google-chart *ngIf="item.package_name == 'google_chart' && chartTitle[item.call_back_field]"
+            [title]="chartTitle[item.call_back_field]" [type]="chartType[item.call_back_field]"
+            [data]="chartDatasets[item.call_back_field]" [columns]="chartLabels[item.call_back_field]"
+            [options]="chartOptions[item.call_back_field]">
+          </google-chart>
+        </ng-container>
+        <div *ngIf="!chartType[item.call_back_field]" class="spinner">
+          <ion-spinner name="crescent"></ion-spinner>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>

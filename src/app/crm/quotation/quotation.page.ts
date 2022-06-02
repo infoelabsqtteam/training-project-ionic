@@ -19,7 +19,7 @@ export class QuotationPage implements OnInit, OnDestroy {
   cardList: any = [];
   selectedIndex= -1;
   tabMenu: any = [];
-  cardListSubscription:any;
+  // cardListSubscription:any;
   columnList: any = [];
   carddata: any;
   cardtitle: any;
@@ -34,7 +34,7 @@ export class QuotationPage implements OnInit, OnDestroy {
   data :any ={};
 
   // new var
-  gridDataSubscription: any;
+  // gridDataSubscription: any;
   
   
   constructor(
@@ -82,12 +82,12 @@ export class QuotationPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.resetVariables();
-    if (this.cardListSubscription) {
-      this.cardListSubscription.unsubscribe();
-    }
-    if (this.gridDataSubscription) {
-      this.gridDataSubscription.unsubscribe();
-    }
+    // if (this.cardListSubscription) {
+    //   this.cardListSubscription.unsubscribe();
+    // }
+    // if (this.gridDataSubscription) {
+    //   this.gridDataSubscription.unsubscribe();
+    // }
   }
 
   private getCardDataByCollection(i) {
