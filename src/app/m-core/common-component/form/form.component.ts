@@ -2939,5 +2939,9 @@ case 'populate_fields_for_report_for_new_order_flow':
       this.apiService.ResetDownloadUrl();
     }
   }
+  getDivClass(field) {
+    const fieldsLangth = this.tableFields.length;
+    return this.commonFunctionService.getDivClass(field,fieldsLangth);
+  }
 
 }

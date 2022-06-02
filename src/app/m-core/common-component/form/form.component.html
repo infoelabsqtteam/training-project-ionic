@@ -8,7 +8,7 @@
 <ion-content>
   <form [formGroup]="templateForm" *ngIf="tableFields.length > 0" novalidate>
     <div *ngIf="handleDisabeIf()">
-      <div *ngFor="let tableField of tableFields; let i = index" [id]="tableField._id">
+      <div *ngFor="let tableField of tableFields; let i = index" [ngClass]="getDivClass(tableField)" [id]="tableField._id">
         <div *ngIf="tableField.type == 'text'">
           <ion-item>
             <ion-label position="floating">{{ tableField.label }}</ion-label>
@@ -89,9 +89,9 @@
           </ion-item>
         </div>
         <div *ngIf="tableField.type == 'checkbox'">
-          <ion-item>
-            <ion-label position="floating">{{ tableField.label }}</ion-label>
+          <ion-item>            
             <ion-checkbox slot="end" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc(tableField)"></ion-checkbox>
+            <ion-label position="floating">{{ tableField.label }}</ion-label>
           </ion-item>
         </div>
         <div *ngIf="tableField.type == 'radio'">
