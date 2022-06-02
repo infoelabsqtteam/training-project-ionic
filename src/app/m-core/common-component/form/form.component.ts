@@ -9,7 +9,7 @@ import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/gr
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
 import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { finalize } from 'rxjs';
+import { finalize, last } from 'rxjs';
 import { CameraService } from 'src/app/service/camera-service/camera.service';
 import { HttpClient } from '@angular/common/http';
 
@@ -2940,8 +2940,15 @@ case 'populate_fields_for_report_for_new_order_flow':
     }
   }
   getDivClass(field) {
-    const fieldsLangth = this.tableFields.length;
-    return this.commonFunctionService.getDivClass(field,fieldsLangth);
+    if(field.field_class && field.field_class != ''){
+      const fieldsLangth = this.tableFields.length;
+      const returnClass = this.commonFunctionService.getDivClass(field,fieldsLangth)
+      const classes = returnClass.split('-');
+      const lastIndex = classes.length-1;
+      return classes[lastIndex];
+    }else{
+      return '12';
+    }
   }
 
 }
