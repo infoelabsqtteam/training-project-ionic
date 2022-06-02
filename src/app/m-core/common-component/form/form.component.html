@@ -128,12 +128,13 @@
             <ion-label>{{ tableField.label }}</ion-label>
             <ion-input
               value="{{ templateForm.get(tableField.field_name).value | date: 'dd.MM.yyyy' }}"
-              id="date"
+              id="{{tableField.field_name}}"
               class="ion-text-end"
             ></ion-input>
-            <ion-popover trigger="date" size="cover">
+            <ion-popover trigger="{{tableField.field_name}}" >
               <ng-template>
                 <ion-datetime
+                  size="cover"
                   presentation="date"
                   [formControlName]="tableField.field_name"
                   locale="en-GB"
