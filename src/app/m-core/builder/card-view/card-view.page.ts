@@ -1,8 +1,6 @@
 import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
 import { Platform, ModalController, IonRouterOutlet} from '@ionic/angular';
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup} from '@angular/forms';
 import { CallNumber } from '@ionic-native/call-number/ngx';
@@ -35,12 +33,12 @@ export class CardViewPage implements OnInit, OnDestroy {
 
    // filter card
   filterForm: FormGroup;
-  filterFormAgain: FormGroup;
   createFormgroup: boolean = true;
   openFilter: boolean = false;
   filterCount: 0;
   searching:boolean = false;
-  searchcardvalue:any;
+  searchcardvalue:any='';
+  searchcardfield:any='';
   selectedLeave : string = '';
 
   // addNewEnabled:boolean=false;
@@ -54,21 +52,15 @@ export class CardViewPage implements OnInit, OnDestroy {
       private apiService:ApiService,
       private formBuilder: FormBuilder,
       public modalController: ModalController,
-      @Optional() private readonly routerOutlet?: IonRouterOutlet,
-      
-    ) 
-    {
-      
-      
-    }
+      @Optional() private readonly routerOutlet?: IonRouterOutlet      
+    ){}
   
     ionViewWillEnter(){
       this.load();
       this.searching = false;
     }
 
-    ngOnInit() {  
-    }
+    ngOnInit() {}
     togglesearch(){
       this.searching = !this.searching;
       this.searchcardvalue = "";
@@ -122,11 +114,11 @@ export class CardViewPage implements OnInit, OnDestroy {
       }
     }
     filterCardAgain(){  
-      console.log(this.searchcardvalue);
-    
+      const value = {}
+      value[this.searchcardfield] = this.searchcardvalue;
       this.data = {
-        'filterFormData' : this.filterFormAgain.getRawValue()
-      }
+        'filterFormData' : value
+      }         
     }
     closefilterCard(){
       this.data = {};
@@ -153,7 +145,6 @@ export class CardViewPage implements OnInit, OnDestroy {
         });
         if (forControl) {
           this.filterForm = this.formBuilder.group(forControl);
-          this.filterFormAgain=this.formBuilder.group(forControl);
         }
       }
     }

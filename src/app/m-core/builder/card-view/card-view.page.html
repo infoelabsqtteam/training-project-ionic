@@ -2,8 +2,7 @@
   <ion-toolbar>
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
   <ion-item lines="none">
-    <ion-label>Search Card</ion-label>
-    <ion-select interface="" [(ngModel)]="searchcardvalue"  value=""  >
+    <ion-select interface="" [(ngModel)]="searchcardfield"   >
       <ion-select-option *ngFor="let columns of columnList; index as i" [value]="columns.field_name" >{{columns.field_label}}</ion-select-option>
     </ion-select>
     
