@@ -3,13 +3,13 @@ import { FormGroup, FormBuilder, Validators, AsyncValidatorFn } from "@angular/f
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
 import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService } from '@core/ionic-core';
-import { ModalController, ToastController } from '@ionic/angular';
+import { ModalController, ToastController  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
 import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { finalize } from 'rxjs';
+import { finalize, last } from 'rxjs';
 import { CameraService } from 'src/app/service/camera-service/camera.service';
 import { HttpClient } from '@angular/common/http';
 
@@ -2937,6 +2937,17 @@ case 'populate_fields_for_report_for_new_order_flow':
       this.downloadClick = '';
       this.dataSaveInProgress = true;
       this.apiService.ResetDownloadUrl();
+    }
+  }
+  getDivClass(field) {
+    if(field.field_class && field.field_class != ''){
+      const fieldsLangth = this.tableFields.length;
+      const returnClass = this.commonFunctionService.getDivClass(field,fieldsLangth)
+      const classes = returnClass.split('-');
+      const lastIndex = classes.length-1;
+      return classes[lastIndex];
+    }else{
+      return '12';
     }
   }
 
