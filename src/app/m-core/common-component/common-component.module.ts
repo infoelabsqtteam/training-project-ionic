@@ -10,12 +10,14 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { ChartComponent } from './chart/chart.component';
 import { NgChartsModule } from 'ng2-charts';
 import { GoogleChartsModule } from 'angular-google-charts';
+import { GridSelectionComponent } from './grid-selection/grid-selection.component';
 
 const components = [
     FormComponent,
     CardsLayoutComponent,
     ModalDetailCardComponent,
-    ChartComponent
+    ChartComponent,
+    GridSelectionComponent
   ];
 
 @NgModule({

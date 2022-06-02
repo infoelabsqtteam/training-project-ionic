@@ -93,11 +93,14 @@ export class FormComponent implements OnInit, OnDestroy {
   typeaheadDataSubscription:any;
   fileDataSubscription:any;
   fileDownloadUrlSubscription:any;
+ 
 
   dateValue:any;
   public deleteIndex:any = '';
   public deletefieldName = {};
-  
+
+  samePageGridSelectionData:any;
+  samePageGridSelection : boolean = false;
  
   
 
@@ -1925,6 +1928,7 @@ export class FormComponent implements OnInit, OnDestroy {
         //   "object": this.getFormValue(true)
         // }
         // this.modalService.open('grid-selection-modal', gridModalData);
+
         this.openGridSelectionModal(field);
         break;
       default:
@@ -2524,22 +2528,28 @@ case 'populate_fields_for_report_for_new_order_flow':
       "selectedData":selectedValue,
       "object": this.getFormValue(true)
     }
-    const modal = await this.modalController.create({
-      component: GridSelectionModalComponent,
-      componentProps: {
-        "Data": gridModalData,
-      },
-      swipeToClose: false
-    });
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss()
-      .then((data) => {
-        const object = data['data']; // Here's your selected user!
-        if(object['data'] && object['data'].length > 0){
-          this.gridSelectionResponce(object['data']);
-        }        
-    });
-    return await modal.present();
+    
+    this.samePageGridSelection = true;
+    if(this.samePageGridSelection == true){          
+      this.samePageGridSelectionData = gridModalData;
+    }else{    
+      const modal = await this.modalController.create({
+        component: GridSelectionModalComponent,
+        componentProps: {
+          "Data": gridModalData,
+        },
+        swipeToClose: false
+      });
+      modal.componentProps.modal = modal;
+      modal.onDidDismiss()
+        .then((data) => {
+          const object = data['data']; // Here's your selected user!
+          if(object['data'] && object['data'].length > 0){
+            this.gridSelectionResponce(object['data']);
+          }        
+      });
+      return await modal.present();
+    }
   }
   gridSelectionResponce(responce){ 
 

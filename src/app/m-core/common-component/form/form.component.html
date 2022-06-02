@@ -131,9 +131,9 @@
               id="{{tableField.field_name}}"
               class="ion-text-end"
             ></ion-input>
-            <ion-popover trigger="{{tableField.field_name}}" [size]="cover" >
+            <ion-popover trigger="{{tableField.field_name}}">
               <ng-template>
-                <ion-datetime
+                <ion-datetime size="cover"
                   presentation="date"
                   [formControlName]="tableField.field_name"
                   locale="en-GB"
@@ -163,6 +163,13 @@
         </div>
       </ion-col> 
     </ion-row>  
+
+    <row *ngIf="samePageGridSelection == true" class="samePageGridSelection">
+      <ion-col>
+        <app-grid-selection [Data]="samePageGridSelectionData"></app-grid-selection>
+
+      </ion-col>
+    </row>
     
     <ion-row>
       <ion-col>
@@ -171,5 +178,6 @@
         </span>
       </ion-col>
     </ion-row>
+    
   </ion-grid>
 </ion-content>
