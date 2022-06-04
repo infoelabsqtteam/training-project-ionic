@@ -40,6 +40,7 @@ export class ChartFilterComponent implements OnInit {
   // dashletDataSubscription;
   // typeaheadDataSubscription;
   typeaheadDataSubscription;
+  dashletDataSubscription;
 
   minDate: Date;
   maxDate: Date;
@@ -58,6 +59,9 @@ export class ChartFilterComponent implements OnInit {
     this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data =>{
       this.setTypeaheadData(data);
     })
+    this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
+      this.setDashLetData(data);
+    }) 
     const currentYear = new Date().getFullYear();
     this.minDate = new Date(currentYear - 100, 0, 1);
     this.maxDate = new Date(currentYear + 1, 11, 31);
@@ -251,7 +255,8 @@ export class ChartFilterComponent implements OnInit {
 
 
 
-  dismissModal(){
+  dismissModal(item){
+    this.close(item);
     this.modal.dismiss({'dismissed': true});
   }
 

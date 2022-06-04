@@ -265,6 +265,7 @@ export class ChartComponent implements OnInit{
       backdropDismiss:false,
     });
     modal.componentProps.modal = modal;
+    
     return await modal.present();
   }
 }

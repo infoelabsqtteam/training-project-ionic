@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-icon name="arrow-back-outline" slot="icon-only" (click)="dismissModal()"></ion-icon></ion-buttons>
+    <ion-buttons slot="start"><ion-icon name="arrow-back-outline" slot="icon-only" (click)="dismissModal(dashboardItem)"></ion-icon></ion-buttons>
     <ion-title class="chartfiltertitle" *ngIf="dashboardItem && dashboardItem.fields && dashboardItem.fields.length >0">{{dashboardItem.name}}</ion-title>
   </ion-toolbar>
 </ion-header>
