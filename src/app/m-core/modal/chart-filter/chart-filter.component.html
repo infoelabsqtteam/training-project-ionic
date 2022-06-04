@@ -6,119 +6,121 @@
 </ion-header>
 
 <ion-content *ngIf="dashboardItem && dashboardItem.fields && dashboardItem.fields.length >0">
-  <!-- <form *ngIf="dashboardItem && dashboardItem.fields && dashboardItem.fields.length >0 && showFilter"
+  <form *ngIf="dashboardItem && dashboardItem.fields && dashboardItem.fields.length >0 && showFilter"
     [formGroup]="dashboardFilter">
 
-    <div *ngFor="let field of dashboardItem.fields; let i = index" [id]="field._id">
-
-      <div *ngIf="field.type == 'date'">
-        <ion-item>
-          <ion-label>{{ field.label }}</ion-label>
-          <ion-input value="{{ dashboardFilter.get(field.field_name).value | date: 'dd.MM.yyyy' }}" id="date" class="ion-text-end" ></ion-input>
-          <ion-popover trigger="date" size="cover">
-            <ng-template>
-              <ion-datetime presentation="date" [formControlName]="field.field_name" locale="en-GB"></ion-datetime>
-            </ng-template>
-          </ion-popover>
-        </ion-item>
-      </div>
-
-
-      
-
-      <div *ngIf="field.type == 'dropdown'">
+    <ion-grid class="chartfilter">
+      <ion-row>
+        <ion-col size="6" *ngFor="let field of dashboardItem.fields; let i = index" [id]="field._id">
+            <ion-item *ngIf="field.type == 'date'">
+              <ion-label>{{ field.label }}</ion-label>
+              <ion-input value="{{ dashboardFilter.get(field.field_name).value | date: 'dd.MM.yyyy' }}" id="date" class="ion-text-end" ></ion-input>
+              <ion-popover trigger="date" size="cover">
+                <ng-template>
+                  <ion-datetime presentation="date" [formControlName]="field.field_name" locale="en-GB"></ion-datetime>
+                </ng-template>
+              </ion-popover>
+            </ion-item>
+          <div *ngIf="field.type == 'dropdown'">
+            <ion-item *ngIf="field.datatype == 'object'">
+              <ion-label>{{ field.label }}</ion-label>
+              <ion-select *ngIf="!field.multi_select" [formControlName]="field.field_name">
+                <ion-select-option *ngFor="let staticValue of staticData[field.ddn_field]" [value]="staticValue._id" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
+              </ion-select>
+              <ion-select multiple="true" *ngIf="field.multi_select" [formControlName]="field.field_name">
+                <ion-select-option *ngFor="let staticValue of staticData[field.ddn_field]" [value]="staticValue._id" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
+              </ion-select>
+            </ion-item>
+            <ion-item *ngIf="field.datatype != 'object' && field.datatype != 'key_value'">
+              <ion-label>{{ field.label | titlecase}}</ion-label>
+              <ion-select [formControlName]="field.field_name">
+                <ion-select-option *ngFor="let staticValue of staticData[field.ddn_field]" [value]="staticValue">
+                  {{getddnDisplayVal(staticValue)}}  not key or object value</ion-select-option>
+              </ion-select>
+            </ion-item>
+            <ion-item *ngIf="field.datatype == 'key_value'">
+              <ion-label>{{ field.label | titlecase}} <span *ngIf="field.is_mandatory">*</span></ion-label>
+              <ion-select [formControlName]="field.field_name">
+                <ion-select-option *ngFor="let staticValue of staticData[field.ddn_field] | keyvalue"
+                  [value]="staticValue.key">{{getddnDisplayVal(staticValue.value)}}  key value</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </div>
+          <ion-item *ngIf="field.type == 'text'">
+            <ion-label position="floating">{{ field.label }}</ion-label>
+            <ion-input [formControlName]="field.field_name" type="text"></ion-input>
+          </ion-item>
+          <div class="typehead" *ngIf="field.type == 'typeahead'">
+            <div class="w-100" *ngIf="field.datatype != 'list_of_object'">
+              <ng-select [placeholder]="field.label" [formControlName]="field.field_name" (keyup)="updateData($event,field)">
+                <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
+              </ng-select>
+            </div>
+            <div class="w-100" *ngIf="field.datatype == 'list_of_object'">
+              <ng-select [multiple]="true" [placeholder]="field.label" [formControlName]="field.field_name" (keyup)="updateData($event,field)">
+                <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
+              </ng-select>
+            </div>
+          </div>
+        </ion-col>
         
-        <ion-item *ngIf="field.datatype == 'object'">
-          <ion-label position="floating">{{ field.label }}</ion-label>
-          <ion-select *ngIf="!field.multi_select" [formControlName]="field.field_name">
-            <ion-select-option *ngFor="let staticValue of staticData[field.ddn_field]" [value]="staticValue._id" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
-          </ion-select>
-          <ion-select multiple="true" *ngIf="field.multi_select" [formControlName]="field.field_name">
-            <ion-select-option *ngFor="let staticValue of staticData[field.ddn_field]" [value]="staticValue._id" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
-          </ion-select>
-        </ion-item>
-        
-        <ion-item *ngIf="field.datatype != 'object' && field.datatype != 'key_value'">
-          <ion-label>{{ field.label | titlecase}}</ion-label>
-          <ion-select [formControlName]="field.field_name">
-            <ion-select-option *ngFor="let staticValue of staticData[field.ddn_field]" [value]="staticValue">
-              {{getddnDisplayVal(staticValue)}}  not key or object value</ion-select-option>
-          </ion-select>
-        </ion-item>
+        <ion-col size="6">
+          <ion-badge color="medium" class="roundedbtn" [disabled]="checkValidator()" (click)="dashletFilter(dashboardItem)"><ion-icon name="filter-outline"></ion-icon></ion-badge>
+          <ion-badge color="light" class="roundedbtn" [disabled]="checkValidator()" (click)="reset(dashboardItem)"><ion-icon name="reload-outline"></ion-icon></ion-badge>
+          <ion-badge color="medium" class="roundedbtn" *ngIf="dashboardItem.package_name == 'google_chart'"
+          (click)="exportexcel()"><ion-icon name="download-outline"></ion-icon></ion-badge>
+          <ion-badge color="medium" class="roundedbtn" *ngIf="dashboardItem.package_name == 'chart_js'" (click)="canvasimg()"><a
+            href="{{ chartjsimg }}" download><ion-icon name="download-outline"></ion-icon></a></ion-badge>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
 
-        <ion-item *ngIf="field.datatype == 'key_value'">
-          <ion-label>{{ field.label | titlecase}} <span *ngIf="field.is_mandatory">*</span></ion-label>
-          <ion-select [formControlName]="field.field_name">
-            <ion-select-option *ngFor="let staticValue of staticData[field.ddn_field] | keyvalue"
-              [value]="staticValue.key">{{getddnDisplayVal(staticValue.value)}}  key value</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </div>
+  </form>
 
-      <div *ngIf="field.type == 'text'">
-        <ion-item>
-          <ion-label position="floating">{{ field.label }}</ion-label>
-          <ion-input [formControlName]="field.field_name" type="text"></ion-input>
-        </ion-item>
-      </div>
-
-
-
-
-      <div *ngIf="field.type == 'typeahead'">
-        <div *ngIf="field.datatype != 'list_of_object'">
-          <ng-select [placeholder]="field.label" [formControlName]="field.field_name" (keyup)="updateData($event,field)">
-            <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
-          </ng-select>
-        </div>
-
-        <div *ngIf="field.datatype == 'list_of_object'">
-          <ng-select [multiple]="true" [placeholder]="field.label" [formControlName]="field.field_name" (keyup)="updateData($event,field)">
-            <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
-          </ng-select>
-        </div>
-      </div>
-
-
-
-
-
-
-
-
-
-
-
-
-    </div>
-
-    <div class="chartfilter">
-      <ion-button size="small" [disabled]="checkValidator()" (click)="dashletFilter(dashboardItem)">Filter</ion-button>
-      <ion-button size="small" [disabled]="checkValidator()" (click)="reset(dashboardItem)">Reset Filter</ion-button>
-      <ion-button size="small" fill="outline" *ngIf="dashboardItem.package_name == 'google_chart'"
-        (click)="exportexcel()">Download Excel Data</ion-button>
-      <ion-button size="small" fill="outline" *ngIf="dashboardItem.package_name == 'chart_js'" (click)="canvasimg()"><a
-          href="{{ chartjsimg }}" download>Download Image</a></ion-button>
-    </div>
-
-  </form> -->
-
-  <ion-card>
+  <!-- <ion-card>
       <div class="singlechatlist">
-        <canvas id="chartjs" baseChart *ngIf="dashboardItem.package_name == 'chart_js'"
+        <canvas class="w-100 canvaschart" id="chartjs" baseChart *ngIf="dashboardItem.package_name == 'chart_js'"
           [chartType]="chartType[dashboardItem.call_back_field]"
           [datasets]="chartDatasets[dashboardItem.call_back_field]"
           [labels]="chartLabels[dashboardItem.call_back_field]" [colors]="chartColors[dashboardItem.call_back_field]"
           [options]="chartOptions[dashboardItem.call_back_field]" [legend]="chartLegend[dashboardItem.call_back_field]"
           (chartHover)="chartHover($event)" (chartClick)="chartClicked($event)">
         </canvas>
-        <google-chart id="excel-table"
+        <google-chart class="w-100 googlechart" id="excel-table"
           *ngIf="dashboardItem.package_name == 'google_chart' && chartTitle[dashboardItem.call_back_field]"
           [title]="chartTitle[dashboardItem.call_back_field]" [type]="chartType[dashboardItem.call_back_field]"
           [data]="chartDatasets[dashboardItem.call_back_field]" [columns]="chartLabels[dashboardItem.call_back_field]"
           [options]="chartOptions[dashboardItem.call_back_field]">
         </google-chart>
       </div>
+  </ion-card> -->
+
+
+
+
+  <ion-card class="chartcard">
+    <ion-card-content class="chartbody">
+      <canvas class="w-100 canvaschart" id="chartjs" baseChart *ngIf="dashboardItem.package_name == 'chart_js'"
+          [chartType]="chartType[dashboardItem.call_back_field]"
+          [datasets]="chartDatasets[dashboardItem.call_back_field]"
+          [labels]="chartLabels[dashboardItem.call_back_field]" [colors]="chartColors[dashboardItem.call_back_field]"
+          [options]="chartOptions[dashboardItem.call_back_field]" [legend]="chartLegend[dashboardItem.call_back_field]"
+          (chartHover)="chartHover($event)" (chartClick)="chartClicked($event)">
+        </canvas>
+        <google-chart class="w-100 googlechart" id="excel-table"
+          *ngIf="dashboardItem.package_name == 'google_chart' && chartTitle[dashboardItem.call_back_field]"
+          [title]="chartTitle[dashboardItem.call_back_field]" [type]="chartType[dashboardItem.call_back_field]"
+          [data]="chartDatasets[dashboardItem.call_back_field]" [columns]="chartLabels[dashboardItem.call_back_field]"
+          [options]="chartOptions[dashboardItem.call_back_field]">
+        </google-chart>
+    </ion-card-content>
   </ion-card>
+
+
+
+
+
+
+
 
 </ion-content>

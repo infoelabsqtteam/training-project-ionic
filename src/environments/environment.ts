@@ -6,7 +6,7 @@ export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
   //serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
-  serverhost: "https://sitserverelabs.e-labs.ai/rest/",
+  serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
   //serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
   // serverhost: "http://localhost:8104/rest/",
   //serverhost: "https://servermedicea.medicea.in/rest/",
