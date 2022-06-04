@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header #header>
   <ion-toolbar>
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
     <div class="cardsearch">
@@ -35,7 +35,7 @@
     </div>
   </div>    
 </div>
-<ion-content class="pages quotation">
+<ion-content class="pages quotation" appHideHeader [scrollEvents]="true" [header]="header">
 
   
     <app-cards-layout [card]="card" [data]="data" (columnListOutput) = "columnListOutput($event)"></app-cards-layout>

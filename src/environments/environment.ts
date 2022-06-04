@@ -21,7 +21,7 @@ export const environment = {
   verify_type : "email",
   app_Version : "@2021 Elabs v1.0.0",
   privacy_policy: "",
-  app_share: ""
+  app_share: "https://play.google.com/store/apps/details?id=com.elaboratory.ai"
 };
 
 /*
