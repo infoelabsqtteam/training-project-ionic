@@ -49,16 +49,19 @@ export class ChartComponent implements OnInit{
   ) {
     // this.onLoadSubscribe();
     this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
-      this.setGridData(data);
-      //console.log("setGridData: ",data);
+      if(data && data !=''){
+        this.setGridData(data);
+      }
     })
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
-      this.setStaticData(data);
-      //console.log("setStaticData: ",data);
+      if(data && data !=''){
+        this.setStaticData(data);
+      }
     })
     this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
-      this.setDashLetData(data);
-      //console.log("setDashLetData: ",data);
+      if(data && data !=''){
+        this.setDashLetData(data);
+      }
     }) 
    }
 
@@ -79,7 +82,7 @@ export class ChartComponent implements OnInit{
   //   }) 
   //  }
   
-   setChartData(chartData){
+   setChartData(chartData:any){
     if (chartData) {
        console.log(chartData);
     }
@@ -147,7 +150,7 @@ export class ChartComponent implements OnInit{
     }
   }
 
-  getDashletData(elements){
+  getDashletData(elements:any){
     if(elements && elements.length > 0){
       let payloads = [];
       //let value = this.dashboardFilter.getRawValue();
@@ -241,7 +244,7 @@ export class ChartComponent implements OnInit{
   selectNoOfItem(){
     this.getPage(1);
   }
-  onKey(value){
+  onKey(value:any){
     this.copyStaticData['chart_list'] = this.search(value)
   }
   search(value: string) { 

@@ -1,12 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { ApiService, CoreUtilityService, DataShareService, RestService } from '@core/ionic-core';
+import { ApiService, CoreUtilityService, DataShareService, RestService, StorageService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
+import { File } from '@ionic-native/file/ngx';
+import { Platform } from '@ionic/angular';
 
 @Component({
   selector: 'app-chart-filter',
   templateUrl: './chart-filter.component.html',
   styleUrls: ['./chart-filter.component.scss'],
+  providers: [File]
 })
 export class ChartFilterComponent implements OnInit {
 
@@ -50,11 +53,14 @@ export class ChartFilterComponent implements OnInit {
   tableHead;
 
   constructor(
+    private platform: Platform,
     public formBuilder: FormBuilder,
     private restService: RestService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
     private commonFunctionService:CoreUtilityService,
+    private file: File,
+    private storageService:StorageService,
   ) {
     this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data =>{
       this.setTypeaheadData(data);
@@ -111,17 +117,17 @@ export class ChartFilterComponent implements OnInit {
     }
   }
 
-  getddnDisplayVal(val) {
+  getddnDisplayVal(val:any) {
     return this.commonFunctionService.getddnDisplayVal(val);    
   }
 
-  chartHover(e){}
-  chartClicked(e){}
+  chartHover(e:any){}
+  chartClicked(e:any){}
   compareObjects(o1: any, o2: any): boolean {
     return o1._id === o2._id;
   }
 
-  getDashletData(elements){
+  getDashletData(elements:any){
     if(elements && elements.length > 0){
       let payloads = [];
       let value = {};
@@ -158,14 +164,14 @@ export class ChartFilterComponent implements OnInit {
       }
     }
   }
-  getSingleCardFilterValue(field,object){
+  getSingleCardFilterValue(field:any,object:any){
     let value = {};
     if (object && object[field.name]) {
       value = object[field.name]
     }
     return value;
   }
-  getOptionText(option) {
+  getOptionText(option:any) {
     if (option && option.name) {
       return option.name;
     }else{
@@ -173,13 +179,13 @@ export class ChartFilterComponent implements OnInit {
     }
   }
 
-  updateData(event, field) {
+  updateData(event:any, field:any) {
     if(event.keyCode == 38 || event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 27 || event.keyCode == 9){
       return false;
     }    
     this.callTypeaheadData(field,this.dashboardFilter.getRawValue()); 
   }
-  callTypeaheadData(field,objectValue){
+  callTypeaheadData(field:any,objectValue:any){
     this.clearTypeaheadData();   
     const payload = [];
     const params = field.api_params;
@@ -191,14 +197,11 @@ export class ChartFilterComponent implements OnInit {
     this.apiService.clearTypeaheadData();
   }
 
-
-
-
-  dashletFilter(item){
+  dashletFilter(item:any){
     this.getDashletData([item]);
   }
 
-  setFilterForm(dashlet){    
+  setFilterForm(dashlet:any){    
     if(this.checkGetDashletData && dashlet._id && dashlet._id != ''){
       this.checkGetDashletData = false;
       let forControl = {};
@@ -245,7 +248,7 @@ export class ChartFilterComponent implements OnInit {
   }
 
 
-  setTypeaheadData(typeAheadData){
+  setTypeaheadData(typeAheadData:any){
     if (typeAheadData.length > 0) {
       this.typeAheadData = typeAheadData;
     } else {
@@ -255,7 +258,7 @@ export class ChartFilterComponent implements OnInit {
 
 
 
-  dismissModal(item){
+  dismissModal(item:any){
     this.close(item);
     this.modal.dismiss({'dismissed': true});
   }
@@ -271,10 +274,26 @@ export class ChartFilterComponent implements OnInit {
       }
       list.push(element);
     }
-    const ws:XLSX.WorkSheet = XLSX.utils.json_to_sheet(list);
+    if(this.platform.is('hybrid')){
+      const ws:XLSX.WorkSheet = XLSX.utils.json_to_sheet(list);
+      const wb:XLSX.WorkBook = {Sheets:{'data':ws},SheetNames:['data']};
+      const buffer = XLSX.write(wb,{bookType:'xlsx',type:'array'});
+      this.downloadtomobile(buffer);
+    }else{
+      const ws:XLSX.WorkSheet = XLSX.utils.json_to_sheet(list);
     const wb:XLSX.WorkBook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,ws,'Sheet1');
-    XLSX.writeFile(wb,this.filename);
+    XLSX.writeFile(wb,this.dashboardItem.name + '.xlsx');
+    }
+  }
+  downloadtomobile(buffer:any){
+    var fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    var fileExtension = ".xlsx";
+    var fileName = this.dashboardItem.name + "-" +Date.now().toString();
+    var data:Blob = new Blob([buffer],{type:fileType});
+    this.file.writeFile(this.file.externalRootDirectory,fileName+fileExtension,data,{replace:true}).then(() => {
+      this.storageService.presentToast(this.dashboardItem.name + "Saved")
+    })
   }
 
   chartjsimg: any;
@@ -304,13 +323,13 @@ export class ChartFilterComponent implements OnInit {
     }    
     
   }
-  close(item){
+  close(item:any){
     this.checkGetDashletData = false;
     this.reset(item);
    // this.chartFilterModal.hide();
   }
 
-  reset(item){
+  reset(item:any){
     if(this.showFilter){
       this.dashboardFilter.reset();
       this.getDashletData([item]);

@@ -48,6 +48,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       private storageService: StorageService,
       private coreUtilityService :CoreUtilityService,
       private commonDataShareService:CommonDataShareService,
+      private router: Router,
       private restService:RestService,
       private apiService:ApiService,
       private formBuilder: FormBuilder,
@@ -90,11 +91,14 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.resetVariables();
     }
   
-    private getCardDataByCollection(i) {
+    private getCardDataByCollection(i:number) {
       const cardWithTab = this.coreUtilityService.getCard(i); 
       if(cardWithTab && cardWithTab.card){
-        this.card = cardWithTab
-        ;
+        if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
+          this.router.navigateByUrl('charts');
+        }else{
+        this.card = cardWithTab;
+        }
       }     
     }
     
