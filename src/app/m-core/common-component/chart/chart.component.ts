@@ -38,7 +38,7 @@ export class ChartComponent implements OnInit{
   total: number;
   showfilter:boolean = false;
   clickFilter:boolean = false;
-  
+  headertitle:any;
 
   constructor(
     private restService: RestService,
@@ -47,7 +47,7 @@ export class ChartComponent implements OnInit{
     private modalController: ModalController
 
   ) {
-    // this.onLoadSubscribe();
+    this.headertitle = "Charts";
     this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
       if(data && data !=''){
         this.setGridData(data);

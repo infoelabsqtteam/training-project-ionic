@@ -2868,7 +2868,6 @@ case 'populate_fields_for_report_for_new_order_flow':
         return file.data;
     }
     else {
-        // Fetch the photo, read as a blob, then convert to base64 format
         const response = await fetch(photo.webPath);
         const blob = await response.blob();
         return await this.convertBlobToBase64(blob);

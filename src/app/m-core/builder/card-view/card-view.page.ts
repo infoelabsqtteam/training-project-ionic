@@ -95,7 +95,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       const cardWithTab = this.coreUtilityService.getCard(i); 
       if(cardWithTab && cardWithTab.card){
         if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
-          this.router.navigateByUrl('charts');
+          this.router.navigateByUrl('chart');
         }else{
         this.card = cardWithTab;
         }

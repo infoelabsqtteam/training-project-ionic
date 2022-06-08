@@ -11,6 +11,7 @@ import { ChartFilterComponent } from './chart-filter/chart-filter.component';
 import { NgChartsModule } from 'ng2-charts';
 import { GoogleChartsModule } from 'angular-google-charts';
 import { NgSelectModule } from '@ng-select/ng-select';
+// import { File } from '@ionic-native/file/ngx';
 
 const modal =[
   FormModalComponent,
@@ -36,6 +37,7 @@ const modal =[
   schemas: [
       CUSTOM_ELEMENTS_SCHEMA,
       NO_ERRORS_SCHEMA
-  ]
+  ],
+  // providers : [File]
 })
 export class ModalModule { }
