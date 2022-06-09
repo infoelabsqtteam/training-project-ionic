@@ -150,8 +150,8 @@ export class FormComponent implements OnInit, OnDestroy {
   resetFlag(){
     this.createFormgroup = true;
   }
-    
-  ngOnDestroy() {
+
+  unsubscribeVariabbles(){
     if(this.staticDataSubscriber){
       this.staticDataSubscriber.unsubscribe();
     }
@@ -164,9 +164,23 @@ export class FormComponent implements OnInit, OnDestroy {
     if(this.templateForm){
       this.templateForm.reset(); 
     }
+    if(this.saveResponceSubscription){
+      this.saveResponceSubscription.unsubscribe();
+    }
+    if(this.typeaheadDataSubscription){
+      this.typeaheadDataSubscription.unsubscribe();
+    }
     if(this.fileDownloadUrlSubscription){
       this.fileDownloadUrlSubscription.unsubscribe();
-    } 
+    }
+  }
+  
+  ionViewWillLeave(){
+    this.unsubscribeVariabbles();
+  }    
+  ngOnDestroy() {
+    //Abobe ionViewwillLeave is working fine.
+    // this.unsubscribeVariabbles();
   }
   ngOnInit() {
     const id:any = this.commonDataShareService.getFormId();
@@ -2868,7 +2882,6 @@ case 'populate_fields_for_report_for_new_order_flow':
         return file.data;
     }
     else {
-        // Fetch the photo, read as a blob, then convert to base64 format
         const response = await fetch(photo.webPath);
         const blob = await response.blob();
         return await this.convertBlobToBase64(blob);

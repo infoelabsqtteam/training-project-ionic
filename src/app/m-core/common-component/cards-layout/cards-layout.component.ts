@@ -312,24 +312,27 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     let startTime: any = new Date();
     let startTimeMs:any = startTime.getTime(startTime);
     this.editedRowIndex = Index;
-    if(card.mobile && card.mobile.length >= 10 ){
+    if(card.mobile && card.mobile.length >= 10){
       callingNumber = card.mobile;
-    }else if(card.billing_mobile && card.billing_mobile  >= 10){
+    }else if(card.billing_mobile && card.billing_mobile.length >= 10){
       callingNumber = card.billing_mobile;
-    }else if(card.phone && card.phone  >= 10){
+    }else if(card.phone && card.phone.length >= 10){
       callingNumber = card.phone;
     }else{
-      this.storageService.presentToast("Number Not found or Valid");
+      console.log("No number Found");
     }
 
-    if(callingNumber && callingNumber != null && callingNumber !='' && callingNumber >= 10){
+    if(callingNumber && callingNumber != null){
       this.callNumber.callNumber(callingNumber, true)
-        .then(res => console.log('Launched dialer!' + res))
+        .then(res => {
+          // console.log('Launched dialer! ' + res);
+          this.storageService.presentToast("Calling on :- " + callingNumber);
+          
+          this.callDetailRecord(card, startTimeMs);
+        })
         .catch(err => console.log('Error launching dialer ' + err));
-
-        this.callDetailRecord(card, startTimeMs);
     }else{
-      console.log("Number Not found or Valid");
+      this.storageService.presentToast("Invalid number or Number not found");
     }
   }
 
