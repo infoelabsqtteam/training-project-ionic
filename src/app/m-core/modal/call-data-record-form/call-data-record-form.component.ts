@@ -111,18 +111,14 @@ export class CallDataRecordFormComponent implements OnInit {
     let cdr = this.cdrForm.value;
     const date:any = new Date(Date.now());
     let obj: any = {};
-    if(this.cardData && this.cardData.account_name && this.cardData.account_name !=''){
+    if(this.cardData && this.cardData.account_name && this.cardData.account_name !='' && this.cardData.account_name != null){
       obj.account_name= this.cardData.name;
-    }else{
-      obj.account_name= "";
     }
-    
+
     obj.contact_name= this.contactName;
     
-    if(this.cardData && this.cardData.contact_type !=''){
+    if(this.cardData && this.cardData.contact_type !='' && this.cardData.contact_type != null){
       obj.contact_type= this.cardData.contact_type;      
-    }else{      
-      obj.contact_type= "";
     }
     obj.contact_number= this.contactNumber;
     obj.call_start_time= this.datePipe.transform(this.startTime, 'hh:mm:ss a');
@@ -133,7 +129,6 @@ export class CallDataRecordFormComponent implements OnInit {
     obj.next_followup_date= cdr.followupdate;
     obj.next_followup_time= this.datePipe.transform(cdr.followuptime, 'hh:mm a');
     
-    console.log("Object values" , obj);
     const saveFromData = {
       curTemp: 'call_data_record',
       data: obj
