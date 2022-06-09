@@ -185,6 +185,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   setCardDetails(card) {  
+    let criteria:any = [];
+    let parentcard:any = {};
     if(card && card.add_new){
       if(this.detailPage){
         this.addNewEnabled = false;
@@ -223,8 +225,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       // this.createFormgroup = false;
       this.columnListOutput.emit(this.columnList);
     }
+    if(card && card.parent_criteria){
+      if (card.api_params_criteria && card.api_params_criteria.length > 0 ) {
+        criteria = card.api_params_criteria;
+        parentcard = card;
+      }
+    }
     this.collectionname = card.collection_name;
-    this.getGridData(this.collectionname);
+    this.getGridData(this.collectionname, criteria, parentcard);
   }
 
   search(searchcard) {
@@ -304,20 +312,28 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     let startTime: any = new Date();
     let startTimeMs:any = startTime.getTime(startTime);
     this.editedRowIndex = Index;
-    if(card.mobile && card.mobile.length >= 10 ){
+    if(card.mobile && card.mobile.length >= 10){
       callingNumber = card.mobile;
-    }else if(card.billing_mobile && card.billing_mobile  >= 10){
+    }else if(card.billing_mobile && card.billing_mobile.length >= 10){
       callingNumber = card.billing_mobile;
-    }else if(card.phone && card.phone  >= 10){
+    }else if(card.phone && card.phone.length >= 10){
       callingNumber = card.phone;
     }else{
-      console.log("Number Not found or Valid")
+      console.log("No number Found");
     }
-    this.callNumber.callNumber(callingNumber, true)
-      .then(res => console.log('Launched dialer!' + res))
-      .catch(err => console.log('Error launching dialer ' + err));
 
-      this.callDetailRecord(card, startTimeMs);
+    if(callingNumber && callingNumber != null){
+      this.callNumber.callNumber(callingNumber, true)
+        .then(res => {
+          // console.log('Launched dialer! ' + res);
+          this.storageService.presentToast("Calling on :- " + callingNumber);
+          
+          this.callDetailRecord(card, startTimeMs);
+        })
+        .catch(err => console.log('Error launching dialer ' + err));
+    }else{
+      this.storageService.presentToast("Invalid number or Number not found");
+    }
   }
 
   callInvoice(card:any,Index:number) {
@@ -339,14 +355,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     return listCiteria;
   }
-  async getGridData(collectionName,criteria?){
+  async getGridData(collectionName,criteria?,parentCard?){
     const crList = this.restService.getfilterCrlist(this.columnList, this.filterForm)
     const params = collectionName;
-    let cardCriteria = []
+    let cardCriteria = [];
+    let object = {};
     if(criteria && criteria.length > 0){
       cardCriteria = this.setCriteria(cardCriteria,criteria);
+      object = parentCard;
     }
-    let object = {};
     if(this.detailPage){
       if(this.card && this.card.card){
         let card = this.card.card

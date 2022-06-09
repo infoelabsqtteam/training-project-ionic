@@ -1,5 +1,7 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { ApiService, DataShareService, RestService } from '@core/ionic-core';
+import { ModalController } from '@ionic/angular';
+import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
 
 @Component({
   selector: 'app-chart',
@@ -36,46 +38,51 @@ export class ChartComponent implements OnInit{
   total: number;
   showfilter:boolean = false;
   clickFilter:boolean = false;
-  
+  headertitle:any;
 
   constructor(
     private restService: RestService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
+    private modalController: ModalController
 
   ) {
-    // this.onLoadSubscribe();
+    this.headertitle = "Charts";
     this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
-      this.setGridData(data);
-      console.log("setGridData: ",data);
+      if(data && data !=''){
+        this.setGridData(data);
+      }
     })
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
-      this.setStaticData(data);
-      console.log("setStaticData: ",data);
+      if(data && data !=''){
+        this.setStaticData(data);
+      }
     })
     this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
-      this.setDashLetData(data);
+      if(data && data !=''){
+        this.setDashLetData(data);
+      }
     }) 
    }
 
    ionViewWillEnter(){}
    ionViewDidEnter(){}
 
-   onLoadSubscribe(){
-    this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
-      this.setGridData(data);
-      console.log("setGridData: ",data);
-    })
-    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
-      this.setStaticData(data);
-      console.log("setStaticData: ",data);
-    })
-    this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
-      this.setDashLetData(data);
-    }) 
-   }
+  //  onLoadSubscribe(){
+  //   this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
+  //     this.setGridData(data);
+  //     console.log("setGridData: ",data);
+  //   })
+  //   this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
+  //     this.setStaticData(data);
+  //     console.log("setStaticData: ",data);
+  //   })
+  //   this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
+  //     this.setDashLetData(data);
+  //   }) 
+  //  }
   
-   setChartData(chartData){
+   setChartData(chartData:any){
     if (chartData) {
        console.log(chartData);
     }
@@ -87,6 +94,8 @@ export class ChartComponent implements OnInit{
     this.getDataForGrid();
     this.getChartList();    
   }
+
+  
   ngOnChanges(changes: SimpleChanges) {
     if(this.isShow){
       this.getPage(1)
@@ -141,7 +150,7 @@ export class ChartComponent implements OnInit{
     }
   }
 
-  getDashletData(elements){
+  getDashletData(elements:any){
     if(elements && elements.length > 0){
       let payloads = [];
       //let value = this.dashboardFilter.getRawValue();
@@ -235,11 +244,31 @@ export class ChartComponent implements OnInit{
   selectNoOfItem(){
     this.getPage(1);
   }
-  onKey(value){
+  onKey(value:any){
     this.copyStaticData['chart_list'] = this.search(value)
   }
   search(value: string) { 
     let filter = value.toLowerCase();
     return this.staticData['chart_list'].filter(option => option.name.toLowerCase().startsWith(filter));
+  }
+
+  async chartmodel(data:any, filter:any, index:number){
+    this.showfilter = true;
+    const modal = await this.modalController.create({
+      component: ChartFilterComponent,
+      cssClass: 'my-custom-modal-css',
+      componentProps: { 
+        'dashboardItem' : data,
+        'dashletData' : this.dashletData,
+        'filter':filter,
+        'selectedIndex': index,
+        'staticData': this.staticData
+      },
+      showBackdrop:true,
+      backdropDismiss:false,
+    });
+    modal.componentProps.modal = modal;
+    
+    return await modal.present();
   }
 }

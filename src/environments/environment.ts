@@ -6,8 +6,8 @@ export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
   //serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
-  // serverhost: "https://sitserverelabs.e-labs.ai/rest/",
-  serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
+  serverhost: "https://sitserverelabs.e-labs.ai/rest/",
+  // serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
   // serverhost: "http://localhost:8104/rest/",
   //serverhost: "https://servermedicea.medicea.in/rest/",
   //  serverhost: "https://sitservermedicea.medicea.in/rest/",
@@ -21,7 +21,7 @@ export const environment = {
   verify_type : "email",
   app_Version : "@2021 Elabs v1.0.0",
   privacy_policy: "",
-  app_share: ""
+  app_share: "https://play.google.com/store/apps/details?id=com.elaboratory.ai"
 };
 
 /*
