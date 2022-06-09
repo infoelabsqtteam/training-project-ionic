@@ -150,8 +150,8 @@ export class FormComponent implements OnInit, OnDestroy {
   resetFlag(){
     this.createFormgroup = true;
   }
-    
-  ngOnDestroy() {
+
+  unsubscribeVariabbles(){
     if(this.staticDataSubscriber){
       this.staticDataSubscriber.unsubscribe();
     }
@@ -164,9 +164,23 @@ export class FormComponent implements OnInit, OnDestroy {
     if(this.templateForm){
       this.templateForm.reset(); 
     }
+    if(this.saveResponceSubscription){
+      this.saveResponceSubscription.unsubscribe();
+    }
+    if(this.typeaheadDataSubscription){
+      this.typeaheadDataSubscription.unsubscribe();
+    }
     if(this.fileDownloadUrlSubscription){
       this.fileDownloadUrlSubscription.unsubscribe();
-    } 
+    }
+  }
+  
+  ionViewWillLeave(){
+    this.unsubscribeVariabbles();
+  }    
+  ngOnDestroy() {
+    //Abobe ionViewwillLeave is working fine.
+    // this.unsubscribeVariabbles();
   }
   ngOnInit() {
     const id:any = this.commonDataShareService.getFormId();
