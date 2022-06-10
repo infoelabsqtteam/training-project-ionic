@@ -1,41 +1,46 @@
-<div class="chartfilter">
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="ion-no-padding ion-text-uppercase">{{headertitle}} </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
 
+<div class="chartfilter">
   <ion-grid>
-    <ion-row class="align-item-center">
-      <ion-col size="10">
+    <ion-row>
+      <ion-col size="6">
         <ion-item>
-          <ion-label>Select Chart</ion-label>
+          <ion-label>Select List</ion-label>
           <ion-select multiple="true" [(ngModel)]="filterValue" (change)="checkFilter()">
             <ion-select-option *ngFor="let staticValue of copyStaticData['chart_list']; index as i" [value]="staticValue._id">{{staticValue.name}}</ion-select-option>
           </ion-select>
         </ion-item>
       </ion-col>
-      <ion-col size="2">        
-        <ion-icon slot="icon-only" name="settings" (click)="selectNoOfItem()"></ion-icon>
+      <ion-col size="3">
+        <ion-item>
+          <select [(ngModel)]="itemNumOfGrid" (change)="selectNoOfItem()">
+            <option *ngFor="let numverOfItem of noOfItems" [value]="numverOfItem">{{numverOfItem}}</option>
+          </select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="3">
+        <ion-badge color="medium" class="roundedbtn" [disabled]="filterValue.length == 0 || filterValue.length > itemNumOfGrid" (click)="filterchart()"><ion-icon name="filter-outline"></ion-icon></ion-badge>
+        <ion-badge color="light" class="roundedbtn" [disabled]="filterValue.length == 0" (click)="resetFilter()"><ion-icon name="reload-outline"></ion-icon></ion-badge>
       </ion-col>
     </ion-row>
   </ion-grid>
-  
-
-  <ion-item>
-    <ion-label>No. Of Charts</ion-label>
-    <select [(ngModel)]="itemNumOfGrid" (change)="selectNoOfItem()">
-      <option *ngFor="let numverOfItem of noOfItems" [value]="numverOfItem">{{numverOfItem}}</option>
-    </select>
-  </ion-item>
-
-  <div class="filtermenu">
-    <ion-button size="small" [disabled]="filterValue.length == 0 || filterValue.length > itemNumOfGrid" (click)="filterchart()">Filter</ion-button>
-    <ion-button size="small" [disabled]="filterValue.length == 0" (click)="resetFilter()">Reset Filter</ion-button>
-  </div>
 </div>
 
 
 <div class="row" *ngIf="filteredDashboardData.length >0">
-  <div class="" *ngFor="let item of filteredDashboardData; let j = index">
+  <div *ngFor="let item of filteredDashboardData; let j = index">
     <ion-card class="chartcard">
       <ion-card-header class="charthead" *ngIf="item.fields && item.fields.length > 0">
         <ion-card-title>{{item.name}}</ion-card-title>
+        <ion-icon (click)="chartmodel(item,true,j)" name="funnel-outline"></ion-icon>
       </ion-card-header>
       <ion-card-content class="chartbody">
         <ng-container *ngIf="chartType[item.call_back_field]">
@@ -57,3 +62,5 @@
     </ion-card>
   </div>
 </div>
+
+</ion-content>

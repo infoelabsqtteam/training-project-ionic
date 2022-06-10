@@ -49,7 +49,7 @@ ion-toolbar.grey-toolbar {--background-color: #EFF1F3;}
 }
 
 // Home page Category List
-.catlist {background:#fff;padding:10px;border-radius:20px 20px 0 0;height:calc(100% - 30%);
+.catlist {background:#fff;padding:10px;border-radius:20px 20px 0 0;min-height:290px;
     ul {margin:0;padding:0;list-style:none;text-align:start;
         li {display:inline-block;margin:10px 7px;cursor: pointer;text-align:center;
             .caticon {background:#8FBFE34D;border-radius:6px;width:54px;height:54px;line-height:55px;margin:-2px;text-align: center;}
@@ -314,27 +314,53 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         ion-button{min-width: 48%;text-transform: capitalize;}
     }
 }
-.chartcard{
-    ion-card-header{padding: 10px 10px 0;
+.chartcard{margin-bottom:20px;
+    ion-card-header{display:flex;align-items:center;padding:0.55rem;background:rgba(0,0,0,.03);border-bottom:1px solid rgba(0,0,0,.125);
         ion-card-title{font-size:13px;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        ion-icon {margin:0 5px;font-size:16px;}
     }
     
-    .chartbody {
-        max-height: 160px;
-        min-height: 160px;
-        overflow-y: scroll;
-        overflow-x: scroll;
-        .google-visualization-table-table td {
-            font-size: 10px;
-            white-space: nowrap;
-
-        }
+    .chartbody {padding:5px;min-height:180px;
+        .google-chart {width:auto !important;}
+        .google-visualization-table .gradient {font-size:10px;}
+        .google-visualization-table-table td {font-size:10px;white-space:nowrap;}
         .spinner {display:flex;align-items:center;justify-content:center;height:100%;position:absolute;width:100%;left:0;top:0;}
     }
 
 }
-.chartfilter {margin-bottom:30px;
-    ion-label, ion-select {font-size:14px !important;}
-    ion-button {margin:15px 0 0 15px;}
-    select {border:none;}
+.chartfilter {
+    ion-label, ion-select, select, .ng-select .ng-select-container .ng-value-container .ng-placeholder {font-size:13px !important;color:#000;}
+    select, select:focus {border:none;outline:none;}
+    ion-item {border:1px solid #efefef;--min-height:35px;--border-width: 0 0 0px 0;--border-style:aqua;--padding-start:10px;--inner-padding-end:10px;}
+    .ng-select .ng-select-container:after {border:none;}
+    
+    ion-label, ion-select {margin:0px;padding:0px;}
+    .label-floating.sc-ion-label-md-h {-webkit-transform:translateY(65%);transform:translateY(65%);}
+    .item-has-value .label-floating.sc-ion-label-md-h {-webkit-transform:translateY(10%) scale(0.75);transform:translateY(10%) scale(0.75);}
+    .item-label-floating .sc-ion-input-md-h {--padding-top:0px;--padding-bottom:0px;font-size:13px;}
+    .item-has-focus .label-floating.sc-ion-label-md-h {-webkit-transform:translateY(10%) scale(0.75);transform:translateY(10%) scale(0.75);}
+    
+    .typehead {border:1px solid #efefef;padding:0 10px;min-height:35px;
+        // ng-select.ng-select .ng-select-container {padding:0;min-height:auto;}
+        // .ng-select .ng-select-container .ng-value-container .ng-placeholder {padding:0}
+        // .ng-select.ng-select-single .ng-select-container .ng-arrow-wrapper {bottom:5px;}
+        ng-select.ng-select .ng-select-container {padding:0px;min-height:35px;}
+        .ng-select .ng-select-container .ng-value-container .ng-input {bottom:0;}
+        .ng-select .ng-select-container .ng-value-container {border-top:3px solid transparent;}
+        .ng-select.ng-select-single .ng-select-container .ng-value-container .ng-input, .ng-value-label {font-size:13px;}
+        ng-select.ng-select .ng-select-container .ng-value-container .ng-input > input {padding:0;line-height:30px;}
+        .ng-select .ng-has-value .ng-placeholder, .ng-select.ng-select-opened .ng-placeholder {transform:translateY(-0.8em) scale(0.75) perspective(100px) translateZ(0.001px);}
+    }
+
 }
+
+
+.roundedbtn {border-radius:100%;border:1px solid #ccc;width:30px;height:30px;line-height:30px;margin:0 5px;
+    ion-icon {font-size:18px;}
+}
+.chartfiltertitle {width:95%;font-size:15px;}
+.w-100 {width:100%;}
+// .singlechatlist {overflow-x:scroll;
+//     .google-visualization-table-table td {white-space:nowrap;}
+// }
+
