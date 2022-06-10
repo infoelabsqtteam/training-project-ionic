@@ -1,11 +1,21 @@
 <div class="chartfilter">
 
-  <ion-item>
-    <ion-label>Chart List</ion-label>
-    <ion-select multiple="true" [(ngModel)]="filterValue" (change)="checkFilter()">
-      <ion-select-option *ngFor="let staticValue of copyStaticData['chart_list']; index as i" [value]="staticValue._id">{{staticValue.name}}</ion-select-option>
-    </ion-select>
-  </ion-item>
+  <ion-grid>
+    <ion-row class="align-item-center">
+      <ion-col size="10">
+        <ion-item>
+          <ion-label>Select Chart</ion-label>
+          <ion-select multiple="true" [(ngModel)]="filterValue" (change)="checkFilter()">
+            <ion-select-option *ngFor="let staticValue of copyStaticData['chart_list']; index as i" [value]="staticValue._id">{{staticValue.name}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="2">        
+        <ion-icon slot="icon-only" name="settings" (click)="selectNoOfItem()"></ion-icon>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  
 
   <ion-item>
     <ion-label>No. Of Charts</ion-label>
