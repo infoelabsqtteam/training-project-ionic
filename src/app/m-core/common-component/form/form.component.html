@@ -17,7 +17,7 @@
         </div>
         <div *ngIf="tableField.type == 'grid_selection'">
           <div>
-            <ion-button expand="block" fill="outline" (click)="setValue('',tableField)">{{ tableField.label }} <span [innerHtml]="getNumberOfSelectedRecord(tableField)"></span></ion-button>
+            <ion-button expand="" size="" fill="outline" (click)="setValue('',tableField)">{{ tableField.label }} <span [innerHtml]="getNumberOfSelectedRecord(tableField)"></span></ion-button>
           </div>
         </div>
         <div *ngIf="tableField.type == 'file'" class="camera_file_upload">
@@ -90,7 +90,7 @@
         </div>
         <div *ngIf="tableField.type == 'checkbox'">
           <ion-item>            
-            <ion-checkbox  [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc(tableField)"></ion-checkbox>
+            <ion-checkbox  [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc(tableField)" [ngclass]="tableField.field_class" class="ion-margin-end"></ion-checkbox>
             <ion-label>{{ tableField.label }}</ion-label>
           </ion-item>
         </div>
@@ -167,7 +167,6 @@
     <row *ngIf="samePageGridSelection == true" class="samePageGridSelection">
       <ion-col>
         <app-grid-selection [Data]="samePageGridSelectionData"></app-grid-selection>
-
       </ion-col>
     </row>
     

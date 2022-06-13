@@ -146,6 +146,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       if(this.card && this.card.card && this.card.card.name){
         this.setCardAndTab(this.card)
       }
+      if(this.card && this.card.card && this.card.card.grid_selection_inform != null){
+        this.dataShareService.setGridSelectionCheck(this.card.card.grid_selection_inform)
+      }
       this.filterForm['value'] = {};
     }
   }

@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header *ngIf="collectionName !== 'travel_plan'">
   <ion-toolbar>
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
   <ion-item lines="none">
@@ -25,6 +25,22 @@
  
   </ion-toolbar>
 </ion-header>
+<ion-header *ngIf="collectionName === 'travel_plan'">
+  <ion-toolbar>
+    <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
+      <ion-title class="" *ngIf="headerTitle !=''">{{headerTitle}}</ion-title>
+    <ion-buttons class="filter ion-text-end" slot="end" id="popover-id">
+      <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+  </ion-buttons>
+  <ion-popover trigger="popover-id">
+    <ng-template>
+      <app-popover [data]="data" (popoverOutput)="popoverOutput($event)"></app-popover>
+    </ng-template>
+  </ion-popover>
+  </ion-toolbar>
+</ion-header>
+
+
 
 <div id="ion_accordian" class="ion_accordian ion-no-padding filterdata" *ngIf="openFilter">
   <div [formGroup]="filterForm" >

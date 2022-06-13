@@ -2,10 +2,10 @@
 <div class="pages">
     <ion-segment class="grid_selection_tab" ngDefaultControl [(ngModel)]="selectedTab" color="appcolor" (ionChange)="segmentChanged($event)">
         <ion-segment-button value="new" >
-            <ion-label>All Customer</ion-label>
+            <ion-label>All</ion-label>
         </ion-segment-button>
         <ion-segment-button value="added">
-            <ion-label>Selected Customers</ion-label>
+            <ion-label>Selected</ion-label>
         </ion-segment-button>
     </ion-segment>
 
@@ -21,36 +21,28 @@
                     </ion-buttons>
                 </ion-item> -->
 
-                <ion-item class="contactlist" lines="none">
+                <ion-item class="contactlist ion-no-margin" lines="none" (click)="addremoveparticipant(data)">
                     <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="data.name != ''" [innerHTML]="getFirstCharOfString(data.name)"></span></ion-avatar>
                     
-                    <ion-row class="ion-align-items-center inner_padding" *ngIf="columnList && columnList.length > 0">
-                        <ion-col size="9" *ngFor="let column of listOfGridFieldName">
-                            <div *ngIf="!column.editable">
+                    <ion-row class="ion-align-items-center inner_padding" >
+                        <ion-col size="12" >
+                            <div>
                                 <ion-item lines="none" class="">
-                                    <ion-label slot="start" class="grid-content">
-                                        <span class="label">{{ column.label }}</span>
-                                        <span class="colon-seperator">:</span>
-                                    </ion-label>
-                                    <ion-label  class="value" [innerHtml]="getValueForGrid(column,data)"></ion-label>
+                                    <ion-label  class="value">{{data.name}}</ion-label>
                                 </ion-item>
-                            </div>
-                            <div *ngIf="column.editable">
-                                <ion-item lines="none" class="">
-                                    <ion-label slot="start" class="grid-content">
-                                        <span class="label">{{ column.label }}</span>
-                                        <span class="colon-seperator">:</span>
-                                    </ion-label>
-                                    <div *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
-                                        <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" >
-                                    </div>
-                                    <div *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
-                                    <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
-                                    </div>
-                                </ion-item>
-                            </div>            
+                            </div>          
                         </ion-col> 
+                        <!-- <ion-col size="12" >
+                            <div>
+                                <ion-item lines="none" class="">
+                                    <ion-label  class="value">{{data.name}}</ion-label>
+                                </ion-item>
+                            </div>          
+                        </ion-col>  -->
                     </ion-row>
+                    <ion-buttons slot="end" class="ion-margin-start">
+                        <ion-checkbox checked="true" color="appcolor" class="left icon" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox>
+                        </ion-buttons>
                 </ion-item>
                 <!-- <ion-row>
                     <ion-col size="6" *ngFor="let column of listOfGridFieldName">
@@ -85,49 +77,29 @@
 
     <div *ngIf="selectedTab == 'added'" >
         <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of getSelectedData(); let i = index">
-            <ion-item class=""  lines="none">
-                <ion-buttons slot="start" >
-                <ion-checkbox checked="true" color="appcolor" class="left icon" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox>
-                </ion-buttons>
-                <ion-buttons slot="end">
-                <ion-img [src]="expandicon" (click)="addremoveparticipant(data)"></ion-img>
-                </ion-buttons>
+            <ion-item class="contactlist ion-no-margin" lines="none" (click)="addremoveparticipant(data)">
+                <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="data.name != ''" [innerHTML]="getFirstCharOfString(data.name)"></span></ion-avatar>
+                
+                <ion-row class="ion-align-items-center inner_padding" >
+                    <ion-col size="12" >
+                        <div>
+                            <ion-item lines="none" class="">
+                                <ion-label  class="value">{{data.name}}</ion-label>
+                            </ion-item>
+                        </div>          
+                    </ion-col>  
+                </ion-row>
+                <ion-buttons slot="end" class="ion-margin-start">
+                    <ion-checkbox checked="true" color="appcolor" class="left icon" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox>
+                    </ion-buttons>
             </ion-item>
-            <ion-row >
-                <ion-col size="6" *ngFor="let column of listOfGridFieldName">
-                    <div *ngIf="!column.editable">
-                        <ion-item lines="none" class="">
-                            <ion-label slot="start" class="grid-content">
-                                <span class="label">{{ column.label }}</span>
-                                <span class="colon-seperator">:</span>
-                            </ion-label>
-                            <ion-label  class="value" [innerHtml]="getValueForGrid(column,data)"></ion-label>
-                        </ion-item>
-                    </div>
-                    <div *ngIf="column.editable">
-                        <ion-item lines="none" class="">
-                            <ion-label slot="start" class="grid-content">
-                                <span class="label">{{ column.label }}</span>
-                                <span class="colon-seperator">:</span>
-                            </ion-label>
-                            <div *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
-                                <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" >
-                            </div>
-                            <div *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
-                            <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
-                            </div>
-                        </ion-item>
-                    </div>            
-                </ion-col>        
-            </ion-row>
-        </div>         
+        </div> 
+        <!-- <div class="inlineFormGridSelectionButton">
+            <div class="">
+                <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal([])" expand="block" >Remove</ion-button>
+                <ion-button type="button" color="appcolor" [disabled]="checkValidator()"  (click)="selectGridData()" expand="block" >Save</ion-button>
+            </div>
+        </div> -->
     </div>
-    <div class="button_position">
-        <div class="flex_grid">
-        <ion-button type="button" color="appcolor" [disabled]="checkValidator()"  (click)="selectGridData()" expand="full" >Add</ion-button>
-        <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal([])" expand="full" >Cancel</ion-button>
-        </div>
-    </div>
-  
-   
+     
 </div>

@@ -1,0 +1,11 @@
+<!-- <ion-popover [trigger]="triggerId" side="top" alignment="end">
+  <ng-template> -->
+    <ion-content>
+      <ion-list>
+        <ion-item lines="none" *ngFor="let item of items" (click)="selectedItem(item)">
+          <ion-label>{{item.label}}</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  <!-- </ng-template>
+</ion-popover> -->

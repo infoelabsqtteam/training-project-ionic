@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
@@ -13,6 +13,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
 
   @Input() Data : any;
   @Input() modal: any;
+  @Output() selectedTabAgain = new EventEmitter<any>();
 
   selecteData:any=[];
   selectedData:any = [];
@@ -29,6 +30,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   grid_row_refresh_icon:boolean = false;
 
   selectedTab:string = "new";
+  // selectedTabAgain:any;
 
   expandicon: any = "assets/itc-labs/icon/expand-icon.png";
 
@@ -43,9 +45,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     private notificationService:NotificationService,
     private dataShareService:DataShareService,
     private coreUtilityService:CoreUtilityService
-  ) { 
-    console.log(this.Data);
-  }
+  ) { }
 
   ngOnInit() {
     // this.onload();
@@ -210,7 +210,8 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       component: GridSelectionDetailModalComponent,
       componentProps: {
         "Data": {"value":data,"column":this.field.gridColumns},
-        "childCardType" : "demo1"
+        "childCardType" : "demo1",
+        "InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue()
       },
       swipeToClose: false
     });
@@ -218,9 +219,12 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     modal.onDidDismiss()
       .then((data) => {
         const object = data['data']; // Here's your selected user!
-        if(object['data'] && object['data']._id){
+        if(object['data'] ){
           this.toggle(object['data'],{'detail':{'checked':true}},0);
-        }               
+        } 
+        if(object['data'] && object['remove']){
+          this.toggle(object['data'],{'detail':{'checked':false}},0);
+        }              
     });
     return await modal.present();
   }
@@ -338,6 +342,11 @@ export class GridSelectionComponent implements OnInit, OnChanges {
 
   segmentChanged(ev: any) {
     this.selectedTab = ev.target.value;
+    // this.selectedTab.emit(ev);
+  }
+  segmentChangedEmit(selectedTab:any) {
+    // this.selectedTab = ev.target.value;
+    this.selectedTabAgain.emit(selectedTab);
   }
   getSelectedData(){
     const selectedData = [];

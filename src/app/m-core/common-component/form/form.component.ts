@@ -101,7 +101,6 @@ export class FormComponent implements OnInit, OnDestroy {
 
   samePageGridSelectionData:any;
   samePageGridSelection : boolean = false;
- 
   
 
   constructor(
@@ -138,7 +137,7 @@ export class FormComponent implements OnInit, OnDestroy {
         if(this.editedRowIndex >= 0 ){
           this.editedRowData(this.childData);
         }
-      })
+      });
       this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
         this.setSaveResponce(responce);
       });
@@ -147,7 +146,11 @@ export class FormComponent implements OnInit, OnDestroy {
       });
       this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
         this.setFileDownloadUrl(data);
-      })
+      });
+      
+      // this.samePageGridSelectionData = this.dataShareService.gridSelectionCheck.subscribe(data =>{
+      //   this.samePageGridSelection = data;
+      // });
     }
 
   resetFlag(){
@@ -169,7 +172,10 @@ export class FormComponent implements OnInit, OnDestroy {
     }
     if(this.fileDownloadUrlSubscription){
       this.fileDownloadUrlSubscription.unsubscribe();
-    } 
+    }
+    // if(this.samePageGridSelectionData){
+    //   this.samePageGridSelectionData.unsubscribe();
+    // }
   }
   ngOnInit() {
     const id:any = this.commonDataShareService.getFormId();
@@ -2528,9 +2534,8 @@ case 'populate_fields_for_report_for_new_order_flow':
       "selectedData":selectedValue,
       "object": this.getFormValue(true)
     }
-    
-    this.samePageGridSelection = true;
-    if(this.samePageGridSelection == true){          
+    this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();
+    if(this.samePageGridSelection){          
       this.samePageGridSelectionData = gridModalData;
     }else{    
       const modal = await this.modalController.create({

@@ -1,9 +1,11 @@
 import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
-import { Platform, ModalController, IonRouterOutlet} from '@ionic/angular';
+import { Platform, ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup} from '@angular/forms';
 import { CallNumber } from '@ionic-native/call-number/ngx';
+import { Router } from '@angular/router';
+import { PopoverComponent } from '../../common-component/popover/popover.component';
 
 @Component({
   selector: 'app-card-view',
@@ -35,12 +37,16 @@ export class CardViewPage implements OnInit, OnDestroy {
   filterForm: FormGroup;
   createFormgroup: boolean = true;
   openFilter: boolean = false;
+  openTravelFilter: boolean = false;
   filterCount: 0;
   searching:boolean = false;
   searchcardvalue:any='';
   searchcardfield:any='';
   selectedLeave : string = '';
-
+  collectionName:any;
+  travelCardList:any=["Travel Mangement","Travel Report"];
+  headerTitle:any;
+  popoverdata:any;
   // addNewEnabled:boolean=false;
   // detailPage:boolean=false;
 
@@ -52,6 +58,8 @@ export class CardViewPage implements OnInit, OnDestroy {
       private apiService:ApiService,
       private formBuilder: FormBuilder,
       public modalController: ModalController,
+      private router:Router,
+      public popoverController: PopoverController,
       @Optional() private readonly routerOutlet?: IonRouterOutlet      
     ){}
   
@@ -87,10 +95,14 @@ export class CardViewPage implements OnInit, OnDestroy {
   
     private getCardDataByCollection(i) {
       const cardWithTab = this.coreUtilityService.getCard(i); 
+      this.collectionName = cardWithTab.card.collection_name;
       if(cardWithTab && cardWithTab.card){
-        this.card = cardWithTab
-        ;
-      }     
+        if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
+          this.router.navigateByUrl('charts');
+        }else{
+        this.card = cardWithTab;
+        }
+      }    
     }
     
     comingSoon() {
@@ -105,6 +117,12 @@ export class CardViewPage implements OnInit, OnDestroy {
     open(){
       this.openFilter=!this.openFilter
       this.data={};
+    }
+    openTravel(){
+      this.openTravelFilter=!this.openTravelFilter
+      this.data={};
+      // this.travelCardList =["Travel Mangement","Travel Report"];
+
     }
     // filterdata
     filterCard(){  
@@ -172,5 +190,21 @@ export class CardViewPage implements OnInit, OnDestroy {
     //   }
     //   // this.childColumn = card.child_card;
     // }
+    async presentPopover(ev: any) {
+      const popover = await this.popoverController.create({
+        component: PopoverComponent,
+        cssClass: 'my-custom-class',
+        event: ev,
+        translucent: true
+      });
+      await popover.present();
+    
+      const { role } = await popover.onDidDismiss();
+      console.log('onDidDismiss resolved with role', role);
+    }
+    popoverOutput(popoverdata:any){
+      this.headerTitle = popoverdata;
+      
+    }
 
   }

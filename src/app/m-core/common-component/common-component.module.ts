@@ -11,13 +11,15 @@ import { ChartComponent } from './chart/chart.component';
 import { NgChartsModule } from 'ng2-charts';
 import { GoogleChartsModule } from 'angular-google-charts';
 import { GridSelectionComponent } from './grid-selection/grid-selection.component';
+import { PopoverComponent } from './popover/popover.component';
 
 const components = [
     FormComponent,
     CardsLayoutComponent,
     ModalDetailCardComponent,
     ChartComponent,
-    GridSelectionComponent
+    GridSelectionComponent,
+    PopoverComponent
   ];
 
 @NgModule({
