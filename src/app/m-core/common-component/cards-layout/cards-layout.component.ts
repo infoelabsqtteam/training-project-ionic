@@ -409,13 +409,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
 
-  async addNew(){
+  async addNew(formName){
     this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);
     let card = this.card;
     let form:any = {};
     let id = '5f6d95da9feaa2409c3765cd';
     if(card && card.card && card.card.form){
-      form = card.card.form;
+      form = this.coreUtilityService.getForm(card.card.form,formName)
+      // form = card.card.form[formName];
       if(form && form._id && form._id != ''){
         id = form._id;
       }
@@ -443,7 +444,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   editedRow(data,index){
     this.editedRowIndex = index;
     this.gridData = data
-    this.addNew();
+    this.addNew('UPDATE');
   }
   getFirstCharOfString(char:any){
     return this.coreUtilityService.getFirstCharOfString(char);
