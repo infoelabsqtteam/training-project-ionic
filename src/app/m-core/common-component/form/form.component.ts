@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
@@ -30,6 +30,7 @@ export class FormComponent implements OnInit, OnDestroy {
   @Input() formName: string;
   @Input() childData: any;  
   @Input() addform: any;
+  @Input() formTypeName:string;
   @Input() modal: any;
 
   
@@ -122,6 +123,7 @@ export class FormComponent implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private http: HttpClient
     ) {
+      console.log(this.formTypeName);
 
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
         this.setStaticData(data);
@@ -2532,7 +2534,8 @@ case 'populate_fields_for_report_for_new_order_flow':
     const gridModalData = {
       "field": field,
       "selectedData":selectedValue,
-      "object": this.getFormValue(true)
+      "object": this.getFormValue(true),
+      "formTypeName" : this.formTypeName,
     }
     this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();
     if(this.samePageGridSelection){          

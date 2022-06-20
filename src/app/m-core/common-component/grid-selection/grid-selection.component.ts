@@ -35,6 +35,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   expandicon: any = "assets/itc-labs/icon/expand-icon.png";
 
   data :any = [];
+  formName:any;
 
 
   constructor(    
@@ -45,11 +46,18 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     private notificationService:NotificationService,
     private dataShareService:DataShareService,
     private coreUtilityService:CoreUtilityService
-  ) { }
+  ) { 
+    // console.log(this.formNameTypeTravel);
+    // this.formNameTypeTravel(data){
+    //   console.log(data)
+    }
+  
 
   ngOnInit() {
     // this.onload();
     // this.subscribe();
+    console.log(this.Data.formTypeName)
+    this.formName = this.Data.formTypeName;
 
   }
   ngOnChanges(changes: SimpleChanges) {
