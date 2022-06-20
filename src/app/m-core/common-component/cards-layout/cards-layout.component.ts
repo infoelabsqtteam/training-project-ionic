@@ -70,6 +70,16 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   // new var
   gridDataSubscription: any;
+  currentPageCount:number = 1;
+  currentPage:number;
+  dataPerPageCount:number = 50;
+  totalDataCount:number;
+  totalPageCount:number;
+  formTypeName:any;
+  selectedgriddataId:any;
+  loadMoreData:boolean = true;
+  loadMoreEvent:any;
+  updateMode:boolean = false;
 
   constructor(
     private platform: Platform,
@@ -92,17 +102,60 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     // below code is for slider and title name
     this.initializeApp();
     this.web_site_name = this.envService.getWebSiteName();
-    
     this.gridDataSubscription = this.dataShareService.collectiondata.subscribe(data =>{
-      this.carddata = data.data;
-      this.filterCount = data.data_size;
+      let res:any;
+      if(data && data.data && data.data_size){
+        res = data.data;
+        this.totalDataCount = data.data_size;
+        this.totalPageCount = Math.ceil(this.totalDataCount / this.dataPerPageCount);
+        this.setCardData(res);
+      }
     });
     
   }
 
+  setCardData(data:any){
+    if( this.currentPage < this.totalPageCount){
+      if(this.carddata.length !== 0 && this.totalDataCount !== 0 && this.updateMode){
+        this.updateMode = false;
+        if(data && data.length > 0){          
+          this.carddata.map((item, i) => {
+            if (item._id == data[0]._id){
+                this.carddata[i] = data[0];
+              }
+          });
+        }
+
+      }else if(this.carddata.length !== this.totalDataCount && this.loadMoreData){
+        this.loadMoreData = false;
+        for(let i=0;i<data.length;i++){
+          this.carddata.push(data[i]);
+        }
+      }else{
+        console.log("Current data length > or < than totalData");
+      }
+    }else{
+      console.log("Current page greater than totalPage");
+    }
+  }
+
   resetVariabls(){
-    this.editedRowIndex = -1;
-    this.gridData = {};
+    if(this.formTypeName == "UPDATE"){
+      this.formTypeName = '';
+      this.updateMode = true;
+      this.currentPageCount = 1;
+    }else if(this.formTypeName == "ADDNEW"){
+      this.formTypeName = '';
+      this.editedRowIndex = -1;
+      this.currentPageCount = 1;
+      this.carddata = [];
+      this.gridData = {};
+      this.loadMoreData = true;
+    }else{
+      this.editedRowIndex = -1;
+      this.currentPageCount = 1;
+      this.gridData = {};
+    }
   }
 
   initializeApp() {
@@ -124,7 +177,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   }
 
+  ionViewwillLeave(){
+    this.carddata=[];
+  }
+  ionViewDidLeave(){
+    this.carddata=[];
+  }
+
   ngOnChanges(changes: SimpleChanges) {
+    this.onloadVariables();
     if(this.data && this.data.filterFormData){
       this.filterForm['value'] = this.data.filterFormData;
       this.getGridData(this.collectionname);
@@ -150,10 +211,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
   }
 
-
-  ngOnInit() {
-    this.carddata = [];
+  onloadVariables(){
+    this.currentPageCount = 1;    
+    this.carddata=[];
+    this.loadMoreData = true;
+    if(this.loadMoreEvent){
+      this.loadMoreEvent.target.disabled = false;
+    }
   }
+  ngOnInit() { }
 
   ngOnDestroy(): void {
     // if (this.cardListSubscription) {
@@ -231,6 +297,18 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         parentcard = card;
       }
     }
+    if(this.selectedgriddataId && this.selectedgriddataId !=''){      
+              
+      criteria = [
+        "_id;eq;" + this.selectedgriddataId + ";STATIC"
+      ];
+      // const params = this.collectionname;
+      // const payload = this.restService.getPaylodWithCriteria(params, "", criteria, {});
+      // this.apiService.getDatayById(payload);      
+      parentcard = card;
+      this.selectedgriddataId = '';
+    }
+
     this.collectionname = card.collection_name;
     this.getGridData(this.collectionname, criteria, parentcard);
   }
@@ -374,8 +452,18 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       } 
     }
     let data = this.restService.getPaylodWithCriteria(params,'',cardCriteria,object);
-    data['pageNo'] = 0;
-    data['pageSize'] = 50;
+    this.currentPage = this.currentPageCount - 1;
+    data['pageNo'] = this.currentPage;
+    data['pageSize'] = this.dataPerPageCount;
+    // if(this.currentPageCount < this.totalPageCount){
+    //   // let dataIncrement = this.pageCount ++;
+    //   data['pageNo'] = 0;
+    //   data['pageSize'] = this.currentPageCount * this.dataPerPageCount;
+    // }else{
+    //   data['pageNo'] = this.currentPageCount;
+    //   data['pageSize'] = this.dataPerPageCount;
+    // }
+    
     if(crList && crList.length > 0){
       crList.forEach(cr => {
         if(data && data.crList && data.crList.length >= 0){
@@ -414,7 +502,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
 
-  async addNew(){
+  async addNew(formName?:any){
+    if(formName){
+      this.formTypeName = formName;
+    }else{
+      this.formTypeName = "ADDNEW";
+    }
     this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);
     let card = this.card;
     let form:any = {};
@@ -447,8 +540,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   editedRow(data,index){
     this.editedRowIndex = index;
-    this.gridData = data
-    this.addNew();
+    this.gridData = data;
+    this.selectedgriddataId = this.gridData._id
+    this.addNew("UPDATE");
   }
   getFirstCharOfString(char:any){
     return this.coreUtilityService.getFirstCharOfString(char);
@@ -471,6 +565,27 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.getCardDataByCollection(this.selectedIndex);
     });
     return await modal.present();
+  }
+
+  loadData(event) {
+    this.loadMoreEvent = event;
+    setTimeout(() => {
+      event.target.complete();
+      this.loadMoreData = true;
+      if(this.currentPageCount <= this.totalPageCount){
+        if (this.carddata.length === this.totalDataCount || this.totalDataCount === 1) {// App logic to determine if all data is loaded       
+          // this.currentPageCount = 1;
+          this.loadMoreEvent.target.disabled = true;    // and disable the infinite scroll
+          this.storageService.presentToast("No more data");
+        }else{
+          this.currentPageCount++;
+          this.getGridData(this.collectionname);  
+        }
+      }else{
+        this.storageService.presentToast("No more data");
+      }
+      
+    }, 1000);
   }
   
 
