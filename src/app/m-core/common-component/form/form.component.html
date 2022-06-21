@@ -166,7 +166,7 @@
 
     <row *ngIf="samePageGridSelection == true" class="samePageGridSelection">
       <ion-col>
-        <app-grid-selection [Data]="samePageGridSelectionData"></app-grid-selection>
+        <app-grid-selection [Data]="samePageGridSelectionData" (gridSelectionResponce) = "gridSelectionResponce($event)"></app-grid-selection>
       </ion-col>
     </row>
     

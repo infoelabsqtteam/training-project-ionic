@@ -200,10 +200,16 @@ export class FormComponent implements OnInit, OnDestroy {
     }
   }
   setStaticData(staticData:any){
-    this.staticData = staticData; 
-    Object.keys(this.staticData).forEach(key => {        
-      this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
-    })
+    this.staticData = staticData;
+    // if(this.staticData && this.staticData.null && this.staticData.null.length > 0 ){
+    //   Object.keys(this.staticData.null).forEach(key => {        
+    //     this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData.null[key]));
+    //   })
+    // }else{
+      Object.keys(this.staticData).forEach(key => {        
+        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+      })
+    
     this.tableFields.forEach(element => {
       switch (element.type) {              
         case 'pdf_view':

@@ -14,6 +14,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   @Input() Data : any;
   @Input() modal: any;
   @Output() selectedTabAgain = new EventEmitter<any>();
+  @Output() gridSelectionResponce = new EventEmitter<any>();
 
   selecteData:any=[];
   selectedData:any = [];
@@ -76,6 +77,11 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       this.copyStaticData = data;
       this.setStaticData(data);
     })
+  }
+  ngOnDestroy(){
+    if(this.staticDataSubscriber){
+      this.staticDataSubscriber.unsubscribe();
+    }
   }
   onload(){
     this.selectedTab = "new";
@@ -227,12 +233,13 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     modal.onDidDismiss()
       .then((data) => {
         const object = data['data']; // Here's your selected user!
-        if(object['data'] ){
-          this.toggle(object['data'],{'detail':{'checked':true}},0);
-        } 
         if(object['data'] && object['remove']){
           this.toggle(object['data'],{'detail':{'checked':false}},0);
-        }              
+        }else if(object['data'] && object['remove'] == false){
+          this.toggle(object['data'],{'detail':{'checked':true}},0);
+        }else{
+          console.log("No action performed.");
+        }                 
     });
     return await modal.present();
   }
@@ -266,7 +273,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     let index:any;
     if(data._id != undefined){
       index = this.coreFunctionService.getIndexInArrayById(this.gridData,data._id);
-    }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0){
+    }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0 && data){
       this.gridData.forEach((row:any, i:any) => {        
           var validity = true;
           this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
@@ -286,6 +293,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
     if (event.detail.checked) {
       this.gridData[index].selected=true;
+      this.getSelectedData();
     } else{
       this.gridData[index].selected=false;
     }
@@ -356,6 +364,10 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     // this.selectedTab = ev.target.value;
     this.selectedTabAgain.emit(selectedTab);
   }
+  // segmentChangedEmit(selectedTab:any) {
+  //   // this.selectedTab = ev.target.value;
+  //   this.selectedTabAgain.emit(selectedTab);
+  // }
   getSelectedData(){
     const selectedData = [];
     if(this.gridData && this.gridData.length > 0){
@@ -364,6 +376,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
           selectedData.push(element);
         }
       });
+      this.gridSelectionResponce.emit(selectedData);
       return selectedData;
     }else{
       return selectedData;
