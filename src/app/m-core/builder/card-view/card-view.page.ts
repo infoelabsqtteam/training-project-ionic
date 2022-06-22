@@ -25,7 +25,6 @@ export class CardViewPage implements OnInit, OnDestroy {
     cardType = "summary"; //default cardtype
     childColumns : any;
     childColumn: any = {};
-    collectionname: any;
   
     card:any={};
     data :any ={};
@@ -40,7 +39,8 @@ export class CardViewPage implements OnInit, OnDestroy {
   filterCount: 0;
   searching:boolean = false;
   searchcardvalue:string = '';
-
+  collectionName:any;
+  searchcardfield:any = '';
   // addNewEnabled:boolean=false;
   // detailPage:boolean=false;
 
@@ -68,10 +68,17 @@ export class CardViewPage implements OnInit, OnDestroy {
     ngOnInit() {  
     }
     togglesearch(){
+      
       this.searching = !this.searching;
       this.searchcardvalue = "";
       if(!this.searching){
         this.search(this.searchcardvalue);
+      }
+    }
+
+    selectedSearchValue(serchingvalue:any){
+      if(serchingvalue){
+        this.searching = true;
       }
     }
     
@@ -92,7 +99,8 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
   
     private getCardDataByCollection(i:number) {
-      const cardWithTab = this.coreUtilityService.getCard(i); 
+      const cardWithTab = this.coreUtilityService.getCard(i);
+      this.collectionName = cardWithTab.card.collection_name;
       if(cardWithTab && cardWithTab.card){
         if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
           this.router.navigateByUrl('chart');
@@ -110,6 +118,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.tabMenu = [];
       this.openFilter = false;
       this.filterForm.reset();
+      this.searchcardfield = '';
     }
     open(){
       this.openFilter=!this.openFilter
@@ -121,6 +130,13 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.data = {
         'filterFormData' : this.filterForm.getRawValue()
       }
+    }
+    filterCardAgain(){  
+      const value = {}
+      value[this.searchcardfield] = this.searchcardvalue;
+      this.data = {
+        'filterFormData' : value
+      }         
     }
     closefilterCard(){
       this.data = {};

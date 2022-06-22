@@ -1,5 +1,30 @@
 <ion-header #header>
-  <ion-toolbar>
+  <ion-toolbar *ngIf="collectionName !== 'travel_plan'">
+    <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
+    <ion-item lines="none" class="cardsearch ion-no-flex">
+      <ion-select interface="popover" placeholder="Search Value" [(ngModel)]="searchcardfield" (ionChange)="selectedSearchValue(searchcardfield)">
+        <ion-select-option *ngFor="let columns of columnList; index as i" [value]="columns.field_name" >{{columns.field_label}}</ion-select-option>
+      </ion-select>
+      
+      
+        <ion-title class="ion-no-padding ion-text-capitalize" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>
+        <ion-input placeholder="search" class="align-self: auto" (ionChange)="filterCardAgain()" [(ngModel)]="searchcardvalue" clearInput [placeholder] animated="true"
+        [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
+        <Span (click)="togglesearch()"><ion-icon name="arrow-back" size="small" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}" ></ion-icon></Span>
+        </ion-input>
+        <ion-buttons slot="end" (click)="togglesearch()">
+            <ion-icon name="search" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}"></ion-icon>
+            <ion-icon name="close-outline" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon>
+        </ion-buttons>
+      
+      <ion-buttons class="filter ion-text-end" slot="end" (click)="open()">
+          <img src="assets/img/icons/Filter.svg">
+      </ion-buttons>
+      
+    </ion-item>
+ 
+  </ion-toolbar>
+  <ion-toolbar *ngIf="collectionName == 'travel_plan'">
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
     <div class="cardsearch">
       <ion-title class="ion-no-padding ion-text-capitalize" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>

@@ -8,7 +8,7 @@ ion-header {
         ion-icon, .button {color:var(--themebg);font-size:30px;}
         .back-button-text .button-text{font-size: 22px;}
         .searchbar-input.sc-ion-searchbar-md {border-radius:6px;box-shadow:none;background:#E6E7E8;height:30px;padding-inline-start:35px;padding-inline-end:10px;}
-        .searchbar-search-icon.sc-ion-searchbar-md {left:10px;top:6px;width:18px;height:18px;}
+        .searchbar-search-icon.sc-ion-searchbar-md {left:10px;Top:6px;width:18px;height:18px;}
     }
     &:after {display:none;}
     ion-title {font-size:18px;color:var(--themebg);font-weight:600;display:inline-block; vertical-align:middle;}
@@ -21,7 +21,7 @@ ion-toolbar.grey-toolbar {--background-color: #EFF1F3;}
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6e00dd', endColorstr='var(--theme-color-light)',GradientType=1 );
     .sidebarheader {position:relative;text-align:right;padding:0px 10px 10px;
         ion-button {--background:rgba(0,0,0,0.2);--box-shadow:none;color:#fff;}
-        .headerprofile {text-align:center;margin-top:-30px;}
+        .headerprofile {text-align:center;margin-Top:-30px;}
         ion-avatar {margin:auto;width:40px;height:40px;}
         ion-title {color:#fff;margin:20px 0 0;font-size:14px;}
     }
@@ -86,7 +86,7 @@ ion-toolbar.grey-toolbar {--background-color: #EFF1F3;}
         input[type="checkbox"] {width:16px;height:16px;}
         ion-input {font-size:14px;}
 }
-.nodatafound{height: 100%;background-color: #fff;text-align: center;margin-top: 10px;}
+.nodatafound{height: 100%;background-color: #fff;text-align: center;margin-Top: 10px;}
 // Footer Tabs
 ion-tabs.footertab {
     ion-tab-bar {background:var(--themebg);}
@@ -108,8 +108,8 @@ ion-tabs.footertab {
 
 
 // Contact Listing
-.contactlist {--background:#FFFFFF;margin: 0px 8px;
-    ion-item-sliding{margin-bottom:6px;margin-top: 6px;}
+.contactlist {--background:#FFFFFF;margin: 0px 8px; padding-bottom: 22%;
+    ion-item-sliding{margin-bottom:6px;margin-Top: 6px;}
     ion-item {border-radius:14px;border:1px solid #F0F1F3;}
     ion-row{width: 100%;border-style: none;}
     ion-avatar {width:48px;height:48px;margin:12px 12px 12px -8px;color:#fff;text-align:center;background:var(--theme-color-rgb);font:500 26px/48px Roboto, sans-serif;}
@@ -123,9 +123,9 @@ ion-tabs.footertab {
     a {display:inline-block;color:#E23339;border-radius:4px;border:1px solid;width:78px;height:22px;line-height:22px;text-align:center;font-size:11px;}
     p{margin:0;margin-bottom:5px;}
     .contact_person_name{margin: 0;color: #3A3A3A;font-size: 16px;margin-bottom:5px;font-family: Roboto, Medium;font-weight: 600;}
-    .contact_company_name{color: #3A3A3A;font-size: 10px;text-transform: capitalize;margin-top:8px;font-family: Roboto, Regular;}
+    .contact_company_name{color: #3A3A3A;font-size: 10px;text-transform: capitalize;margin-Top:8px;font-family: Roboto, Regular;}
     .contact_serial_id{color: #313131;font-size: 10px;text-align: end;margin-bottom:5px}
-    .contact_person_mobile{color: #3A3A3A;font-size: 10px;text-align: end;margin-top:10px;;font-family: Roboto, Regular;}
+    .contact_person_mobile{color: #3A3A3A;font-size: 10px;text-align: end;margin-Top:10px;;font-family: Roboto, Regular;}
     
 }
 .crmtab{
@@ -154,7 +154,7 @@ ion-tabs.footertab {
     .price{font-size: 14px;color: #000;margin: 0;}
     .strong{font-weight: bold;}
     p{line-height: 20px;margin:0;}
-    col{padding-top: 10px;}
+    col{padding-Top: 10px;}
     ion-button {
         --background: none;
         display: inline-block;
@@ -172,7 +172,7 @@ ion-tabs.footertab {
 }
 
 // CRM Contact Details Pages
-.contactdetails {background:#fff;border-radius:20px 20px 0 0;padding:20px;margin-top:20px;padding-bottom:50px;
+.contactdetails {background:#fff;border-radius:20px 20px 0 0;padding:20px;margin-Top:20px;padding-bottom:50px;
     a {display:inline-block;color:#E23339;border-radius:4px;border:1px solid;padding:1px 10px;line-height:22px;text-align:center;font-size:11px;margin:0 5px;}
     .enquerylist {font-size:16px;color:#3a3a3a;display:flex;
         span, strong {width:50%;font-weight:normal;vertical-align:middle;}
@@ -191,7 +191,7 @@ ion-tabs.footertab {
     h3.personName, .personDesignation{text-transform: uppercase;}
     .contactmedia ion-icon{color: var(--themebg);}
 }
-.contactpersonlists{background: #ffffff;border-radius: 20px 20px 0 0;margin-top: 20px;padding: 10px 0;
+.contactpersonlists{background: #ffffff;border-radius: 20px 20px 0 0;margin-Top: 20px;padding: 10px 0;
     .contactlist ion-item{border: 1px solid #e3dfdf;}
 }
 
@@ -245,10 +245,10 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
 // }
 // cardsearch
 .cardsearch {
-    display: flex;
-    align-content: center;
-    align-items: center;
-    justify-content: space-between;
+    // display: flex;
+    // align-content: center;
+    // align-items: center;
+    // justify-content: space-between;
     ion-input{
        .native-input{padding: 5px;}
         background: #e6e7e8;
@@ -260,6 +260,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
     .hidden-btn{display: none;transition: 1s ease-in-out;}
     .active-search{flex:1;display: flex;transition: 1s ease-in-out;}
     .visible-btn{transition: 1s ease-in-out;}
+    ion-select{max-width: 34%;margin-right: 10px;font-size: 12px;;}
 }
 .error{
     color: red;
@@ -274,7 +275,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
 }
 // 19-04
 .app-grid_selection{
-    border: 1px solid #F0F1F3;border-radius: 16px;background: #ffffff;margin-top: 30px;padding:5px;
+    border: 1px solid #F0F1F3;border-radius: 16px;background: #ffffff;margin-Top: 30px;padding:5px;
     .icon{--size:14px;font-size: 18px;}
     .icon.left{margin:5px 5px 5px 0;}
     .icon.right{margin:5px 0 5px 5px;}
@@ -324,7 +325,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         .google-chart {width:auto !important;}
         .google-visualization-table .gradient {font-size:10px;}
         .google-visualization-table-table td {font-size:10px;white-space:nowrap;}
-        .spinner {display:flex;align-items:center;justify-content:center;height:100%;position:absolute;width:100%;left:0;top:0;}
+        .spinner {display:flex;align-items:center;justify-content:center;height:100%;position:absolute;width:100%;left:0;Top:0;}
     }
 
 }
@@ -337,7 +338,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
     ion-label, ion-select {margin:0px;padding:0px;}
     .label-floating.sc-ion-label-md-h {-webkit-transform:translateY(65%);transform:translateY(65%);}
     .item-has-value .label-floating.sc-ion-label-md-h {-webkit-transform:translateY(10%) scale(0.75);transform:translateY(10%) scale(0.75);}
-    .item-label-floating .sc-ion-input-md-h {--padding-top:0px;--padding-bottom:0px;font-size:13px;}
+    .item-label-floating .sc-ion-input-md-h {--padding-Top:0px;--padding-bottom:0px;font-size:13px;}
     .item-has-focus .label-floating.sc-ion-label-md-h {-webkit-transform:translateY(10%) scale(0.75);transform:translateY(10%) scale(0.75);}
     
     .typehead {border:1px solid #efefef;padding:0 10px;min-height:35px;
@@ -346,7 +347,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         // .ng-select.ng-select-single .ng-select-container .ng-arrow-wrapper {bottom:5px;}
         ng-select.ng-select .ng-select-container {padding:0px;min-height:35px;}
         .ng-select .ng-select-container .ng-value-container .ng-input {bottom:0;}
-        .ng-select .ng-select-container .ng-value-container {border-top:3px solid transparent;}
+        .ng-select .ng-select-container .ng-value-container {border-Top:3px solid transparent;}
         .ng-select.ng-select-single .ng-select-container .ng-value-container .ng-input, .ng-value-label {font-size:13px;}
         ng-select.ng-select .ng-select-container .ng-value-container .ng-input > input {padding:0;line-height:30px;}
         .ng-select .ng-has-value .ng-placeholder, .ng-select.ng-select-opened .ng-placeholder {transform:translateY(-0.8em) scale(0.75) perspective(100px) translateZ(0.001px);}
@@ -364,3 +365,4 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
 //     .google-visualization-table-table td {white-space:nowrap;}
 // }
 
+ion-fab.cardwithsubheader{margin-bottom: 17%;}
