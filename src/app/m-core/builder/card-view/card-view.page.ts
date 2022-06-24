@@ -1,4 +1,4 @@
-import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
+import { Component, OnInit, Optional, OnDestroy, SimpleChanges} from '@angular/core';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
 import { Platform, ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { filter } from 'rxjs';
@@ -43,12 +43,12 @@ export class CardViewPage implements OnInit, OnDestroy {
   searchcardvalue:any='';
   searchcardfield:any='';
   selectedLeave : string = '';
-  collectionName:any;
+  popoverTabbing:any;
   travelCardList:any=["Travel Mangement","Travel Report"];
   headerTitle:any;
   popoverdata:any;
-  // addNewEnabled:boolean=false;
-  // detailPage:boolean=false;
+  popoverItems:any;
+  popoverMenu:boolean;
 
     constructor(
       private storageService: StorageService,
@@ -61,7 +61,9 @@ export class CardViewPage implements OnInit, OnDestroy {
       private router:Router,
       public popoverController: PopoverController,
       @Optional() private readonly routerOutlet?: IonRouterOutlet      
-    ){}
+    ){
+      console.log(this.tabMenu);
+    }
   
     ionViewWillEnter(){
       this.load();
@@ -69,6 +71,11 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
 
     ngOnInit() {}
+
+    ngOnChanges(changes: SimpleChanges) {
+      this.popoverItems;
+    }
+
     togglesearch(){
       this.searching = !this.searching;
       this.searchcardvalue = "";
@@ -76,8 +83,7 @@ export class CardViewPage implements OnInit, OnDestroy {
         this.filterCardAgain();
       }
     }
-    
-  
+
     load(){
       this.carddata = [];
       this.data = {};
@@ -95,14 +101,19 @@ export class CardViewPage implements OnInit, OnDestroy {
   
     private getCardDataByCollection(i) {
       const cardWithTab = this.coreUtilityService.getCard(i); 
-      this.collectionName = cardWithTab.card.collection_name;
       if(cardWithTab && cardWithTab.card){
         if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
           this.router.navigateByUrl('charts');
         }else{
+          if(cardWithTab.card && cardWithTab.card.name){
+            this.headerTitle = cardWithTab.card.name;
+          }
         this.card = cardWithTab;
         }
-      }    
+      }
+      if(cardWithTab && cardWithTab.popoverTabbing) {
+        this.popoverTabbing = cardWithTab.popoverTabbing;
+      }
     }
     
     comingSoon() {
@@ -113,6 +124,9 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.tabMenu = [];
       this.openFilter = false;
       this.filterForm.reset();
+      this.popoverMenu = false;
+      this.popoverTabbing = false;
+      this.popoverItems = [];
     }
     open(){
       this.openFilter=!this.openFilter
@@ -167,7 +181,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       }
     }
     search(searchcardvalue){
-      console.log(searchcardvalue);
+      // console.log(searchcardvalue);
       // if(searchcardvalue && searchcardvalue.length > 0){
         this.data = {
           'searchData' : searchcardvalue
@@ -195,16 +209,30 @@ export class CardViewPage implements OnInit, OnDestroy {
         component: PopoverComponent,
         cssClass: 'my-custom-class',
         event: ev,
-        translucent: true
+        translucent: true,
+        componentProps: {
+          "popoverItems" : this.popoverItems 
+        }
       });
       await popover.present();
+      
     
       const { role } = await popover.onDidDismiss();
       console.log('onDidDismiss resolved with role', role);
     }
     popoverOutput(popoverdata:any){
-      this.headerTitle = popoverdata;
-      
+      if(popoverdata && popoverdata.name){ 
+        this.headerTitle = popoverdata.name;
+      }
+      if(popoverdata && popoverdata.card){
+        this.card = {
+          "card":popoverdata.card,
+          "popoverTabbing": this.popoverTabbing
+        }
+      }
+    }
+    popoverMenuItem(menuitem:any){
+      this.popoverItems = menuitem;
     }
 
   }

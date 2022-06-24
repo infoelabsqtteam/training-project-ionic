@@ -23,6 +23,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   @Output() columnListOutput = new EventEmitter();
   @Input() searchcard:any;
   @Output() formNameTypeTravel = new EventEmitter();
+  @Output() popoverTabbing = new EventEmitter();
 
 
 
@@ -69,6 +70,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   addNewEnabled:boolean=false;
   detailPage:boolean=false;
   callStatus:boolean=false;
+  popoverMenu:boolean=false;
 
   // new var
   gridDataSubscription: any;
@@ -176,13 +178,21 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     
   } 
   setCardAndTab(cardWithTab){
-    if(cardWithTab && cardWithTab.card){
+    if(cardWithTab && cardWithTab.card && cardWithTab.popoverTabbing){
       let card  = cardWithTab.card;
       this.setCardDetails(card);
     } 
+    // if(cardWithTab && cardWithTab.card){
+    //   let card  = cardWithTab.card;
+    //   this.setCardDetails(card);
+    // } 
     if(cardWithTab && cardWithTab.tabs && cardWithTab.tabs.length > 0){
       this.tabMenu = cardWithTab.tabs;
       this.selectedIndex = cardWithTab.selectedTabIndex;
+      if(cardWithTab && cardWithTab.popoverTabbing){
+        this.popoverMenu = cardWithTab.popoverTabbing;
+        this.popoverTabbing.emit(this.tabMenu);
+      }
     }else{
       this.tabMenu = [];
       this.selectedIndex = -1;

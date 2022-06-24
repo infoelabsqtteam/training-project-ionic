@@ -757,7 +757,11 @@ export class FormComponent implements OnInit, OnDestroy {
           case 'date':
             if(element && element.date_format && element.date_format != ''){
               selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
-            }            
+            }else{
+              selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
+              (formValue[element.field_name],'dd/MM/yyyyHH:mm:ssZ',"0000","en-US");
+              // selectedRow[element.field_name] = formValue[element.field_name];
+            }               
             break;
           default:
             selectedRow[element.field_name] = formValue[element.field_name];
@@ -786,6 +790,10 @@ export class FormComponent implements OnInit, OnDestroy {
                 case 'date':
                   if(data && data.date_format && data.date_format != ''){
                     modifyFormValue[element.field_name][data.field_name] = this.datePipe.transform(formValue[element.field_name][data.field_name],'dd/MM/yyyy');
+                  }else{
+                    selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
+                    (formValue[element.field_name],'dd/MM/yyyyHH:mm:ssZ',"0000","en-US");
+                    // selectedRow[element.field_name] = formValue[element.field_name];
                   }            
                   break;
               

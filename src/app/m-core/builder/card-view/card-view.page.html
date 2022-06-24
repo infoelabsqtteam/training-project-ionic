@@ -1,4 +1,4 @@
-<ion-header *ngIf="collectionName !== 'travel_plan'">
+<ion-header *ngIf="!this.popoverTabbing">
   <ion-toolbar>
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
   <ion-item lines="none">
@@ -25,7 +25,7 @@
  
   </ion-toolbar>
 </ion-header>
-<ion-header *ngIf="collectionName === 'travel_plan'">
+<ion-header *ngIf="this.popoverTabbing">
   <ion-toolbar>
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
       <ion-title class="" *ngIf="headerTitle !=''">{{headerTitle}}</ion-title>
@@ -34,7 +34,7 @@
   </ion-buttons>
   <ion-popover trigger="popover-id">
     <ng-template>
-      <app-popover [data]="data" (popoverOutput)="popoverOutput($event)"></app-popover>
+      <app-popover [card]="card" [popoverItems]="popoverItems" (popoverOutput)="popoverOutput($event)"></app-popover>
     </ng-template>
   </ion-popover>
   </ion-toolbar>
@@ -62,7 +62,7 @@
 <ion-content class="pages quotation">
 
   
-    <app-cards-layout [card]="card" [data]="data" (columnListOutput) = "columnListOutput($event)"></app-cards-layout>
+    <app-cards-layout [card]="card" [data]="data" (columnListOutput) = "columnListOutput($event)" (popoverTabbing) = "popoverMenuItem($event)"></app-cards-layout>
 
 
   <!-- <div *ngIf="filterCount == 0" class="nodatafound">    
