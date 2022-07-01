@@ -104,7 +104,7 @@
      
 </div>
 <div *ngIf="formName == 'UPDATE'">
-    <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of gridData; let i = index">
+    <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of getSelectedData(); let i = index">
         <ion-list class="contactlist">
             
             <ion-item class="contactlist ion-no-margin" lines="none" (click)="addremoveparticipant(data)">

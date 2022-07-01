@@ -30,7 +30,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   grid_row_selection:boolean = false;
   grid_row_refresh_icon:boolean = false;
 
-  selectedTab:string = "new";
+  selectedTab:any = "new";
   // selectedTabAgain:any;
 
   expandicon: any = "assets/itc-labs/icon/expand-icon.png";

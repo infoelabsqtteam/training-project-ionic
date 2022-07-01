@@ -12,6 +12,8 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { finalize, last } from 'rxjs';
 import { CameraService } from 'src/app/service/camera-service/camera.service';
 import { HttpClient } from '@angular/common/http';
+import { zonedTimeToUtc, utcToZonedTime} from 'date-fns-tz';
+import { parseISO, format, hoursToMilliseconds } from 'date-fns';
 
 interface User {
   id: number;
@@ -102,6 +104,8 @@ export class FormComponent implements OnInit, OnDestroy {
 
   samePageGridSelectionData:any;
   samePageGridSelection : boolean = false;
+  userTimeZone: any;
+  userLocale:any;
   
 
   constructor(
@@ -123,8 +127,6 @@ export class FormComponent implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private http: HttpClient
     ) {
-      console.log(this.formTypeName);
-
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
         this.setStaticData(data);
       });
@@ -153,6 +155,8 @@ export class FormComponent implements OnInit, OnDestroy {
       // this.samePageGridSelectionData = this.dataShareService.gridSelectionCheck.subscribe(data =>{
       //   this.samePageGridSelection = data;
       // });
+      this.userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      this.userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
     }
 
   resetFlag(){
@@ -175,9 +179,9 @@ export class FormComponent implements OnInit, OnDestroy {
     if(this.fileDownloadUrlSubscription){
       this.fileDownloadUrlSubscription.unsubscribe();
     }
-    // if(this.samePageGridSelectionData){
-    //   this.samePageGridSelectionData.unsubscribe();
-    // }
+    if(this.saveResponceSubscription){
+      this.saveResponceSubscription.unsubscribe();
+    }
   }
   ngOnInit() {
     const id:any = this.commonDataShareService.getFormId();
@@ -713,7 +717,7 @@ export class FormComponent implements OnInit, OnDestroy {
     let modifyFormValue = {};   
     let valueOfForm = {};
     if (this.updateMode || this.complete_object_payload_mode){      
-      this.tableFields.forEach(element => {
+      this.tableFields.forEach(async element => {
         switch (element.type) {
           case 'stepper':
             element.list_of_fields.forEach(step => {
@@ -757,7 +761,19 @@ export class FormComponent implements OnInit, OnDestroy {
           case 'date':
             if(element && element.date_format && element.date_format != ''){
               selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
-            }            
+            }else{
+              // required format 2022-06-30T00:00:00+05:30 (client) and 2022-06-29T18:30:00.000Z (server)
+              let Mdate = formValue[element.field_name];
+              if(Mdate && Mdate.length > 10){
+                Mdate = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
+                let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
+                // const formattedString = format(parseISO(utcDate), 'yyyy-MM-ddHH:mm:ss.SSS');
+                // const pattern = 'yyyy-MM-dd HH:mm:ss.SSS \'GMT\' XXX (z)';
+                // const output = format(utcDate, pattern, { timeZone: this.userTimeZone });
+                utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
+                selectedRow[element.field_name] = utcDate;
+              }
+            }
             break;
           default:
             selectedRow[element.field_name] = formValue[element.field_name];
@@ -765,7 +781,7 @@ export class FormComponent implements OnInit, OnDestroy {
         }
       });
     }else{
-      this.tableFields.forEach(element => {
+      this.tableFields.forEach(async element => {
         switch (element.type) {
           case 'stepper':
             element.list_of_fields.forEach(step => {
@@ -803,7 +819,23 @@ export class FormComponent implements OnInit, OnDestroy {
           case 'date':
             if(element && element.date_format && element.date_format != ''){
               modifyFormValue[element.field_name] = this.datePipe.transform(formValue[element.field_name],element.date_format);
-            }            
+            }  else{
+              // modifyFormValue[element.field_name] = formValue[element.field_name];
+
+              //required format 2022-06-30T00:00:00+05:30 (client) and 2022-06-29T18:30:00.000Z (server)
+              // let Mdate = new Date(formValue[element.field_name]).toISOString();
+              let  Mdate = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
+
+              // date-fns
+              let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
+               utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
+
+              // const pattern = "yyyy-MM-dd'T'hh:mm:ss.SSS'Z"
+              // const output = format(utcDate, pattern, { timeZone: this.userTimeZone })
+              // console.log("Output : ", output)
+              modifyFormValue[element.field_name] = utcDate;
+
+            }          
             break;
           default:
             modifyFormValue = formValue;
@@ -1423,9 +1455,17 @@ export class FormComponent implements OnInit, OnDestroy {
                   const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
                   const value = new Date(formatedDate);
                   this.templateForm.controls[element.field_name].setValue(value)
-                }else{                  
+                }else{        
                   const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
-                  this.templateForm.controls[element.field_name].setValue(value);                  
+                  //need in this format 2022-06-30T00:00:00+05:30
+                  // let isoString = new Date(value).toISOString()
+                  const zonedTime:any = utcToZonedTime(value, this.userTimeZone);
+                  // let transformzonedTime = (parseISO(zonedTime), "yyyy-MM-dd'T'HH:mm:ssZ");
+                  const transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'T'HH:mm:ssZZZZZ", this.userTimeZone);
+                  // let pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'";
+                  // let output = format(zonedTime, pattern, { timeZone: userTimeZone })
+
+                  this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
                 }
               }
               break;
@@ -2973,6 +3013,34 @@ case 'populate_fields_for_report_for_new_order_flow':
     }else{
       return '12';
     }
+  }
+
+  // convertUtcToLocalString(val : Date) : string {        
+  //   var d = new Date(val); // val is in UTC
+  //   var localOffset = d.getTimezoneOffset() * 60000;
+  //   var localTime = d.getTime() - localOffset;
+
+  //   d.setTime(localTime);
+  //   return this.formatDate(d);
+  // }
+
+  convertUtcToLocalDate(val : Date) : Date {        
+      var d = new Date(val); // val is in UTC
+      var localOffset = d.getTimezoneOffset() * 60000;
+      var localTime = d.getTime() - localOffset;
+
+      d.setTime(localTime);
+      return d;
+  }
+
+  convertLocalToUtc(val : Date) : Date { 
+      var d = new Date(val);
+      var localOffset = d.getTimezoneOffset() * 60000;
+      var utcTime = d.getTime() + localOffset;
+
+      d.setTime(utcTime);
+      console.log("D :", d);
+      return d;
   }
 
 }
