@@ -6,7 +6,6 @@ export const environment = {
   // serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
   // serverhost: "https://sitserverelabs.e-labs.ai/rest/",
   // serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
-  // serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.itcuat.ai",
   appName: "ITC Uat",
