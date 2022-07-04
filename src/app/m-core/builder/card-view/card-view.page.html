@@ -55,7 +55,7 @@
     </div>
   </div>    
 </div>
-<ion-content class="pages quotation">
+<ion-content class="pages quotation" appHideHeader [scrollEvents]="true" [header]="header">
 
   
     <app-cards-layout [card]="card" [data]="data" (columnListOutput) = "columnListOutput($event)" (popoverTabbing) = "popoverMenuItem($event)"></app-cards-layout>

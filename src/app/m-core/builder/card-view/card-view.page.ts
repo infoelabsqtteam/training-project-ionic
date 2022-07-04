@@ -25,7 +25,6 @@ export class CardViewPage implements OnInit, OnDestroy {
     cardType = "summary"; //default cardtype
     childColumns : any;
     childColumn: any = {};
-    collectionname: any;
   
     card:any={};
     data :any ={};
@@ -54,11 +53,11 @@ export class CardViewPage implements OnInit, OnDestroy {
       private storageService: StorageService,
       private coreUtilityService :CoreUtilityService,
       private commonDataShareService:CommonDataShareService,
+      private router: Router,
       private restService:RestService,
       private apiService:ApiService,
       private formBuilder: FormBuilder,
       public modalController: ModalController,
-      private router:Router,
       public popoverController: PopoverController,
       @Optional() private readonly routerOutlet?: IonRouterOutlet      
     ){
@@ -77,6 +76,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
 
     togglesearch(){
+      
       this.searching = !this.searching;
       this.searchcardvalue = "";
       if(!this.searching){
@@ -103,7 +103,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       const cardWithTab = this.coreUtilityService.getCard(i); 
       if(cardWithTab && cardWithTab.card){
         if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
-          this.router.navigateByUrl('charts');
+          this.router.navigateByUrl('chart');
         }else{
           if(cardWithTab.card && cardWithTab.card.name){
             this.headerTitle = cardWithTab.card.name;

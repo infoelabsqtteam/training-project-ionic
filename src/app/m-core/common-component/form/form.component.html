@@ -131,13 +131,15 @@
               id="{{tableField.field_name}}"
               class="ion-text-end"
             ></ion-input>
-            <ion-popover trigger="{{tableField.field_name}}">
+            <ion-popover trigger="{{tableField.field_name}}" >
               <ng-template>
-                <ion-datetime size="cover"
+                <ion-datetime
+                  size="cover"
                   presentation="date"
                   [formControlName]="tableField.field_name"
-                  locale="en-GB"
-                ></ion-datetime>
+                  locale="en-US"
+                >
+                </ion-datetime>
               </ng-template>
             </ion-popover>
           </ion-item>

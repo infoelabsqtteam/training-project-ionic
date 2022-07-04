@@ -1,5 +1,7 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { ApiService, DataShareService, RestService } from '@core/ionic-core';
+import { ModalController } from '@ionic/angular';
+import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
 
 @Component({
   selector: 'app-chart',
@@ -24,7 +26,7 @@ export class ChartComponent implements OnInit{
   elements:any=[];  
   staticData: any = {};
   copyStaticData:any={};
-
+  noOfItems:any = [6,9,12,15,18,21,24];
   gridDataSubscription:any;
   staticDataSubscription:any;
   dashletDataSubscription:any;
@@ -35,46 +37,52 @@ export class ChartComponent implements OnInit{
   
   total: number;
   showfilter:boolean = false;
-  
+  clickFilter:boolean = false;
+  headertitle:any;
 
   constructor(
     private restService: RestService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
+    private modalController: ModalController
 
   ) {
-    // this.onLoadSubscribe();
+    this.headertitle = "Charts";
     this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
-      this.setGridData(data);
-      console.log("setGridData: ",data);
+      if(data && data !=''){
+        this.setGridData(data);
+      }
     })
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
-      this.setStaticData(data);
-      console.log("setStaticData: ",data);
+      if(data && data !=''){
+        this.setStaticData(data);
+      }
     })
     this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
-      this.setDashLetData(data);
+      if(data && data !=''){
+        this.setDashLetData(data);
+      }
     }) 
    }
 
    ionViewWillEnter(){}
    ionViewDidEnter(){}
 
-   onLoadSubscribe(){
-    this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
-      this.setGridData(data);
-      console.log("setGridData: ",data);
-    })
-    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
-      this.setStaticData(data);
-      console.log("setStaticData: ",data);
-    })
-    this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
-      this.setDashLetData(data);
-    }) 
-   }
+  //  onLoadSubscribe(){
+  //   this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
+  //     this.setGridData(data);
+  //     console.log("setGridData: ",data);
+  //   })
+  //   this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
+  //     this.setStaticData(data);
+  //     console.log("setStaticData: ",data);
+  //   })
+  //   this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
+  //     this.setDashLetData(data);
+  //   }) 
+  //  }
   
-   setChartData(chartData){
+   setChartData(chartData:any){
     if (chartData) {
        console.log(chartData);
     }
@@ -84,16 +92,10 @@ export class ChartComponent implements OnInit{
 
   ngOnInit() {
     this.getDataForGrid();
-    this.getChartList();
-    // Object.keys(chartdata).forEach(key => {                    
-    //   this.chartDatasets[key] = chartdata[key]['datasets']; 
-    //   this.chartLabels[key] = chartdata[key]['label'];
-    //   this.chartType[key]=chartdata[key]['type'];
-    //   this.chartLegend[key]=chartdata[key]['legend'];
-    //   this.chartOptions[key]=chartdata[key]['option'];
-    // })
-    
+    this.getChartList();    
   }
+
+  
   ngOnChanges(changes: SimpleChanges) {
     if(this.isShow){
       this.getPage(1)
@@ -148,7 +150,7 @@ export class ChartComponent implements OnInit{
     }
   }
 
-  getDashletData(elements){
+  getDashletData(elements:any){
     if(elements && elements.length > 0){
       let payloads = [];
       //let value = this.dashboardFilter.getRawValue();
@@ -212,34 +214,61 @@ export class ChartComponent implements OnInit{
     this.apiService.getStatiData([payload]);
   }
 
-  //  (chartHover)="chartHovered($event[])"
-  // chartHovered({ event, active }: { event: MouseEvent, active: {}[] }): void {
-  //   console.log(event, active);
-  // }
-  
-  //(chartClick)="chartClicked($event[])"
-  // chartClicked({ event, active }: { event: MouseEvent, ac'tive: {}[] }): void {
-  //   alert("Enent Clicked = " + event.type + "=" + " x = " + event.x  + " y = " + event.y);
-  //   console.log(event, active);
-  // }
+  filterchart() {    
+    if(this.filterValue && this.filterValue.length > 0 && this.filterValue.length <= this.itemNumOfGrid) {
+      this.clickFilter = true;
+      let value = "";
+      this.filterValue.forEach((element,i) => {
+        if((this.filterValue.length - 1) == i){
+          value = value + element;
+        }else{
+          value = value + element + ":";
+        }
+      });
+      let cr = "_id;in;"+value+";STATIC";
+      this.getPage(1,[cr]);
+    }    
+  }
+  checkFilter(){
+    if(this.filterValue && this.filterValue.length == 0){
+      this.getPage(1)
+    }
+  }
+  resetFilter(){
+    this.filterValue = [];
+    if(this.clickFilter){
+      this.clickFilter = false;
+      this.checkFilter();
+    }
+  }
+  selectNoOfItem(){
+    this.getPage(1);
+  }
+  onKey(value:any){
+    this.copyStaticData['chart_list'] = this.search(value)
+  }
+  search(value: string) { 
+    let filter = value.toLowerCase();
+    return this.staticData['chart_list'].filter(option => option.name.toLowerCase().startsWith(filter));
+  }
 
-  // chartClicked(obj: any, i){
-  //   alert("You clicked on Chart " + this.charts[i].name);
-  //   console.log(this.charts[i]);
-  // }
-
-  // typeChanged(e, i){
-  //   const on = e.detail.checked;
-  //   this.chartType[i]=chartdata['type'];
-  //   this.chartType[i] = on ? 'bar' : 'line';
-  // }
-
-  hideLegend(i){
-    const on = i.chartdata['legend'];
-    console.log(on);
-    this.chartLegend[i] = on ? 'false' : 'true';
-    alert(this.chartLegend[i]);
-    // this.chartLegend[i] = on ? 'false' : 'true';
-    // console.log(this.chartLegend[i])
+  async chartmodel(data:any, filter:any, index:number){
+    this.showfilter = true;
+    const modal = await this.modalController.create({
+      component: ChartFilterComponent,
+      cssClass: 'my-custom-modal-css',
+      componentProps: { 
+        'dashboardItem' : data,
+        'dashletData' : this.dashletData,
+        'filter':filter,
+        'selectedIndex': index,
+        'staticData': this.staticData
+      },
+      showBackdrop:true,
+      backdropDismiss:false,
+    });
+    modal.componentProps.modal = modal;
+    
+    return await modal.present();
   }
 }
