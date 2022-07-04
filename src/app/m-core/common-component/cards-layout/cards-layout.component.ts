@@ -488,6 +488,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   } 
 
   tabmenuClick(index:number){
+    this.loadMoreData = true;
     this.selectedIndex = index;
     this.carddata = [];
     this.createFormgroup = true;
