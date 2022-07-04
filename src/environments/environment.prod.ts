@@ -1,6 +1,12 @@
 export const environment = {
   production: true,
   serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
+  // serverhost: "https://serveraal.allaboutlab.com/rest/",
+  // serverhost: "https://serverqualiteklab.e-labs.ai/rest/",
+  // serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
+  // serverhost: "https://sitserverelabs.e-labs.ai/rest/",
+  // serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
+  // serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.itcuat.ai",
   appName: "ITC Uat",

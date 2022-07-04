@@ -25,7 +25,6 @@ export class CardViewPage implements OnInit, OnDestroy {
     cardType = "summary"; //default cardtype
     childColumns : any;
     childColumn: any = {};
-    collectionname: any;
   
     card:any={};
     data :any ={};
@@ -40,25 +39,22 @@ export class CardViewPage implements OnInit, OnDestroy {
   openTravelFilter: boolean = false;
   filterCount: 0;
   searching:boolean = false;
-  searchcardvalue:any='';
-  searchcardfield:any='';
-  selectedLeave : string = '';
+  searchcardvalue:string = '';
   collectionName:any;
-  travelCardList:any=["Travel Mangement","Travel Report"];
-  headerTitle:any;
-  popoverdata:any;
+  searchcardfield:any = '';
   // addNewEnabled:boolean=false;
   // detailPage:boolean=false;
+  headerTitle:string;
 
     constructor(
       private storageService: StorageService,
       private coreUtilityService :CoreUtilityService,
       private commonDataShareService:CommonDataShareService,
+      private router: Router,
       private restService:RestService,
       private apiService:ApiService,
       private formBuilder: FormBuilder,
       public modalController: ModalController,
-      private router:Router,
       public popoverController: PopoverController,
       @Optional() private readonly routerOutlet?: IonRouterOutlet      
     ){}
@@ -70,10 +66,17 @@ export class CardViewPage implements OnInit, OnDestroy {
 
     ngOnInit() {}
     togglesearch(){
+      
       this.searching = !this.searching;
       this.searchcardvalue = "";
       if(!this.searching){
         this.filterCardAgain();
+      }
+    }
+
+    selectedSearchValue(serchingvalue:any){
+      if(serchingvalue){
+        this.searching = true;
       }
     }
     
@@ -93,16 +96,16 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.resetVariables();
     }
   
-    private getCardDataByCollection(i) {
-      const cardWithTab = this.coreUtilityService.getCard(i); 
+    private getCardDataByCollection(i:number) {
+      const cardWithTab = this.coreUtilityService.getCard(i);
       this.collectionName = cardWithTab.card.collection_name;
       if(cardWithTab && cardWithTab.card){
         if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
-          this.router.navigateByUrl('charts');
+          this.router.navigateByUrl('chart');
         }else{
         this.card = cardWithTab;
         }
-      }    
+      }     
     }
     
     comingSoon() {
@@ -113,6 +116,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.tabMenu = [];
       this.openFilter = false;
       this.filterForm.reset();
+      this.searchcardfield = '';
     }
     open(){
       this.openFilter=!this.openFilter

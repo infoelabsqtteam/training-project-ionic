@@ -9,14 +9,14 @@
   </ion-toolbar>
 </ion-header> -->
 
-<div class="menutab">
+<ion-header class="menutab" #header>
   <ion-segment *ngIf="tabMenu && tabMenu.length > 0" >
     <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label>
     </ion-segment-button>
   </ion-segment>
-</div>
+</ion-header>
 
-<ion-content class="contactlist">
+<ion-content class="contactlist" >
  <ion-list class="contactlist" *ngIf="cardType == 'summary'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="quotationlist" lines="none">
@@ -124,7 +124,7 @@
 
   <ion-list class="contactlist" *ngIf="cardType == 'contact'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
-        <ion-item class="contactlist" lines="none">
+        <ion-item class="" lines="none">
           <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="card.first_name != ''" [innerHTML]="getFirstCharOfString(card.first_name)"></span></ion-avatar>
           <ion-row class="ion-align-items-center inner_padding" *ngIf="columnList && columnList.length > 0">
             <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="detailCardButton(column,card)">
@@ -249,14 +249,21 @@
   <!-- <div class="addmore" (click)="addNew()" *ngIf="addNewEnabled">
     <ion-icon name="add-outline"></ion-icon>
   </div> -->
-  <ion-fab vertical="bottom" horizontal="center" slot="fixed" *ngIf="addNewEnabled">
-    <ion-fab-button (click)="addNew('default')" class="addNew" >
+  <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" *ngIf="addNewEnabled">
+    <ion-fab-button (click)="addNew()" class="addNew" >
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 
-  <div *ngIf="filterCount == 0" class="nodatafound">    
+  <div *ngIf="totalDataCount == 0" class="nodatafound">    
     <ion-img src="../../../assets/nodatafound.png"></ion-img>
   </div>
+
+  <ion-infinite-scroll threshold="5%"  (ionInfinite)="loadData($event)" *ngIf="totalDataCount > 0">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Hang on loading data...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 
 </ion-content>
