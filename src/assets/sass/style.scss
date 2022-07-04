@@ -224,7 +224,7 @@ ion-tabs.footertab {
     // .status_inactive{background: var(--inactive-bg);color: var(--ion-color-white);border: 1px solid var(--inactive-bg);padding: 0;--background: var(--inactive-bg);}
 }
 
-$status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move,Move,MOVE,regret,Regret,REGRET,completed,Completed,COMPLETED,approved,Approved,APPROVED,booked,Booked,BOOKED,dispatching,Dispatching,DISPATCHING,review,Review,REVIEW,scheduling,Scheduling,SCHEDULING,person_incharge,Person_Incharge,PERSON_INCHARGE,testing,Testing,TESTING,invoicing,Invoicing,INVOICING;
+$status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move,Move,MOVE,regret,Regret,REGRET,completed,Completed,COMPLETED,approved,Approved,APPROVED,booked,Booked,BOOKED,dispatching,Dispatching,DISPATCHING,review,Review,REVIEW,scheduling,Scheduling,SCHEDULING,person_incharge,Person_Incharge,PERSON_INCHARGE,testing,Testing,TESTING,invoicing,Invoicing,INVOICING,feasibility,Feasibility,FEASIBILITY,approve,Approve,APPROVE,reject,Reject,REJECT;
 
 @each $status in $status_button {
     .status_button  .status_#{$status} {

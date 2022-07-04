@@ -1,11 +1,11 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start" (click)="dismissModal({})"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
-    <ion-title class="ion-no-padding ion-text-capitalize">Quotation Details</ion-title>
+    <ion-title class="ion-no-padding ion-text-capitalize">{{gridSelctionTitle}}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="pages">
+<ion-content class="pages ion-padding-horizontal">
   
   <div class="contactdetails app-grid_selection fixed_button" *ngIf="cardType == 'demo1'">   
     <div class="" *ngFor="let column of columnList; let i = index">
@@ -16,19 +16,31 @@
       <div *ngIf="column.editable" class="enquerylist">
         <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>        
         <span *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
-            <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" >
+            <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
         </span>
         <span *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
           <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
         </span>
+        <span *ngIf="column.type.toLowerCase() == 'dropdown'" class="editable-input-wrapper">
+          <ion-item >
+            <ion-select [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]" >
+              <ion-select-option *ngFor="let staticValue of staticData[column.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
+            </ion-select>
+          </ion-item>
+        </span>
       </div>
     </div>
   </div>
-  <div class="button_position">
+  <div class="button_position" *ngIf="!gridselectionverticalbutton">
       <div class="flex_grid">
       <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="select()" expand="full" >Add</ion-button>
       <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal({})" expand="full" >Cancel</ion-button>
       </div>
   </div>
-
+  <div *ngIf="gridselectionverticalbutton" class="inlineFormGridSelectionButton">
+      <div class="">
+          <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="remove()" expand="block" >Remove</ion-button>
+          <ion-button type="button" color="appcolor" [disabled]="checkValidator()"  (click)="select()" expand="block" >Save</ion-button>
+      </div>
+  </div>
 </ion-content>

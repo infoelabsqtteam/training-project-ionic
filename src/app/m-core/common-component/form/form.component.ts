@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
@@ -9,9 +9,11 @@ import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/gr
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
 import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { finalize } from 'rxjs';
+import { finalize, last } from 'rxjs';
 import { CameraService } from 'src/app/service/camera-service/camera.service';
 import { HttpClient } from '@angular/common/http';
+import { zonedTimeToUtc, utcToZonedTime} from 'date-fns-tz';
+import { parseISO, format, hoursToMilliseconds } from 'date-fns';
 
 interface User {
   id: number;
@@ -30,6 +32,7 @@ export class FormComponent implements OnInit, OnDestroy {
   @Input() formName: string;
   @Input() childData: any;  
   @Input() addform: any;
+  @Input() formTypeName:string;
   @Input() modal: any;
 
   
@@ -93,12 +96,16 @@ export class FormComponent implements OnInit, OnDestroy {
   typeaheadDataSubscription:any;
   fileDataSubscription:any;
   fileDownloadUrlSubscription:any;
+ 
 
   dateValue:any;
   public deleteIndex:any = '';
   public deletefieldName = {};
-  
- 
+
+  samePageGridSelectionData:any;
+  samePageGridSelection : boolean = false;
+  userTimeZone: any;
+  userLocale:any;
   
 
   constructor(
@@ -120,7 +127,6 @@ export class FormComponent implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private http: HttpClient
     ) {
-
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
         this.setStaticData(data);
       });
@@ -135,7 +141,7 @@ export class FormComponent implements OnInit, OnDestroy {
         if(this.editedRowIndex >= 0 ){
           this.editedRowData(this.childData);
         }
-      })
+      });
       this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
         this.setSaveResponce(responce);
       });
@@ -144,7 +150,13 @@ export class FormComponent implements OnInit, OnDestroy {
       });
       this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
         this.setFileDownloadUrl(data);
-      })
+      });
+      
+      // this.samePageGridSelectionData = this.dataShareService.gridSelectionCheck.subscribe(data =>{
+      //   this.samePageGridSelection = data;
+      // });
+      this.userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      this.userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
     }
 
   resetFlag(){
@@ -203,10 +215,16 @@ export class FormComponent implements OnInit, OnDestroy {
     }
   }
   setStaticData(staticData:any){
-    this.staticData = staticData; 
-    Object.keys(this.staticData).forEach(key => {        
-      this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
-    })
+    this.staticData = staticData;
+    // if(this.staticData && this.staticData.null && this.staticData.null.length > 0 ){
+    //   Object.keys(this.staticData.null).forEach(key => {        
+    //     this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData.null[key]));
+    //   })
+    // }else{
+      Object.keys(this.staticData).forEach(key => {        
+        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+      })
+    
     this.tableFields.forEach(element => {
       switch (element.type) {              
         case 'pdf_view':
@@ -710,7 +728,7 @@ export class FormComponent implements OnInit, OnDestroy {
     let modifyFormValue = {};   
     let valueOfForm = {};
     if (this.updateMode || this.complete_object_payload_mode){      
-      this.tableFields.forEach(element => {
+      this.tableFields.forEach(async element => {
         switch (element.type) {
           case 'stepper':
             element.list_of_fields.forEach(step => {
@@ -754,7 +772,19 @@ export class FormComponent implements OnInit, OnDestroy {
           case 'date':
             if(element && element.date_format && element.date_format != ''){
               selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
-            }            
+            }else{
+              // required format 2022-06-30T00:00:00+05:30 (client) and 2022-06-29T18:30:00.000Z (server)
+              let Mdate = formValue[element.field_name];
+              if(Mdate && Mdate.length > 10){
+                Mdate = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
+                let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
+                // const formattedString = format(parseISO(utcDate), 'yyyy-MM-ddHH:mm:ss.SSS');
+                // const pattern = 'yyyy-MM-dd HH:mm:ss.SSS \'GMT\' XXX (z)';
+                // const output = format(utcDate, pattern, { timeZone: this.userTimeZone });
+                utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
+                selectedRow[element.field_name] = utcDate;
+              }
+            }
             break;
           default:
             selectedRow[element.field_name] = formValue[element.field_name];
@@ -762,7 +792,7 @@ export class FormComponent implements OnInit, OnDestroy {
         }
       });
     }else{
-      this.tableFields.forEach(element => {
+      this.tableFields.forEach(async element => {
         switch (element.type) {
           case 'stepper':
             element.list_of_fields.forEach(step => {
@@ -800,7 +830,23 @@ export class FormComponent implements OnInit, OnDestroy {
           case 'date':
             if(element && element.date_format && element.date_format != ''){
               modifyFormValue[element.field_name] = this.datePipe.transform(formValue[element.field_name],element.date_format);
-            }            
+            }  else{
+              // modifyFormValue[element.field_name] = formValue[element.field_name];
+
+              //required format 2022-06-30T00:00:00+05:30 (client) and 2022-06-29T18:30:00.000Z (server)
+              // let Mdate = new Date(formValue[element.field_name]).toISOString();
+              let  Mdate = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
+
+              // date-fns
+              let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
+               utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
+
+              // const pattern = "yyyy-MM-dd'T'hh:mm:ss.SSS'Z"
+              // const output = format(utcDate, pattern, { timeZone: this.userTimeZone })
+              // console.log("Output : ", output)
+              modifyFormValue[element.field_name] = utcDate;
+
+            }          
             break;
           default:
             modifyFormValue = formValue;
@@ -1420,9 +1466,17 @@ export class FormComponent implements OnInit, OnDestroy {
                   const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
                   const value = new Date(formatedDate);
                   this.templateForm.controls[element.field_name].setValue(value)
-                }else{                  
+                }else{        
                   const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
-                  this.templateForm.controls[element.field_name].setValue(value);                  
+                  //need in this format 2022-06-30T00:00:00+05:30
+                  // let isoString = new Date(value).toISOString()
+                  const zonedTime:any = utcToZonedTime(value, this.userTimeZone);
+                  // let transformzonedTime = (parseISO(zonedTime), "yyyy-MM-dd'T'HH:mm:ssZ");
+                  const transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'T'HH:mm:ssZZZZZ", this.userTimeZone);
+                  // let pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'";
+                  // let output = format(zonedTime, pattern, { timeZone: userTimeZone })
+
+                  this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
                 }
               }
               break;
@@ -1939,6 +1993,7 @@ export class FormComponent implements OnInit, OnDestroy {
         //   "object": this.getFormValue(true)
         // }
         // this.modalService.open('grid-selection-modal', gridModalData);
+
         this.openGridSelectionModal(field);
         break;
       default:
@@ -2536,24 +2591,30 @@ case 'populate_fields_for_report_for_new_order_flow':
     const gridModalData = {
       "field": field,
       "selectedData":selectedValue,
-      "object": this.getFormValue(true)
+      "object": this.getFormValue(true),
+      "formTypeName" : this.formTypeName,
     }
-    const modal = await this.modalController.create({
-      component: GridSelectionModalComponent,
-      componentProps: {
-        "Data": gridModalData,
-      },
-      swipeToClose: false
-    });
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss()
-      .then((data) => {
-        const object = data['data']; // Here's your selected user!
-        if(object['data'] && object['data'].length > 0){
-          this.gridSelectionResponce(object['data']);
-        }        
-    });
-    return await modal.present();
+    this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();
+    if(this.samePageGridSelection){          
+      this.samePageGridSelectionData = gridModalData;
+    }else{    
+      const modal = await this.modalController.create({
+        component: GridSelectionModalComponent,
+        componentProps: {
+          "Data": gridModalData,
+        },
+        swipeToClose: false
+      });
+      modal.componentProps.modal = modal;
+      modal.onDidDismiss()
+        .then((data) => {
+          const object = data['data']; // Here's your selected user!
+          if(object['data'] && object['data'].length > 0){
+            this.gridSelectionResponce(object['data']);
+          }        
+      });
+      return await modal.present();
+    }
   }
   gridSelectionResponce(responce){ 
 
@@ -2951,6 +3012,45 @@ case 'populate_fields_for_report_for_new_order_flow':
       this.dataSaveInProgress = true;
       this.apiService.ResetDownloadUrl();
     }
+  }
+  getDivClass(field) {
+    if(field.field_class && field.field_class != ''){
+      const fieldsLangth = this.tableFields.length;
+      const returnClass = this.commonFunctionService.getDivClass(field,fieldsLangth)
+      const classes = returnClass.split('-');
+      const lastIndex = classes.length-1;
+      return classes[lastIndex];
+    }else{
+      return '12';
+    }
+  }
+
+  // convertUtcToLocalString(val : Date) : string {        
+  //   var d = new Date(val); // val is in UTC
+  //   var localOffset = d.getTimezoneOffset() * 60000;
+  //   var localTime = d.getTime() - localOffset;
+
+  //   d.setTime(localTime);
+  //   return this.formatDate(d);
+  // }
+
+  convertUtcToLocalDate(val : Date) : Date {        
+      var d = new Date(val); // val is in UTC
+      var localOffset = d.getTimezoneOffset() * 60000;
+      var localTime = d.getTime() - localOffset;
+
+      d.setTime(localTime);
+      return d;
+  }
+
+  convertLocalToUtc(val : Date) : Date { 
+      var d = new Date(val);
+      var localOffset = d.getTimezoneOffset() * 60000;
+      var utcTime = d.getTime() + localOffset;
+
+      d.setTime(utcTime);
+      console.log("D :", d);
+      return d;
   }
 
 }

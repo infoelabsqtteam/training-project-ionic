@@ -85,7 +85,7 @@ export class TrackLocationPage implements OnInit {
         const alert = await this.alertCtrl.create({
           cssClass: 'my-custom-class',
           header: 'Enable GPS!',
-          message: 'E-labs collects Your location data to serve you better services. We will not save your location.',
+          message: 'ITC collects Your location data to serve you better services. We will not save your location.',
           buttons: [
             {
               text: 'No, thanks',

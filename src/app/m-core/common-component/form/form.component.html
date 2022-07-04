@@ -6,9 +6,9 @@
 </ion-header>
 
 <ion-content>
-  <form [formGroup]="templateForm" *ngIf="tableFields.length > 0" novalidate>
-    <div *ngIf="handleDisabeIf()">
-      <div *ngFor="let tableField of tableFields; let i = index" [id]="tableField._id">
+  <ion-grid [formGroup]="templateForm" *ngIf="tableFields.length > 0" novalidate>
+    <ion-row *ngIf="handleDisabeIf()">
+      <ion-col *ngFor="let tableField of tableFields; let i = index" [size]="getDivClass(tableField)"  [id]="tableField._id">
         <div *ngIf="tableField.type == 'text'">
           <ion-item>
             <ion-label position="floating">{{ tableField.label }}</ion-label>
@@ -17,7 +17,7 @@
         </div>
         <div *ngIf="tableField.type == 'grid_selection'">
           <div>
-            <ion-button expand="block" fill="outline" (click)="setValue('',tableField)">{{ tableField.label }} <span [innerHtml]="getNumberOfSelectedRecord(tableField)"></span></ion-button>
+            <ion-button expand="" size="" fill="outline" (click)="setValue('',tableField)">{{ tableField.label }} <span [innerHtml]="getNumberOfSelectedRecord(tableField)"></span></ion-button>
           </div>
         </div>
         <div *ngIf="tableField.type == 'file'" class="camera_file_upload">
@@ -89,9 +89,9 @@
           </ion-item>
         </div>
         <div *ngIf="tableField.type == 'checkbox'">
-          <ion-item>
-            <ion-label position="floating">{{ tableField.label }}</ion-label>
-            <ion-checkbox slot="end" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc(tableField)"></ion-checkbox>
+          <ion-item>            
+            <ion-checkbox  [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc(tableField)" [ngclass]="tableField.field_class" class="ion-margin-end"></ion-checkbox>
+            <ion-label>{{ tableField.label }}</ion-label>
           </ion-item>
         </div>
         <div *ngIf="tableField.type == 'radio'">
@@ -137,8 +137,9 @@
                   size="cover"
                   presentation="date"
                   [formControlName]="tableField.field_name"
-                  locale="en-GB"
-                ></ion-datetime>
+                  locale="en-US"
+                >
+                </ion-datetime>
               </ng-template>
             </ion-popover>
           </ion-item>
@@ -162,8 +163,14 @@
           <ion-input type="text" [formControlName]="tableField.field_name" (keyup.Space)= "setValue('',tableField,true,$event)"></ion-input>
           </ion-item>
         </div>
-      </div> 
-    </div>  
+      </ion-col> 
+    </ion-row>  
+
+    <row *ngIf="samePageGridSelection == true" class="samePageGridSelection">
+      <ion-col>
+        <app-grid-selection [Data]="samePageGridSelectionData" (gridSelectionResponce) = "gridSelectionResponce($event)"></app-grid-selection>
+      </ion-col>
+    </row>
     
     <ion-row>
       <ion-col>
@@ -172,5 +179,6 @@
         </span>
       </ion-col>
     </ion-row>
-  </form>
+    
+  </ion-grid>
 </ion-content>

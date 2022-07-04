@@ -26,20 +26,15 @@
   </ion-toolbar>
   <ion-toolbar *ngIf="collectionName == 'travel_plan'">
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
-    <div class="cardsearch">
-      <ion-title class="ion-no-padding ion-text-capitalize" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>
-      <ion-input placeholder="Search" [(ngModel)]="searchcardvalue" (keyup)="search(searchcardvalue)" animated="true"
-      [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
-        <ion-icon name="search" size="small"></ion-icon>
-      </ion-input>
-      <ion-buttons slot="end" (click)="togglesearch()">
-        <ion-icon name="search" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}"></ion-icon>
-        <ion-icon name="close-outline" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon>
-      </ion-buttons>
-    </div>
-    <ion-buttons class="filter ion-text-end" slot="end" (click)="open()">
-        <img src="assets/img/icons/Filter.svg">
+      <ion-title class="" *ngIf="headerTitle !=''">{{headerTitle}}</ion-title>
+    <ion-buttons class="filter ion-text-end" slot="end" id="popover-id">
+      <ion-icon name="ellipsis-vertical-outline"></ion-icon>
     </ion-buttons>
+    <ion-popover trigger="popover-id">
+      <ng-template>
+        <app-popover [data]="data" (popoverOutput)="popoverOutput($event)"></app-popover>
+      </ng-template>
+    </ion-popover>
   </ion-toolbar>
 </ion-header>
 

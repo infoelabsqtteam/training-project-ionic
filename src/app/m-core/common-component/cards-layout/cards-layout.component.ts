@@ -22,6 +22,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   @Input() data:any ={};
   @Output() columnListOutput = new EventEmitter();
   @Input() searchcard:any;
+  @Output() formNameTypeTravel = new EventEmitter();
+
 
 
   web_site_name: string = '';
@@ -206,6 +208,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
       if(this.card && this.card.card && this.card.card.name){
         this.setCardAndTab(this.card)
+      }
+      if(this.card && this.card.card && this.card.card.grid_selection_inform != null){
+        this.dataShareService.setGridSelectionCheck(this.card.card.grid_selection_inform)
       }
       this.filterForm['value'] = {};
     }
@@ -513,7 +518,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     let form:any = {};
     let id = '5f6d95da9feaa2409c3765cd';
     if(card && card.card && card.card.form){
-      form = card.card.form;
+      form = this.coreUtilityService.getForm(card.card.form,formName)
+      
+      // form = card.card.form[formName];
       if(form && form._id && form._id != ''){
         id = form._id;
       }
@@ -525,7 +532,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       componentProps: {
         "childData": this.gridData,
         "editedRowIndex": this.editedRowIndex,
-        "addform" : form
+        "addform" : form,
+        "formTypeName" : formName
       },
       swipeToClose: true,
       showBackdrop:true,

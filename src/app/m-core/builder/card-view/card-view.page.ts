@@ -1,11 +1,11 @@
 import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
-import { Platform, ModalController, IonRouterOutlet} from '@ionic/angular';
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { DataShareServiceService } from 'src/app/service/data-share-service.service';
+import { Platform, ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup} from '@angular/forms';
 import { CallNumber } from '@ionic-native/call-number/ngx';
+import { Router } from '@angular/router';
+import { PopoverComponent } from '../../common-component/popover/popover.component';
 
 @Component({
   selector: 'app-card-view',
@@ -36,6 +36,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   filterForm: FormGroup;
   createFormgroup: boolean = true;
   openFilter: boolean = false;
+  openTravelFilter: boolean = false;
   filterCount: 0;
   searching:boolean = false;
   searchcardvalue:string = '';
@@ -43,6 +44,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   searchcardfield:any = '';
   // addNewEnabled:boolean=false;
   // detailPage:boolean=false;
+  headerTitle:string;
 
     constructor(
       private storageService: StorageService,
@@ -53,26 +55,22 @@ export class CardViewPage implements OnInit, OnDestroy {
       private apiService:ApiService,
       private formBuilder: FormBuilder,
       public modalController: ModalController,
-      @Optional() private readonly routerOutlet?: IonRouterOutlet,
-      
-    ) 
-    {
-      
-    }
+      public popoverController: PopoverController,
+      @Optional() private readonly routerOutlet?: IonRouterOutlet      
+    ){}
   
     ionViewWillEnter(){
       this.load();
       this.searching = false;
     }
 
-    ngOnInit() {  
-    }
+    ngOnInit() {}
     togglesearch(){
       
       this.searching = !this.searching;
       this.searchcardvalue = "";
       if(!this.searching){
-        this.search(this.searchcardvalue);
+        this.filterCardAgain();
       }
     }
 
@@ -124,6 +122,12 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.openFilter=!this.openFilter
       this.data={};
     }
+    openTravel(){
+      this.openTravelFilter=!this.openTravelFilter
+      this.data={};
+      // this.travelCardList =["Travel Mangement","Travel Report"];
+
+    }
     // filterdata
     filterCard(){  
       this.openFilter = false;
@@ -167,6 +171,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       }
     }
     search(searchcardvalue){
+      console.log(searchcardvalue);
       // if(searchcardvalue && searchcardvalue.length > 0){
         this.data = {
           'searchData' : searchcardvalue
@@ -189,5 +194,21 @@ export class CardViewPage implements OnInit, OnDestroy {
     //   }
     //   // this.childColumn = card.child_card;
     // }
+    async presentPopover(ev: any) {
+      const popover = await this.popoverController.create({
+        component: PopoverComponent,
+        cssClass: 'my-custom-class',
+        event: ev,
+        translucent: true
+      });
+      await popover.present();
+    
+      const { role } = await popover.onDidDismiss();
+      console.log('onDidDismiss resolved with role', role);
+    }
+    popoverOutput(popoverdata:any){
+      this.headerTitle = popoverdata;
+      
+    }
 
   }

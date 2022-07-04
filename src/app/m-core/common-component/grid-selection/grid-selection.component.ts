@@ -1,18 +1,20 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
-import { GridSelectionDetailModalComponent } from '../grid-selection-detail-modal/grid-selection-detail-modal.component';
-//import { MatCheckboxChange } from '@angular/material/checkbox';
+import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 
 @Component({
-  selector: 'app-grid-selection-modal',
-  templateUrl: './grid-selection-modal.component.html',
-  styleUrls: ['./grid-selection-modal.component.scss'],
+  selector: 'app-grid-selection',
+  templateUrl: './grid-selection.component.html',
+  styleUrls: ['./grid-selection.component.scss'],
 })
-export class GridSelectionModalComponent implements OnInit {
+export class GridSelectionComponent implements OnInit, OnChanges {
+
 
   @Input() Data : any;
   @Input() modal: any;
+  @Output() selectedTabAgain = new EventEmitter<any>();
+  @Output() gridSelectionResponce = new EventEmitter<any>();
 
   selecteData:any=[];
   selectedData:any = [];
@@ -28,29 +30,42 @@ export class GridSelectionModalComponent implements OnInit {
   grid_row_selection:boolean = false;
   grid_row_refresh_icon:boolean = false;
 
-  selectedTab:string = "new";
+  selectedTab:any = "new";
+  // selectedTabAgain:any;
 
-  
-  // test array
-  data :any =
-      [
-          {"cardType":"demo","company_name":"abc pvt ltd","final_amount":0.00,"quotation_no":"B01-220405RQ00001","contact_person":"Aggregate Bedding Sand 2","mobile":"3887722","email":"jhduy@gmail.com","address1":"patel nagar/delhi","country":"india","state":"Delhi","department_name":"Other","class_name":"test","sample_name":"Urea","department_id":"5fdb24b60715230bd","net_amt":"₹ 7000"}
-      ]
   expandicon: any = "assets/itc-labs/icon/expand-icon.png";
 
-  constructor(
+  data :any = [];
+  formName:any;
+
+
+  constructor(    
     private modalController: ModalController,
     private coreFunctionService: CoreUtilityService,
     private restService:RestService,
     private apiService:ApiService,
     private notificationService:NotificationService,
-    private dataShareService:DataShareService
-  ) { }
+    private dataShareService:DataShareService,
+    private coreUtilityService:CoreUtilityService
+  ) { 
+    // console.log(this.formNameTypeTravel);
+    // this.formNameTypeTravel(data){
+    //   console.log(data)
+    }
+  
 
   ngOnInit() {
-    this.onload();
-    this.subscribe();
+    // this.onload();
+    // this.subscribe();
+    console.log(this.Data.formTypeName)
+    this.formName = this.Data.formTypeName;
 
+  }
+  ngOnChanges(changes: SimpleChanges) {
+    if(this.Data){
+      this.onload();
+      this.subscribe();
+    } 
   }
   subscribe(){
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
@@ -62,6 +77,11 @@ export class GridSelectionModalComponent implements OnInit {
       this.copyStaticData = data;
       this.setStaticData(data);
     })
+  }
+  ngOnDestroy(){
+    if(this.staticDataSubscriber){
+      this.staticDataSubscriber.unsubscribe();
+    }
   }
   onload(){
     this.selectedTab = "new";
@@ -204,7 +224,8 @@ export class GridSelectionModalComponent implements OnInit {
       component: GridSelectionDetailModalComponent,
       componentProps: {
         "Data": {"value":data,"column":this.field.gridColumns},
-        "childCardType" : "demo1"
+        "childCardType" : "demo1",
+        "InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue()
       },
       swipeToClose: false
     });
@@ -212,9 +233,13 @@ export class GridSelectionModalComponent implements OnInit {
     modal.onDidDismiss()
       .then((data) => {
         const object = data['data']; // Here's your selected user!
-        if(object['data'] && object['data']._id){
+        if(object['data'] && object['remove']){
+          this.toggle(object['data'],{'detail':{'checked':false}},0);
+        }else if(object['data'] && object['remove'] == false){
           this.toggle(object['data'],{'detail':{'checked':true}},0);
-        }               
+        }else{
+          console.log("No action performed.");
+        }                 
     });
     return await modal.present();
   }
@@ -248,7 +273,7 @@ export class GridSelectionModalComponent implements OnInit {
     let index:any;
     if(data._id != undefined){
       index = this.coreFunctionService.getIndexInArrayById(this.gridData,data._id);
-    }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0){
+    }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0 && data){
       this.gridData.forEach((row:any, i:any) => {        
           var validity = true;
           this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
@@ -268,6 +293,7 @@ export class GridSelectionModalComponent implements OnInit {
     }
     if (event.detail.checked) {
       this.gridData[index].selected=true;
+      this.getSelectedData();
     } else{
       this.gridData[index].selected=false;
     }
@@ -332,7 +358,16 @@ export class GridSelectionModalComponent implements OnInit {
 
   segmentChanged(ev: any) {
     this.selectedTab = ev.target.value;
+    // this.selectedTab.emit(ev);
   }
+  segmentChangedEmit(selectedTab:any) {
+    // this.selectedTab = ev.target.value;
+    this.selectedTabAgain.emit(selectedTab);
+  }
+  // segmentChangedEmit(selectedTab:any) {
+  //   // this.selectedTab = ev.target.value;
+  //   this.selectedTabAgain.emit(selectedTab);
+  // }
   getSelectedData(){
     const selectedData = [];
     if(this.gridData && this.gridData.length > 0){
@@ -341,10 +376,14 @@ export class GridSelectionModalComponent implements OnInit {
           selectedData.push(element);
         }
       });
+      this.gridSelectionResponce.emit(selectedData);
       return selectedData;
     }else{
       return selectedData;
     }
+  }
+  getFirstCharOfString(char:any){
+    return this.coreUtilityService.getFirstCharOfString(char);
   }
 
 }
