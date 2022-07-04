@@ -123,8 +123,7 @@ export class FormComponent implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private http: HttpClient
     ) {
-      console.log(this.formTypeName);
-
+   
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
         this.setStaticData(data);
       });
@@ -206,8 +205,10 @@ export class FormComponent implements OnInit, OnDestroy {
     //     this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData.null[key]));
     //   })
     // }else{
-      Object.keys(this.staticData).forEach(key => {        
-        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+      Object.keys(this.staticData).forEach(key => { 
+        if(this.staticData[key]){
+          this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+        }
       })
     
     this.tableFields.forEach(element => {

@@ -182,10 +182,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       let card  = cardWithTab.card;
       this.setCardDetails(card);
     } 
-    // if(cardWithTab && cardWithTab.card){
-    //   let card  = cardWithTab.card;
-    //   this.setCardDetails(card);
-    // } 
+    if(cardWithTab && cardWithTab.card){
+      let card  = cardWithTab.card;
+      this.setCardDetails(card);
+    } 
     if(cardWithTab && cardWithTab.tabs && cardWithTab.tabs.length > 0){
       this.tabMenu = cardWithTab.tabs;
       this.selectedIndex = cardWithTab.selectedTabIndex;

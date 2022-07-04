@@ -1,32 +1,29 @@
-<ion-header *ngIf="!this.popoverTabbing">
-  <ion-toolbar>
+<ion-header>
+  <ion-toolbar *ngIf="!this.popoverTabbing">
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
-  <ion-item lines="none">
-    <ion-select interface="" [(ngModel)]="searchcardfield"   >
-      <ion-select-option *ngFor="let columns of columnList; index as i" [value]="columns.field_name" >{{columns.field_label}}</ion-select-option>
-    </ion-select>
-    
-      <div class="cardsearch">
-        <ion-title class="ion-no-padding ion-text-capitalize" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>
-          <ion-input placeholder="search" (ionChange)="filterCardAgain()" [(ngModel)]="searchcardvalue" clearInput [placeholder] animated="true"
-          [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
-              <ion-icon name="search" size="small"></ion-icon>
-          </ion-input>
-          <ion-buttons slot="end" (click)="togglesearch()">
-              <ion-icon name="search" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}"></ion-icon>
-              <ion-icon name="close-outline" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon>
-          </ion-buttons>
-      </div>
-      <ion-buttons class="filter ion-text-end" slot="end" (click)="open()">
-          <img src="assets/img/icons/Filter.svg">
-      </ion-buttons>
-    
-  </ion-item>
- 
+    <ion-item lines="none">
+      <ion-select interface="" [(ngModel)]="searchcardfield"   >
+        <ion-select-option *ngFor="let columns of columnList; index as i" [value]="columns.field_name" >{{columns.field_label}}</ion-select-option>
+      </ion-select>
+      
+        <div class="cardsearch">
+          <ion-title class="ion-no-padding ion-text-capitalize" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>
+            <ion-input placeholder="search" (ionChange)="filterCardAgain()" [(ngModel)]="searchcardvalue" clearInput [placeholder] animated="true"
+            [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
+                <ion-icon name="search" size="small"></ion-icon>
+            </ion-input>
+            <ion-buttons slot="end" (click)="togglesearch()">
+                <ion-icon name="search" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}"></ion-icon>
+                <ion-icon name="close-outline" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon>
+            </ion-buttons>
+        </div>
+        <ion-buttons class="filter ion-text-end" slot="end" (click)="open()">
+            <img src="assets/img/icons/Filter.svg">
+        </ion-buttons>
+      
+    </ion-item> 
   </ion-toolbar>
-</ion-header>
-<ion-header *ngIf="this.popoverTabbing">
-  <ion-toolbar>
+  <ion-toolbar *ngIf="this.popoverTabbing">
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
       <ion-title class="" *ngIf="headerTitle !=''">{{headerTitle}}</ion-title>
     <ion-buttons class="filter ion-text-end" slot="end" id="popover-id">
@@ -39,7 +36,6 @@
   </ion-popover>
   </ion-toolbar>
 </ion-header>
-
 
 
 <div id="ion_accordian" class="ion_accordian ion-no-padding filterdata" *ngIf="openFilter">

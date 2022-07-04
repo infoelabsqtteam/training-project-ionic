@@ -45,7 +45,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   selectedLeave : string = '';
   popoverTabbing:any;
   travelCardList:any=["Travel Mangement","Travel Report"];
-  headerTitle:any;
+  headerTitle:string;
   popoverdata:any;
   popoverItems:any;
   popoverMenu:boolean;
@@ -62,7 +62,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       public popoverController: PopoverController,
       @Optional() private readonly routerOutlet?: IonRouterOutlet      
     ){
-      console.log(this.tabMenu);
+      // console.log(this.tabMenu);
     }
   
     ionViewWillEnter(){
@@ -204,7 +204,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     //   }
     //   // this.childColumn = card.child_card;
     // }
-    async presentPopover(ev: any) {
+    async presentPopover(ev: any) {      
       const popover = await this.popoverController.create({
         component: PopoverComponent,
         cssClass: 'my-custom-class',
@@ -214,13 +214,19 @@ export class CardViewPage implements OnInit, OnDestroy {
           "popoverItems" : this.popoverItems 
         }
       });
-      await popover.present();
+      popover.componentProps.popover = popover;
+      popover.onDidDismiss().then((result) => {
+        this.getCardDataByCollection(this.selectedIndex);
+      });
+      return await popover.present();
+
+      // await popover.present();
       
     
-      const { role } = await popover.onDidDismiss();
-      console.log('onDidDismiss resolved with role', role);
+      // const { role } = await popover.onDidDismiss();
+      // console.log('onDidDismiss resolved with role', role);
     }
-    popoverOutput(popoverdata:any){
+     popoverOutput(popoverdata:any){
       if(popoverdata && popoverdata.name){ 
         this.headerTitle = popoverdata.name;
       }
@@ -230,6 +236,7 @@ export class CardViewPage implements OnInit, OnDestroy {
           "popoverTabbing": this.popoverTabbing
         }
       }
+      //  const { role } = await popoverdata.onDidDismiss();
     }
     popoverMenuItem(menuitem:any){
       this.popoverItems = menuitem;

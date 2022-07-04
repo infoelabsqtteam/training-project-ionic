@@ -23,7 +23,8 @@
         </span>
         <span *ngIf="column.type.toLowerCase() == 'dropdown'" class="editable-input-wrapper">
           <ion-item >
-            <ion-select [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]" >
+            <!-- <ion-label position="floating">{{ column.ddn_field }}</ion-label> -->
+            <ion-select [selectedText]="getddnDisplayVal(data[column.field_name])" [(ngModel)]="data[column.field_name]" >
               <ion-select-option *ngFor="let staticValue of staticData[column.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
             </ion-select>
           </ion-item>
