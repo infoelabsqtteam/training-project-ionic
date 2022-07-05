@@ -1,4 +1,4 @@
-import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
+import { Component, OnInit, Optional, OnDestroy, SimpleChanges} from '@angular/core';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
 import { Platform, ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { filter } from 'rxjs';
@@ -43,18 +43,22 @@ export class CardViewPage implements OnInit, OnDestroy {
   collectionName:any;
   searchcardfield:any = '';
   // addNewEnabled:boolean=false;
-  // detailPage:boolean=false;
+  // detailPage:boolean=false; 
+  popoverTabbing:any; 
   headerTitle:string;
+  popoverdata:any;
+  popoverItems:any;
+  popoverMenu:boolean;
 
     constructor(
       private storageService: StorageService,
       private coreUtilityService :CoreUtilityService,
       private commonDataShareService:CommonDataShareService,
-      private router: Router,
       private restService:RestService,
       private apiService:ApiService,
       private formBuilder: FormBuilder,
       public modalController: ModalController,
+      private router:Router,
       public popoverController: PopoverController,
       @Optional() private readonly routerOutlet?: IonRouterOutlet      
     ){}
@@ -65,8 +69,11 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
 
     ngOnInit() {}
-    togglesearch(){
-      
+
+    ngOnChanges(changes: SimpleChanges) {
+      // this.card;
+    }
+    togglesearch(){      
       this.searching = !this.searching;
       this.searchcardvalue = "";
       if(!this.searching){
@@ -103,9 +110,15 @@ export class CardViewPage implements OnInit, OnDestroy {
         if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
           this.router.navigateByUrl('chart');
         }else{
+          if(cardWithTab.card && cardWithTab.card.name){
+            this.headerTitle = cardWithTab.card.name;
+          }
         this.card = cardWithTab;
         }
-      }     
+      }
+      if(cardWithTab && cardWithTab.popoverTabbing) {
+        this.popoverTabbing = cardWithTab.popoverTabbing;
+      }  
     }
     
     comingSoon() {
@@ -117,6 +130,10 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.openFilter = false;
       this.filterForm.reset();
       this.searchcardfield = '';
+      this.popoverMenu = false;
+      this.popoverTabbing = false;
+      this.popoverItems = [];
+      this.commonDataShareService.setSelectedTabIndex(-1);
     }
     open(){
       this.openFilter=!this.openFilter
@@ -171,7 +188,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       }
     }
     search(searchcardvalue){
-      console.log(searchcardvalue);
+      // console.log(searchcardvalue);
       // if(searchcardvalue && searchcardvalue.length > 0){
         this.data = {
           'searchData' : searchcardvalue
@@ -199,16 +216,38 @@ export class CardViewPage implements OnInit, OnDestroy {
         component: PopoverComponent,
         cssClass: 'my-custom-class',
         event: ev,
-        translucent: true
+        translucent: true,
+        componentProps: {
+          "popoverItems" : this.popoverItems 
+        }
       });
-      await popover.present();
+      popover.componentProps.popover = popover;
+      popover.onDidDismiss().then((result) => {
+        this.getCardDataByCollection(this.selectedIndex);
+      });
+      return await popover.present();
+      // await popover.present();
     
       const { role } = await popover.onDidDismiss();
       console.log('onDidDismiss resolved with role', role);
     }
     popoverOutput(popoverdata:any){
-      this.headerTitle = popoverdata;
-      
+      if(popoverdata && popoverdata.name){ 
+        this.headerTitle = popoverdata.name;
+      }
+      if(popoverdata && popoverdata.card){
+        this.card = {
+          "card":popoverdata.card,
+          "popoverTabbing": this.popoverTabbing,
+          "selectedTabIndex": popoverdata.selectedTabIndex,
+          "tabs" : popoverdata.tabs
+        }
+        // this.card = popoverdata;
+      }
+      //  const { role } = await popoverdata.onDidDismiss();
+    }
+    popoverMenuItem(menuitem:any){
+      this.popoverItems = menuitem;
     }
 
   }

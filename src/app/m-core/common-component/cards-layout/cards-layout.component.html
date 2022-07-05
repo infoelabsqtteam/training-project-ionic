@@ -9,7 +9,7 @@
   </ion-toolbar>
 </ion-header> -->
 
-<ion-header class="menutab" #header>
+<ion-header class="menutab" #header *ngIf="!popoverMenu">
   <ion-segment *ngIf="tabMenu && tabMenu.length > 0" >
     <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label>
     </ion-segment-button>
@@ -259,7 +259,7 @@
     <ion-img src="../../../assets/nodatafound.png"></ion-img>
   </div>
 
-  <ion-infinite-scroll threshold="5%"  (ionInfinite)="loadData($event)" *ngIf="totalDataCount > 0">
+  <ion-infinite-scroll threshold="5%"  (ionInfinite)="loadData($event)" *ngIf="totalDataCount !== this.carddata.length">
     <ion-infinite-scroll-content
       loadingSpinner="bubbles"
       loadingText="Hang on loading data...">
