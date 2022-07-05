@@ -1,12 +1,12 @@
-<ion-header #header>
-  <ion-toolbar *ngIf="collectionName !== 'travel_plan'">
+<ion-header>
+  <ion-toolbar *ngIf="!this.popoverTabbing">
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
     <ion-item lines="none" class="cardsearch ion-no-flex">
       <ion-select interface="popover" placeholder="Search Value" [(ngModel)]="searchcardfield" (ionChange)="selectedSearchValue(searchcardfield)">
         <ion-select-option *ngFor="let columns of columnList; index as i" [value]="columns.field_name" >{{columns.field_label}}</ion-select-option>
       </ion-select>
-      
-      
+
+
         <ion-title class="ion-no-padding ion-text-capitalize" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>
         <ion-input placeholder="search" class="align-self: auto" (ionChange)="filterCardAgain()" [(ngModel)]="searchcardvalue" clearInput [placeholder] animated="true"
         [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
@@ -16,25 +16,24 @@
             <ion-icon name="search" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}"></ion-icon>
             <ion-icon name="close-outline" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon>
         </ion-buttons>
-      
+
       <ion-buttons class="filter ion-text-end" slot="end" (click)="open()">
           <img src="assets/img/icons/Filter.svg">
       </ion-buttons>
-      
-    </ion-item>
- 
+
+    </ion-item> 
   </ion-toolbar>
-  <ion-toolbar *ngIf="collectionName == 'travel_plan'">
+  <ion-toolbar *ngIf="this.popoverTabbing">
     <ion-buttons slot="start"  (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
       <ion-title class="" *ngIf="headerTitle !=''">{{headerTitle}}</ion-title>
     <ion-buttons class="filter ion-text-end" slot="end" id="popover-id">
       <ion-icon name="ellipsis-vertical-outline"></ion-icon>
-    </ion-buttons>
-    <ion-popover trigger="popover-id">
-      <ng-template>
-        <app-popover [data]="data" (popoverOutput)="popoverOutput($event)"></app-popover>
-      </ng-template>
-    </ion-popover>
+  </ion-buttons>
+  <ion-popover trigger="popover-id" dismiss-on-select="true">
+    <ng-template>
+      <app-popover [card]="card" [popoverItems]="popoverItems" (popoverOutput)="popoverOutput($event)"></app-popover>
+    </ng-template>
+  </ion-popover>
   </ion-toolbar>
 </ion-header>
 
@@ -55,10 +54,10 @@
     </div>
   </div>    
 </div>
-<ion-content class="pages quotation" appHideHeader [scrollEvents]="true" [header]="header">
+<ion-content class="pages quotation" [scrollEvents]="true">
 
   
-    <app-cards-layout [card]="card" [data]="data" (columnListOutput) = "columnListOutput($event)"></app-cards-layout>
+  <app-cards-layout [card]="card" [data]="data" (columnListOutput) = "columnListOutput($event)" (popoverTabbing) = "popoverMenuItem($event)"></app-cards-layout>
 
 
   <!-- <div *ngIf="filterCount == 0" class="nodatafound">    

@@ -23,6 +23,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   @Output() columnListOutput = new EventEmitter();
   @Input() searchcard:any;
   @Output() formNameTypeTravel = new EventEmitter();
+  @Output() popoverTabbing = new EventEmitter();
 
 
 
@@ -69,6 +70,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   addNewEnabled:boolean=false;
   detailPage:boolean=false;
   callStatus:boolean=false;
+  popoverMenu:boolean=false;
 
   // new var
   gridDataSubscription: any;
@@ -134,7 +136,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           this.carddata.push(data[i]);
         }
       }else{
-        console.log("Current data length > or < than totalData");
+        console.log("carddata length equals to totalData count");
       }
     }else{
       console.log("Current page greater than totalPage");
@@ -242,13 +244,20 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     
   } 
   setCardAndTab(cardWithTab){
-    if(cardWithTab && cardWithTab.card){
+    if(cardWithTab && cardWithTab.card && cardWithTab.popoverTabbing){
+      let card  = cardWithTab.card;
+      this.setCardDetails(card);
+    }else{
       let card  = cardWithTab.card;
       this.setCardDetails(card);
     } 
     if(cardWithTab && cardWithTab.tabs && cardWithTab.tabs.length > 0){
       this.tabMenu = cardWithTab.tabs;
       this.selectedIndex = cardWithTab.selectedTabIndex;
+      this.popoverMenu = cardWithTab.popoverTabbing;
+      if(cardWithTab && cardWithTab.popoverTabbing){
+        this.popoverTabbing.emit(this.tabMenu);
+      }
     }else{
       this.tabMenu = [];
       this.selectedIndex = -1;
@@ -488,6 +497,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   } 
 
   tabmenuClick(index:number){
+    this.loadMoreData = true;
     this.selectedIndex = index;
     this.carddata = [];
     this.createFormgroup = true;
@@ -505,7 +515,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     //this.router.navigate(['crm/quotation']);
     this.dataShareServiceService.setcardData(card);
   }
-
 
   async addNew(formName?:any){
     if(formName){
