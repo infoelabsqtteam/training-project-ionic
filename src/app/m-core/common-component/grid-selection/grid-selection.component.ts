@@ -57,8 +57,11 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   ngOnInit() {
     // this.onload();
     // this.subscribe();
-    console.log(this.Data.formTypeName)
-    this.formName = this.Data.formTypeName;
+    if(this.Data && this.Data.formTypeName !=""){
+      this.formName = this.Data.formTypeName;
+    }else{
+      this.formName = "default";
+    }
 
   }
   ngOnChanges(changes: SimpleChanges) {

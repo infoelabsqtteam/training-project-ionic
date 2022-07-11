@@ -156,7 +156,12 @@ export class FormComponent implements OnInit, OnDestroy {
       //   this.samePageGridSelection = data;
       // });
       this.userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // this.userTimeZone = "America/New_York";
+      // this.userTimeZone = "Europe/Paris";
+      console.log(this.userTimeZone)
       this.userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
+      console.log(this.userLocale)
+      
     }
 
   resetFlag(){
