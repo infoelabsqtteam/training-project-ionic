@@ -148,7 +148,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.formTypeName = '';
       this.updateMode = true;
       this.currentPageCount = 1;
-    }else if(this.formTypeName == "ADDNEW"){
+    }else if(this.formTypeName == "default"){
       this.formTypeName = '';
       this.editedRowIndex = -1;
       this.currentPageCount = 1;
@@ -520,18 +520,19 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if(formName){
       this.formTypeName = formName;
     }else{
-      this.formTypeName = "ADDNEW";
+      this.formTypeName = "default";
     }
     this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);
     let card = this.card;
     let form:any = {};
     let id = '5f6d95da9feaa2409c3765cd';
     if(card && card.card && card.card.form){
-      form = this.coreUtilityService.getForm(card.card.form,formName)
-      
-      // form = card.card.form[formName];
+      form = this.coreUtilityService.getForm(card.card.form,formName);
       if(form && form._id && form._id != ''){
         id = form._id;
+      }else if(card.card.form && card.card.form._id){
+        form = card.card.form;
+        id = card.card.form._id;
       }
     }    
     this.commonDataShareService.setFormId(id);
@@ -542,7 +543,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         "childData": this.gridData,
         "editedRowIndex": this.editedRowIndex,
         "addform" : form,
-        "formTypeName" : formName
+        "formTypeName" : this.formTypeName
       },
       swipeToClose: true,
       showBackdrop:true,
