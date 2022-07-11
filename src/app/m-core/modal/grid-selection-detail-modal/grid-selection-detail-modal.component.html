@@ -28,13 +28,22 @@
             </ion-select>
           </ion-item>
         </span>
+        <span *ngIf="column.type.toLowerCase() == 'chip'" class="editable-input-wrapper">
+          <ion-chip outline [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]">
+            <!-- <ion-label>Madison</ion-label> -->
+            <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (change)="setValue('',tableField)">
+              <ng-option *ngFor=" let staticValue of staticData[column.ddn_field]" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
+            </ng-select>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+        </span>
       </div>
     </div>
   </div>
   <div class="button_position" *ngIf="!gridselectionverticalbutton">
       <div class="flex_grid">
       <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="select()" expand="full" >Add</ion-button>
-      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal({})" expand="full" >Cancel</ion-button>
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal()" expand="full" >Cancel</ion-button>
       </div>
   </div>
   <div *ngIf="gridselectionverticalbutton" class="inlineFormGridSelectionButton">
