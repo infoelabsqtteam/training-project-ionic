@@ -88,7 +88,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   getValueForGrid(field, object) {
     return this.coreFunctionService.getValueForGrid(field, object);
   }
-  dismissModal(data,remove){
+  dismissModal(data?:any,remove?:any){
     this.modal.dismiss({
       'data':data,
       'dismissed': true,
