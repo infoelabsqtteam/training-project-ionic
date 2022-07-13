@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ApiService, CoreUtilityService, DataShareService, RestService } from '@core/ionic-core';
+import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 
 @Component({
@@ -23,6 +23,10 @@ export class GridSelectionDetailModalComponent implements OnInit {
   staticData: any = {};
   copyStaticData:any={};
   staticDataSubscription;
+  addedDataInList: any;
+  typeaheadDataSubscription;
+  typeAheadData: any;
+  chips:any;
 
   constructor(
     private modalController: ModalController,
@@ -30,10 +34,14 @@ export class GridSelectionDetailModalComponent implements OnInit {
     private coreFunctionService: CoreUtilityService,
     private dataShareService: DataShareService,
     private apiService:ApiService,
-    private restService:RestService
+    private restService:RestService,
+    private storageService: StorageService
   ) { 
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
+    })
+    this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data => {
+      this.setTypeaheadData(data);
     })
   }
 
@@ -124,9 +132,10 @@ export class GridSelectionDetailModalComponent implements OnInit {
   setStaticData(staticData){
     if (staticData) {
       this.staticData = staticData;
-      Object.keys(this.staticData).forEach(key => {        
+      Object.keys(this.staticData).forEach(key => {
+        if(this.staticData[key]){       
         this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
-      })
+      } })
     }
   }
   // setValue(column,i){
@@ -155,6 +164,72 @@ export class GridSelectionDetailModalComponent implements OnInit {
   getddnDisplayVal(val) {
     return this.CommonFunctionService.getddnDisplayVal(val);    
   }
+
+  typeaheadObjectWithtext;
+  searchTypeaheadData(field, currentObject,chipsInputValue) {
+    this.typeaheadObjectWithtext = currentObject;
+
+    this.addedDataInList = this.typeaheadObjectWithtext[field.field_name]
+
+    this.typeaheadObjectWithtext[field.field_name] = chipsInputValue;
+
+    let call_back_field = '';
+    let criteria = [];
+    const staticModal = []
+    if (field.call_back_field && field.call_back_field != '') {
+      call_back_field = field.call_back_field;
+    }
+    if(field.api_params_criteria && field.api_params_criteria != ''){
+      criteria =  field.api_params_criteria;
+    }
+    let staticModalGroup = this.restService.getPaylodWithCriteria(field.api_params, call_back_field, criteria, this.typeaheadObjectWithtext ? this.typeaheadObjectWithtext : {});
+    staticModal.push(staticModalGroup);
+    this.apiService.GetTypeaheadData(staticModal);
+
+    this.typeaheadObjectWithtext[field.field_name] = this.addedDataInList;
+  }
+
+  setTypeaheadData(typeAheadData) {
+    if (typeAheadData.length > 0) {
+      this.typeAheadData = typeAheadData;
+    } else {
+      this.typeAheadData = [];
+    }
+  }
+
+
+  setValue(option, field, index,chipsInput,data) {
+    let selectedData = "";
+    if(option != null){
+      const deptlist = this.data[field.field_name];
+      if(deptlist !=null){
+        deptlist.forEach(element => {
+          if(element.name === option.name){
+            this.storageService.presentToast( option.name + 'Already Added');
+          }
+        });
+      }
+      selectedData = option;
+    }  
+    // let indx = this.getCorrectIndex(data,index);
+    if(selectedData != ""){ 
+      this.setData(selectedData,field, index,chipsInput);  
+    }  
+  }
+
+  setData(selectedData, field, index,chipsInput){
+    if(this.data[field.field_name] == null) this.data[field.field_name] = [];
+    this.data[field.field_name].push(selectedData);
+  }
   
+  custmizedFormValueData(data, fieldName) {
+    if (data && data[fieldName.field_name] && data[fieldName.field_name].length > 0) {
+      return data[fieldName.field_name];
+    }
+  }
+  removeItem(data:any,column:any,i:number){
+    data[column.field_name].splice(i,1);
+    return data[column.field_name];
+  }
 
 }

@@ -559,7 +559,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   editedRow(data,index){
     this.editedRowIndex = index;
     this.gridData = data;
-    this.selectedgriddataId = this.gridData._id
+    this.selectedgriddataId = this.gridData._id;
     this.addNew("UPDATE");
   }
   getFirstCharOfString(char:any){

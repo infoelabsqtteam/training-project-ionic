@@ -28,14 +28,16 @@
             </ion-select>
           </ion-item>
         </span>
-        <span *ngIf="column.type.toLowerCase() == 'chip'" class="editable-input-wrapper">
-          <ion-chip outline [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]">
-            <!-- <ion-label>Madison</ion-label> -->
-            <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (change)="setValue('',tableField)">
-              <ng-option *ngFor=" let staticValue of staticData[column.ddn_field]" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
-            </ng-select>
-            <ion-icon name="close-circle"></ion-icon>
-          </ion-chip>
+        <span *ngIf="column.type.toLowerCase() == 'chips'" class="editable-input-wrapper">
+         
+            <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index">
+              <ion-label>{{item.name}}</ion-label>
+              <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
+            </ion-chip>
+          <ng-select bindLabel="name"  #chipsInput notFoundText="No records found"  (keyup)="searchTypeaheadData(column,data,chipsInput.value)"  (change)="setValue($event,column,0,chipsInput,data)">
+            <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
+          </ng-select>
+          
         </span>
       </div>
     </div>
@@ -49,7 +51,7 @@
   <div *ngIf="gridselectionverticalbutton" class="inlineFormGridSelectionButton">
       <div class="">
           <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="remove()" expand="block" >Remove</ion-button>
-          <ion-button type="button" color="appcolor" [disabled]="checkValidator()"  (click)="select()" expand="block" >Save</ion-button>
+          <ion-button type="button" color="appcolor" [disabled]="checkValidator()"  (click)="select()" expand="block" >Add / Select</ion-button>
       </div>
   </div>
 </ion-content>

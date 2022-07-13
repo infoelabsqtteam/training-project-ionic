@@ -125,5 +125,8 @@ export class DataShareServiceService {
   getchildCardData(){
     return this.childCardData;
   }
+  replaceDatainArray(arraydata:any){
+    
+  }
   
 }
