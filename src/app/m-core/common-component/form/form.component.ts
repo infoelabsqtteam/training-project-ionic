@@ -226,8 +226,10 @@ export class FormComponent implements OnInit, OnDestroy {
     //     this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData.null[key]));
     //   })
     // }else{
-      Object.keys(this.staticData).forEach(key => {        
-        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+      Object.keys(this.staticData).forEach(key => { 
+        if(this.staticData[key]){   
+          this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+        }
       })
     
     this.tableFields.forEach(element => {
@@ -2600,7 +2602,8 @@ case 'populate_fields_for_report_for_new_order_flow':
       "formTypeName" : this.formTypeName,
     }
     this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();
-    if(this.samePageGridSelection){          
+    if(this.samePageGridSelection){
+      this.curTreeViewField = field;      
       this.samePageGridSelectionData = gridModalData;
     }else{    
       const modal = await this.modalController.create({
@@ -2679,7 +2682,7 @@ case 'populate_fields_for_report_for_new_order_flow':
       }
 
     }
-    if(this.curTreeViewField && this.curTreeViewField.onchange_function_param != ''){
+    if(this.curTreeViewField && this.curTreeViewField.onchange_function_param && this.curTreeViewField.onchange_function_param != ''){
       if(this.curTreeViewField.onchange_function_param.indexOf('QTMP') >= 0){
         const staticModalGroup = []
         staticModalGroup.push(this.restService.getPaylodWithCriteria(this.curTreeViewField.onchange_function_param,'',[],this.getFormValue(true)));

@@ -36,7 +36,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   expandicon: any = "assets/itc-labs/icon/expand-icon.png";
 
   data :any = [];
-  formName:any;
+  formName:any= "default";
 
 
   constructor(    
@@ -47,18 +47,18 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     private notificationService:NotificationService,
     private dataShareService:DataShareService,
     private coreUtilityService:CoreUtilityService
-  ) { 
-    // console.log(this.formNameTypeTravel);
-    // this.formNameTypeTravel(data){
-    //   console.log(data)
-    }
+  ) { }
   
 
   ngOnInit() {
     // this.onload();
     // this.subscribe();
     if(this.Data && this.Data.formTypeName !=""){
-      this.formName = this.Data.formTypeName;
+      // this.formName = this.Data.formTypeName; 
+      this.formName = "default";
+      if(this.Data.formTypeName === "UPDATE"){  
+        this.selectedTab = "added";
+      }
     }else{
       this.formName = "default";
     }
@@ -276,6 +276,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     let index:any;
     if(data._id != undefined){
       index = this.coreFunctionService.getIndexInArrayById(this.gridData,data._id);
+      this.gridData[index] = data;
     }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0 && data){
       this.gridData.forEach((row:any, i:any) => {        
           var validity = true;
@@ -386,7 +387,16 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
   }
   getFirstCharOfString(char:any){
+
     return this.coreUtilityService.getFirstCharOfString(char);
+  }
+  
+  getName(object){
+    if(object && object.name){
+      return object.name;
+    }else{
+      return object;
+    }
   }
 
 }
