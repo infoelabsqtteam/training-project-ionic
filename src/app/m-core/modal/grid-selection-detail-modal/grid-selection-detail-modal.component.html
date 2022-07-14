@@ -18,6 +18,9 @@
         <span *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
             <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
         </span>
+        <span *ngIf="column.type.toLowerCase() == 'textarea'" class="editable-input-wrapper">
+          <input type="text" class="form-control form-control-sm d-inline mr-2" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
+        </span>
         <span *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
           <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
         </span>
@@ -34,7 +37,7 @@
               <ion-label>{{item.name}}</ion-label>
               <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
             </ion-chip>
-          <ng-select bindLabel="name"  #chipsInput notFoundText="No records found"  (keyup)="searchTypeaheadData(column,data,chipsInput.value)"  (change)="setValue($event,column,0,chipsInput,data)">
+          <ng-select [bindLabel]="'name'" #chipsInputValue notFoundText="No records found"  (keyup)="searchTypeaheadData(column,data,chipsInputValue.value)"  (change)="setValue($event,column,0,chipsInputValue,data)">
             <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
           </ng-select>
           

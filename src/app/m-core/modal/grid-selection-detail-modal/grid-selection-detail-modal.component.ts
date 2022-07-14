@@ -202,14 +202,15 @@ export class GridSelectionDetailModalComponent implements OnInit {
     let selectedData = "";
     if(option != null){
       const deptlist = this.data[field.field_name];
-      if(deptlist !=null){
+      if(deptlist !=null && deptlist.length > 0){
         deptlist.forEach(element => {
           if(element.name === option.name){
-            this.storageService.presentToast( option.name + 'Already Added');
+            this.storageService.presentToast( option.name + ' Already Added');
           }
         });
-      }
-      selectedData = option;
+      }else{
+        selectedData = option;
+      } 
     }  
     // let indx = this.getCorrectIndex(data,index);
     if(selectedData != ""){ 
