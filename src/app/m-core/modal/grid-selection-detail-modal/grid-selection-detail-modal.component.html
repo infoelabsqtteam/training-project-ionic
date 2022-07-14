@@ -18,6 +18,9 @@
         <span *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
             <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
         </span>
+        <span *ngIf="column.type.toLowerCase() == 'textarea'" class="editable-input-wrapper">
+          <input type="text" class="form-control form-control-sm d-inline mr-2" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
+        </span>
         <span *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
           <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
         </span>
@@ -28,19 +31,30 @@
             </ion-select>
           </ion-item>
         </span>
+        <span *ngIf="column.type.toLowerCase() == 'chips'" class="editable-input-wrapper">
+         
+            <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index">
+              <ion-label>{{item.name}}</ion-label>
+              <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
+            </ion-chip>
+          <ng-select [bindLabel]="'name'" #chipsInputValue notFoundText="No records found"  (keyup)="searchTypeaheadData(column,data,chipsInputValue.value)"  (change)="setValue($event,column,0,chipsInputValue,data)">
+            <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
+          </ng-select>
+          
+        </span>
       </div>
     </div>
   </div>
   <div class="button_position" *ngIf="!gridselectionverticalbutton">
       <div class="flex_grid">
       <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="select()" expand="full" >Add</ion-button>
-      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal({})" expand="full" >Cancel</ion-button>
+      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal()" expand="full" >Cancel</ion-button>
       </div>
   </div>
   <div *ngIf="gridselectionverticalbutton" class="inlineFormGridSelectionButton">
       <div class="">
           <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="remove()" expand="block" >Remove</ion-button>
-          <ion-button type="button" color="appcolor" [disabled]="checkValidator()"  (click)="select()" expand="block" >Save</ion-button>
+          <ion-button type="button" color="appcolor" [disabled]="checkValidator()"  (click)="select()" expand="block" >Add / Select</ion-button>
       </div>
   </div>
 </ion-content>
