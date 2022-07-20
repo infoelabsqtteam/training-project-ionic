@@ -7,7 +7,7 @@
 
 <ion-content class="pages ion-padding-horizontal">
   
-  <div class="contactdetails app-grid_selection fixed_button" *ngIf="cardType == 'demo1'">   
+  <ion-card class="contactdetails app-grid_selection fixed_button detail_grid" *ngIf="cardType == 'demo1'">
     <div class="" *ngFor="let column of columnList; let i = index">
       <div *ngIf="!column.editable" class="enquerylist ">
         <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>
@@ -26,25 +26,32 @@
         </span>
         <span *ngIf="column.type.toLowerCase() == 'dropdown'" class="editable-input-wrapper">
           <ion-item >
-            <ion-select [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]" >
+            <ion-select [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
               <ion-select-option *ngFor="let staticValue of staticData[column.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
             </ion-select>
           </ion-item>
         </span>
-        <span *ngIf="column.type.toLowerCase() == 'chips'" class="editable-input-wrapper">
-         
-            <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index">
-              <ion-label>{{item.name}}</ion-label>
+        <span *ngIf="column.type.toLowerCase() == 'userinput_chips'" class="editable-input-wrapper">         
+          <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)">
+            <ion-label>{{getddnDisplayVal(item)}}</ion-label>
+            <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
+          </ion-chip>
+        <ng-select [bindLabel]="'name'" [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)"  (change)="setValue($event,column,data)" [disabled]="isDisable(column,data)" (focus)="resetVariables()">
+          <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
+        </ng-select>          
+      </span>
+        <span *ngIf="column.type.toLowerCase() == 'chips'" class="editable-input-wrapper">         
+            <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)">
+              <ion-label>{{getddnDisplayVal(item)}}</ion-label>
               <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
             </ion-chip>
-          <ng-select [bindLabel]="'name'" #chipsInputValue notFoundText="No records found"  (keyup)="searchTypeaheadData(column,data,chipsInputValue.value)"  (change)="setValue($event,column,0,chipsInputValue,data)">
+          <ng-select [bindLabel]="'name'" [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)"  (change)="setValue($event,column,data)" [disabled]="isDisable(column,data)" (focus)="resetVariables()">
             <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
-          </ng-select>
-          
+          </ng-select>          
         </span>
       </div>
     </div>
-  </div>
+  </ion-card>
   <div class="button_position" *ngIf="!gridselectionverticalbutton">
       <div class="flex_grid">
       <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="select()" expand="full" >Add</ion-button>
@@ -53,8 +60,8 @@
   </div>
   <div *ngIf="gridselectionverticalbutton" class="inlineFormGridSelectionButton">
       <div class="">
-          <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="remove()" expand="block" >Remove</ion-button>
-          <ion-button type="button" color="appcolor" [disabled]="checkValidator()"  (click)="select()" expand="block" >Add / Select</ion-button>
+          <ion-button type="button" color="appcolor" [disabled]="readonly" (click)="remove()" expand="block" >Remove</ion-button>
+          <ion-button type="button" color="appcolor" [disabled]="readonly"  (click)="select()" expand="block" >Add / Select</ion-button>
       </div>
   </div>
 </ion-content>

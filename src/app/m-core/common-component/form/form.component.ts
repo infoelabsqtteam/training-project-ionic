@@ -156,11 +156,7 @@ export class FormComponent implements OnInit, OnDestroy {
       //   this.samePageGridSelection = data;
       // });
       this.userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      // this.userTimeZone = "America/New_York";
-      // this.userTimeZone = "Europe/Paris";
-      console.log(this.userTimeZone)
       this.userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
-      console.log(this.userLocale)
       
     }
 
@@ -2707,7 +2703,7 @@ case 'populate_fields_for_report_for_new_order_flow':
     //   this.custmizedFormValue['items_list'] = tamplateValue['items_list'];
     // }
 
-    this.curTreeViewField = {};
+    // this.curTreeViewField = {};
     this.currentTreeViewFieldParent = {};
   }
 

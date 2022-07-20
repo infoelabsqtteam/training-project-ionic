@@ -41,7 +41,7 @@
                         </ion-col>  -->
                     </ion-row>
                     <ion-buttons slot="end" class="ion-margin-start">
-                        <ion-checkbox checked="true" color="appcolor" class="left icon ion-hide" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" [disabled]="data.selected" ></ion-checkbox>
+                        <ion-checkbox checked="true" color="appcolor" class="left icon ion-hide" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" [indeterminate]="data.selected" ></ion-checkbox>
                         </ion-buttons>
                 </ion-item>
                 <!-- <ion-row>
@@ -91,7 +91,7 @@
                 </ion-row>
                 
                 <ion-buttons slot="end" class="ion-margin-start">
-                    <ion-checkbox checked="true" color="appcolor" class="left icon ion-hide" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" [disabled]="data.selected" ></ion-checkbox>
+                    <ion-checkbox checked="true" color="appcolor" class="left icon ion-hide" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" [indeterminate]="data.selected"></ion-checkbox>
                 </ion-buttons>
             </ion-item>
         </div> 

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 
@@ -12,7 +12,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   @Input() childCardType: any;
   @Input() Data: any;
   @Input() modal: any;
-  @Input() InlineformGridSelection:any;
+  @Input() formInfo:any;
 
   cardType:any;
   columnList :any = [];
@@ -22,16 +22,21 @@ export class GridSelectionDetailModalComponent implements OnInit {
   selectedTab:string = "new";
   staticData: any = {};
   copyStaticData:any={};
-  staticDataSubscription;
+  staticDataSubscription:any;
   addedDataInList: any;
-  typeaheadDataSubscription;
+  typeaheadDataSubscription:any;
   typeAheadData: any;
   chips:any;
+  readonly:boolean = false;
+  griddatasaved:boolean;
+  chipsData:any;
+  datasave:boolean;
+  field:any = {};
+  typeaheadObjectWithtext:any;
 
   constructor(
     private modalController: ModalController,
     private CommonFunctionService:CoreUtilityService,
-    private coreFunctionService: CoreUtilityService,
     private dataShareService: DataShareService,
     private apiService:ApiService,
     private restService:RestService,
@@ -52,17 +57,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
   ionViewWillEnter(){
     // this.cardType = this.childCardType;
     // this.columnlistNew = this.Data[0];
-    let samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();
-    if(samePageGridSelection){
-      this.gridSelctionTitle="Travel Management Details"
-    }else{
-      this.gridSelctionTitle="Quotation Details"
-    }
-    if(samePageGridSelection  && this.InlineformGridSelection){
-      this.gridselectionverticalbutton = this.InlineformGridSelection;
-    }else{ 
-      this.gridselectionverticalbutton = false;
-    }
+    this.setTopHeaderTitle();
+    // this.updateModeReadOnly();
   }
   ionViewDidEnter(){}
   ionViewWillLeave(){}  
@@ -71,16 +67,30 @@ export class GridSelectionDetailModalComponent implements OnInit {
     if(this.staticDataSubscription){
       this.staticDataSubscription.unsubscribe();
     }
-    
+    if(this.typeaheadDataSubscription){
+      this.typeaheadDataSubscription.unsubscribe();
+    }    
   }
-
-
   onload(){
     this.cardType = this.childCardType;
     this.columnList  = this.Data['column'];
     this.data = this.Data['value'];
+    this.field = this.Data['field']; 
     this.getStaticDataWithDependentData();
-  }  
+  }
+  setTopHeaderTitle(){
+    if(this.formInfo){
+      if(this.formInfo.name !=""){
+        this.gridSelctionTitle = this.formInfo.name
+      }else if(this.formInfo.InlineformGridSelection && this.formInfo.name == ""){
+      this.gridSelctionTitle="Travel Management Details";
+      this.gridselectionverticalbutton = this.formInfo.InlineformGridSelection;
+      }else if(!this.formInfo.InlineformGridSelection && this.formInfo.name == "") {
+        this.gridSelctionTitle="Quotation Details";
+        this.gridselectionverticalbutton = false;
+      }
+    }
+  }
   getStaticDataWithDependentData(){
     const staticModal = []
     let staticModalGroup = this.restService.commanApiPayload([],this.columnList,[],this.data);
@@ -94,7 +104,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
   }
   getValueForGrid(field, object) {
-    return this.coreFunctionService.getValueForGrid(field, object);
+    return this.CommonFunctionService.getValueForGrid(field, object);
   }
   dismissModal(data?:any,remove?:any){
     this.modal.dismiss({
@@ -105,6 +115,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   select(){
     this.dismissModal(this.data,false);
+    this.datasave = false;
   }
   remove(){
     this.dismissModal(this.data,true);
@@ -112,15 +123,53 @@ export class GridSelectionDetailModalComponent implements OnInit {
   checkValidator(){
     return false;
   }
-  isDisable(field,object){
+
+  isDisable(field, object) {
     const updateMode = false;
-    if(field.is_disabled){
+    let disabledrow = false;
+    if (field.is_disabled) {
       return true;
-    }else if(field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != ''){
-      return this.CommonFunctionService.isDisable(field.etc_fields,updateMode,object);
+    } 
+    if(this.field.disableRowIf && this.field.disableRowIf != ''){
+      disabledrow = this.checkRowIf(object);
     }
+    if(disabledrow){
+      this.readonly = true;
+      return true;
+    }
+    if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
+      return this.CommonFunctionService.isDisable(field.etc_fields, updateMode, object);
+    }   
     return false;
   }
+  checkRowIf(data){
+    let check = false;
+    if(data.selected){
+      let condition = '';
+      if(this.field.disableRowIf && this.field.disableRowIf != ''){
+        condition = this.field.disableRowIf;
+      }
+      if(condition != ''){
+        if(this.checkDisableRowIf(condition,data)){
+          check = true;
+        }else{
+          check = false;
+        }
+      }
+    }
+    return check;
+  }
+  
+  checkDisableRowIf(field,formValue){
+    let check = false;
+    if(this.CommonFunctionService.checkIfCondition(field,formValue)){
+      check = true;
+    }else{
+      check = false;
+    }
+    return check;
+  }
+
   calculateNetAmount(data, fieldName, index:number){
 
     this.CommonFunctionService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
@@ -162,16 +211,15 @@ export class GridSelectionDetailModalComponent implements OnInit {
   //  }
   // }
   getddnDisplayVal(val) {
-    return this.CommonFunctionService.getddnDisplayVal(val);    
+    return this.CommonFunctionService.getddnDisplayVal(val);
   }
 
-  typeaheadObjectWithtext;
   searchTypeaheadData(field, currentObject,chipsInputValue) {
     this.typeaheadObjectWithtext = currentObject;
 
     this.addedDataInList = this.typeaheadObjectWithtext[field.field_name]
 
-    this.typeaheadObjectWithtext[field.field_name] = chipsInputValue;
+    this.typeaheadObjectWithtext[field.field_name] = chipsInputValue.target.value;
 
     let call_back_field = '';
     let criteria = [];
@@ -198,30 +246,21 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
 
 
-  setValue(option, field, index,chipsInput,data) {
-    let selectedData = "";
+  setValue(option,field,data) {
     if(option != null){
-      const deptlist = this.data[field.field_name];
-      if(deptlist !=null && deptlist.length > 0){
-        deptlist.forEach(element => {
-          if(element.name === option.name){
-            this.storageService.presentToast( option.name + ' Already Added');
-          }
-        });
+      const alreadyAddedList = data[field.field_name];
+      if(this.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
+        this.storageService.presentToast( option.name + ' Already Added');
       }else{
-        selectedData = option;
-      } 
-    }  
-    // let indx = this.getCorrectIndex(data,index);
-    if(selectedData != ""){ 
-      this.setData(selectedData,field, index,chipsInput);  
-    }  
-  }
+        if(data[field.field_name] == null) data[field.field_name] = [];
+        data[field.field_name].push(option); 
+      }
+      this.chipsData = {};
+      this.typeAheadData = [];
 
-  setData(selectedData, field, index,chipsInput){
-    if(this.data[field.field_name] == null) this.data[field.field_name] = [];
-    this.data[field.field_name].push(selectedData);
-  }
+    }  
+      
+  } 
   
   custmizedFormValueData(data, fieldName) {
     if (data && data[fieldName.field_name] && data[fieldName.field_name].length > 0) {
@@ -232,5 +271,46 @@ export class GridSelectionDetailModalComponent implements OnInit {
     data[column.field_name].splice(i,1);
     return data[column.field_name];
   }
+
+  checkDataAlreadyAddedInListOrNot(primary_key,incomingData,alreadyDataAddedlist){
+    if(alreadyDataAddedlist == undefined){
+      alreadyDataAddedlist = [];
+    }
+    let alreadyExist = "false";
+    if(typeof incomingData == 'object'){
+      alreadyDataAddedlist.forEach(element => {
+        if(element._id == incomingData._id){
+          alreadyExist =  "true";
+        }
+      });
+    }
+    else if(typeof incomingData == 'string'){
+      alreadyDataAddedlist.forEach(element => {
+        if(typeof element == 'string'){
+          if(element == incomingData){
+            alreadyExist =  "true";
+          }
+        }else{
+          if(element[primary_key] == incomingData){
+            alreadyExist =  "true";
+          }
+        }
+      
+      });
+    }else{
+      alreadyExist =  "false";
+    }
+    if(alreadyExist == "true"){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
+  resetVariables(){
+    this.typeAheadData = [];
+  }
+
+  
 
 }
