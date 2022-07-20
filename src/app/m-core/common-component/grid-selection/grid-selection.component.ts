@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService } from '@core/ionic-core';
+import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 
@@ -46,13 +46,12 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     private apiService:ApiService,
     private notificationService:NotificationService,
     private dataShareService:DataShareService,
-    private coreUtilityService:CoreUtilityService
+    private coreUtilityService:CoreUtilityService,
+    private storageService: StorageService
   ) { }
   
 
   ngOnInit() {
-    // this.onload();
-    // this.subscribe();
     if(this.Data && this.Data.formTypeName !=""){
       // this.formName = this.Data.formTypeName; 
       this.formName = "default";
@@ -226,9 +225,9 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     const modal = await this.modalController.create({
       component: GridSelectionDetailModalComponent,
       componentProps: {
-        "Data": {"value":data,"column":this.field.gridColumns},
+        "Data": {"value":data,"column":this.field.gridColumns,"field":this.field},
         "childCardType" : "demo1",
-        "InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue()
+        "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""}
       },
       swipeToClose: false
     });
@@ -296,7 +295,8 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       index = indx;
     }
     if (event.detail.checked) {
-      this.gridData[index].selected=true;
+      this.gridData[index].selected=true; 
+      this.selectedTab = "added";
       this.getSelectedData();
     } else{
       this.gridData[index].selected=false;
@@ -372,16 +372,19 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   //   // this.selectedTab = ev.target.value;
   //   this.selectedTabAgain.emit(selectedTab);
   // }
-  getSelectedData(){
+  getSelectedData(newgridData?:boolean){
     const selectedData = [];
+    // if(newgridData == undefined) newgridData = false;
     if(this.gridData && this.gridData.length > 0){
       this.gridData.forEach(element => {
         if(element && element.selected){
           selectedData.push(element);
         }
       });
-      this.gridSelectionResponce.emit(selectedData);
-      return selectedData;
+      if(selectedData.length > 0){
+        this.gridSelectionResponce.emit(selectedData);
+        return selectedData;
+      }
     }else{
       return selectedData;
     }

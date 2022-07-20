@@ -46,3 +46,12 @@ ng-select.ng-select {
     }
     
 }
+.contactdetails .enquerylist span.editable-input-wrapper ion-textarea{
+    margin-top: 0;border: 1px solid #949494;border-radius: 4px;
+}
+.contactdetails .enquerylist span {
+    .ng-select-container {
+        .ng-clear-wrapper , .ng-arrow-wrapper{width: auto;}
+    }
+}
+ion-card.app-grid_selection.detail_grid{ margin-left: auto;margin-right: auto;padding: 7px;}
