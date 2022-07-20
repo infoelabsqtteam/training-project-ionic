@@ -58,7 +58,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     // this.cardType = this.childCardType;
     // this.columnlistNew = this.Data[0];
     this.setTopHeaderTitle();
-    // this.updateModeReadOnly();
+    this.updateModeRejectedGridReadOnly();
   }
   ionViewDidEnter(){}
   ionViewWillLeave(){}  
@@ -89,6 +89,11 @@ export class GridSelectionDetailModalComponent implements OnInit {
         this.gridSelctionTitle="Quotation Details";
         this.gridselectionverticalbutton = false;
       }
+    }
+  }
+  updateModeRejectedGridReadOnly(){
+    if(this.data && !this.data.selected && this.data.rejectedCustomers){
+      this.readonly = true;
     }
   }
   getStaticDataWithDependentData(){
