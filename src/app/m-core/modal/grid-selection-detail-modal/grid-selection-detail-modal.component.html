@@ -31,21 +31,23 @@
             </ion-select>
           </ion-item>
         </span>
+        
         <span *ngIf="column.type.toLowerCase() == 'userinput_chips'" class="editable-input-wrapper">         
-          <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
+          <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly" >
             <ion-label>{{getddnDisplayVal(item)}}</ion-label>
             <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
           </ion-chip>
-        <ng-select [bindLabel]="'name'" [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)"  (change)="setValue($event,column,data)" [disabled]="isDisable(column,data)" (focus)="resetVariables()" [readonly]="readonly">
-          <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
-        </ng-select>          
-      </span>
+          <ng-select [bindLabel]="'name'" [(ngModel)]="userInputChipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)"  (change)="setValue($event,column,data)" [disabled]="isDisable(column,data)" [readonly]="readonly" (keyup.enter)="setValue($event,column,data)" (keydown.tab)="setValue($event,column,data)">
+            <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
+          </ng-select>
+        </span>
+
         <span *ngIf="column.type.toLowerCase() == 'chips'" class="editable-input-wrapper">         
             <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
               <ion-label>{{getddnDisplayVal(item)}}</ion-label>
               <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
             </ion-chip>
-          <ng-select [bindLabel]="'name'" [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)"  (change)="setValue($event,column,data)" [disabled]="isDisable(column,data)" (focus)="resetVariables()" [readonly]="readonly">
+          <ng-select [bindLabel]="'name'" [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)"  (change)="setValue($event,column,data)" [disabled]="isDisable(column,data)" [readonly]="readonly">
             <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
           </ng-select>          
         </span>
