@@ -24,6 +24,9 @@
         <span *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
           <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly">
         </span>
+        <span *ngIf="column.type.toLowerCase() == 'boolean'" class="editable-input-wrapper">
+            <ion-checkbox [(ngModel)]="data[column.field_name]" [ngclass]="column.field_class" class="ion-margin-end"></ion-checkbox> 
+        </span>
         <span *ngIf="column.type.toLowerCase() == 'dropdown'" class="editable-input-wrapper">
           <ion-item >
             <ion-select [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly">
