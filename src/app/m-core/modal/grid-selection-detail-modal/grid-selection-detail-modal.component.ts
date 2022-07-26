@@ -33,6 +33,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   datasave:boolean;
   field:any = {};
   typeaheadObjectWithtext:any;
+  userInputChipsData:any;
 
   constructor(
     private modalController: ModalController,
@@ -254,15 +255,30 @@ export class GridSelectionDetailModalComponent implements OnInit {
   setValue(option,field,data) {
     if(option != null){
       const alreadyAddedList = data[field.field_name];
-      if(this.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
-        this.storageService.presentToast( option.name + ' Already Added');
+      if (option.keyCode == 13 && option.target.value !=""){
+        // console.log("keyCode which ", option.which);
+        // console.log("keyCode ", option.keyCode);
+        // console.log("keyCode Value ", option.target.value);
+        if(this.checkDataAlreadyAddedInListOrNot("_id",option.target.value,alreadyAddedList)){
+          this.storageService.presentToast( option.target.value + ' Already Added');
+        }else{
+          if(data[field.field_name] == null) data[field.field_name] = [];
+            data[field.field_name].push(option.target.value);
+        }
+        option.target.value = "";
       }else{
-        if(data[field.field_name] == null) data[field.field_name] = [];
-        data[field.field_name].push(option); 
+        if(option !=""){
+          if(this.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
+            this.storageService.presentToast( option.name + ' Already Added');
+          }else{
+            if(data[field.field_name] == null) data[field.field_name] = [];
+            data[field.field_name].push(option); 
+          }
+          this.userInputChipsData = "";
+          this.chipsData = {};
+          this.typeAheadData = [];
+        }
       }
-      this.chipsData = {};
-      this.typeAheadData = [];
-
     }  
       
   } 
@@ -315,7 +331,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
   resetVariables(){
     this.typeAheadData = [];
   }
-
-  
+ 
 
 }
