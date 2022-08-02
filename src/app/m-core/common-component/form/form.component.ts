@@ -2715,6 +2715,7 @@ case 'populate_fields_for_report_for_new_order_flow':
       "selectedData":selectedValue,
       "object": this.getFormValue(true),
       "formTypeName" : this.formTypeName,
+      
     }
     this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();
     if(this.samePageGridSelection){
@@ -2738,16 +2739,33 @@ case 'populate_fields_for_report_for_new_order_flow':
         .then((data) => {
           const object = data['data']; // Here's your selected user!
           if(object['data'] && object['data'].length > 0){
+            let obj =this.getSendData(data);
             this.gridSelectionResponce(object['data']);
           }        
       });
       return await modal.present();
     }
   }
+  getSendData(data){
+    let obj ={
+      "action":'',
+      "index":-1,
+      "data": data
+    }
+    return obj;
+  }
   gridSelectionResponce(responce){ 
 
+    if(this.curTreeViewField && this.curTreeViewField.add_new_enabled && responce && responce.action && responce.action == "edite"){
+      let index = responce.index;
+      if(this.samePageGridSelection){
+        this.samePageGridSelection = false;
+      }
+      this.updateListofFields(this.curTreeViewField,index);
+    }
+
     if (!this.custmizedFormValue[this.curTreeViewField.field_name]) this.custmizedFormValue[this.curTreeViewField.field_name] = [];
-    this.custmizedFormValue[this.curTreeViewField.field_name] = JSON.parse(JSON.stringify(responce));
+    this.custmizedFormValue[this.curTreeViewField.field_name] = JSON.parse(JSON.stringify(responce.data));
 
     if(this.curTreeViewField && this.curTreeViewField.onchange_function && this.curTreeViewField.onchange_function_param){
       // if(this.currentTreeViewFieldParent != ''){

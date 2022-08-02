@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
-import { ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 
 @Component({
@@ -37,6 +37,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
 
   data :any = [];
   formName:any= "default";
+  readonly:boolean= false;
 
 
   constructor(    
@@ -47,7 +48,8 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     private notificationService:NotificationService,
     private dataShareService:DataShareService,
     private coreUtilityService:CoreUtilityService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private alertController: AlertController
   ) { }
   
 
@@ -89,6 +91,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     this.selectedTab = "new";
     this.selecteData = [];  
     this.selecteData = JSON.parse(JSON.stringify(this.Data.selectedData)); 
+    this.selectedData = JSON.parse(JSON.stringify(this.Data.selectedData));
     this.field = this.Data.field;
     if(this.Data.object){
       this.parentObject = this.Data.object;
@@ -99,27 +102,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     else{
       this.gridData = [];
     }
-    if(this.field.gridColumns && this.field.gridColumns.length > 0){
-      this.listOfGridFieldName = [];
-      let index = 0;
-      this.field.gridColumns.forEach(field => {
-        if(this.coreFunctionService.isNotBlank(field.show_if)){
-          if(!this.coreFunctionService.showIf(field,this.parentObject)){
-            field['display'] = false;
-          }else{
-            field['display'] = true;
-          }                
-        }else{
-          field['display'] = true;
-        }
-        if(index <= 5){
-          this.listOfGridFieldName.push(field);
-          index = index + 1;
-        }
-      }); 
-    }else{
-      this.notificationService.showAlert("Grid Columns are not available In This Field.",'',['dismiss']);
-    }
+   
     if(this.field && this.field.grid_row_selection){
       this.grid_row_selection = true;
     }else{
@@ -129,23 +112,9 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       this.grid_row_refresh_icon = true;
     }else{
       this.grid_row_refresh_icon = false;
-    }
-
-    //For dropdown data in grid selection
-    this.getStaticDataWithDependentData()
+    }    
   }
-  getStaticDataWithDependentData(){
-    const staticModal = []
-    let staticModalGroup = this.restService.commanApiPayload([],this.listOfGridFieldName,[],{});
-    if(staticModalGroup.length > 0){
-      staticModalGroup.forEach(element => {
-        staticModal.push(element);
-      });
-    } 
-    if(staticModal.length > 0){    
-      this.apiService.getStatiData(staticModal);
-    }
-  }
+  
   setStaticData(staticData){
     if(staticData){
       if(this.field.ddn_field && staticData[this.field.ddn_field] && staticData[this.field.ddn_field] != null){
@@ -169,7 +138,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
                 break;
             }
           }
-
+          
           this.selecteData.forEach(element => {
             this.gridData.forEach((row, i) => {
               if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0){
@@ -207,203 +176,160 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   getValueForGrid(field, object) {
     return this.coreFunctionService.getValueForGrid(field, object);
   }
-  isDisable(field,object){
+  isDisable(field, object) {
     const updateMode = false;
-    if(field.is_disabled){
+    let disabledrow = false;
+    if (field.is_disabled) {
       return true;
-    }else if(field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != ''){
-      return this.coreFunctionService.isDisable(field.etc_fields,updateMode,object);
+    } 
+    if(this.field.disableRowIf && this.field.disableRowIf != ''){
+      disabledrow = this.checkRowIf(object);
     }
+    if(disabledrow){
+      this.readonly = true;
+      return true;
+    }
+    if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
+      return this.coreFunctionService.isDisable(field.etc_fields, updateMode, object);
+    }   
     return false;
+  }
+  checkRowIf(data:any){
+    let check = false;
+    if(data.selected){
+      let condition = '';
+      if(this.field.disableRowIf && this.field.disableRowIf != ''){
+        condition = this.field.disableRowIf;
+      }
+      if(condition != ''){
+        if(this.coreFunctionService.checkDisableRowIf(condition,data)){
+          check = true;
+        }else{
+          check = false;
+        }
+      }
+    }
+    return check;
   }
   calculateNetAmount(data, fieldName, index){
 
     this.coreFunctionService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
   }
 
-  async addremoveparticipant(data){
-    const modal = await this.modalController.create({
-      component: GridSelectionDetailModalComponent,
-      componentProps: {
-        "Data": {"value":data,"column":this.field.gridColumns,"field":this.field},
-        "childCardType" : "demo1",
-        "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""}
-      },
-      swipeToClose: false
-    });
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss()
-      .then((data) => {
-        const object = data['data']; // Here's your selected user!
-        if(object['data'] && object['remove']){
-          this.toggle(object['data'],{'detail':{'checked':false}},0);
-        }else if(object['data'] && object['remove'] == false){
-          this.toggle(object['data'],{'detail':{'checked':true}},0);
-        }else{
-          console.log("No action performed.");
-        }                 
-    });
-    return await modal.present();
-  }
-  selectGridData(){
-    this.selectedData = [];
-    if(this.grid_row_selection == false){
-      this.selectedData = [...this.gridData];
+  async addremoveparticipant(data,index){
+    if(this.field && this.field.add_new_enabled){
+      this.edite(index);
     }else{
-      this.gridData.forEach((row:any) => {
-        if(row.selected){
-          this.selectedData.push(row);
-        }
+      const modal = await this.modalController.create({
+        component: GridSelectionDetailModalComponent,
+        componentProps: {
+          "Data": {"value":data,"column":this.field.gridColumns,"field":this.field},
+          "childCardType" : "demo1",
+          "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""}
+        },
+        swipeToClose: false
       });
+      modal.componentProps.modal = modal;
+      modal.onDidDismiss()
+        .then((data) => {
+          const object = data['data']; // Here's your selected user!
+          if(object['data'] && object['remove']){
+            this.toggle(object['data'],{'detail':{'checked':false}},0);
+          }else if(object['data'] && object['remove'] == false){
+            this.toggle(object['data'],{'detail':{'checked':true}},0);
+          }else{
+            console.log("No action performed.");
+          }                 
+      });
+      return await modal.present();
     }
-    this.closeModal();
   }
-  closeModal(){
-    this.dismissModal(this.selectedData);
-    this.gridData=[];
-    this.selectedData = [];
-    this.selecteData=[];
-    this.data = '';
-  }
-  dismissModal(data){
-    this.modal.dismiss({
-      'dismissed': true,
-      'data':data
-    });
-  }
+  
   toggle(data:any,event:any, indx:any) {
-    let index:any;
+    let index:any = -1;
     if(data._id != undefined){
       index = this.coreFunctionService.getIndexInArrayById(this.gridData,data._id);
       this.gridData[index] = data;
     }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0 && data){
-      this.gridData.forEach((row:any, i:any) => {        
-          var validity = true;
-          this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
+      for (let i = 0; i < this.gridData.length; i++) {
+          const row = this.gridData[i]; 
+          for (let j = 0; j < this.field.matching_fields_for_grid_selection.length; j++) {
+            const matchcriteria = this.field.matching_fields_for_grid_selection[j];          
             if(this.coreFunctionService.getObjectValue(matchcriteria,data) == this.coreFunctionService.getObjectValue(matchcriteria,row)){
-              validity = validity && true;
+              index = i;
+              this.gridData[index] = data;
+              break;
             }
-            else{
-              validity = validity && false;
-            }
-          });
-          if(validity == true){
-            index = i;
+          };
+          if(index > -1){
+            break;
           }
-      });
+      };
     }else {      
       index = indx;
     }
-    if (event.detail.checked) {
-      this.gridData[index].selected=true; 
-      this.selectedTab = "added";
-      this.getSelectedData();
-    } else{
-      this.gridData[index].selected=false;
+    if(index > -1){
+      if (event.detail.checked) {
+        this.gridData[index].selected=true; 
+        this.selectedTab = "added";
+      } else{
+        this.gridData[index].selected=false;
+      }
     }
-  }
-  // exists(item) {
-  //   return this.selectedData.indexOf(item) > -1;
-  // };
-  // isIndeterminate() {
-  //   let check = 0;
-  //   if(this.gridData.length > 0){
-  //     this.gridData.forEach(row => {
-  //       if(row.selected){
-  //         check = check + 1;
-  //       }
-  //     });
-  //   }
-  //   return (check > 0 && !this.isChecked());
-  // };
-  // isChecked() {
-  //   let check = 0;
-  //   if(this.gridData.length > 0){
-  //     this.gridData.forEach(row => {
-  //       if(row.selected){
-  //         check = check + 1;
-  //       }
-  //     });
-  //   }
-  //   return this.gridData.length === check;
-  // };
-  // toggleAll(event: MatCheckboxChange) {
-  //   if ( event.checked ) {
-  //     if(this.gridData.length > 0){
-  //       this.gridData.forEach(row => {
-  //         row.selected=true;
-  //       });
-  //     }
-  //   }else{
-  //     if(this.gridData.length > 0){
-  //       this.gridData.forEach(row => {
-  //         row.selected=false;
-  //       });
-  //     }
-  //   }
-  //   //console.log(this.selected3);
-  // }
-  checkValidator(){
-    // if(this.preSelectedData){
-    //   let selectedItem = 0;
-    //   this.gridData.forEach(element => {
-    //     if(element.selected  && selectedItem == 0){
-    //       selectedItem = 1;
-    //     }
-    //   });
-    //   if(selectedItem == 1){
-    //     return false;
-    //   }else{
-    //     return true;
-    //   }
-    // }
-    return false;
-  }
-
-  segmentChanged(ev: any) {
-    this.selectedTab = ev.target.value;
-    // this.selectedTab.emit(ev);
-  }
-  segmentChangedEmit(selectedTab:any) {
-    // this.selectedTab = ev.target.value;
-    this.selectedTabAgain.emit(selectedTab);
-  }
-  // segmentChangedEmit(selectedTab:any) {
-  //   // this.selectedTab = ev.target.value;
-  //   this.selectedTabAgain.emit(selectedTab);
-  // }
-  getSelectedData(newgridData?:boolean){
-    const selectedData = [];
-    // if(newgridData == undefined) newgridData = false;
+    this.getSelectedData();
+    let obj =this.getSendData()
+    this.gridSelectionResponce.emit(obj);
+  }  
+  getSelectedData(){
+    this.selectedData = [];    
     if(this.gridData && this.gridData.length > 0){
       this.gridData.forEach(element => {
         if(element && element.selected){
-          selectedData.push(element);
+          this.selectedData.push(element);
         }
       });
-      if(selectedData.length > 0){
-        this.gridSelectionResponce.emit(selectedData);
-        return selectedData;
-      }
-    }else{
-      return selectedData;
+    }
+    if(this.selecteData && this.selecteData.length > 0 && this.field.add_new_enabled){
+      this.selecteData.forEach(element => {
+        if(element && element.customEntry){
+          this.selectedData.push(element);
+        }
+      });      
     }
   }
   getFirstCharOfString(char:any){
-
     return this.coreUtilityService.getFirstCharOfString(char);
   }
   
-  getName(object){
+  getName(object:any){
     let columns = this.field.gridColumns;
     let field_name = columns[0].field_name;
     let value = this.coreUtilityService.getObjectValue(field_name,object);
-    // if(object && object[this.field.gridColumns]){
-    //   return object[this.field.gridColumns];
-    // }else{
-    //   return object;
-    // }
     return value;
+  }
+
+  async delete(index:number){
+    //alerte if ture then
+    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
+    if(confirmDelete === "confirm"){
+      this.selectedData.splice(index,1);
+      let obj =this.getSendData()
+      this.gridSelectionResponce.emit(obj);
+    }
+  }
+  edite(index:number){
+    let obj =this.getSendData()
+    obj['action'] = "edite";
+    obj['index'] = index;
+    this.gridSelectionResponce.emit(obj);
+  }
+  getSendData(){
+    let obj ={
+      "action":'',
+      "index":-1,
+      "data": this.selectedData
+    }
+    return obj;
   }
 
 }
