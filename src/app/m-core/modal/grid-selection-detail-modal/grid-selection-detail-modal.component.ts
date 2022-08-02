@@ -121,7 +121,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   select(){
     this.dismissModal(this.data,false);
-    this.datasave = false;
   }
   remove(){
     this.dismissModal(this.data,true);
@@ -148,7 +147,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }   
     return false;
   }
-  checkRowIf(data){
+  checkRowIf(data:any){
     let check = false;
     if(data.selected){
       let condition = '';
@@ -156,7 +155,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
         condition = this.field.disableRowIf;
       }
       if(condition != ''){
-        if(this.checkDisableRowIf(condition,data)){
+        if(this.CommonFunctionService.checkDisableRowIf(condition,data)){
           check = true;
         }else{
           check = false;
@@ -165,17 +164,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
     return check;
   }
-  
-  checkDisableRowIf(field,formValue){
-    let check = false;
-    if(this.CommonFunctionService.checkIfCondition(field,formValue)){
-      check = true;
-    }else{
-      check = false;
-    }
-    return check;
-  }
-
   calculateNetAmount(data, fieldName, index:number){
 
     this.CommonFunctionService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
@@ -243,7 +231,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     this.typeaheadObjectWithtext[field.field_name] = this.addedDataInList;
   }
 
-  setTypeaheadData(typeAheadData) {
+  setTypeaheadData(typeAheadData:any) {
     if (typeAheadData.length > 0) {
       this.typeAheadData = typeAheadData;
     } else {
@@ -256,10 +244,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     if(option != null){
       const alreadyAddedList = data[field.field_name];
       if (option.keyCode == 13 && option.target.value !=""){
-        // console.log("keyCode which ", option.which);
-        // console.log("keyCode ", option.keyCode);
-        // console.log("keyCode Value ", option.target.value);
-        if(this.checkDataAlreadyAddedInListOrNot("_id",option.target.value,alreadyAddedList)){
+        if(this.CommonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option.target.value,alreadyAddedList)){
           this.storageService.presentToast( option.target.value + ' Already Added');
         }else{
           if(data[field.field_name] == null) data[field.field_name] = [];
@@ -268,7 +253,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
         option.target.value = "";
       }else{
         if(option !=""){
-          if(this.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
+          if(this.CommonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
             this.storageService.presentToast( option.name + ' Already Added');
           }else{
             if(data[field.field_name] == null) data[field.field_name] = [];
@@ -291,41 +276,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
   removeItem(data:any,column:any,i:number){
     data[column.field_name].splice(i,1);
     return data[column.field_name];
-  }
-
-  checkDataAlreadyAddedInListOrNot(primary_key,incomingData,alreadyDataAddedlist){
-    if(alreadyDataAddedlist == undefined){
-      alreadyDataAddedlist = [];
-    }
-    let alreadyExist = "false";
-    if(typeof incomingData == 'object'){
-      alreadyDataAddedlist.forEach(element => {
-        if(element._id == incomingData._id){
-          alreadyExist =  "true";
-        }
-      });
-    }
-    else if(typeof incomingData == 'string'){
-      alreadyDataAddedlist.forEach(element => {
-        if(typeof element == 'string'){
-          if(element == incomingData){
-            alreadyExist =  "true";
-          }
-        }else{
-          if(element[primary_key] == incomingData){
-            alreadyExist =  "true";
-          }
-        }
-      
-      });
-    }else{
-      alreadyExist =  "false";
-    }
-    if(alreadyExist == "true"){
-      return true;
-    }else{
-      return false;
-    }
   }
 
   resetVariables(){

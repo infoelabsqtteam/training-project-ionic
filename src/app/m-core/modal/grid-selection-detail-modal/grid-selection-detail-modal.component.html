@@ -26,8 +26,7 @@
         </span>
         <span *ngIf="column.type.toLowerCase() == 'boolean'" class="editable-input-wrapper" >
           <ion-item >
-            <ion-checkbox [(ngModel)]="data[column.field_name]" [ngclass]="column.field_class" class="ion-margin-end"></ion-checkbox>
-            
+            <ion-checkbox [(ngModel)]="data[column.field_name]" [ngclass]="column.field_class" class="ion-margin-end" [disabled]="isDisable(column,data)" [disabled]="readonly"></ion-checkbox>            
           </ion-item>
         </span>
         

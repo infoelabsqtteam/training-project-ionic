@@ -4,7 +4,7 @@
         <ion-segment-button value="new" >
             <ion-label>All</ion-label>
         </ion-segment-button>
-        <ion-segment-button value="added">
+        <ion-segment-button value="added" *ngIf="!rejectedCustomers">
             <ion-label>Selected</ion-label>
         </ion-segment-button>
     </ion-segment>
@@ -22,13 +22,13 @@
                 </ion-item> -->
 
                 <ion-item class="contactlist ion-no-margin" lines="none" (click)="addremoveparticipant(data)">
-                    <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="getName(data.name) != ''" [innerHTML]="getFirstCharOfString(getName(data.name))"></span></ion-avatar>
+                    <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="getName(data) != ''" [innerHTML]="getFirstCharOfString(getName(data))"></span></ion-avatar>
                     
                     <ion-row class="ion-align-items-center inner_padding" >
                         <ion-col size="12" >
                             <div>
                                 <ion-item lines="none" class="">
-                                    <ion-label  class="value">{{getName(data.name)}}</ion-label>
+                                    <ion-label  class="value">{{getName(data)}}</ion-label>
                                 </ion-item>
                             </div>          
                         </ion-col> 
@@ -78,13 +78,13 @@
     <div *ngIf="selectedTab == 'added'" >
         <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of getSelectedData(); let i = index">
             <ion-item class="contactlist ion-no-margin" lines="none" (click)="addremoveparticipant(data)">
-                <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="getName(data.name)" [innerHTML]="getFirstCharOfString(getName(data.name))"></span></ion-avatar>
+                <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="getName(data)" [innerHTML]="getFirstCharOfString(getName(data))"></span></ion-avatar>
                 
                 <ion-row class="ion-align-items-center inner_padding" >
                     <ion-col size="12" >
                         <div>
                             <ion-item lines="none" class="">
-                                <ion-label  class="value">{{getName(data.name)}}</ion-label>
+                                <ion-label  class="value">{{getName(data)}}</ion-label>
                             </ion-item>
                         </div>          
                     </ion-col>  
