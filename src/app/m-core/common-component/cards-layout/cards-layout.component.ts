@@ -543,8 +543,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         "childData": this.gridData,
         "editedRowIndex": this.editedRowIndex,
         "addform" : form,
-        "formTypeName" : this.formTypeName
+        "formTypeName" : this.formTypeName,
       },
+      id: form._id,
       swipeToClose: true,
       showBackdrop:true,
       backdropDismiss:false,

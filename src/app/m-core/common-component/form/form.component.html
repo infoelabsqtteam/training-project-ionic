@@ -17,7 +17,18 @@
         </div>
         <div *ngIf="tableField.type == 'grid_selection'">
           <div>
-            <ion-button expand="" size="" fill="outline" (click)="setValue('',tableField)">{{ tableField.label }} <span [innerHtml]="getNumberOfSelectedRecord(tableField)"></span></ion-button>
+            <ion-item>
+              <ion-button expand="" size="small" fill="outline" (click)="setValue('',tableField)">{{ tableField.label }}   <span [innerHtml]="getNumberOfSelectedRecord(tableField)"></span></ion-button>
+
+              <ion-button expand="" size="small" fill="outline" [id]="tableField._id+'_'+tableField.field_name" *ngIf="tableField.add_new_enabled" (click)="addListOfFields(tableField)">
+                <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+              </ion-button>
+
+              <ion-button expand="" size="small" fill="outline" [id]="tableField._id+'_'+tableField.field_name" *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length > 0 && tableField.datatype == 'grid_review' && !tableField.is_disabled" (click)="reviewParameters(tableField,custmizedFormValue[tableField.field_name])">
+                <ion-icon slot="icon-only" name="information-outline"></ion-icon>
+              </ion-button>
+
+            </ion-item>
           </div>
         </div>
         <div *ngIf="tableField.type == 'file'" class="camera_file_upload">
@@ -112,16 +123,25 @@
           <ion-label>{{ tableField.label }}</ion-label>
         </div>
         <div *ngIf="tableField.type == 'typeahead'">
-          <div *ngIf="tableField.datatype != 'list_of_object'">
-            <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (change)="setValue('',tableField)">
-              <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
-            </ng-select>
-          </div>
           <div *ngIf="tableField.datatype == 'list_of_object'">
             <ng-select [multiple]="true" [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (change)="setValue('',tableField)">
               <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
             </ng-select>
           </div>
+          <div *ngIf="tableField.datatype == 'chips'">         
+            <ion-chip  *ngFor="let item of custmizedFormValueData('',tableField); let i = index">
+              <ion-label>{{getddnDisplayVal(item)}}</ion-label>
+              <ion-icon name="close-outline" (click)="openModal('confirm-modal',i,'',tableField,item,'delete')"></ion-icon>
+            </ion-chip>
+            <ng-select [class]="chips_field" #chipsInput [placeholder]="tableField.label" [bindLabel]="'name'" [bindValue]="name" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)"  (change)="setValue('',tableField,true,chipsInput)" [readonly]="readonly">
+              <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
+            </ng-select>          
+          </div>
+          <!-- <div *ngIf="tableField.datatype != 'list_of_object'">
+            <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (change)="setValue('',tableField)">
+              <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
+            </ng-select>
+          </div> -->
         </div>
         <div *ngIf="tableField.type == 'date'">
           <ion-item>
@@ -163,6 +183,7 @@
           <ion-input type="text" [formControlName]="tableField.field_name" (keyup.Space)= "setValue('',tableField,true,$event)"></ion-input>
           </ion-item>
         </div>
+
       </ion-col> 
     </ion-row>  
 

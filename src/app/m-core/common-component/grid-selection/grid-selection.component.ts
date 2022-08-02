@@ -395,11 +395,15 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   
   getName(object){
-    if(object && object.name){
-      return object.name;
-    }else{
-      return object;
-    }
+    let columns = this.field.gridColumns;
+    let field_name = columns[0].field_name;
+    let value = this.coreUtilityService.getObjectValue(field_name,object);
+    // if(object && object[this.field.gridColumns]){
+    //   return object[this.field.gridColumns];
+    // }else{
+    //   return object;
+    // }
+    return value;
   }
 
 }
