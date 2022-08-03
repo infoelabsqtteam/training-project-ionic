@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
@@ -29,6 +29,9 @@ interface User {
 })
 export class FormComponent implements OnInit, OnDestroy {
 
+  @Output() filledFormData = new EventEmitter();
+  @Output() addAndUpdateResponce = new EventEmitter();
+  @Output() formDetails = new EventEmitter();
   @Input() editedRowIndex: number;
   @Input() formName: string;
   @Input() childData: any;  
@@ -97,7 +100,10 @@ export class FormComponent implements OnInit, OnDestroy {
   typeaheadDataSubscription:any;
   fileDataSubscription:any;
   fileDownloadUrlSubscription:any;
- 
+  nextFormSubscription:any;
+  gridSelectionOpenOrNotSubscription:any;
+  isGridSelectionOpen: boolean = true;
+  deleteGridRowData: boolean = false;
 
   dateValue:any;
   public deleteIndex:any = '';
@@ -127,6 +133,13 @@ export class FormComponent implements OnInit, OnDestroy {
   previousFormFocusField:any = {};
   customEntryData:any={};
   public onchangeNextForm:boolean = false;
+  // for open next same form
+
+  focusFieldParent:any={};
+  currentForm_id = "";
+  chipsData:any;  
+  typeaheadObjectWithtext:any;
+  addedDataInList: any;
 
   constructor(
     public formBuilder: FormBuilder,
@@ -177,8 +190,25 @@ export class FormComponent implements OnInit, OnDestroy {
       // });
       this.userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       this.userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
-      
-    }
+
+      this.gridSelectionOpenOrNotSubscription = this.dataShareService.getIsGridSelectionOpen.subscribe(data =>{
+        this.isGridSelectionOpen= data;
+      })
+      this.nestedFormSubscription = this.dataShareService.nestedForm.subscribe(form => {
+        //console.log(form);
+        this.loadNextForm(form);
+      })
+      this.nextFormSubscription = this.dataShareService.nextFormData.subscribe(data => {
+        if(!this.enableNextButton && !this.onchangeNextForm && data && data.data && data.data.length > 0){
+          this.enableNextButton = true;
+          this.nextFormData = data.data[0];
+        }else if(this.onchangeNextForm && data && data.data && data.data.length > 0){
+          this.onchangeNextForm = false;        
+          this.nextFormData = data.data[0];
+          this.openNextForm(false);
+        }
+      })
+  }
 
   resetFlag(){
     this.createFormgroup = true;
@@ -206,6 +236,7 @@ export class FormComponent implements OnInit, OnDestroy {
     if(this.fileDownloadUrlSubscription){
       this.fileDownloadUrlSubscription.unsubscribe();
     }
+
   }
   
   ionViewWillLeave(){
@@ -216,6 +247,7 @@ export class FormComponent implements OnInit, OnDestroy {
     // this.unsubscribeVariabbles();
   }
   ngOnInit() {
+    // console.log("modal",this.modal)
     const id:any = this.commonDataShareService.getFormId();
     this.getNextFormById(id);
     this.handleDisabeIf();
@@ -383,7 +415,7 @@ export class FormComponent implements OnInit, OnDestroy {
         // if(this.envService.getRequestType() == 'PUBLIC'){
         //   this.complete_object_payload_mode = false;
         //   let _id = this.saveResponceData["_id"];
-        //   if(this.coreFunctionService.isNotBlank(this.form["details"]) && this.coreFunctionService.isNotBlank(this.form["details"]["on_success_url_key"] != "")){
+        //   if(this.commonFunctionService.isNotBlank(this.form["details"]) && this.commonFunctionService.isNotBlank(this.form["details"]["on_success_url_key"] != "")){
         //     let public_key = this.form["details"]["on_success_url_key"]
         //     const data = {
         //       "obj":public_key,
@@ -739,9 +771,55 @@ export class FormComponent implements OnInit, OnDestroy {
           this.close_form_on_success = true;
           this.saveFormData();
           break; 
-        default:
-          //this.partialDataSave(action_button.onclick,null)
-          break;
+          case "preview":
+            if(this.currentActionButton.onclick.action_name != ''){
+              this.currentMenu.name = this.currentActionButton.onclick.action_name;
+              this.selectedRow = this.saveResponceData;
+            }
+            this.previewModal(this.selectedRow,this.currentMenu,'form-preview-modal')
+            break;  
+          case "download_report":
+            // this.downloadReport();
+            break;
+          case "public_download_report":
+            // this.publicDownloadReport();
+            break;
+          case "reset":
+            this.createFormgroup = true;
+            this.getTableField = true;
+            this.pageLoading = true;
+            this.dataSaveInProgress = true;
+            this.ngOnInit();
+            break;
+          case "previous":        
+            this.previous();
+            break;
+          case "updateandnext":
+            this.saveFormData();
+            this.close_form_on_success = false;
+            this.nextIndex = true;
+            break;
+          case "cancel":
+            this.dismissModal();
+            break;
+          case "close":
+            this.close();
+            break;
+          case "send_email":
+            this.saveFormData();
+            break;
+          case "redirect_to_home_page":
+            this.router.navigate(['home_page'])
+            break;
+          case "add":
+            this.setListoffieldData();         
+            break;
+          case "delete_row":
+            // this.deleteGridData();
+            break; 
+          default:
+            // this.partialDataSave(action_button.onclick,null)
+            break;
       } 
     } 
   }
@@ -1115,10 +1193,13 @@ export class FormComponent implements OnInit, OnDestroy {
   }
   checkFormAfterCloseModel(){
     if(this.multipleFormCollection.length > 0){
-      //this.loadPreviousForm();
+      this.loadPreviousForm();
     }else{      
       this.templateForm.reset();
-      this.dismissModal();
+      // this.dismissModal();
+      this.addAndUpdateResponce.emit('close');
+      this.modal.dismiss();
+      this.templateForm.reset();
     }
   }
   checkOnSuccessAction(){
@@ -2179,7 +2260,6 @@ export class FormComponent implements OnInit, OnDestroy {
       case 'grid_selection_vertical':
         //----------------------this is for confirm modal to add or remove (form component confirm modal) when grid selection field is open.
         this.dataShareService.setIsGridSelectionOpenOrNot(false);
-        // -------------------------------
         this.curTreeViewField = field;
         this.currentTreeViewFieldParent = parentfield;
         if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
@@ -2776,8 +2856,36 @@ case 'populate_fields_for_report_for_new_order_flow':
 
   }
 
-  dismissModal(){
-    this.modal.dismiss({'dismissed': true});
+  async dismissModal(){
+    if(this.updateMode){      
+      Object.keys(this.custmizedFormValue).forEach(key => {
+        if(this.custmizedFormValue[key] != null && Array.isArray(this.custmizedFormValue[key])){
+          this.custmizedFormValue[key].forEach((element: any) => {
+            if(element.status == 'I'){
+              element.status = 'A';
+            }
+          });
+        }
+      });
+    }else{
+      this.custmizedFormValue = {};
+    }
+    this.resetForm();
+    //this.templateForm.reset();
+    //this.formGroupDirective.resetForm()
+    this.updateMode=false;
+    this.dataListForUpload = []
+    this.filePreviewFields = [];
+    this.copyStaticData = {};
+    this.apiService.resetStaticAllData();
+    // this.modal.dismiss();
+    // this.modal.dismiss(null, null, this.form._id);
+    // this.modal.dismiss{
+    //   "dissmised": true
+    // });
+    this.checkFormAfterCloseModel();
+    //this.commonFunctionService.resetStaticAllData();
+    
   }
 
   fileDrop: boolean = false;
@@ -3086,17 +3194,23 @@ case 'populate_fields_for_report_for_new_order_flow':
       "selectedData":selectedValue,
       "object": this.getFormValue(true),
       "formTypeName" : this.formTypeName,
+      
     }
     this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();
     if(this.samePageGridSelection){
       this.curTreeViewField = field;      
       this.samePageGridSelectionData = gridModalData;
-    }else{    
+    }else{ 
+      let i = 0;
+      if (i > 0) i++;
+    let formi_id = "string" + '' + i; 
+    if(i > 0)i++;
       const modal = await this.modalController.create({
         component: GridSelectionModalComponent,
         componentProps: {
           "Data": gridModalData,
         },
+        id: formi_id,
         swipeToClose: false
       });
       modal.componentProps.modal = modal;
@@ -3104,16 +3218,33 @@ case 'populate_fields_for_report_for_new_order_flow':
         .then((data) => {
           const object = data['data']; // Here's your selected user!
           if(object['data'] && object['data'].length > 0){
+            let obj =this.getSendData(data);
             this.gridSelectionResponce(object['data']);
           }        
       });
       return await modal.present();
     }
   }
+  getSendData(data){
+    let obj ={
+      "action":'',
+      "index":-1,
+      "data": data
+    }
+    return obj;
+  }
   gridSelectionResponce(responce){ 
 
+    if(this.curTreeViewField && this.curTreeViewField.add_new_enabled && responce && responce.action && responce.action == "edite"){
+      let index = responce.index;
+      if(this.samePageGridSelection){
+        this.samePageGridSelection = false;
+      }
+      this.updateListofFields(this.curTreeViewField,index);
+    }
+
     if (!this.custmizedFormValue[this.curTreeViewField.field_name]) this.custmizedFormValue[this.curTreeViewField.field_name] = [];
-    this.custmizedFormValue[this.curTreeViewField.field_name] = JSON.parse(JSON.stringify(responce));
+    this.custmizedFormValue[this.curTreeViewField.field_name] = JSON.parse(JSON.stringify(responce.data));
 
     if(this.curTreeViewField && this.curTreeViewField.onchange_function && this.curTreeViewField.onchange_function_param){
       // if(this.currentTreeViewFieldParent != ''){
@@ -3447,24 +3578,26 @@ case 'populate_fields_for_report_for_new_order_flow':
   convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
       const reader = new FileReader;
       reader.onerror = reject;
-      reader.onload = () => {
-        let base64 = (<string>reader.result).split(',').pop();
-          resolve(base64);
-      };
+      //need to uncomment below code
+      // reader.onload = () => {
+      //   let base64 = (<string>reader.result).split(',').pop();
+      //     resolve(base64);
+      // }
       reader.readAsDataURL(blob);
   });
+
   //delecte selected image
-  deleteImage(index) {
+  deleteImage(index:number) {
     // this.cameraService.deleteImage(index).subscribe(res => {
     //   this.images.splice(index, 1);
     // });
     this.selectedphotos.splice(index, 1);
     this.cameraService.presentToast('File removed.');
   }
-  removeAttachedDataFromList(index,fieldName){
+  removeAttachedDataFromList(index:number,fieldName:any){
     this.dataListForUpload[fieldName].splice(index,1)
   }
-  imageDownload(img) {    
+  imageDownload(img:any) {
     this.downloadClick = img.rollName;
     const payload = {
       path: 'download',
@@ -3519,15 +3652,6 @@ case 'populate_fields_for_report_for_new_order_flow':
     }
   }
 
-  // convertUtcToLocalString(val : Date) : string {        
-  //   var d = new Date(val); // val is in UTC
-  //   var localOffset = d.getTimezoneOffset() * 60000;
-  //   var localTime = d.getTime() - localOffset;
-
-  //   d.setTime(localTime);
-  //   return this.formatDate(d);
-  // }
-
   convertUtcToLocalDate(val : Date) : Date {        
       var d = new Date(val); // val is in UTC
       var localOffset = d.getTimezoneOffset() * 60000;
@@ -3545,6 +3669,269 @@ case 'populate_fields_for_report_for_new_order_flow':
       d.setTime(utcTime);
       console.log("D :", d);
       return d;
+  }
+  // open same form on form component
+  addListOfFields(field){
+    this.storeFormDetails("",field);
+  }
+  updateListofFields(field,index){    
+    this.storeFormDetails("",field,index); 
+  }
+  nextForm(){
+    if(this.nextFormData && this.nextFormData.formName){
+      this.openNextForm(true);
+      this.enableNextButton = false;
+    }    
+  }
+  openNextForm(next) {
+    const form = this.nextFormData.formName;
+    const field_name = this.nextFormData.field_name;
+    const form_field_name = this.nextFormData.form_field_name;
+    const field = {
+      'add_new_form': form,
+      'add_next_form_button': next,
+      'field_name': field_name,
+      'type': 'hidden',
+      'form_field_name': form_field_name,
+      'form_value_index' : 0,
+      'moveFieldsToNewForm' : ['employee_name#add_assignments.resource_name']
+    };
+    this.storeFormDetails('', field);
+  }
+ 
+  loadPreviousForm(){
+    const lastIndex = this.multipleFormCollection.length - 1;
+    const formCollecition = this.multipleFormCollection[lastIndex];
+    this.form = formCollecition['form'];
+    this.modal.id = this.form._id;
+    this.resetFlagsForNewForm();
+    const data = formCollecition['data'];
+    //console.log(data);
+
+    this.updateMode = formCollecition['updateMode'];
+    if(this.updateMode || this.complete_object_payload_mode){
+      this.selectedRow = data;
+    }
+    this.setForm();
+    this.updateDataOnFormField(data);
+    this.getStaticDataWithDependentData();
+    this.currentMenu['name'] = formCollecition['collection_name'];
+    this.previousFormFocusField = formCollecition['current_field']; 
+
+    this.focusFieldParent = formCollecition['parent_field'];
+  
+    if(this.previousFormFocusField && this.previousFormFocusField['add_next_form_button']){
+      this.enableNextButton = true;
+    }else{
+      this.enableNextButton = false;
+    }
+    let nextFormData ={};
+    if(formCollecition && formCollecition['next_form_data'] && formCollecition['next_form_data']['form']){
+      nextFormData = formCollecition['next_form_data']['form']; 
+    }
+    let previousFormFocusFieldValue = '';
+    if(this.commonFunctionService.isNotBlank(this.previousFormFocusField.add_new_target_field)){
+      previousFormFocusFieldValue = nextFormData[this.previousFormFocusField.add_new_target_field];
+    }
+    const parentfield = formCollecition['parent_field'];
+    if(!this.previousFormFocusField.multi_select && this.previousFormFocusField.type != 'list_of_fields' && this.previousFormFocusField.type != 'hidden'){
+      if(parentfield != ''){
+        this.templateForm.get(parentfield.field_name).get(this.previousFormFocusField.field_name).setValue(previousFormFocusFieldValue)
+        //(<FormGroup>this.templateForm.controls[parentfield.field_name]).controls[this.previousFormFocusField.field_name].patchValue(previousFormFocusFieldValue);       
+      }else{      
+        this.templateForm.get(this.previousFormFocusField.field_name).setValue(previousFormFocusFieldValue);
+      } 
+    } 
+    if(this.previousFormFocusField.type == 'list_of_fields'){
+      // this.previousFormFocusField = {};
+    }  
+    switch (formCollecition['current_field'].type) {
+      case "typeahead":
+        this.callTypeaheadData(formCollecition['current_field'],this.getFormValue(false));
+        break;
+      default:
+        break;
+    }
+    
+    this.multipleFormCollection.splice(lastIndex,1);    
+  }
+
+  candelForm() {    
+    if(this.updateMode){      
+      Object.keys(this.custmizedFormValue).forEach(key => {
+        if(this.custmizedFormValue[key] != null){
+          this.custmizedFormValue[key].forEach(element => {
+            if(element.status == 'I'){
+              element.status = 'A';
+            }
+          });
+        }
+      });
+    }else{
+      this.custmizedFormValue = {};
+    }
+    this.updateMode=false;
+    this.addAndUpdateResponce.emit('close');    
+  }
+  previous(){
+    const previousIndex = this.selectedRowIndex - 1;
+    if(previousIndex != -1){
+      this.selectedRowIndex = previousIndex;
+      this.editedRowData(this.elements[previousIndex]);
+    }else{
+      this.notificationService.showAlert('Previous Index are not available.', "",['Ok'])
+    }
+  }
+  next(){
+    const nextIndex = this.selectedRowIndex + 1;
+    if(nextIndex < this.elements.length){
+      this.selectedRowIndex = nextIndex;
+      this.editedRowData(this.elements[nextIndex]);
+    }else{
+      this.notificationService.showAlert('Next Index are not available.', "",['Ok'])
+    }
+  }
+  previewModal(gridData:any, currentMenu:any, modalId:any) {
+    const getpreviewHtml = {
+      _id: gridData._id,
+      data: this.restService.getPaylodWithCriteria(currentMenu.name, '', [], '')
+    }
+    this.apiService.GetPreviewHtml(getpreviewHtml);
+    const alertData = {
+      gridData: gridData,
+      currentPage: currentMenu.name
+    }
+    // this.modalService.open(modalId, alertData);
+  }
+  preview(gridData:any, currentMenu:any, modalId:any) {
+    const getpreviewHtml = {
+      _id: gridData._id,
+      data: this.restService.getPaylodWithCriteria(currentMenu.name, '', [], '')
+    }
+    getpreviewHtml.data['data'] = gridData;
+    this.apiService.GetPreviewHtml(getpreviewHtml);
+  }
+  setListoffieldData(){
+    const previousFormIndex = this.multipleFormCollection.length - 1;
+    const previousFormCollection = this.multipleFormCollection[previousFormIndex];
+    const previousFormField = previousFormCollection.current_field;
+    // const currentFormValue = this.getFormValue(true)
+    const currentFormValue = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(true),false);
+    this.updateMode = false;
+    const fieldName = previousFormField.field_name;
+    delete currentFormValue[fieldName];    
+    const previousformData = previousFormCollection.data;
+    if(previousFormField && previousFormField.type){
+      switch (previousFormField.type) {
+        case 'list_of_fields':
+        case 'grid_selection':
+          let fieldData = previousformData[fieldName]
+          let index = previousFormCollection['index'];
+          if(this.commonFunctionService.isArray(fieldData)){
+            if(index != undefined && index >= 0){
+              fieldData[index] = currentFormValue;
+            }else{
+              currentFormValue['customEntry']=true; 
+              fieldData.push(currentFormValue);
+            }
+          }else{
+            fieldData = [];
+            currentFormValue['customEntry']=true;
+            fieldData.push(currentFormValue);
+          }     
+          
+          if(index != undefined && index >= 0){
+            this.custmizedFormValue = {};
+            this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(fieldData));
+            previousformData[fieldName] = this.custmizedFormValue[fieldName];
+            this.multipleFormCollection[previousFormIndex]['data'] = previousformData; 
+            this.nextFormUpdateMode = false;
+            this.close();
+          }else{
+            this.donotResetField();
+            this.custmizedFormValue = {};
+            this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(fieldData));
+            previousformData[fieldName] = this.custmizedFormValue[fieldName];
+            this.multipleFormCollection[previousFormIndex]['data'] = previousformData; 
+
+            
+            this.templateForm.reset()
+            if(Object.keys(this.donotResetFieldLists).length > 0){
+              this.updateDataOnFormField(this.donotResetFieldLists);
+              this.donotResetFieldLists = {};
+            }
+
+          }
+          break;      
+        default:
+          break;
+      }      
+    }else{
+      previousformData[fieldName] = currentFormValue;
+      if(!this.enableNextButton){
+        this.enableNextButton = true;
+      }
+      this.multipleFormCollection[previousFormIndex]['data'] = previousformData; 
+      this.close();
+    } 
+  }
+  donotResetField(){
+    //let FormValue = this.templateForm.getRawValue();
+    let FormValue = this.getFormValue(true);
+    this.tableFields.forEach(tablefield => {
+      if(tablefield.do_not_refresh_on_add && tablefield.type != "list_of_fields" && tablefield.type != "group_of_fields" && tablefield.type != "stepper"){
+        this.donotResetFieldLists[tablefield.field_name] = FormValue[tablefield.field_name];
+      }else if(tablefield.type == "group_of_fields"){
+        if(tablefield.list_of_fields && tablefield.list_of_fields.length > 0){
+          tablefield.list_of_fields.forEach(field => {
+            if(field.do_not_refresh_on_add){
+              this.donotResetFieldLists[tablefield.field_name][field.field_name] = FormValue[tablefield.field_name][field.field_name];
+            }
+          });
+        }
+      }else if(tablefield.type == "stepper"){
+        if(tablefield.list_of_fields && tablefield.list_of_fields.length > 0){
+          tablefield.list_of_fields.forEach(step => {
+            if(step.list_of_fields && step.list_of_fields.length > 0){
+              step.list_of_fields.forEach(field => {
+                if(field.do_not_refresh_on_add){
+                  this.donotResetFieldLists[step.field_name][field.field_name] = FormValue[step.field_name][field.field_name];
+                }
+              });
+            }
+          });
+        }
+      }
+    });
+  }
+
+  searchTypeaheadData(field, currentObject,chipsInputValue) {
+    this.typeaheadObjectWithtext = currentObject;
+
+    this.addedDataInList = this.typeaheadObjectWithtext[field.field_name]
+
+    this.typeaheadObjectWithtext[field.field_name] = chipsInputValue.target.value;
+
+    let call_back_field = '';
+    let criteria = [];
+    const staticModal = []
+    if (field.call_back_field && field.call_back_field != '') {
+      call_back_field = field.call_back_field;
+    }
+    if(field.api_params_criteria && field.api_params_criteria != ''){
+      criteria =  field.api_params_criteria;
+    }
+    let staticModalGroup = this.restService.getPaylodWithCriteria(field.api_params, call_back_field, criteria, this.typeaheadObjectWithtext ? this.typeaheadObjectWithtext : {});
+    staticModal.push(staticModalGroup);
+    this.apiService.GetTypeaheadData(staticModal);
+
+    this.typeaheadObjectWithtext[field.field_name] = this.addedDataInList;
+  }
+
+  
+  removeItem(data:any,column:any,i:number){
+    data[column.field_name].splice(i,1);
+    return data[column.field_name];
   }
 
 }
