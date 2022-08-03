@@ -75,12 +75,14 @@
             <ion-label position="floating">{{ tableField.label }}</ion-label>
             <ion-select [selectedText]="templateForm.get(tableField.field_name).value" [formControlName]="tableField.field_name" (ionChange)="setValue('',tableField)">
               <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
+              <ion-select-option *ngIf="tableField.add_new_enabled" [value]="{'_id':'tests','value':'add_new'}">+ Add New</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item *ngIf="tableField.datatype == 'object'">
             <ion-label position="floating">{{ tableField.label }}</ion-label>
             <ion-select [selectedText]="getddnDisplayVal(templateForm.get(tableField.field_name).value)" [formControlName]="tableField.field_name" [compareWith]="compareFn" (ionChange)="setValue('',tableField)">
               <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
+              <ion-select-option *ngIf="tableField.add_new_enabled" [value]="{'_id':'tests','value':'add_new'}">+ Add New</ion-select-option>
             </ion-select>
           </ion-item>
         </div>
