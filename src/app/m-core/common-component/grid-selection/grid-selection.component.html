@@ -1,10 +1,10 @@
 
 <div class="pages" *ngIf="formName == 'default'">
-    <ion-segment class="grid_selection_tab" ngDefaultControl [(ngModel)]="selectedTab" color="appcolor" (ionChange)="segmentChanged($event)">
+    <ion-segment class="grid_selection_tab" ngDefaultControl [(ngModel)]="selectedTab" color="appcolor" >
         <ion-segment-button value="new" >
             <ion-label>All</ion-label>
         </ion-segment-button>
-        <ion-segment-button value="added" *ngIf="!rejectedCustomers">
+        <ion-segment-button value="added">
             <ion-label>Selected</ion-label>
         </ion-segment-button>
     </ion-segment>
@@ -53,7 +53,10 @@
                     </ion-buttons>
                 </ion-item>
                 <ion-item-options side="end">
-                  <ion-item-option color="danger" class="card-border-radius" expandable (click)="delete(i)" [disabled]="isDisable(field,data)">
+                    <ion-item-option color="medium" class="" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="edite(i)">
+                        <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+                      </ion-item-option>
+                  <ion-item-option color="danger" class="card-border-radius" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="delete(i)">
                     <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
                   </ion-item-option>
                 </ion-item-options>
