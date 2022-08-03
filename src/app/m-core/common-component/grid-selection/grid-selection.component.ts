@@ -211,15 +211,23 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
     return check;
   }
+  checkRowDisabledIf(field,index){
+    const data = this.Data.selectedData[index];
+    const condition = field.disableRowIf;
+    if(condition){
+      return !this.coreFunctionService.checkDisableRowIf(condition,data);
+    }
+    return true;    
+  }
   calculateNetAmount(data, fieldName, index){
 
     this.coreFunctionService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
   }
 
   async addremoveparticipant(data,index){
-    if(this.field && this.field.add_new_enabled){
-      this.edite(index);
-    }else{
+    // if(this.field && this.field.add_new_enabled){
+    //   this.edite(index);
+    // }else{
       const modal = await this.modalController.create({
         component: GridSelectionDetailModalComponent,
         componentProps: {
@@ -242,7 +250,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
           }                 
       });
       return await modal.present();
-    }
+    // }
   }
   
   toggle(data:any,event:any, indx:any) {
@@ -331,5 +339,4 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
     return obj;
   }
-
 }

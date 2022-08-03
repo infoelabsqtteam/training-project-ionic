@@ -104,6 +104,7 @@ export class FormComponent implements OnInit, OnDestroy {
   gridSelectionOpenOrNotSubscription:any;
   isGridSelectionOpen: boolean = true;
   deleteGridRowData: boolean = false;
+  clickFieldName:any={};
 
   dateValue:any;
   public deleteIndex:any = '';
@@ -128,6 +129,7 @@ export class FormComponent implements OnInit, OnDestroy {
   chipsData:any;  
   typeaheadObjectWithtext:any;
   addedDataInList: any;
+  readonly:boolean = false;
 
   constructor(
     public formBuilder: FormBuilder,
@@ -2554,31 +2556,32 @@ case 'populate_fields_for_report_for_new_order_flow':
     // }
     // this.curFileUploadField = {};
   }
-  isDisable(parent,chield){
-    const  formValue = this.getFormValue(true); 
-    let tobedesabled;
-    if(parent == ''){
-      tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
-      if(tobedesabled){
-        if(!this.templateForm.get(chield.field_name).disabled){
-          this.templateForm.get(chield.field_name).disable()
-        }        
-      }else{
-        if(this.templateForm.get(chield.field_name).disabled){
-          this.templateForm.get(chield.field_name).enable()
-        }        
-      }
-    }else{
-      tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
-      if(tobedesabled){
-        this.templateForm.get(parent).get(chield.field_name).disable()
-      }else{
-        this.templateForm.get(parent).get(chield.field_name).enable()
-      }
-    }   
+  // isDisable(parent,chield){
+  //   const  formValue = this.getFormValue(true); 
+  //   let tobedesabled;
+  //   if(parent == ''){
+  //     tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
+  //     if(tobedesabled){
+  //       if(!this.templateForm.get(chield.field_name).disabled){
+  //         this.templateForm.get(chield.field_name).disable()
+  //       }        
+  //     }else{
+  //       if(this.templateForm.get(chield.field_name).disabled){
+  //         this.templateForm.get(chield.field_name).enable()
+  //       }        
+  //     }
+  //   }else{
+  //     tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
+  //     if(tobedesabled){
+  //       this.templateForm.get(parent).get(chield.field_name).disable()
+  //     }else{
+  //       this.templateForm.get(parent).get(chield.field_name).enable()
+  //     }
+  //   }   
         
-    return tobedesabled;
-  }
+  //   return tobedesabled;
+  // }
+
   handleDisabeIf(){
     // if(this.checkFormFieldAutfocus && this.tableFields.length > 0){
     //   if(this.previousFormFocusField && this.previousFormFocusField._id){
@@ -2721,17 +2724,12 @@ case 'populate_fields_for_report_for_new_order_flow':
     if(this.samePageGridSelection){
       this.curTreeViewField = field;      
       this.samePageGridSelectionData = gridModalData;
-    }else{ 
-      let i = 0;
-      if (i > 0) i++;
-    let formi_id = "string" + '' + i; 
-    if(i > 0)i++;
+    }else{
       const modal = await this.modalController.create({
         component: GridSelectionModalComponent,
         componentProps: {
           "Data": gridModalData,
         },
-        id: formi_id,
         swipeToClose: false
       });
       modal.componentProps.modal = modal;
@@ -3743,5 +3741,71 @@ case 'populate_fields_for_report_for_new_order_flow':
     data[column.field_name].splice(i,1);
     return data[column.field_name];
   }
+
+  isDisable(field, object) {
+    const updateMode = false;
+    let disabledrow = false;
+    if (field.is_disabled) {
+      return true;
+    } 
+    if(this.tableFields.disableRowIf && this.tableFields.disableRowIf != ''){
+      disabledrow = this.checkRowIf(object);
+    }
+    if(disabledrow){
+      this.readonly = true;
+      return true;
+    }
+    if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
+      return this.commonFunctionService.isDisable(field.etc_fields, updateMode, object);
+    }   
+    return false;
+  }
+  checkRowIf(data:any){
+    let check = false;
+    if(data.selected){
+      let condition = '';
+      if(this.tableFields.disableRowIf && this.tableFields.disableRowIf != ''){
+        condition = this.tableFields.disableRowIf;
+      }
+      if(condition != ''){
+        if(this.commonFunctionService.checkDisableRowIf(condition,data)){
+          check = true;
+        }else{
+          check = false;
+        }
+      }
+    }
+    return check;
+  }
+  checkRowDisabledIf(field,index){
+    const data = this.commonFunctionService[field.field_name];
+    const condition = field.disableRowIf;
+    if(condition){
+      return !this.commonFunctionService.checkDisableRowIf(condition,data);
+    }
+    return true;    
+  }
+  reviewParameters(fields,data){
+    this.clickFieldName=fields;
+    let value={};
+    value['data'] = JSON.parse(JSON.stringify(data));
+    value['gridColumns']=fields.gridColumns;
+    const editemode = true;    
+    // this.viewModal('form_basic-modal', value, fields,editemode); 
+    if (!this.custmizedFormValue[fields.field_name]) this.custmizedFormValue[fields.field_name] = [];
+    let selectedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[fields.field_name]))
+    const gridModalData = {
+      "field": fields,
+      "selectedData":selectedValue,
+      "object": this.getFormValue(true),
+      "formTypeName" : this.formTypeName,
+      
+    }
+    this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();
+    if(this.samePageGridSelection){
+      this.curTreeViewField = fields;      
+      this.samePageGridSelectionData = gridModalData;
+    }
+  } 
 
 }

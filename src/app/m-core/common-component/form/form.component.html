@@ -17,13 +17,9 @@
         </div>
         <div *ngIf="tableField.type == 'grid_selection'">
           <div>
-            <ion-item>
+            <ion-item *ngIf="tableField.add_list_field != 'add'">
               <ion-button expand="" size="small" fill="outline">{{ tableField.label }}  
-                <span *ngIf="tableField.add_list_field != 'add' " (click)="setValue('',tableField)" style="    bottom: 0;
-                top: 0;
-                position: absolute;
-                left: 0;
-                right: 0;"></span> 
+                <span *ngIf="tableField.add_list_field != 'add' " (click)="setValue('',tableField)" class="click_button_mask"></span> 
                 <span *ngIf="tableField.add_list_field != 'add' " [innerHtml]="getNumberOfSelectedRecord(tableField)"></span>
               </ion-button>
 
@@ -144,11 +140,11 @@
               <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
             </ng-select>          
           </div>
-          <!-- <div *ngIf="tableField.datatype != 'list_of_object'">
+          <div *ngIf="tableField.datatype != 'list_of_object' && tableField.datatype != 'chips'">
             <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)" (change)="setValue('',tableField)">
               <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
             </ng-select>
-          </div> -->
+          </div>
         </div>
         <div *ngIf="tableField.type == 'date'">
           <ion-item>
