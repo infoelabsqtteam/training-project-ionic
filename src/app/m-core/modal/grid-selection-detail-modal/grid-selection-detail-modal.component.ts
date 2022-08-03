@@ -93,7 +93,11 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
   }
   updateModeRejectedGridReadOnly(){
-    if(this.data && !this.data.selected && this.data.rejectedCustomers){
+    if(this.data && this.data.approvedStatus == "Approved" && !this.data.rejectedCustomers){
+      this.readonly = true;
+    }else if(this.data && this.data.rejectedCustomers){
+      this.readonly = true;
+    }else if(this.data && this.data.selected){
       this.readonly = true;
     }
   }
