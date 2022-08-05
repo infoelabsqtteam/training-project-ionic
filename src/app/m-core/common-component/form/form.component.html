@@ -95,7 +95,11 @@
         <div *ngIf="tableField.type == 'number'">
           <ion-item>
             <ion-label position="floating">{{ tableField.label }}</ion-label>
-            <ion-input type="number" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc(tableField)"></ion-input>
+            <ion-input type="number" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc(tableField)" [id]="tableField._id+'_'+tableField.field_name"></ion-input>
+
+            <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
+            <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('max')">Maximum of {{ tableField.max_length }} characters</ion-note>
+            <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('minlength')">Minimum of {{ tableField.min_length }} characters</ion-note>
           </ion-item>
         </div>
         <div *ngIf="tableField.type == 'email'">
@@ -185,8 +189,9 @@
             <ion-label>{{getddnDisplayVal(item)}}</ion-label>
             <ion-icon name="close-outline" (click)="openModal('confirm-modal',i,'',tableField,item,'delete')"></ion-icon>
           </ion-chip>
-          <ion-input type="text" [formControlName]="tableField.field_name" (keyup.Space)= "setValue('',tableField,true,$event)"></ion-input>
+          <ion-input type="text" [formControlName]="tableField.field_name" (keyup.enter)= "setValue('',tableField,true,$event)"></ion-input>
           </ion-item>
+
         </div>
 
       </ion-col> 

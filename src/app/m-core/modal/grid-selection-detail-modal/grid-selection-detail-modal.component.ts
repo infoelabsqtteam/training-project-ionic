@@ -97,7 +97,9 @@ export class GridSelectionDetailModalComponent implements OnInit {
       this.readonly = true;
     }else if(this.data && this.data.rejectedCustomers){
       this.readonly = true;
-    }else if(this.data && this.data.selected){
+    }else if(this.data && this.data.selected && !this.data.rejectedCustomers){
+      this.readonly = true;
+    }else{
       this.readonly = true;
     }
   }
