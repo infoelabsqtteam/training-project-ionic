@@ -1,15 +1,12 @@
 <ion-app>
     <ion-menu side="start" menuId="custom" contentId="main" *ngIf="userInfo">
         <ion-content class="sidenav">
-          <div class="sidebarheader">
-                <ion-menu-toggle><ion-button (click)="onLogout()"><ion-icon name="power-outline"></ion-icon></ion-button></ion-menu-toggle>
-                <div class="headerprofile">
-                    <ion-avatar><img src="https://ionicframework.com/docs/demos/api/avatar/avatar.svg"/></ion-avatar>
-                    <ion-title class="ion-text-uppercase">
-                        <p style="margin:0;"> {{userInfo.name}}</p>
-                       <small> {{userInfo.email}}</small>
-                    </ion-title>
+            <div class="sidebarheader">
+                <div class="profilpic"><ion-icon name="person-circle-outline"></ion-icon></div>
+                <div class="prifiledetails">
+                    <h4 style="margin:0">{{userInfo.name}}</h4><small>{{userInfo.email}}</small>
                 </div>
+                <ion-menu-toggle (click)="onLogout()"><ion-icon name="power-outline"></ion-icon></ion-menu-toggle>
             </div>
             <ion-list class="menulist">
                 <ion-menu-toggle>
@@ -18,51 +15,24 @@
                         <ion-label class="ion-margin-start">Home</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
-                <!-- <ion-menu-toggle>
-                    <ion-item lines="none" [routerLink]="['/auth/changepwd']">
-                        <ion-icon name="key-outline"></ion-icon>
-                        <ion-label class="ion-margin-start">Change Password</ion-label>
-                    </ion-item>
-                </ion-menu-toggle>
-                <!-- <ion-menu-toggle>
-                    <ion-item lines="none" [routerLink]="['charts']">
-                        <ion-icon name="bar-chart-outline"></ion-icon>
-                        <ion-label class="ion-margin-start">Charts</ion-label>
-                    </ion-item>
-                </ion-menu-toggle> -->
-                <!-- <ion-menu-toggle>
-                    <ion-item lines="none" [routerLink]="['/track-location']">
-                        <ion-icon name="navigate"></ion-icon>
-                        <ion-label class="ion-margin-start">Track Me</ion-label>
-                    </ion-item>
-                </ion-menu-toggle> -->
-                <!-- <ion-menu-toggle>
-                    <ion-item lines="none" [routerLink]="['image-upload']">
-                        <ion-icon name="camera-outline"></ion-icon>
-                        <ion-label class="ion-margin-start">Camera</ion-label>
-                    </ion-item>
-                </ion-menu-toggle> -->
                 <ion-menu-toggle auto-hide="false">
-                    <ion-item lines="none"  *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" lines="none"
-                    detail="false" [class.selected]="selectedIndex == i" [ngClass]="cardItem.sidebar_menu?'ion-show':'ion-hide'">
-                        <ion-icon name="return-down-forward-outline"></ion-icon>
+                    <ion-item lines="none" *ngFor="let cardItem of cardList; let i = index"
+                        (click)="showCardTemplate(cardItem, i)" lines="none" detail="false"
+                        [class.selected]="selectedIndex == i" [ngClass]="cardItem.sidebar_menu?'ion-show':'ion-hide'">
+                        <ion-avatar slot="start"><img [src]="cardItem.image_src"></ion-avatar>
                         <ion-label class="ion-margin-start">{{cardItem.name}}</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
-                
             </ion-list>
-
-            <div class="sidenavfooter">
-            <ion-footer class="ion-no-border menu-footer">
+            <ion-footer>
                 <div class="socialgroup">
-                  <ion-icon name="logo-linkedin"></ion-icon>
-                  <ion-icon name="logo-facebook"></ion-icon>
-                  <ion-icon name="logo-twitter"></ion-icon>
-                  <ion-icon name="logo-instagram"></ion-icon>
+                    <ion-icon name="logo-linkedin"></ion-icon>
+                    <ion-icon name="logo-facebook"></ion-icon>
+                    <ion-icon name="logo-twitter"></ion-icon>
+                    <ion-icon name="logo-instagram"></ion-icon>
                 </div>
                 <ion-note class="icon-row"> {{app_Version}} </ion-note>
             </ion-footer>
-            </div>
         </ion-content>
     </ion-menu>
     <ion-router-outlet main id="main"></ion-router-outlet>
