@@ -169,12 +169,15 @@ export class FormComponent implements OnInit, OnDestroy {
         this.setDinamicForm(form);
       });
       this.nestedFormSubscription = this.dataShareService.nestedForm.subscribe(form => {
-        //console.log(form);
-        this.form = form;
-        this.resetFlag();
-        this.setForm();
-        if(this.editedRowIndex >= 0 ){
-          this.editedRowData(this.childData);
+        if(this.multipleFormCollection && this.multipleFormCollection.length > 0){
+          this.loadNextForm(form);
+        }else{
+          this.form = form;
+          this.resetFlag();
+          this.setForm();
+          if(this.editedRowIndex >= 0 ){
+            this.editedRowData(this.childData);
+          }
         }
       });
       this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
@@ -186,19 +189,11 @@ export class FormComponent implements OnInit, OnDestroy {
       this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
         this.setFileDownloadUrl(data);
       });
-      
-      // this.samePageGridSelectionData = this.dataShareService.gridSelectionCheck.subscribe(data =>{
-      //   this.samePageGridSelection = data;
-      // });
       this.userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       this.userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
 
       this.gridSelectionOpenOrNotSubscription = this.dataShareService.getIsGridSelectionOpen.subscribe(data =>{
         this.isGridSelectionOpen= data;
-      })
-      this.nestedFormSubscription = this.dataShareService.nestedForm.subscribe(form => {
-        //console.log(form);
-        this.loadNextForm(form);
       })
       this.nextFormSubscription = this.dataShareService.nextFormData.subscribe(data => {
         if(!this.enableNextButton && !this.onchangeNextForm && data && data.data && data.data.length > 0){
@@ -249,7 +244,6 @@ export class FormComponent implements OnInit, OnDestroy {
     // this.unsubscribeVariabbles();
   }
   ngOnInit() {
-    // console.log("modal",this.modal)
     const id:any = this.commonDataShareService.getFormId();
     this.getNextFormById(id);
     this.handleDisabeIf();
@@ -1839,7 +1833,7 @@ export class FormComponent implements OnInit, OnDestroy {
     return fileName;
   }
 
-  setValue(parentfield,field, add, event?) {
+  setValue(parentfield:any,field:any, add?:any, event?:any) {
     let formValue = this.templateForm.getRawValue()    
     switch (field.type) {
       case "list_of_string":
@@ -2272,6 +2266,7 @@ export class FormComponent implements OnInit, OnDestroy {
           "object": this.getFormValue(true)
         }
         //this.modalService.open('grid-selection-modal', gridModalData);
+        this.openGridSelectionModal(field);
         break;
       default:
         break;
@@ -2425,13 +2420,13 @@ export class FormComponent implements OnInit, OnDestroy {
           let key = sourceTarget[0];
           let valueField = sourceTarget[1];
           let formValue = {};
-          // if(field && field.form_value_index >= 0 && this.multipleFormCollection.length >= 1){
-          //   const storeFormData = this.multipleFormCollection[field.form_value_index];
-          //   const formData = storeFormData['form_value'];            
-          //   formValue = formData;            
-          // }else{
-          //   formValue = this.getFormValue(false)
-          // }
+          if(field && field.form_value_index >= 0 && this.multipleFormCollection.length >= 1){
+            const storeFormData = this.multipleFormCollection[field.form_value_index];
+            const formData = storeFormData['form_value'];            
+            formValue = formData;            
+          }else{
+            formValue = this.getFormValue(false)
+          }
           let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
           formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(false));
           let value = this.commonFunctionService.getObjectValue(valueField,formValue);
@@ -2581,6 +2576,8 @@ export class FormComponent implements OnInit, OnDestroy {
     }
     if(this.editedRowIndex >= 0){
       this.getStaticDataWithDependentData();
+      // this.updateDataOnFormField(this.childData);
+      // this.editedRowData(this.childData);
     }
     if(nextFormData && nextFormData['next_form_data'] && nextFormData['next_form_data']['updataModeInPopupType']){
       this.editedRowData(fData);
@@ -3671,6 +3668,9 @@ case 'populate_fields_for_report_for_new_order_flow':
   // open same form on form component
   addListOfFields(field){
     this.storeFormDetails("",field);
+    if(this.samePageGridSelection){
+      this.samePageGridSelection = false;
+    }
   }
   updateListofFields(field,index){    
     this.storeFormDetails("",field,index); 
