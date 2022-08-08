@@ -47,7 +47,6 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     private apiService:ApiService,
     private notificationService:NotificationService,
     private dataShareService:DataShareService,
-    private coreUtilityService:CoreUtilityService,
     private storageService: StorageService,
     private alertController: AlertController
   ) { }
@@ -306,13 +305,13 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
   }
   getFirstCharOfString(char:any){
-    return this.coreUtilityService.getFirstCharOfString(char);
+    return this.coreFunctionService.getFirstCharOfString(char);
   }
   
   getName(object:any){
     let columns = this.field.gridColumns;
     let field_name = columns[0].field_name;
-    let value = this.coreUtilityService.getObjectValue(field_name,object);
+    let value = this.coreFunctionService.getObjectValue(field_name,object);
     return value;
   }
 
