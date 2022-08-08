@@ -1,9 +1,7 @@
 <ion-header>
     <ion-toolbar>
         <ion-buttons slot="start">
-            <ion-menu-button>
-                <img src="assets/img/icons/menu.svg">
-            </ion-menu-button>
+            <ion-menu-button><img src="assets/img/icons/menu.svg"></ion-menu-button>
         </ion-buttons>
         <ion-searchbar [(ngModel)]="myInput" (ionChange)="search()"></ion-searchbar>
         <ion-buttons slot="end" (click)="comingSoon()"><img src="assets/img/icons/bell-Bold.svg"></ion-buttons>
@@ -13,18 +11,26 @@
 
 <ion-content class="pages">
     <!-- <div class="banner">
-        <swiper [slidesPerView]="3" [spaceBetween]="8" [autoplay]="true" [loop]="true" [centeredSlides]="true" class="mySwiper">
-            <ng-template swiperSlide *ngFor="let banner of banner_img"><div class="slideshow"><img  [src]="banner"></div></ng-template>
+        <swiper [slidesPerView]="1" [pagination]="true" [spaceBetween]="0" [autoplay]="true" [loop]="true" [centeredSlides]="true" class="mySwiper">
+            <ng-template swiperSlide *ngFor="let banner of banner_img"><img  [src]="banner"></ng-template>
         </swiper>
     </div> -->
+
     <div class="banner">
-    <ion-slides >
-        <ion-slide swiperSlide *ngFor="let banner of banner_img"><div class="slideshow"><img  [src]="banner"></div>
-            <!-- <ng-template swiperSlide *ngFor="let banner of banner_img"><div class="slideshow"><img  [src]="banner"></div></ng-template> -->
-        </ion-slide>
-      </ion-slides>
+        <ion-slides>
+            <ion-slide swiperSlide *ngFor="let banner of banner_img">
+                <div class="slideshow"><img [src]="banner"></div>
+                <ng-template swiperSlide *ngFor="let banner of banner_img">
+                    <div class="slideshow"><img [src]="banner"></div>
+                </ng-template>
+            </ion-slide>
+        </ion-slides>
     </div>
-    <!-- <canvas #barCanvas></canvas> -->
+
+
+
+
+
 
     <div class="catlist">
 
@@ -35,24 +41,23 @@
 
         <ion-grid *ngIf="!onlyiconsList">
             <ion-row>
-              <ion-col size="6" *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
-                    <ion-item lines="none" class="halfwidthcardList">
-                        <ion-avatar slot="start" class="iconsize">
-                            <img [src]="cardItem.image_src">
-                          </ion-avatar>
+                <ion-col size="6" *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
+                    <div class="homecard">
+                        <ion-avatar><img [src]="cardItem.image_src"></ion-avatar>
                         <ion-label>{{cardItem.name}}</ion-label>
-                    </ion-item>
-              </ion-col>
+                    </div>
+                </ion-col>
             </ion-row>
         </ion-grid>
 
         <ul *ngIf="onlyiconsList">
-            <li *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
-              <div class="caticon">
-                <!-- <ion-img [src]="cardItem.image_src"></ion-img> -->
-                <img [src]="cardItem.image_src" >
-              </div>
-              <span>{{cardItem.name}}</span>
+            <li *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)"
+                [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
+                <div class="caticon">
+                    <!-- <ion-img [src]="cardItem.image_src"></ion-img> -->
+                    <img [src]="cardItem.image_src">
+                </div>
+                <span>{{cardItem.name}}</span>
             </li>
         </ul>
     </div>
