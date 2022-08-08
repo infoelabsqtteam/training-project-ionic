@@ -188,7 +188,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
 
 @each $status in $status_button {
     .status_button  .status_#{$status} {
-        height:22px;font-size:12px;margin:0px;--background:var(--#{$status}-bg);
+        height:22px;font-size:12px;margin:0px;--background:var(--#{$status}-bg);min-width:70px;
       }
 }
 
