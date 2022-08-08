@@ -3,7 +3,7 @@ a {text-decoration:none;}
 .w-100 {width:100% !important;}
 
 
-ion-toolbar, .addNew{--background:var(--themebg) !important;color:#fff;}
+ion-toolbar, .addNew, ion-item-option{--background:var(--themebg) !important;color:#fff;}
 
 //***---------- Header  ----------***//
 ion-header {
@@ -91,16 +91,23 @@ ion-tabs.footertab {
 //***---------- Contact Listing  ----------***//
 .contactlist {margin: 0px 8px;
     ion-item-sliding{margin-bottom:6px;margin-top: 6px;}
-    .cardlist {background:#ddecf7;border-radius:5px;padding:10px;display:flex;align-items:center;
-        ion-avatar {width:35px;height:35px;color:#fff;text-align:center;background:var(--themebg);font:500 18px/35px Roboto, sans-serif;margin-right:15px;}
-        ion-row{width:85%;
+    ion-item {--padding-start:0px;--inner-padding-end:0px;--inner-border-width:0;
+        ion-avatar {width:35px;height:35px;color:#fff;text-align:center;background:var(--themebg);font:500 18px/35px Roboto, sans-serif;margin:0 10px;}
+        ion-row{background:#ddecf7;border-radius:5px;padding:10px;width:100%;
             p {margin:0px;font-size:13px;}
             .contact_person_name{font-weight:600;}
             .contact_company_name, .contact_person_mobile, .contact_serial_id{font-size:11px;margin:0px;}
         }
+        item-native {padding: inline start 0;}
     }
- 
 }
+
+
+@supports ((-webkit-margin-start: 0) or (margin-inline-start: 0)) or (-webkit-margin-start: 0)
+{
+.item-native {padding-inline-start: 0;}
+}
+
 
 // .crmtab{
 //     .segment-button-checked{
