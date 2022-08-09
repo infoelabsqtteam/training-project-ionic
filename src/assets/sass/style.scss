@@ -101,7 +101,7 @@ ion-tabs.footertab {
             .contact_person_name{font-weight:600;}
             .contact_company_name, .contact_person_mobile, .contact_serial_id{font-size:11px;margin:0px;}
         }
-        item-native {padding: inline start 0;}
+        item-native {padding:inline start 0;}
     }
     ion-item-sliding.app-grid_selection{
         ion-item-option.pencil-outline{background:var(--themebg);}
@@ -230,7 +230,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         .native-input{font-size: 14px;padding: 3px;line-height: 16px;}
     }
     ion-col{padding: 0;}
-    ion-item{border: none;border-radius: 10px;--min-height: 28px;
+    ion-item.flex-content{border: none;border-radius: 10px;--min-height: 28px;
         ion-label{font-size: 11px;line-height:18px;font-weight: Roboto, medium;margin:0px 0;min-width: 45%;}
     
         ion-label.grid-content{font-size: 11px;line-height:18px;margin:5px 0;display: flex;justify-content: space-between;
@@ -241,8 +241,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
             .colon-seperator{padding-right: 8px;font-size:10px;font-weight: bold;}
         }
         ion-label.value{font-size: 11px;line-height:18px;}
-    }
-    
+    }    
     .editable-input-wrapper{max-width: 100%;padding: 2px;margin:1px;
         input{max-width: 100%;}
     }
