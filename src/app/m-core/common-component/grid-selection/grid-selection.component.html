@@ -34,9 +34,9 @@
     </div>
 
     <div *ngIf="selectedTab == 'added'" >
-        <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of selectedData; let i = index">
-            <ion-item-sliding>
-                <ion-item class="contactlist ion-no-margin" lines="none" (click)="addremoveparticipant(data,i)">
+        <ion-list class="contactlist ion-margin-start ion-margin-end" *ngFor="let data of selectedData; let i = index">
+            <ion-item-sliding class=" app-grid_selection">
+                <ion-item class="ion-no-margin" lines="none" (click)="addremoveparticipant(data,i)">
                     <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="getName(data)" [innerHTML]="getFirstCharOfString(getName(data))"></span></ion-avatar>
                     <ion-row class="ion-align-items-center inner_padding" >
                         <ion-col size="12" >
@@ -53,15 +53,15 @@
                     </ion-buttons>
                 </ion-item>
                 <ion-item-options side="end">
-                    <ion-item-option color="medium" class="" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="edite(i)">
+                    <ion-item-option color="medium" class="pencil-outline" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="edite(i)">
                         <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
                       </ion-item-option>
-                  <ion-item-option color="danger" class="card-border-radius" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="delete(i)">
+                  <ion-item-option color="danger" class="trash-outline" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="delete(i)">
                     <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
                   </ion-item-option>
                 </ion-item-options>
             </ion-item-sliding>
-        </div> 
+        </ion-list> 
     </div>
      
 </div>

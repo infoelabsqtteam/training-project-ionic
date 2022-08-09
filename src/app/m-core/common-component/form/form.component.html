@@ -142,7 +142,7 @@
               <ion-label>{{getddnDisplayVal(item)}}</ion-label>
               <ion-icon name="close-outline" (click)="openModal('confirm-modal',i,'',tableField,item,'delete')"></ion-icon>
             </ion-chip>
-            <ng-select [class]="chips_field" #chipsInput [placeholder]="tableField.label" [bindLabel]="'name'" [bindValue]="name" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)"  (change)="setValue('',tableField,true,chipsInput)" [readonly]="readonly">
+            <ng-select #chipsInput [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" (keyup)="getTypeahead($event,'',tableField)"  (change)="setValue('',tableField,true,chipsInput)" [readonly]="readonly">
               <ng-option *ngFor="let data of typeAheadData" [value]="data" [innerHtml]="getddnDisplayVal(data)"></ng-option>
             </ng-select>          
           </div>

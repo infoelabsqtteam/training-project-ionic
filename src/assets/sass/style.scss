@@ -51,7 +51,7 @@ ion-header {
 }
 //***---------- Home page Category List  ----------***//
 .catlist {
-    .homecard {display:flex;align-items:center;background:#ddecf7;border-radius:5px;padding:10px;
+    .homecard {display:flex;align-items:center;background:var(--card-bg-light);border-radius:5px;padding:10px;
         ion-avatar { width:auto;height:auto;
             img {width:28px;height:28px;vertical-align:middle;}
         } 
@@ -90,16 +90,25 @@ ion-tabs.footertab {
 }
 //***---------- Contact Listing  ----------***//
 .contactlist {margin: 0px 8px;
-    ion-item-sliding{margin-bottom:6px;margin-top: 6px;}
-    ion-item {--padding-start:0px;--inner-padding-end:0px;--inner-border-width:0;
+    ion-item-sliding{margin-bottom:6px;margin-top: 6px;    
+        ion-item-options {height:calc(100% - 0px);background: var(--themebg);border-radius: 10px;}
+        ion-item-option {line-height:66px;color:#fff;width:50px;}
+    }
+    ion-item {--padding-start:0px;--inner-padding-end:0px;--inner-border-width:0;background:var(--card-bg-light);--background:var(--card-bg-light);padding:10px;border-radius: 10px;
         ion-avatar {width:35px;height:35px;color:#fff;text-align:center;background:var(--themebg);font:500 18px/35px Roboto, sans-serif;margin:0 10px;}
-        ion-row{background:#ddecf7;border-radius:5px;padding:10px;width:100%;
+        ion-row{background:var(--card-bg-light);width:100%;
             p {margin:0px;font-size:13px;}
             .contact_person_name{font-weight:600;}
             .contact_company_name, .contact_person_mobile, .contact_serial_id{font-size:11px;margin:0px;}
         }
         item-native {padding: inline start 0;}
     }
+    ion-item-sliding.app-grid_selection{
+        ion-item-option.pencil-outline{background:var(--themebg);}
+        ion-item-option.trash-outline{background:var(--ion-color-danger);}
+        ion-item-option.call{background:var(--ion-color-success);}
+    }
+    
 }
 
 
@@ -162,7 +171,7 @@ ion-tabs.footertab {
 
 .contactprofile {text-align:center;background:#fff;border-radius:0 0 20px 20px;margin-bottom: auto;
     padding: 10px;
-    .profileicon {width:65px;height:65px;border-radius:100%;line-height:65px;background:var(--theme-color-light);margin:auto;color:#fff;font-size:28px;text-transform: uppercase;}
+    .profileicon {width:65px;height:65px;border-radius:100%;line-height:65px;background:var(--themebg);margin:auto;color:#fff;font-size:28px;text-transform: uppercase;}
     h3 {color:var(--themebg);font-size:20px;font-weight:600;margin-bottom:5px;text-transform: uppercase;}
     p {color:#313131;font-size:14px;margin:0;}
     ion-button {width:40px;height:40px;--background:#8FBFE34D;border-radius:8px;--box-shadow:none;margin:15px 5px 15px;--padding-start:0;--padding-end:0;
@@ -187,8 +196,7 @@ ion-tabs.footertab {
 .ion-background-white{background:var(--ion-color-white);}
 // button colors as per the status
 .status_button{
-    margin: auto;
-   
+    margin: auto;   
 }
 
 $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move,Move,MOVE,regret,Regret,REGRET,completed,Completed,COMPLETED,approved,Approved,APPROVED,booked,Booked,BOOKED,dispatching,Dispatching,DISPATCHING,review,Review,REVIEW,scheduling,Scheduling,SCHEDULING,person_incharge,Person_Incharge,PERSON_INCHARGE,testing,Testing,TESTING,invoicing,Invoicing,INVOICING,feasibility,Feasibility,FEASIBILITY,approve,Approve,APPROVE,reject,Reject,REJECT,qa_approval,Qa_Approval,QA_APPROVAL;
@@ -214,7 +222,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
 }
 // 19-04
 .app-grid_selection{
-    border: 1px solid #F0F1F3;border-radius: 16px;background: #ffffff;margin-top: 30px;padding:5px;
+    border: 1px solid #F0F1F3;border-radius: 16px;background: #ffffff;margin-top: 10px;
     .icon{--size:14px;font-size: 18px;}
     .icon.left{margin:5px 5px 5px 0;}
     .icon.right{margin:5px 0 5px 5px;}
@@ -222,7 +230,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         .native-input{font-size: 14px;padding: 3px;line-height: 16px;}
     }
     ion-col{padding: 0;}
-    ion-item{border: none;border-radius: 16px 16px 0;--min-height: 28px;
+    ion-item{border: none;border-radius: 10px;--min-height: 28px;
         ion-label{font-size: 11px;line-height:18px;font-weight: Roboto, medium;margin:0px 0;min-width: 45%;}
     
         ion-label.grid-content{font-size: 11px;line-height:18px;margin:5px 0;display: flex;justify-content: space-between;
@@ -305,3 +313,4 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
 // }
 
 ion-fab.cardwithsubheader{margin-bottom: 17%;}
+.click_button_mask{bottom: 0;top: 0;position: absolute;left: 0;right: 0;}
