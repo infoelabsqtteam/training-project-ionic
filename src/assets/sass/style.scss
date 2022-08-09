@@ -98,7 +98,7 @@ ion-tabs.footertab {
             .contact_person_name{font-weight:600;}
             .contact_company_name, .contact_person_mobile, .contact_serial_id{font-size:11px;margin:0px;}
         }
-        item-native {padding: inline start 0;}
+        item-native {padding:inline start 0;}
     }
 }
 
@@ -213,47 +213,47 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
     display: inline-block;
 }
 // 19-04
-.app-grid_selection{
-    border: 1px solid #F0F1F3;border-radius: 16px;background: #ffffff;margin-top: 30px;padding:5px;
-    .icon{--size:14px;font-size: 18px;}
-    .icon.left{margin:5px 5px 5px 0;}
-    .icon.right{margin:5px 0 5px 5px;}
-    ion-input {border: 1px solid #3A3A3A;border-radius: 2px;max-width:150px;
-        .native-input{font-size: 14px;padding: 3px;line-height: 16px;}
-    }
-    ion-col{padding: 0;}
-    ion-item{border: none;border-radius: 16px 16px 0;--min-height: 28px;
-        ion-label{font-size: 11px;line-height:18px;font-weight: Roboto, medium;margin:0px 0;min-width: 45%;}
+// .app-grid_selection{
+//     border: 1px solid #F0F1F3;border-radius: 16px;background: #ffffff;margin-top: 30px;padding:5px;
+//     .icon{--size:14px;font-size: 18px;}
+//     .icon.left{margin:5px 5px 5px 0;}
+//     .icon.right{margin:5px 0 5px 5px;}
+//     ion-input {border: 1px solid #3A3A3A;border-radius: 2px;max-width:150px;
+//         .native-input{font-size: 14px;padding: 3px;line-height: 16px;}
+//     }
+//     ion-col{padding: 0;}
+//     ion-item{border: none;border-radius: 16px 16px 0;--min-height: 28px;
+//         ion-label{font-size: 11px;line-height:18px;font-weight: Roboto, medium;margin:0px 0;min-width: 45%;}
     
-        ion-label.grid-content{font-size: 11px;line-height:18px;margin:5px 0;display: flex;justify-content: space-between;
-            @media (max-width:475px) {
-                .label{max-width: 55px;}
-            }
-            .label{text-overflow: ellipsis;overflow: hidden;}
-            .colon-seperator{padding-right: 8px;font-size:10px;font-weight: bold;}
-        }
-        ion-label.value{font-size: 11px;line-height:18px;}
-    }
+//         ion-label.grid-content{font-size: 11px;line-height:18px;margin:5px 0;display: flex;justify-content: space-between;
+//             @media (max-width:475px) {
+//                 .label{max-width: 55px;}
+//             }
+//             .label{text-overflow: ellipsis;overflow: hidden;}
+//             .colon-seperator{padding-right: 8px;font-size:10px;font-weight: bold;}
+//         }
+//         ion-label.value{font-size: 11px;line-height:18px;}
+//     }
     
-    .editable-input-wrapper{max-width: 100%;padding: 2px;margin:1px;
-        input{max-width: 100%;}
-    }
-}
-.app-grid_selection.fixed_button{margin-bottom: 4rem;
-    .detail-grid{display: flex;justify-content: space-between;line-height: 22px;margin-bottom: 3px;}
-}
-.grid_selection_tab{
-    ion-segment-button{font-size:14px;color:#3A3A3A;text-transform:capitalize;
-    }
-    .segment-button-checked{
-        font-weight: 600;
-    }
-}
-.button_position{position: fixed;bottom: 0;width: 100%;left: 0;z-index: 7;
-    .flex_grid{display: flex;justify-content: space-between;
-        ion-button{min-width: 48%;text-transform: capitalize;}
-    }
-}
+//     .editable-input-wrapper{max-width: 100%;padding: 2px;margin:1px;
+//         input{max-width: 100%;}
+//     }
+// }
+// .app-grid_selection.fixed_button{margin-bottom: 4rem;
+//     .detail-grid{display: flex;justify-content: space-between;line-height: 22px;margin-bottom: 3px;}
+// }
+// .grid_selection_tab{
+//     ion-segment-button{font-size:14px;color:#3A3A3A;text-transform:capitalize;
+//     }
+//     .segment-button-checked{
+//         font-weight: 600;
+//     }
+// }
+// .button_position{position: fixed;bottom: 0;width: 100%;left: 0;z-index: 7;
+//     .flex_grid{display: flex;justify-content: space-between;
+//         ion-button{min-width: 48%;text-transform: capitalize;}
+//     }
+// }
 .chartcard{margin-bottom:20px;
     ion-card-header{display:flex;align-items:center;padding:0.55rem;background:rgba(0,0,0,.03);border-bottom:1px solid rgba(0,0,0,.125);
         ion-card-title{font-size:13px;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -305,3 +305,4 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
 // }
 
 ion-fab.cardwithsubheader{margin-bottom: 17%;}
+.click_button_mask{bottom: 0;top: 0;position: absolute;left: 0;right: 0;}
