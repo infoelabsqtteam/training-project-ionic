@@ -5,12 +5,17 @@ a {text-decoration:none;}
 
 ion-toolbar, .addNew, ion-item-option{--background:var(--themebg) !important;color:#fff;}
 
+
+
+
 //***---------- Header  ----------***//
+
 ion-header {
     ion-toolbar {
         ion-buttons {margin:10px;}
         ion-searchbar{padding:0 !important;color:#fff !important;}
-        .searchbar-search-icon.sc-ion-searchbar-ios {color:#fff;width:16px;}
+        .sc-ion-searchbar-md-h {--background:rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.07);--box-shadow:none;--border-radius:10px;}
+        .searchbar-search-icon.sc-ion-searchbar-ios, .searchbar-search-icon.sc-ion-searchbar-md {color:#fff;width:16px;}
         .cardsearch {display:flex;align-items:center;justify-content:space-between;
             .searchbox {display:flex;}
             ion-input{background:#e6e7e8;border-radius:10px;color:#2e2e2e;
@@ -22,6 +27,7 @@ ion-header {
              .active-search{flex:1;display:flex;transition:1s ease-in-out;}
              .visible-btn{transition:1s ease-in-out;}
         }
+        
     }
 }
 //***---------- Sidenavbar  ----------***//
@@ -43,7 +49,7 @@ ion-header {
         ion-icon {font-size:18px;margin:10px;color:#999;}
         ion-note {font-size:12px;}
     } 
-  
+    .menulist {height:calc(100% - 208px);overflow-y:scroll;}
 }
 //***---------- Banner  ----------***//
 .banner {margin-bottom:20px;height:140px;overflow:hidden;
