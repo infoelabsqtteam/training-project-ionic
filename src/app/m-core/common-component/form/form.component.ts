@@ -3058,34 +3058,67 @@ case 'populate_fields_for_report_for_new_order_flow':
   //   return tobedesabled;
   // }
 
+  focusField(parent,key){
+    const  id = key._id + "_" + key.field_name;
+    let field:any = {};
+    if(parent == ''){
+      if(this.focusFieldParent && this.focusFieldParent.field_name && this.focusFieldParent.field_name != ''){
+        parent = this.focusFieldParent;
+      }
+    }
+    if(parent != ""){
+      field = this.templateForm.get(parent.field_name).get(key.field_name);
+    }else{
+      field = this.templateForm.get(key.field_name);
+    }
+    if(field && field.touched){
+      this.checkFormFieldAutfocus = false;
+      if(this.previousFormFocusField && this.previousFormFocusField._id){
+        this.previousFormFocusField = {};
+        this.focusFieldParent={};
+      }
+    }else if(field == undefined){
+      this.previousFormFocusField = {};
+      this.focusFieldParent={};
+    }
+    const invalidControl = document.getElementById(id);
+    if(invalidControl != null){
+      invalidControl.focus();
+      this.checkFormFieldAutfocus = false;
+      if(this.previousFormFocusField && this.previousFormFocusField.type == 'list_of_fields' && this.previousFormFocusField.datatype == 'list_of_object_with_popup'){
+        this.previousFormFocusField = {};
+      }
+    }
+  }
+
   handleDisabeIf(){
-    // if(this.checkFormFieldAutfocus && this.tableFields.length > 0){
-    //   if(this.previousFormFocusField && this.previousFormFocusField._id){
-    //     this.focusField("",this.previousFormFocusField)        
-    //   }else{
-    //     if(this.previousFormFocusField == undefined || this.previousFormFocusField._id == undefined){
-    //       for (const key of this.tableFields) {
-    //         if(key.type == "stepper"){
-    //           if(key.list_of_fields && key.list_of_fields != null && key.list_of_fields.length > 0){
-    //             for (const step of key.list_of_fields) {
-    //               if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
-    //                 for (const field of step.list_of_fields) {
-    //                   if (field.field_name) {
-    //                     this.focusField(step,field);  
-    //                     break;
-    //                   }
-    //                 }
-    //               }                
-    //             }
-    //           }
-    //         }else if (key.field_name) {
-    //           this.focusField("",key);  
-    //           break;
-    //         }              
-    //       }
-    //     }
-    //   }
-    // }
+    if(this.checkFormFieldAutfocus && this.tableFields.length > 0){
+      if(this.previousFormFocusField && this.previousFormFocusField._id){
+        this.focusField("",this.previousFormFocusField)        
+      }else{
+        if(this.previousFormFocusField == undefined || this.previousFormFocusField._id == undefined){
+          for (const key of this.tableFields) {
+            if(key.type == "stepper"){
+              if(key.list_of_fields && key.list_of_fields != null && key.list_of_fields.length > 0){
+                for (const step of key.list_of_fields) {
+                  if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
+                    for (const field of step.list_of_fields) {
+                      if (field.field_name) {
+                        this.focusField(step,field);  
+                        break;
+                      }
+                    }
+                  }                
+                }
+              }
+            }else if (key.field_name) {
+              this.focusField("",key);  
+              break;
+            }              
+          }
+        }
+      }
+    }
     if(this.disableIfFieldList.length > 0){
       this.disableIfFieldList.forEach(element => {
         if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){

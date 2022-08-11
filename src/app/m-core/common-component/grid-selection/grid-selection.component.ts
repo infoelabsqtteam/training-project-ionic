@@ -38,6 +38,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   data :any = [];
   formName:any= "default";
   readonly:boolean= false;
+  updateMode:boolean= false;
 
 
   constructor(    
@@ -166,7 +167,8 @@ export class GridSelectionComponent implements OnInit, OnChanges {
                 }
               }
             });
-          });          
+          });  
+          this.getSelectedData();        
         }
       }        
     }
@@ -176,7 +178,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     return this.coreFunctionService.getValueForGrid(field, object);
   }
   isDisable(field, object) {
-    const updateMode = false;
+    this.updateMode = false;
     let disabledrow = false;
     if (field.is_disabled) {
       return true;
@@ -189,7 +191,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       return true;
     }
     if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-      return this.coreFunctionService.isDisable(field.etc_fields, updateMode, object);
+      return this.coreFunctionService.isDisable(field.etc_fields, this.updateMode, object);
     }   
     return false;
   }
@@ -227,12 +229,24 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     // if(this.field && this.field.add_new_enabled){
     //   this.edite(index);
     // }else{
+      let alreadyAdded = false;
+      let toastMsg = ""
+      this.selectedData.forEach(element => {
+        if(element && element._id == data._id){
+          alreadyAdded = true;
+          // if(data && data.approvedStatus == "Approved"){
+          //   toastMsg = "this record already added & approved";
+          // }else{
+          //   toastMsg = "this record already added";
+          // }
+        }
+      });
       const modal = await this.modalController.create({
         component: GridSelectionDetailModalComponent,
         componentProps: {
-          "Data": {"value":data,"column":this.field.gridColumns,"field":this.field},
+          "Data": {"value":data,"column":this.field.gridColumns,"field":this.field,"alreadyAdded": alreadyAdded},
           "childCardType" : "demo1",
-          "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""}
+          "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""}          
         },
         swipeToClose: false
       });
@@ -278,7 +292,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     if(index > -1){
       if (event.detail.checked) {
         this.gridData[index].selected=true; 
-        this.selectedTab = "added";
+        // this.selectedTab = "added";
       } else{
         this.gridData[index].selected=false;
       }

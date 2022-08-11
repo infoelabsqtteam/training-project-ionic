@@ -34,6 +34,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
   field:any = {};
   typeaheadObjectWithtext:any;
   userInputChipsData:any;
+  alreadyAdded:boolean;
+  toastMsg:string;
 
   constructor(
     private modalController: ModalController,
@@ -74,9 +76,18 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   onload(){
     this.cardType = this.childCardType;
-    this.columnList  = this.Data['column'];
-    this.data = this.Data['value'];
-    this.field = this.Data['field']; 
+    if(this.Data){
+      if(this.Data['column'].length > 0){
+        this.columnList  = this.Data['column'];
+      }
+      if(this.Data['value'] !=""){
+        this.data  = this.Data['value'];
+      }
+      if(this.Data['field'] != ""){
+        this.field = this.Data['field'];
+      }
+      this.alreadyAdded  = this.Data['alreadyAdded'];      
+    }
     this.getStaticDataWithDependentData();
   }
   setTopHeaderTitle(){
@@ -93,15 +104,19 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
   }
   updateModeRejectedGridReadOnly(){
-    if(this.data && this.data.approvedStatus == "Approved" && !this.data.rejectedCustomers){
+    if(this.data && this.data.approvedStatus == "Approved"){
       this.readonly = true;
+      if(this.isDisable(this.field, this.data)){
+        this.storageService.presentToast("This record already added and approved")
+      }
     }else if(this.data && this.data.rejectedCustomers){
       this.readonly = true;
-    }else if(this.data && this.data.selected && !this.data.rejectedCustomers){
-      this.readonly = true;
-    }else{
-      this.readonly = true;
     }
+    // else if(this.data && this.data.selected && !this.data.rejectedCustomers){
+    //   this.readonly = false;
+    // }else if(this.data && !this.data.selected ){
+    //   this.readonly = false;
+    // }
   }
   getStaticDataWithDependentData(){
     const staticModal = []
@@ -125,13 +140,38 @@ export class GridSelectionDetailModalComponent implements OnInit {
       'remove':remove
     });
   }
-  select(){
-    this.dismissModal(this.data,false);
+  async select(){
+    if(this.alreadyAdded){
+      this.storageService.presentToast("Can't perform this action because this record already added");
+    }else{
+      // if(this.checkValidator()){
+        this.storageService.presentToast("Record selected");
+        this.dismissModal(this.data,false);
+      // }
+    }
   }
   remove(){
-    this.dismissModal(this.data,true);
+    if(!this.alreadyAdded){
+      this.storageService.presentToast("Can't perform this action because this record not selected");
+    }else{
+      this.storageService.presentToast("Record removed");
+      this.dismissModal(this.data,true);
+    }
   }
   checkValidator(){
+    if(this.data){
+      let selectedItem = 0;
+      this.Data['column'].forEach(element => {
+        if(element.selected  && selectedItem == 0){
+          selectedItem = 1;
+        }
+      });
+      if(selectedItem == 1){
+        return false;
+      }else{
+        return true;
+      }
+    }
     return false;
   }
 
@@ -213,14 +253,10 @@ export class GridSelectionDetailModalComponent implements OnInit {
   getddnDisplayVal(val) {
     return this.CommonFunctionService.getddnDisplayVal(val);
   }
-
   searchTypeaheadData(field, currentObject,chipsInputValue) {
     this.typeaheadObjectWithtext = currentObject;
-
-    this.addedDataInList = this.typeaheadObjectWithtext[field.field_name]
-
+    this.addedDataInList = this.typeaheadObjectWithtext[field.field_name];
     this.typeaheadObjectWithtext[field.field_name] = chipsInputValue.target.value;
-
     let call_back_field = '';
     let criteria = [];
     const staticModal = []
@@ -236,7 +272,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
 
     this.typeaheadObjectWithtext[field.field_name] = this.addedDataInList;
   }
-
   setTypeaheadData(typeAheadData:any) {
     if (typeAheadData.length > 0) {
       this.typeAheadData = typeAheadData;
@@ -244,8 +279,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
       this.typeAheadData = [];
     }
   }
-
-
   setValue(option,field,data) {
     if(option != null){
       const alreadyAddedList = data[field.field_name];
@@ -270,10 +303,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
           this.typeAheadData = [];
         }
       }
-    }  
-      
-  } 
-  
+    }      
+  }  
   custmizedFormValueData(data, fieldName) {
     if (data && data[fieldName.field_name] && data[fieldName.field_name].length > 0) {
       return data[fieldName.field_name];
@@ -283,7 +314,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
     data[column.field_name].splice(i,1);
     return data[column.field_name];
   }
-
   resetVariables(){
     this.typeAheadData = [];
   }
