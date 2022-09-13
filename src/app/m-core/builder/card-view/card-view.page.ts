@@ -49,6 +49,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   popoverdata:any;
   popoverItems:any;
   popoverMenu:boolean;
+  selectedgriddataId:any;
 
     constructor(
       private storageService: StorageService,
@@ -134,6 +135,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.popoverTabbing = false;
       this.popoverItems = [];
       this.commonDataShareService.setSelectedTabIndex(-1);
+      this.selectedgriddataId = "";
     }
     open(){
       this.openFilter=!this.openFilter

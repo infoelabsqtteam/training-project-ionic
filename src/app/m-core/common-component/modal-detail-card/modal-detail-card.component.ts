@@ -67,7 +67,10 @@ export class ModalDetailCardComponent implements OnInit {
         child_card = module;
       }      
     }
-    this.childDataValue = this.childData;
+    this.childDataValue = this.childData;    
+    if(this.childDataValue && this.childDataValue.name){
+      this.childDataTitle = this.childDataValue.name;
+    }
     this.setCard(child_card);
     
   }

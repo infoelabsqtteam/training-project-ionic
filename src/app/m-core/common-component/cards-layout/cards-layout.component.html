@@ -33,9 +33,9 @@
                 </div>
 
                 <div *ngIf="column.class_name">
-                <ion-button [ngClass]="column.class_name ? 'column.class_name'  : ''" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)"></ion-button>
-                  </div>
-              </div>
+                  <ion-button [ngClass]="column.class_name ? 'column.class_name'  : ''" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)"></ion-button>
+                    </div>
+                </div>
 
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
             </ion-col>
@@ -45,7 +45,7 @@
           <ion-item-option *ngIf="addCallingFeature" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
         </ion-item-options>
         <ion-item-options side="end">
-          <ion-item-option *ngIf="addNewEnabled" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled || enableEditOnly" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -74,7 +74,7 @@
           <ion-item-option *ngIf="addCallingFeature" class="call" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option></ion-item-options>
         <ion-item-options side="end" >
           <ion-item-option *ngIf="callStatus" class="chatbox-ellipses-outline" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="chatbox-ellipses-outline"></ion-icon></ion-item-option>
-          <ion-item-option *ngIf="addNewEnabled" class="pencil" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled || enableEditOnly" class="pencil" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -85,8 +85,17 @@
 
   <div *ngIf="totalDataCount == 0" class="nodatafound">    <ion-img src="../../../assets/nodatafound.png"></ion-img></div>
 
-  <ion-infinite-scroll threshold="5%" (ionInfinite)="loadData($event)" *ngIf="totalDataCount !== this.carddata.length">
-    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Hang on loading data..."></ion-infinite-scroll-content>
+  <ion-infinite-scroll threshold="5%" (ionInfinite)="loadData($event)" *ngIf="loadMoreData">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Hang on loading data...">      
+    </ion-infinite-scroll-content>
   </ion-infinite-scroll>
+  <ion-refresher slot="fixed" pullFactor="0.5" pullMin="100" pullMax="200" (ionRefresh)="doRefresh($event)" *ngIf="refreshlist">
+    <ion-refresher-content
+      pullingIcon="arrow-down-outline"
+      pullingText="Pull down to refresh"
+      refreshingSpinner="circles"
+      refreshingText="Refreshing...">
+    </ion-refresher-content>
+  </ion-refresher>
 
 </ion-content>

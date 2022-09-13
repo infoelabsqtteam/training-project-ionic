@@ -11,6 +11,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   
   @Input() childCardType: any;
   @Input() Data: any;
+  @Input() index: number;
   @Input() modal: any;
   @Input() formInfo:any;
 
@@ -36,6 +37,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
   userInputChipsData:any;
   alreadyAdded:boolean;
   toastMsg:string;
+  grid_row_selection: boolean = false;
+  action_button_SaveupdateData = false;
 
   constructor(
     private modalController: ModalController,
@@ -43,7 +46,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
     private dataShareService: DataShareService,
     private apiService:ApiService,
     private restService:RestService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private coreFunctionService: CoreUtilityService,
   ) { 
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
@@ -58,8 +62,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   
   ionViewWillEnter(){
-    // this.cardType = this.childCardType;
-    // this.columnlistNew = this.Data[0];
     this.setTopHeaderTitle();
     this.updateModeRejectedGridReadOnly();
   }
@@ -86,6 +88,14 @@ export class GridSelectionDetailModalComponent implements OnInit {
       if(this.Data['field'] != ""){
         this.field = this.Data['field'];
       }
+      if(this.field && this.field.grid_row_selection) {
+        this.grid_row_selection = true;
+      } else {
+        this.grid_row_selection = false;
+      }
+      if(this.field && this.field.is_disabled){
+        this.readonly = this.field.is_disabled;
+      }
       this.alreadyAdded  = this.Data['alreadyAdded'];      
     }
     this.getStaticDataWithDependentData();
@@ -94,29 +104,48 @@ export class GridSelectionDetailModalComponent implements OnInit {
     if(this.formInfo){
       if(this.formInfo.name !=""){
         this.gridSelctionTitle = this.formInfo.name
-      }else if(this.formInfo.InlineformGridSelection && this.formInfo.name == ""){
-      this.gridSelctionTitle="Travel Management Details";
+      }else if(this.data && this.data.plainCustomerName && this.data.plainCustomerName !='' && this.data.plainCustomerName != null){
+      this.gridSelctionTitle = this.data.plainCustomerName;
       this.gridselectionverticalbutton = this.formInfo.InlineformGridSelection;
-      }else if(!this.formInfo.InlineformGridSelection && this.formInfo.name == "") {
-        this.gridSelctionTitle="Quotation Details";
-        this.gridselectionverticalbutton = false;
+      }else if(this.field && this.field.label && this.field.label !='' && this.field.label != null){
+        this.gridSelctionTitle = this.field.label;
+        this.gridselectionverticalbutton = this.formInfo.InlineformGridSelection;
       }
     }
   }
-  updateModeRejectedGridReadOnly(){
-    if(this.data && this.data.approvedStatus == "Approved"){
-      this.readonly = true;
-      if(this.isDisable(this.field, this.data)){
-        this.storageService.presentToast("This record already added and approved")
+  async updateModeRejectedGridReadOnly(){
+    let msg = ""
+    let checkRowDisabledIf = await !this.checkRowDisabledIf(this.field,this.data)
+    if(checkRowDisabledIf){
+      if(this.data && this.data.approvedStatus == "Approved" || this.data.approvedStatus == "Rejected"){
+        this.readonly = true;
+        if(this.data.approvedStatus == "Approved"){
+          msg = "This record already added and approved";
+        }else{
+          msg = "This record already rejected";
+        }
       }
-    }else if(this.data && this.data.rejectedCustomers){
-      this.readonly = true;
+    }else{
+      if(this.data && this.data.rejectedCustomers && this.data.add_new_enabled){
+        this.readonly = true;
+        msg = "This record already rejected";        
+      }
     }
-    // else if(this.data && this.data.selected && !this.data.rejectedCustomers){
-    //   this.readonly = false;
-    // }else if(this.data && !this.data.selected ){
-    //   this.readonly = false;
-    // }
+    if(msg !==""){
+      this.storageService.presentToast(msg);
+    }
+    if(!this.grid_row_selection && !this.field.add_new_enabled && !this.readonly) {
+      this.action_button_SaveupdateData = true;
+    }else {
+      this.action_button_SaveupdateData = false;
+    }
+  }
+  checkRowDisabledIf(field,data){
+    const condition = field.disableRowIf;
+    if(condition){
+      return !this.coreFunctionService.checkDisableRowIf(condition,data);
+    }
+    return true;    
   }
   getStaticDataWithDependentData(){
     const staticModal = []
@@ -132,6 +161,12 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   getValueForGrid(field, object) {
     return this.CommonFunctionService.getValueForGrid(field, object);
+  }
+  closeModal(data?:any,remove?:any){
+    this.data = '';
+    this.dataShareService.setIsGridSelectionOpenOrNot(true);
+    // this.gridViewModalSelection.hide();
+    this.dismissModal();
   }
   dismissModal(data?:any,remove?:any){
     this.modal.dismiss({
@@ -159,19 +194,19 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
   }
   checkValidator(){
-    if(this.data){
-      let selectedItem = 0;
-      this.Data['column'].forEach(element => {
-        if(element.selected  && selectedItem == 0){
-          selectedItem = 1;
-        }
-      });
-      if(selectedItem == 1){
-        return false;
-      }else{
-        return true;
-      }
-    }
+    // if(this.data){
+    //   let selectedItem = 0;
+    //   this.Data['column'].forEach(element => {
+    //     if(element.selected  && selectedItem == 0){
+    //       selectedItem = 1;
+    //     }
+    //   });
+    //   if(selectedItem == 1){
+    //     return false;
+    //   }else{
+    //     return true;
+    //   }
+    // }
     return false;
   }
 
@@ -280,16 +315,22 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
   }
   setValue(option,field,data) {
-    if(option != null){
+    if(option != null && option != "" && option.key !=""){
       const alreadyAddedList = data[field.field_name];
-      if (option.keyCode == 13 && option.target.value !=""){
+      if ((option.keyCode == 13 || option.keyCode == 9) && option.target.value !="" && option.target.value != undefined){
         if(this.CommonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option.target.value,alreadyAddedList)){
           this.storageService.presentToast( option.target.value + ' Already Added');
         }else{
-          if(data[field.field_name] == null) data[field.field_name] = [];
+          if(data[field.field_name] == null) {
+            data[field.field_name] = [];
+          }else{
             data[field.field_name].push(option.target.value);
+            option.target.value = "";
+          }
         }
-        option.target.value = "";
+        // option.target.value = "";
+      }else if(option.target && option.target.value ==""){
+        this.storageService.presentToast( "Please enter any " + field.label);
       }else{
         if(option !=""){
           if(this.CommonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
@@ -316,6 +357,61 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   resetVariables(){
     this.typeAheadData = [];
+  }
+  fieldButtonLabel(field){
+    if(field && field.grid_selection_button_label != null && field.grid_selection_button_label != ''){
+      return field.grid_selection_button_label;
+    }else{
+      return field.label;
+    }
+  }
+  clearDropdownField(e:any,field:any){
+    if(e.target.value && e.target.value.name){      
+      e.target.value = "";
+    }else{
+      e.target.value = "";
+    }
+    this.setValue("",field, e);
+  }
+  selectGridData() {
+    // this.selectedData = [];
+    // if (this.grid_row_selection == false) {
+    //   this.selectedData = [...this.gridData];
+    // }
+    // else {
+    //   this.gridData.forEach(row => {
+    //     if (row.selected) {
+    //       this.selectedData.push(row);
+    //     }
+    //   });
+    // }
+    let check = 0;
+    let validation = {
+      'msg' : ''
+    }
+    if(this.field && this.field.mendetory_fields && this.field.mendetory_fields.length > 0){            
+      // if(this.selectedData && this.selectedData.length > 0){
+        this.field.mendetory_fields.forEach((mField:any) => {
+          const fieldName = mField.field_name;
+          // this.selectedData.forEach((row,i) => {
+            let checkDisable = this.isDisable(mField,this.data);
+            if(this.data && !checkDisable && (this.data[fieldName] == undefined || this.data[fieldName] == '' || this.data[fieldName] == null)){
+              if(validation.msg == ''){
+                // const rowNo = i + 1;
+                // validation.msg = mField.label+'( '+rowNo+' ) is required.';
+                validation.msg = mField.label+' is required.';
+              }
+              check = 1;
+            }
+          // });
+        });        
+      // }
+    }
+    if(check != 0){
+      this.storageService.presentToast(validation.msg);
+    }else{
+      this.dismissModal(this.data,"onlyupdate"); 
+    }
   }
  
 

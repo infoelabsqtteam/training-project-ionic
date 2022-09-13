@@ -71,6 +71,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   detailPage:boolean=false;
   callStatus:boolean=false;
   popoverMenu:boolean=false;
+  enableEditOnly:boolean=false;
+  loadMoreData:boolean = false;
+  refreshlist:boolean = false;
 
   // new var
   gridDataSubscription: any;
@@ -81,9 +84,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   totalPageCount:number;
   formTypeName:any;
   selectedgriddataId:any;
-  loadMoreData:boolean = true;
-  loadMoreEvent:any;
   updateMode:boolean = false;
+  ionEvent:any;
+  
 
   constructor(
     private platform: Platform,
@@ -108,11 +111,17 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.web_site_name = this.envService.getWebSiteName();
     this.gridDataSubscription = this.dataShareService.collectiondata.subscribe(data =>{
       let res:any;
-      if(data && data.data && data.data_size){
+      if(data && data.data && data.data_size && data.data.length > 0){
         res = data.data;
         this.totalDataCount = data.data_size;
         this.totalPageCount = Math.ceil(this.totalDataCount / this.dataPerPageCount);
         this.setCardData(res);
+      }else{
+        if(this.loadMoreData){
+          this.setCardData(data.data);
+        }else{
+          this.storageService.presentToast("Somethisng went wrong, Data not available");
+        }
       }
     });
     
@@ -120,23 +129,50 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   setCardData(data:any){
     if( this.currentPage < this.totalPageCount){
-      if(this.carddata.length !== 0 && this.totalDataCount !== 0 && this.updateMode){
+      if(this.loadMoreData && this.carddata.length !== 0 && this.totalDataCount !== 0 && this.updateMode){
         this.updateMode = false;
-        if(data && data.length > 0){          
-          this.carddata.map((item, i) => {
-            if (item._id == data[0]._id){
-                this.carddata[i] = data[0];
-              }
-          });
+        let index = -1;
+        if(this.selectedgriddataId && this.selectedgriddataId != ''){
+          index = this.coreUtilityService.getIndexInArrayById(this.carddata,this.selectedgriddataId);
         }
-
-      }else if(this.carddata.length !== this.totalDataCount && this.loadMoreData){
-        this.loadMoreData = false;
+        if(data && data.length > 0){  
+            if(index != -1){
+              this.carddata[index] = data[0];
+            }
+        }else{
+            if(index != -1){
+              this.carddata.splice(index,1);
+            }
+        }
+        this.selectedgriddataId = '';
+      }else if(data && data.length > 0 && !this.loadMoreData && !this.refreshlist){
+        this.carddata = [];
         for(let i=0;i<data.length;i++){
           this.carddata.push(data[i]);
         }
-      }else{
-        console.log("carddata length equals to totalData count");
+      }else if(((data && data.length > 0 && (this.carddata.length > 0 && this.carddata.length !== this.totalDataCount) && this.loadMoreData || this.refreshlist))){
+        if(this.ionEvent){
+          if(this.ionEvent.type == 'ionInfinite'){
+            for(let i=0;i<data.length;i++){
+              this.carddata.push(data[i]);
+            }
+          }else if(this.ionEvent.type == 'ionRefresh'){
+            this.carddata = [];
+            for(let i=0;i<data.length;i++){
+              this.carddata.push(data[i]);
+            }  
+          }
+        }else{
+          this.carddata = [];
+          for(let i=0;i<data.length;i++){
+            this.carddata.push(data[i]);
+          }
+        }
+      }else if(((data && data.length > 0 && this.carddata.length == 0 && this.loadMoreData || this.refreshlist))){        
+        this.carddata = [];
+        for(let i=0;i<data.length;i++){
+          this.carddata.push(data[i]);
+        }
       }
     }else{
       console.log("Current page greater than totalPage");
@@ -146,7 +182,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   resetVariabls(){
     if(this.formTypeName == "UPDATE"){
       this.formTypeName = '';
-      this.updateMode = true;
       this.currentPageCount = 1;
     }else if(this.formTypeName == "default"){
       this.formTypeName = '';
@@ -154,7 +189,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.currentPageCount = 1;
       this.carddata = [];
       this.gridData = {};
-      this.loadMoreData = true;
+      // this.loadMoreData = true;
     }else{
       this.editedRowIndex = -1;
       this.currentPageCount = 1;
@@ -221,9 +256,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   onloadVariables(){
     this.currentPageCount = 1;    
     this.carddata=[];
-    this.loadMoreData = true;
-    if(this.loadMoreEvent){
-      this.loadMoreEvent.target.disabled = false;
+    if(this.ionEvent && this.ionEvent.type == 'ionInfinite' && this.loadMoreData){
+      this.ionEvent.target.disabled = false;
+    }else if(this.ionEvent && this.ionEvent.type == 'ionRefresh' && this.refreshlist){
+      this.ionEvent.target.disabled = false;
     }
   }
   ngOnInit() { }
@@ -276,6 +312,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       this.addNewEnabled = false;
     } 
+    if(card && card.enable_only_edit){
+      if(this.detailPage){
+        this.enableEditOnly = false;
+      }else{
+        this.enableEditOnly = true;
+      }
+    }else{
+      this.enableEditOnly = false;
+    } 
     if(card && card.add_calling){
       if(this.detailPage){
         this.addCallingFeature = false;
@@ -293,7 +338,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     }else{
       this.callStatus = false;
-    } 
+    }
     if (card.card_type !== '') {
       this.cardType = card.card_type.name;
     }
@@ -307,20 +352,24 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     if(card && card.parent_criteria){
       if (card.api_params_criteria && card.api_params_criteria.length > 0 ) {
-        criteria = card.api_params_criteria;
+        card.api_params_criteria.forEach(element => {
+          criteria.push(element);
+        });
         parentcard = card;
       }
     }
-    if(this.selectedgriddataId && this.selectedgriddataId !=''){      
-              
-      criteria = [
-        "_id;eq;" + this.selectedgriddataId + ";STATIC"
-      ];
-      // const params = this.collectionname;
-      // const payload = this.restService.getPaylodWithCriteria(params, "", criteria, {});
-      // this.apiService.getDatayById(payload);      
-      parentcard = card;
-      this.selectedgriddataId = '';
+    if(card.enable_refresh_mode){
+      this.refreshlist = card.enable_refresh_mode;
+    }
+    if(card && card.enable_load_more ){   
+      this.loadMoreData = card.enable_load_more
+      if(this.selectedgriddataId && this.selectedgriddataId !=''){
+        const cr = "_id;eq;" + this.selectedgriddataId + ";STATIC";
+        criteria.push(cr);
+        parentcard = card;
+      }
+    }else{
+      this.selectedgriddataId = "";
     }
 
     this.collectionname = card.collection_name;
@@ -497,7 +546,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   } 
 
   tabmenuClick(index:number){
-    this.loadMoreData = true;
     this.selectedIndex = index;
     this.carddata = [];
     this.createFormgroup = true;
@@ -515,7 +563,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     //this.router.navigate(['crm/quotation']);
     this.dataShareServiceService.setcardData(card);
   }
-
+  // add new card or record in cardlist 
   async addNew(formName?:any){
     if(formName){
       this.formTypeName = formName;
@@ -556,17 +604,18 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     });
     return await modal.present();
   }
-
+  // edit mode Form
   editedRow(data,index){
     this.editedRowIndex = index;
     this.gridData = data;
     this.selectedgriddataId = this.gridData._id;
+    this.updateMode = true;
     this.addNew("UPDATE");
   }
   getFirstCharOfString(char:any){
     return this.coreUtilityService.getFirstCharOfString(char);
   }
-
+  // for entering call record after call cut with customer
   async callDetailRecord(data:any, startTime:any){
     const modal = await this.modalController.create({
       component: CallDataRecordFormComponent,
@@ -585,26 +634,62 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     });
     return await modal.present();
   }
-
-  loadData(event) {
-    this.loadMoreEvent = event;
-    setTimeout(() => {
-      event.target.complete();
-      this.loadMoreData = true;
-      if(this.currentPageCount <= this.totalPageCount){
-        if (this.carddata.length === this.totalDataCount || this.totalDataCount === 1) {// App logic to determine if all data is loaded       
-          // this.currentPageCount = 1;
-          this.loadMoreEvent.target.disabled = true;    // and disable the infinite scroll
-          this.storageService.presentToast("No more data");
+  // Pull from bottom for loading more cards
+  loadData(event:any) {
+    if(this.loadMoreData){
+      this.ionEvent = event;
+      setTimeout(() => {
+        event.target.complete();
+        // this.loadMoreData = true;
+        if(this.currentPageCount <= this.totalPageCount){
+          if (this.carddata.length === this.totalDataCount || this.totalDataCount === 1) {// App logic to determine if all data is loaded       
+            // this.currentPageCount = 1;
+            this.ionEvent.target.disabled = true;    // and disable the infinite scroll
+            this.storageService.presentToast("You reached at the End");
+          }else{
+            this.currentPageCount++;
+            this.getGridData(this.collectionname);  
+          }
         }else{
-          this.currentPageCount++;
-          this.getGridData(this.collectionname);  
+          this.storageService.presentToast("No more data");
         }
-      }else{
-        this.storageService.presentToast("No more data");
-      }
-      
-    }, 1000);
+        
+      }, 2000);
+
+    }else{
+      console.log("Load More Data feature disable.");
+    }
+  }
+  // Pull from Top for Do refreshing or update card list 
+  doRefresh(event:any) {
+    if(this.refreshlist){
+      this.ionEvent = event;
+      console.log('Begin doRefresh async operation');
+      this.updateMode = false;  
+      setTimeout(() => {
+        event.target.complete();
+        let card:any;
+        let criteria:any = [];
+        if (this.carddata.length === this.totalDataCount) { // App logic to determine if all data is loaded
+          // this.refreshEvent.target.disabled = true;    // Disable the infinite scroll if carddata.length === response.totaldata.length
+          // console.log('doRefresh async operation has ended');
+          this.storageService.presentToast("No Updates Available");
+        }else{
+          if(this.card && this.card.card){
+            card = this.card.card;
+          }
+          if(card && card.api_params_criteria && card.api_params_criteria.length > 0){
+            card.api_params_criteria.forEach(element => {
+              criteria.push(element);
+            });
+          }
+          this.getGridData(this.collectionname, criteria, card);
+        }
+      }, 2000);
+
+    }else{
+      console.log("Top refresh feature disable.");
+    }
   }
   
 

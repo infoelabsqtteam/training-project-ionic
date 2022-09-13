@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start" (click)="dismissModal({})"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
+    <ion-buttons slot="start" (click)="closeModal()"><ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon></ion-buttons>
     <ion-title class="ion-no-padding ion-text-capitalize">{{gridSelctionTitle}}</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -25,35 +25,28 @@
           <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly">
         </span>
         <span *ngIf="column.type.toLowerCase() == 'boolean'" class="editable-input-wrapper" >
-          <ion-item >
             <ion-checkbox [(ngModel)]="data[column.field_name]" [ngclass]="column.field_class" class="ion-margin-end" [disabled]="isDisable(column,data)" [disabled]="readonly"></ion-checkbox>            
-          </ion-item>
-        </span>
-        
+        </span>        
         <span *ngIf="column.type.toLowerCase() == 'dropdown'" class="editable-input-wrapper">
-          <ion-item >
-            <ion-select [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly">
+            <ion-select [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly" class="ion-border_bottom ion-padding-end" (ionCancel)="clearDropdownField($event, column)" cancel-text="Clear">
               <ion-select-option *ngFor="let staticValue of staticData[column.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
             </ion-select>
-          </ion-item>
-        </span>
-        
-        <span *ngIf="column.type.toLowerCase() == 'userinput_chips'" class="editable-input-wrapper">         
-          <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly" >
+        </span>        
+        <span *ngIf="column.type.toLowerCase() == 'userinput_chips'" class="editable-input-wrapper userInputChips">         
+          <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
             <ion-label>{{getddnDisplayVal(item)}}</ion-label>
             <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
           </ion-chip>
-          <ng-select [bindLabel]="'name'" [(ngModel)]="userInputChipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)"  (change)="setValue($event,column,data)" [disabled]="isDisable(column,data)" [readonly]="readonly" (keyup.enter)="setValue($event,column,data)" (keydown.tab)="setValue($event,column,data)">
+          <ng-select [bindLabel]="'column.name'" [(ngModel)]="userInputChipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)" (change)="searchTypeaheadData(column,data,$event)" (blur)="setValue(userInputChipsData,column,data)" (keyup.enter)="setValue($event,column,data)"  [disabled]="isDisable(column,data)" [readonly]="readonly" enterkeyhint="done">
             <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
           </ng-select>
         </span>
-
-        <span *ngIf="column.type.toLowerCase() == 'chips'" class="editable-input-wrapper">         
-            <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
-              <ion-label>{{getddnDisplayVal(item)}}</ion-label>
-              <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
-            </ion-chip>
-          <ng-select [bindLabel]="'name'" [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)"  (change)="setValue($event,column,data)" [disabled]="isDisable(column,data)" [readonly]="readonly">
+        <span *ngIf="column.type.toLowerCase() == 'chips'" class="editable-input-wrapper chips">         
+          <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
+            <ion-label>{{getddnDisplayVal(item)}}</ion-label>
+            <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
+          </ion-chip>
+          <ng-select [bindLabel]="'column.name'" [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)" (change)="setValue($event,column,data)" [disabled]="isDisable(column,data)" [readonly]="readonly" enterkeyhint="done">
             <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
           </ng-select>          
         </span>
@@ -67,9 +60,13 @@
       </div>
   </div>
   <div *ngIf="gridselectionverticalbutton" class="inlineFormGridSelectionButton">
-      <div class="">
+      <div class="" *ngIf="grid_row_selection">
           <ion-button type="button" color="appcolor" [disabled]="readonly" (click)="remove()" expand="block" >Remove</ion-button>
           <ion-button type="button" color="appcolor" [disabled]="readonly"  (click)="select()" expand="block" >Add / Select</ion-button>
+      </div>
+      <div *ngIf="!grid_row_selection">
+        <ion-button  type="button" [disabled]="checkValidator()" color="appcolor" outline="true" size="sm" expand="block"  (click)="selectGridData()">{{ fieldButtonLabel(field)}}</ion-button >
+        <ion-button type="button" color="appcolor" outline="true" size="sm" expand="block" (click)="closeModal()">Close</ion-button>
       </div>
   </div>
 </ion-content>

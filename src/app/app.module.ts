@@ -19,7 +19,7 @@ import { CallNumber } from '@ionic-native/call-number/ngx';
  //import { DocumentViewer } from '@ionic-native/document-viewer/ngx';
  //import { FileTransfer } from '@ionic-native/file-transfer/ngx';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { DatePipe, CurrencyPipe} from '@angular/common';
+import { DatePipe, CurrencyPipe, TitleCasePipe} from '@angular/common';
 import { FileOpener } from '@ionic-native/file-opener/ngx';
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { NativeGeocoder} from '@ionic-native/native-geocoder/ngx';
@@ -67,7 +67,8 @@ import { LocationAccuracy } from '@ionic-native/location-accuracy/ngx';
     NativeGeocoder,
     LocationAccuracy,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    TitleCasePipe
   ],
   bootstrap: [AppComponent]
 })
