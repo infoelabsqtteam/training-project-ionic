@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start" (click)="dismissModal()"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
-    <!-- <ion-title class="ion-no-padding ion-text-capitalize">{{childDataTitle}}</ion-title> -->
+    <ion-buttons slot="start" (click)="dismissModal()"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-capitalize" *ngIf="childDataTitle">{{childDataTitle}}</ion-title>
   </ion-toolbar>
 </ion-header>
 

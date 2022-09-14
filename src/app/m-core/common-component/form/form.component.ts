@@ -1,9 +1,9 @@
 import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter, Output } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, AsyncValidatorFn } from "@angular/forms";
+import { FormGroup, FormBuilder, Validators, AsyncValidatorFn, FormArray, FormControl } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService, } from '@core/ionic-core';
-import { ModalController, ToastController  } from '@ionic/angular';
+import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
+import { ItemReorderEventDetail, ModalController, ToastController  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
@@ -13,7 +13,8 @@ import { finalize, last } from 'rxjs';
 import { CameraService } from 'src/app/service/camera-service/camera.service';
 import { HttpClient } from '@angular/common/http';
 import { zonedTimeToUtc, utcToZonedTime} from 'date-fns-tz';
-import { parseISO, format, hoursToMilliseconds } from 'date-fns';
+import { parseISO, format, hoursToMilliseconds, isToday } from 'date-fns';
+import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 // import { isArray } from 'util';
 
 interface User {
@@ -142,6 +143,7 @@ export class FormComponent implements OnInit, OnDestroy {
   typeaheadObjectWithtext:any;
   addedDataInList: any;
   readonly:boolean = false;
+  selectedIndex= -1;
 
   constructor(
     public formBuilder: FormBuilder,
@@ -160,7 +162,9 @@ export class FormComponent implements OnInit, OnDestroy {
     private plt: Platform, 
     private actionSheetCtrl: ActionSheetController,
     private loadingCtrl: LoadingController,
-    private http: HttpClient
+    private http: HttpClient,
+    private titlecasePipe: TitleCasePipe,
+    private dataShareServiceService: DataShareServiceService
     ) {
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
         this.setStaticData(data);
@@ -238,7 +242,7 @@ export class FormComponent implements OnInit, OnDestroy {
   
   ionViewWillLeave(){
     this.unsubscribeVariabbles();
-  }    
+  }
   ngOnDestroy() {
     //Abobe ionViewwillLeave is working fine.
     // this.unsubscribeVariabbles();
@@ -264,17 +268,19 @@ export class FormComponent implements OnInit, OnDestroy {
     }
   }
   setStaticData(staticData:any){
+    // if(staticData['staticDataMessgae'] != null && staticData['staticDataMessgae'] != ''){
+    //   this.storageService.presentToast(staticData['staticDataMessgae']);
+    //   const fieldName = {
+    //     "field" : "staticDataMessgae"
+    //   }
+    //   this.apiService.ResetStaticData(fieldName);
+    // }
     this.staticData = staticData;
-    // if(this.staticData && this.staticData.null && this.staticData.null.length > 0 ){
-    //   Object.keys(this.staticData.null).forEach(key => {        
-    //     this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData.null[key]));
-    //   })
-    // }else{
-      Object.keys(this.staticData).forEach(key => { 
-        if(this.staticData[key]){   
-          this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
-        }
-      })
+    Object.keys(this.staticData).forEach(key => { 
+      if(this.staticData[key]){   
+        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+      }
+    })
     
     this.tableFields.forEach(element => {
       switch (element.type) {              
@@ -338,10 +344,54 @@ export class FormComponent implements OnInit, OnDestroy {
       this.apiService.ResetStaticData(fieldName);
 
     }
-    // if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
+    if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
 
-    //   this.setCheckboxFileListValue();
-    // }    
+      this.setCheckboxFileListValue();
+    }    
+  }
+  setCheckboxFileListValue() {
+    this.checkBoxFieldListValue.forEach(element => {
+      let checkCreatControl: any;
+      if (element.parent) {
+        checkCreatControl = this.templateForm.get(element.parent).get(element.field_name);
+      } else {
+        checkCreatControl = this.templateForm.get(element.field_name);
+      }
+      if (this.staticData[element.ddn_field] && checkCreatControl.controls && checkCreatControl.controls.length == 0) {
+        let checkArray: FormArray;
+        if (element.parent) {
+          checkArray = this.templateForm.get(element.parent).get(element.field_name) as FormArray;
+        } else {
+          checkArray = this.templateForm.get(element.field_name) as FormArray;
+        }
+        this.staticData[element.ddn_field].forEach((data, i) => {
+          if (this.updateMode) {
+            let arrayData;
+            if (element.parent) {
+              arrayData = this.selectedRow[element.parent][element.field_name];
+            } else {
+              arrayData = this.selectedRow[element.field_name];
+            }
+            let selected = false;
+            if (arrayData != undefined && arrayData != null) {
+              for (let index = 0; index < arrayData.length; index++) {
+                if (this.checkObjecOrString(data) == this.checkObjecOrString(arrayData[index])) {
+                  selected = true;
+                  break;
+                }
+              }
+            }
+            if (selected) {
+              checkArray.push(new FormControl(true));
+            } else {
+              checkArray.push(new FormControl(false));
+            }
+          } else {
+            checkArray.push(new FormControl(false));
+          }
+        });
+      }
+    });
   }
   setDinamicForm(form:any){
     if(form && form.DINAMIC_FORM){
@@ -461,7 +511,15 @@ export class FormComponent implements OnInit, OnDestroy {
       }
       this.currentMenu['name'] = this.form.details.collection_name;
     }
-      
+    // if(this.form){
+    //   if(this.form.details && this.form.details.bulk_update){
+    //     this.bulkupdates = true;
+    //   }
+    //   else{
+    //     this.bulkupdates = false;
+    //   }
+    //   this.formDetails.emit(this.form);
+    // }
     if(this.form['tableFields'] && this.form['tableFields'] != undefined && this.form['tableFields'] != null){
       this.tableFields = JSON.parse(JSON.stringify(this.form['tableFields']));
       this.getTableField = false;
@@ -474,6 +532,9 @@ export class FormComponent implements OnInit, OnDestroy {
 
     this.showIfFieldList=[];
     this.disableIfFieldList=[];
+    this.mendetoryIfFieldList = [];
+    this.gridSelectionMendetoryList=[];
+    this.customValidationFiels = [];
     if (this.tableFields.length > 0 && this.createFormgroup) {
       this.createFormgroup = false;
       const forControl = {};
@@ -522,9 +583,27 @@ export class FormComponent implements OnInit, OnDestroy {
               }else{
                 this.minDate = new Date(currentYear - 100, 0, 1);
                 this.maxDate = new Date(currentYear + 1, 11, 31);
-              }                  
-              element['minDate'] = this.minDate
-              element['maxDate'] = this.maxDate;
+              }
+              if(this.plt.is('hybrid')){
+                let getToday: any  = (new Date()).toISOString();
+                getToday = utcToZonedTime(getToday, this.userTimeZone);
+                getToday = this.datePipe.transform(getToday, "yyyy-MM-ddThh:mm:ss");
+                let minDateToday:any;
+                let maxDateFromToday:any;                
+                minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
+                maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd") + "T23:59:59";
+                // if(this.formTypeName == "default"){
+                //     element['minDate'] = getToday;
+                // }else{
+                //   minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
+                //   element['minDate'] = minDateToday;
+                // }
+                element['minDate'] = minDateToday;
+                element['maxDate'] = maxDateFromToday;
+              }else{
+                element['minDate'] = this.minDate;
+                element['maxDate'] = this.maxDate;
+              }
               this.commonFunctionService.createFormControl(forControl, element, '', "text")
               break; 
             case "daterange":
@@ -591,9 +670,18 @@ export class FormComponent implements OnInit, OnDestroy {
                         }else{
                           this.minDate = new Date(currentYear - 100, 0, 1);
                           this.maxDate = new Date(currentYear + 1, 11, 31);
-                        }                  
-                        data['minDate'] = this.minDate
-                        data['maxDate'] = this.maxDate;
+                        }
+                        if(this.plt.is("hybrid")){
+                          let minDateToday:any;
+                          let maxDateFromToday:any;                
+                          minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd");
+                          maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd");
+                          data['minDate'] = minDateToday
+                          data['maxDate'] = maxDateFromToday;
+                        }else{
+                          data['minDate'] = this.minDate;
+                          data['maxDate'] = this.maxDate;
+                        }                        
                         this.commonFunctionService.createFormControl(list_of_fields, modifyData, '', "text")
                         break; 
                     
@@ -644,6 +732,22 @@ export class FormComponent implements OnInit, OnDestroy {
               element.is_disabled = true;
               this.commonFunctionService.createFormControl(forControl, element, '', "text")
               break;
+            case "grid_selection":
+                if(element && element.gridColumns && element.gridColumns.length > 0){
+                  let colParField = JSON.parse(JSON.stringify(element));
+                  colParField['mendetory_fields'] = [];
+                  element.gridColumns.forEach(colField => {
+                    if(colField && colField.is_mandatory){
+                      colParField['mendetory_fields'].push(colField);
+                    }
+                  });
+                  if(colParField && colParField['mendetory_fields'] && colParField['mendetory_fields'].length > 0){
+                    this.gridSelectionMendetoryList.push(colParField);
+                    element['mendetory_fields'] = colParField['mendetory_fields'];
+                  }
+                }
+                this.commonFunctionService.createFormControl(forControl, element, '', "text")
+              break;
             default:
               this.commonFunctionService.createFormControl(forControl, element, '', "text")
               break;
@@ -659,6 +763,14 @@ export class FormComponent implements OnInit, OnDestroy {
         //show if handling
         if(element.show_if && element.show_if != ''){
           this.showIfFieldList.push(element);
+        }
+        //mandatory if handling
+        if(element.mandatory_if && element.mandatory_if != ''){
+          this.mendetoryIfFieldList.push(element);
+        }
+        //Customvalidation handling
+        if(element.compareFieldName && element.compareFieldName != ''){
+          this.customValidationFiels.push(element);
         }
         //disable if handling
         if((element.disable_if && element.disable_if != '') || (element.disable_on_update && element.disable_on_update != '' && element.disable_on_update != undefined && element.disable_on_update != null)){                  
@@ -685,13 +797,34 @@ export class FormComponent implements OnInit, OnDestroy {
           if(element.show_if && element.show_if != ''){
             this.showIfFieldList.push(element);
           }
+          if(element.mandatory_if && element.mandatory_if != ''){
+            this.mendetoryIfFieldList.push(element);
+          }
           if((element.disable_if && element.disable_if != '') || (element.disable_on_update && element.disable_on_update != '' && element.disable_on_update != undefined && element.disable_on_update != null)){                  
             this.disableIfFieldList.push(element);
           }
         });
       }
       if (forControl) {
-        this.templateForm = this.formBuilder.group(forControl);        
+        let validators = {};
+        validators['validator'] = [];
+        if(this.customValidationFiels && this.customValidationFiels.length > 0){
+          this.customValidationFiels.forEach(field => {
+            switch (field.type) {
+              case 'date':
+                validators['validator'].push(this.checkDates(field.field_name,field.compareFieldName));
+                break;
+              default:
+                break;
+            }
+
+          });
+        }
+        this.templateForm = this.formBuilder.group(forControl,validators);
+        if(this.nextIndex){
+          this.nextIndex = false;
+          this.next();
+        }
       }
       
       let staticModal=[];
@@ -932,16 +1065,20 @@ export class FormComponent implements OnInit, OnDestroy {
 
               //required format 2022-06-30T00:00:00+05:30 (client) and 2022-06-29T18:30:00.000Z (server)
               // let Mdate = new Date(formValue[element.field_name]).toISOString();
-              let  Mdate = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
+              if(formValue[element.field_name]){
+                let  Mdate = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
 
-              // date-fns
-              let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
-               utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
+                // date-fns
+                let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
+                utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
 
-              // const pattern = "yyyy-MM-dd'T'hh:mm:ss.SSS'Z"
-              // const output = format(utcDate, pattern, { timeZone: this.userTimeZone })
-              // console.log("Output : ", output)
-              modifyFormValue[element.field_name] = utcDate;
+                // const pattern = "yyyy-MM-dd'T'hh:mm:ss.SSS'Z"
+                // const output = format(utcDate, pattern, { timeZone: this.userTimeZone })
+                // console.log("Output : ", output)
+                modifyFormValue[element.field_name] = utcDate;
+              }else{
+                modifyFormValue[element.field_name] = formValue[element.field_name];
+              }
 
             }          
             break;
@@ -1078,10 +1215,17 @@ export class FormComponent implements OnInit, OnDestroy {
     // if(this.envService.getRequestType() == 'PUBLIC'){
     //   hasPermission = true;
     // }
-    let formValue = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(true),false);
+    let formValue;
+    if(this.deleteGridRowData){
+      formValue = this.templateForm.getRawValue();
+    }else{
+      formValue = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(true),false);
+    }
+    this.deleteGridRowData = false;
        
-    if(hasPermission){      
-      if(this.templateForm.valid){
+    if(hasPermission){
+      let gridSelectionValidation:any = this.checkGridSelectionMendetory(); 
+      if(this.templateForm.valid && gridSelectionValidation.status){
         if(this.commonFunctionService.checkCustmizedValuValidation(this.tableFields,formValue)){
           if (this.dataSaveInProgress) {
             this.showNotify = true;
@@ -1119,7 +1263,11 @@ export class FormComponent implements OnInit, OnDestroy {
         }
       }else{
         this.getSavePayload = false;
-        this.notificationService.showAlert("Some fields are mendatory",'',['Dismiss']);
+        if(gridSelectionValidation.msg && gridSelectionValidation.msg != ''){
+          this.notificationService.showAlert(gridSelectionValidation.msg,'Mandatory Fields *',['Dismiss']);
+        }else{
+          this.notificationService.showAlert("Some fields are mendatory",'Mandatory Field *',['Dismiss']);
+        }
       }
     }else{
       this.getSavePayload = false;
@@ -1219,27 +1367,66 @@ export class FormComponent implements OnInit, OnDestroy {
   };
   editedRowData(object) {
     this.selectedRow = JSON.parse(JSON.stringify(object)); 
-    this.updateMode = true;    
-    this.getStaticDataWithDependentData(); 
+    this.updateMode = true;
     this.updateDataOnFormField(this.selectedRow); 
+    this.getStaticDataWithDependentData(); 
      
-    // if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
-    //   this.setCheckboxFileListValue();
-    // }
+    if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
+      this.setCheckboxFileListValue();
+      // this.checkBoxFieldListValue.forEach(element => {
+      //   if (this.staticData[element.ddn_field]) {
+      //     const arrayData = this.selectedRow[element.field_name];
+      //     const checkArray: FormArray = this.templateForm.get(element.field_name) as FormArray;
+      //     this.staticData[element.ddn_field].forEach((data, i) => {
+      //       let selected = false;
+      //       if (arrayData != undefined && arrayData != null) {
+      //         for (let index = 0; index < arrayData.length; index++) {
+      //           if (this.checkObjecOrString(data) == this.checkObjecOrString(arrayData[index])) {
+      //             selected = true;
+      //             break;
+      //           }
+      //         }
+      //       }
+      //       if (selected) {
+      //         checkArray.push(new FormControl(true));
+      //       } else {
+      //         checkArray.push(new FormControl(false));
+      //       }
+      //     });
+      //   }
+      // });
+    }
   }
   getStaticDataWithDependentData(){
     const staticModal = []
     this.tableFields.forEach(element => {
       if(element.field_name && element.field_name != ''){
+        if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != "") {
+          switch (element.onchange_function_param) {        
+              case 'autopopulateFields':
+                this.commonFunctionService.autopopulateFields(this.templateForm);
+                break;
+            default:
+             this.inputOnChangeFunc('',element);
+          }
+        }
+      }
+    });
+    this.tableFields.forEach(element => {
+      if(element.field_name && element.field_name != ''){
         let fieldName = element.field_name;
-        let object = this.selectedRow[fieldName];
+        let object = this.selectedRow[fieldName];        
         if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
           const checkFormGroup = element.onchange_call_back_field.indexOf("FORM_GROUP");
           if(checkFormGroup == -1){
 
             const payload = this.restService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.selectedRow)
             if(element.onchange_api_params.indexOf('QTMP') >= 0){
-              payload['data'] = this.selectedRow
+              if(element && element.formValueAsObjectForQtmp){
+                payload["data"]=this.getFormValue(false);
+              }else{
+                payload["data"]=this.getFormValue(true);
+              }
             } 
             staticModal.push(payload);
           }
@@ -1256,7 +1443,11 @@ export class FormComponent implements OnInit, OnDestroy {
             
                         const payload = this.restService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.selectedRow)
                         if(data.onchange_api_params.indexOf('QTMP') >= 0){
-                          payload['data'] = this.selectedRow
+                          if(element && element.formValueAsObjectForQtmp){
+                            payload["data"]=this.getFormValue(false);
+                          }else{
+                            payload["data"]=this.getFormValue(true);
+                          }
                         } 
                         staticModal.push(payload);
                       }
@@ -1570,11 +1761,18 @@ export class FormComponent implements OnInit, OnDestroy {
                   const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
                   //need in this format 2022-06-30T00:00:00+05:30
                   // let isoString = new Date(value).toISOString()
-                  const zonedTime:any = utcToZonedTime(value, this.userTimeZone);
-                  // let transformzonedTime = (parseISO(zonedTime), "yyyy-MM-dd'T'HH:mm:ssZ");
-                  const transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'T'HH:mm:ssZZZZZ", this.userTimeZone);
-                  // let pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'";
-                  // let output = format(zonedTime, pattern, { timeZone: userTimeZone })
+                  let transformzonedTime :any;
+                  let zonedTime:any;
+                  if(value !=''){
+                    zonedTime = utcToZonedTime(value, this.userTimeZone);
+                    // let transformzonedTime = (parseISO(zonedTime), "yyyy-MM-dd'T'HH:mm:ssZ");
+                    transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'T'HH:mm:ssZZZZZ", this.userTimeZone);
+                    // let pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'";
+                    // let output = format(zonedTime, pattern, { timeZone: userTimeZone })
+
+                  }else{
+                    transformzonedTime='';
+                  }
 
                   this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
                 }
@@ -1672,6 +1870,7 @@ export class FormComponent implements OnInit, OnDestroy {
     this.listOfFieldsUpdateIndex = -1; 
     this.checkFormFieldAutfocus = true;
     this.filePreviewFields = [];
+    this.nextFormUpdateMode=false;
   }
 
 
@@ -2288,7 +2487,7 @@ export class FormComponent implements OnInit, OnDestroy {
             this.commonFunctionService.autopopulateFields(this.templateForm);
             break;
         default:
-         // this.inputOnChangeFunc('',field);
+         this.inputOnChangeFunc('',field);
       }
     }
     let objectValue:string = "";
@@ -2674,11 +2873,11 @@ export class FormComponent implements OnInit, OnDestroy {
       }
    }
   }
-  inputOnChangeFunc(field) {
-    if(field.type == 'checkbox'){
+  inputOnChangeFunc(parent,field) {
+    if(field.type == 'checkbox' || field.type == 'date'){
       if (field.onchange_api_params && field.onchange_call_back_field) {        
         let formValue = this.getFormValue(false);
-        this.changeDropdown(field,  formValue,field.data_template);       
+        this.changeDropdown(field,formValue,field.data_template);       
       }
     }
     if (field.onchange_function && field.onchange_function_param && field.onchange_function_param != "") {
@@ -2693,86 +2892,118 @@ export class FormComponent implements OnInit, OnDestroy {
         case 'calculate_quote_amount':          
           calFormValue = this.commonFunctionService.calculate_quotation(tamplateFormValue,"standard", field);
           this.updateDataOnFormField(calFormValue);
-          break;
+        break;
 
-          case 'calculate_automotive_quotation':          
+        case 'calculate_automotive_quotation':          
           calFormValue = this.commonFunctionService.calculate_quotation(tamplateFormValue,"automotive" ,field);
           this.updateDataOnFormField(calFormValue);
-          break;
-          case 'calculate_po_row_item':          
+        break;
+        case 'calculate_po_row_item':          
           calFormValue = this.commonFunctionService.calculate_po_row_item(tamplateFormValue1,"automotive" ,field);
           this.updateDataOnFormField(calFormValue);
-          break;
-          case 'update_invoice_total_on_custom_field':          
+        break;
+        case 'update_invoice_total_on_custom_field':          
           calFormValue = this.commonFunctionService.update_invoice_total_on_custom_field(tamplateFormValue,"automotive" ,field);
           this.updateDataOnFormField(calFormValue);
-          break;
-      
-          case 'calculate_lims_invoice':          
+        break;
+    
+        case 'calculate_lims_invoice':          
           calFormValue = this.commonFunctionService.calculate_lims_invoice(tamplateFormValue,"automotive" ,field);
           this.updateDataOnFormField(calFormValue);
-          break;
-      
-          case 'calculate_lims_invoice_with_po_items':
-           let val = this.commonFunctionService.calculate_lims_invoice_with_po_items(tamplateFormValue,"","");
-            this.updateDataOnFormField(val);
-            break;
+        break;
+    
+        case 'calculate_lims_invoice_with_po_items':
+          let val = this.commonFunctionService.calculate_lims_invoice_with_po_items(tamplateFormValue,"","");
+          this.updateDataOnFormField(val);
+        break;
 
-      //   case 'quote_amount_via_sample_no':
-      //       calFormValue = this.commonFunctionService.quote_amount_via_sample_no(tamplateFormValue,this.custmizedFormValue['quotation_param_methods']);
-      //       this.updateDataOnFormField(calFormValue);
-      //       break;
-      //  case 'quote_amount_via_discount_percent':
-      //       calFormValue = this.commonFunctionService.quote_amount_via_discount_percent(this.custmizedFormValue['quotation_param_methods'], tamplateFormValue);
-      //       this.updateDataOnFormField(calFormValue);
-      //       break;
+        // case 'quote_amount_via_sample_no':
+        //   calFormValue = this.commonFunctionService.quote_amount_via_sample_no(tamplateFormValue,this.custmizedFormValue['quotation_param_methods']);
+        //   this.updateDataOnFormField(calFormValue);
+        // break;
+        // case 'quote_amount_via_discount_percent':
+        //   calFormValue = this.commonFunctionService.quote_amount_via_discount_percent(this.custmizedFormValue['quotation_param_methods'], tamplateFormValue);
+        //   this.updateDataOnFormField(calFormValue);
+        // break;
+
         case 'samplingAmountAddition':          
-            calFormValue = this.commonFunctionService.samplingAmountAddition(tamplateFormValue);
-            this.updateDataOnFormField(calFormValue);          
-            break;
-       
-          case 'populate_fields':
-            list_of_populated_fields = [
-              {"from":"fax","to":"billing_fax"},
-              {"from":"mobile","to":"billing_mobile"},
-              {"from":"phone","to":"billing_tel"},
-              {"from":"city","to":"billing_city"},
-              {"from":"state","to":"billing_state"},
-              {"from":"country","to":"billing_country"},
-              {"from":"address_line2","to":"billing_address_line2"},
-              {"from":"gst_no","to":"billing_gst"},
-              {"from":"email","to":"billing_contact_person_email"},
-              {"from":"address_line1","to":"billing_address"},
-              {"from":"pincode","to":"billing_pincode"},
-              {"from":"first_name+last_name+ ","to":"billing_contact_person"},
-              {"from":"account.name","to":"billing_company"},
-          
-            ]
-            calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
-            this.updateDataOnFormField(calFormValue); 
-          break;
-case 'populate_fields_for_new_order_flow':
-            list_of_populated_fields = [
-              {"from":"fax","to":"billing_fax"},
-              {"from":"mobile","to":"billing_mobile"},
-              {"from":"phone","to":"billing_tel"},
-              {"from":"city","to":"billing_city"},
-              {"from":"state","to":"billing_state"},
-              {"from":"country","to":"billing_country"},
-              {"from":"address_line2","to":"billing_address_line2"},
-              {"from":"gst_no","to":"billing_gst"},
-              {"from":"email","to":"billing_contact_person_email"},
-              {"from":"address_line1","to":"billing_address"},
-              {"from":"pincode","to":"billing_pincode"},
-              {"from":"first_name+last_name+ ","to":"billing_contact_person"},
-              {"from":"sample_booking.name","to":"billing_company"},
+          calFormValue = this.commonFunctionService.samplingAmountAddition(tamplateFormValue);
+          this.updateDataOnFormField(calFormValue);          
+        break;
+      
+        case 'populate_fields':
+          list_of_populated_fields = [
+            {"from":"fax","to":"billing_fax"},
+            {"from":"mobile","to":"billing_mobile"},
+            {"from":"phone","to":"billing_tel"},
+            {"from":"city","to":"billing_city"},
+            {"from":"state","to":"billing_state"},
+            {"from":"country","to":"billing_country"},
+            {"from":"address_line2","to":"billing_address_line2"},
+            {"from":"gst_no","to":"billing_gst"},
+            {"from":"email","to":"billing_contact_person_email"},
+            {"from":"address_line1","to":"billing_address"},
+            {"from":"pincode","to":"billing_pincode"},
+            {"from":"first_name+last_name+ ","to":"billing_contact_person"},
+            {"from":"account.name","to":"billing_company"},
+        
+          ]
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          this.updateDataOnFormField(calFormValue); 
+        break;
+        case 'job_card_series':
+          list_of_populated_fields=[
+            {"from":"tl_name.name+service_line.name+parent_company.name+/","to":"job_card_name"},
+          ]
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          this.updateDataOnFormField(calFormValue); 
+        break;
+        case 'calculation_travel_claim_sheet':
+          calFormValue = this.commonFunctionService.calculateTotalFair(this.templateForm.getRawValue());
+          this.updateDataOnFormField(calFormValue); 
+        break;
+        case 'populate_fields_for_direct_order':
+          list_of_populated_fields = [
+            {"from":"fax","to":"billing_fax"},
+            {"from":"mobile","to":"billing_mobile"},
+            {"from":"phone","to":"billing_tel"},
+            {"from":"city","to":"billing_city"},
+            {"from":"state","to":"billing_state"},
+            {"from":"country","to":"billing_country"},
+            {"from":"address_line2","to":"billing_address_line2"},
+            {"from":"gst_no","to":"billing_gst"},
+            {"from":"email","to":"billing_contact_person_email"},
+            {"from":"address_line1","to":"billing_address"},
+            {"from":"pincode","to":"billing_pincode"},
+            {"from":"contact.name","to":"billing_contact_person"},
+            {"from":"account.name","to":"billing_company"},
+        
+          ]
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          this.updateDataOnFormField(calFormValue); 
+        break;
+        case 'populate_fields_for_new_order_flow':
+          list_of_populated_fields = [
+            {"from":"fax","to":"billing_fax"},
+            {"from":"mobile","to":"billing_mobile"},
+            {"from":"phone","to":"billing_tel"},
+            {"from":"city","to":"billing_city"},
+            {"from":"state","to":"billing_state"},
+            {"from":"country","to":"billing_country"},
+            {"from":"address_line2","to":"billing_address_line2"},
+            {"from":"gst_no","to":"billing_gst"},
+            {"from":"email","to":"billing_contact_person_email"},
+            {"from":"address_line1","to":"billing_address"},
+            {"from":"pincode","to":"billing_pincode"},
+            {"from":"first_name+last_name+ ","to":"billing_contact_person"},
+            {"from":"sample_booking.name","to":"billing_company"},
 
-            ]
-            calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
-            this.updateDataOnFormField(calFormValue); 
-          break;
+          ]
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          this.updateDataOnFormField(calFormValue); 
+        break;
         case 'populate_fields_for_report':
-           list_of_populated_fields = [
+          list_of_populated_fields = [
             {"from":"mobile","to":"reporting_mobile"},
             {"from":"phone","to":"reporting_tel"},
             {"from":"city","to":"reporting_city"},
@@ -2788,9 +3019,28 @@ case 'populate_fields_for_new_order_flow':
           calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
           this.updateDataOnFormField(calFormValue); 
           // this.commonFunctionService.populate_fields_for_report(this.templateForm);
-          break;
-case 'populate_fields_for_report_for_new_order_flow':
-           list_of_populated_fields = [
+        break;
+        case 'populate_fields_for_report_direct_order':
+          list_of_populated_fields = [
+          {"from":"mobile","to":"reporting_mobile"},
+          {"from":"phone","to":"reporting_tel"},
+          {"from":"city","to":"reporting_city"},
+          {"from":"state","to":"reporting_state"},
+          {"from":"country","to":"reporting_country"},
+          {"from":"gst_no","to":"reporting_gst"},
+          {"from":"email","to":"reporting_contact_person_email"},
+          {"from":"address_line1","to":"reporting_address"},
+          {"from":"address_line2","to":"reporting_address_line2"},
+          {"from":"pincode","to":"reporting_pincode"},
+          {"from":"contact.name","to":"reporting_contact_person"},
+          {"from":"account.name","to":"reporting_company"},
+        ]
+        calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+        this.updateDataOnFormField(calFormValue); 
+        // this.commonFunctionService.populate_fields_for_report(this.templateForm);
+        break;
+        case 'populate_fields_for_report_for_new_order_flow':
+          list_of_populated_fields = [
             {"from":"mobile","to":"reporting_mobile"},
             {"from":"phone","to":"reporting_tel"},
             {"from":"city","to":"reporting_city"},
@@ -2806,7 +3056,7 @@ case 'populate_fields_for_report_for_new_order_flow':
           calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
           this.updateDataOnFormField(calFormValue);
           // this.commonFunctionService.populate_fields_for_report(this.templateForm);
-          break;
+        break;
         case 'manufactured_as_customer':
           list_of_populated_fields = [
             {"from":"account.name", "to":"sample_details.mfg_by"}
@@ -2814,15 +3064,15 @@ case 'populate_fields_for_report_for_new_order_flow':
           calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
           this.updateDataOnFormField(calFormValue);
           // this.commonFunctionService.manufactured_as_customer(this.templateForm);
-          break;
-  case 'manufactured_as_customer_for_new_order_flow':
+        break;
+        case 'manufactured_as_customer_for_new_order_flow':
           list_of_populated_fields = [
             {"from":"sample_booking.name", "to":"sample_details.mfg_by"}
           ]
           calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
           this.updateDataOnFormField(calFormValue);
           // this.commonFunctionService.manufactured_as_customer(this.templateForm);
-          break;
+        break;
         case 'supplied_as_customer':
           list_of_populated_fields = [
             {"from":"account.name", "to":"sample_details.supplied_by"}
@@ -2838,14 +3088,20 @@ case 'populate_fields_for_report_for_new_order_flow':
           calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
           this.updateDataOnFormField(calFormValue);
           // this.commonFunctionService.supplied_as_customer(this.templateForm);
-          break;
+        break;
         case 'buggetForcastCalc':
           this.commonFunctionService.buggetForcastCalc(this.templateForm.getRawValue());
-          break;
-       case 'calculate_next_calibration_due_date':
+        break;
+        case 'calculate_next_calibration_due_date':
             this.commonFunctionService.calculate_next_calibration_due_date(this.templateForm.getRawValue());
-            break;
-
+        break;
+        case 'get_percent':
+          calFormValue = this.commonFunctionService.getPercent(this.templateForm.getRawValue(),parent, field);
+          this.updateDataOnFormField(calFormValue);
+        break;
+        case 'CALCULATE_TOTAL_AMOUNT':
+            calFormValue = this.commonFunctionService.calculateTotalAmount(tamplateFormValue)
+            this.updateDataOnFormField(calFormValue);
         default:
           break;
 
@@ -3058,34 +3314,67 @@ case 'populate_fields_for_report_for_new_order_flow':
   //   return tobedesabled;
   // }
 
+  focusField(parent,key){
+    const  id = key._id + "_" + key.field_name;
+    let field:any = {};
+    if(parent == ''){
+      if(this.focusFieldParent && this.focusFieldParent.field_name && this.focusFieldParent.field_name != ''){
+        parent = this.focusFieldParent;
+      }
+    }
+    if(parent != ""){
+      field = this.templateForm.get(parent.field_name).get(key.field_name);
+    }else{
+      field = this.templateForm.get(key.field_name);
+    }
+    if(field && field.touched){
+      this.checkFormFieldAutfocus = false;
+      if(this.previousFormFocusField && this.previousFormFocusField._id){
+        this.previousFormFocusField = {};
+        this.focusFieldParent={};
+      }
+    }else if(field == undefined){
+      this.previousFormFocusField = {};
+      this.focusFieldParent={};
+    }
+    const invalidControl = document.getElementById(id);
+    if(invalidControl != null){
+      invalidControl.focus();
+      this.checkFormFieldAutfocus = false;
+      if(this.previousFormFocusField && this.previousFormFocusField.type == 'list_of_fields' && this.previousFormFocusField.datatype == 'list_of_object_with_popup'){
+        this.previousFormFocusField = {};
+      }
+    }
+  }
+
   handleDisabeIf(){
-    // if(this.checkFormFieldAutfocus && this.tableFields.length > 0){
-    //   if(this.previousFormFocusField && this.previousFormFocusField._id){
-    //     this.focusField("",this.previousFormFocusField)        
-    //   }else{
-    //     if(this.previousFormFocusField == undefined || this.previousFormFocusField._id == undefined){
-    //       for (const key of this.tableFields) {
-    //         if(key.type == "stepper"){
-    //           if(key.list_of_fields && key.list_of_fields != null && key.list_of_fields.length > 0){
-    //             for (const step of key.list_of_fields) {
-    //               if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
-    //                 for (const field of step.list_of_fields) {
-    //                   if (field.field_name) {
-    //                     this.focusField(step,field);  
-    //                     break;
-    //                   }
-    //                 }
-    //               }                
-    //             }
-    //           }
-    //         }else if (key.field_name) {
-    //           this.focusField("",key);  
-    //           break;
-    //         }              
-    //       }
-    //     }
-    //   }
-    // }
+    if(this.checkFormFieldAutfocus && this.tableFields.length > 0){
+      if(this.previousFormFocusField && this.previousFormFocusField._id){
+        this.focusField("",this.previousFormFocusField)        
+      }else{
+        if(this.previousFormFocusField == undefined || this.previousFormFocusField._id == undefined){
+          for (const key of this.tableFields) {
+            if(key.type == "stepper"){
+              if(key.list_of_fields && key.list_of_fields != null && key.list_of_fields.length > 0){
+                for (const step of key.list_of_fields) {
+                  if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
+                    for (const field of step.list_of_fields) {
+                      if (field.field_name) {
+                        this.focusField(step,field);  
+                        break;
+                      }
+                    }
+                  }                
+                }
+              }
+            }else if (key.field_name) {
+              this.focusField("",key);  
+              break;
+            }              
+          }
+        }
+      }
+    }
     if(this.disableIfFieldList.length > 0){
       this.disableIfFieldList.forEach(element => {
         if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
@@ -3324,11 +3613,25 @@ case 'populate_fields_for_report_for_new_order_flow':
   }
 
   getNumberOfSelectedRecord(field){
-    if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
-    if(this.custmizedFormValue[field.field_name] && this.custmizedFormValue[field.field_name].length > 0){
-      return "( "+this.custmizedFormValue[field.field_name].length+" )";
+    if (!this.custmizedFormValue[field.field_name]){
+      this.custmizedFormValue[field.field_name] = [];
     }else{
-      return '';
+      if(this.custmizedFormValue[field.field_name] && this.custmizedFormValue[field.field_name].length > 0){
+        return "( "+this.custmizedFormValue[field.field_name].length+" )";
+      }else{
+        return '';
+      }
+    }
+  }
+  getNumberOfSelectedFile(field){
+    if (!this.dataListForUpload[field.field_name]){
+      this.dataListForUpload[field.field_name] = [];
+    }else{
+      if(this.dataListForUpload[field.field_name] && this.dataListForUpload[field.field_name].length > 0){
+        return "( "+this.dataListForUpload[field.field_name].length+" )";
+      }else{
+        return '';
+      }
     }
   }
   checkCustmizedFormValueData(parent,chield){
@@ -3359,7 +3662,7 @@ case 'populate_fields_for_report_for_new_order_flow':
     }
      return data;
   }
-  openModal(id, index, parent,child, data, alertType) {
+  async openModal(id, index, parent,child, data, alertType) {
     this.deleteIndex = index;
     if(parent != ''){
       this.deletefieldName['parent'] = parent;
@@ -3367,7 +3670,6 @@ case 'populate_fields_for_report_for_new_order_flow':
     }else{
       this.deletefieldName['child'] = child;
     }
-    this.alertResponce(true);
     // console.log(this.deletefieldName);
     // console.log(this.deleteIndex);
     // this.alertData = {
@@ -3377,9 +3679,12 @@ case 'populate_fields_for_report_for_new_order_flow':
     // }
     // this.modalService.open(id, this.alertData);
     //this.commonFunctionService.openAlertModal(id,alertType,'Are You Sure ?','Delete This record.');
+    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
+    
+    this.alertResponce(confirmDelete);
   }
   alertResponce(responce) {
-    if (responce) {
+    if (responce === "confirm") {
       this.deleteitem()
     } else {
       this.cancel();
@@ -3402,10 +3707,10 @@ case 'populate_fields_for_report_for_new_order_flow':
         this.custmizedFormValue[custmizedKeyChild] = deleteCustmizedValue;
         const field = this.deletefieldName['child']
         if(field.onchange_api_params != null && field.onchange_api_params != ''){
-          // if( field.onchange_api_params.indexOf("CLTFN") >= 0){
-          //   const calculatedCost = this.commonFunctionService.calculateAdditionalCost(this.getFormValue(true));
-          //   this.updateDataOnFormField(calculatedCost);
-          // }
+          if( field.onchange_api_params.indexOf("CLTFN") >= 0){
+            const calculatedCost = this.commonFunctionService.calculateAdditionalCost(this.getFormValue(true));
+            this.updateDataOnFormField(calculatedCost);
+          }
           if (field.onchange_call_back_field != '') {
             switch (field.type) {
               case 'list_of_fields':
@@ -3418,7 +3723,7 @@ case 'populate_fields_for_report_for_new_order_flow':
           }
         }
         if(field.onchange_function && field.onchange_function_param && field.onchange_function_param != ""){
-          this.inputOnChangeFunc(field);
+          this.inputOnChangeFunc('',field);
         }
         
       }        
@@ -3518,7 +3823,7 @@ case 'populate_fields_for_report_for_new_order_flow':
         fileName: fileName,
         fileExtn:  img.format,
         innerBucketPath: fileName,
-        rollName: fileName,
+        // rollName: fileName,
         log: this.storageService.getUserLog()
       }) 
       if(photos.length == this.selectedphotos.length){
@@ -3555,31 +3860,6 @@ case 'populate_fields_for_report_for_new_order_flow':
     }
   }
 
-  async readAsBase64(photo: Photo) {
-    if (this.plt.is('hybrid')) {
-        const file = await Filesystem.readFile({
-            path: photo.path
-        }); 
-        return file.data;
-    }
-    else {
-        const response = await fetch(photo.webPath);
-        const blob = await response.blob();
-        return await this.convertBlobToBase64(blob);
-    }
-  }
- 
-  // Helper function
-  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
-      const reader = new FileReader;
-      reader.onerror = reject;
-      //need to uncomment below code
-      // reader.onload = () => {
-      //   let base64 = (<string>reader.result).split(',').pop();
-      //     resolve(base64);
-      // }
-      reader.readAsDataURL(blob);
-  });
 
   //delecte selected image
   deleteImage(index:number) {
@@ -3589,8 +3869,13 @@ case 'populate_fields_for_report_for_new_order_flow':
     this.selectedphotos.splice(index, 1);
     this.cameraService.presentToast('File removed.');
   }
-  removeAttachedDataFromList(index:number,fieldName:any){
-    this.dataListForUpload[fieldName].splice(index,1)
+  async removeAttachedDataFromList(index:number,fieldName:any){
+    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
+    if(confirmDelete == "confirm"){
+      this.dataListForUpload[fieldName].splice(index,1)
+    }else{
+      this.cancel();
+    }
   }
   imageDownload(img:any) {
     this.downloadClick = img.rollName;
@@ -3641,11 +3926,51 @@ case 'populate_fields_for_report_for_new_order_flow':
       const returnClass = this.commonFunctionService.getDivClass(field,fieldsLangth)
       const classes = returnClass.split('-');
       const lastIndex = classes.length-1;
-      return classes[lastIndex];
+      const deviceIndex = classes.length-2;
+      const deviceName = classes[deviceIndex];
+      let deviceValue = classes[lastIndex];
+      // if(this.plt.is("hybrid")){
+  
+        if(deviceName == "xl"){
+          this.getDivClassXl(deviceValue);
+          return '12';
+        }else if(deviceName == "lg"){
+          this.getDivClassLg(deviceValue);
+          return '12';
+        }else if(deviceName == "md"){
+          this.getDivClassMd(deviceValue);
+          return '12';
+        }else if(deviceName == "sm"){
+          this.getDivClassSm(deviceValue);
+          return '12';
+        }else if(deviceName == "xs"){
+          this.getDivClassXs(deviceValue);
+          return '12';
+        }else{
+          return classes[lastIndex];
+        }
+      // }else{
+      //   return classes[lastIndex];
+      // }
     }else{
       return '12';
     }
   }
+  getDivClassXl(deviceValue?:number){
+    return deviceValue;
+  };
+  getDivClassLg(deviceValue){
+    return deviceValue
+  };
+  getDivClassMd(deviceValue?:number){
+    return deviceValue;
+  };
+  getDivClassSm(deviceValue?:number){
+    return deviceValue;
+  };
+  getDivClassXs(deviceValue?:number){
+    return deviceValue;
+  };
 
   convertUtcToLocalDate(val : Date) : Date {        
       var d = new Date(val); // val is in UTC
@@ -3996,6 +4321,235 @@ case 'populate_fields_for_report_for_new_order_flow':
       this.curTreeViewField = fields;      
       this.samePageGridSelectionData = gridModalData;
     }
-  } 
+  }
 
+  checkDates(endDate: string, startDate: string) {
+    return (formGroup: FormGroup) => {
+      const startDateControl = formGroup.controls[startDate];
+      const endDateControl = formGroup.controls[endDate];
+      const date1 =new Date(startDateControl.value);
+      const date2 =new Date(endDateControl.value);
+      if(date1 > date2) {
+        endDateControl.setErrors({ notValid: true });
+      }else{
+        endDateControl.setErrors(null);
+      }
+    }    
+  }
+  clearDropdownField(e:any,field:any){
+    if(e.target.value && e.target.value.name){      
+      e.target.value = "";
+    }else{
+      e.target.value = "";
+    }
+    this.setValue("",field, "", e);
+  }
+  getTitlecase(value){
+    // return this.commonFunctionService.getTitlecase(value)
+    this.titlecasePipe.transform(value);
+  }
+  /** Reorder objects in array */
+	doReorder(ev: CustomEvent<ItemReorderEventDetail>, draggableItemId: number) {
+    let groupToChangeIndex = this.custmizedFormValue.findIndex(
+      (Item:any) => Item.id === draggableItemId
+    );
+    this.custmizedFormValue[groupToChangeIndex].items = ev.detail.complete(
+      this.custmizedFormValue[groupToChangeIndex].items
+    );
+  }
+  getFirstCharOfString(char:any){
+    return this.commonFunctionService.getFirstCharOfString(char);
+  }
+  
+  getName(object:any){
+    let columns = this.tableFields.gridColumns;
+    let field_name : string = "";
+    if(columns && columns.length > 0){
+      columns.forEach(element => {
+        if(element.field_name == "plainCustomerName"){
+          field_name = element.field_name;
+        }
+      });
+      if(field_name == ""){
+        field_name = columns[0].field_name;
+      }
+      let value = this.commonFunctionService.getObjectValue(field_name,object);
+      return value;      
+    }
+  }
+  getValueForGrid(field,object){
+    return this.commonFunctionService.getValueForGrid(field,object);
+  }
+
+  async delete(index:number,field:any,fieldName:string){
+    //alert, if confirm then
+    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
+    if(confirmDelete === "confirm"){
+      this.custmizedFormValue[fieldName].splice(index,1);
+      let obj = await this.getSendData(field)
+      this.gridSelectionResponce(obj);
+    }
+  }
+  checkObjecOrString(data){
+    if(data._id){
+      return data._id;
+    }else{
+      return data;
+    }
+  }
+  editListOfFiedls(object:any,index:number){
+    this.listOfFieldUpdateMode = true;
+    this.listOfFieldsUpdateIndex = index;
+    
+    this.tableFields.forEach(element => {
+      switch (element.type) {        
+        case "list_of_fields":
+          this.templateForm.get(element.field_name).reset(); 
+          if (element.list_of_fields.length > 0) {
+            element.list_of_fields.forEach((data) => {
+              switch (data.type) {                
+                case "list_of_string":
+                  const custmisedKey = this.custmizedKey(element);
+                  if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
+                  this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];
+                  break;
+                case "typeahead":
+                  if (data.datatype == 'list_of_object') {
+                    const custmisedKey = this.custmizedKey(element);
+                    if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
+                    this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];    
+                  } else {
+                    this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
+                    //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(object[data.field_name]);
+                  }
+                  break;
+                case "list_of_checkbox":
+                  let checkboxListValue = [];
+                  if(this.staticData && this.staticData[data.ddn_field] && this.staticData[data.ddn_field].length > 0){
+                    this.staticData[data.ddn_field].forEach((value, i) => {                      
+                      let arrayData = object[data.field_name];                        
+                      let selected = false;
+                      if (arrayData != undefined && arrayData != null) {
+                        for (let index = 0; index < arrayData.length; index++) {
+                          if (this.checkObjecOrString(value) == this.checkObjecOrString(arrayData[index])) {
+                            selected = true;
+                            break;
+                          }
+                        }
+                      }
+                      if (selected) {
+                        checkboxListValue.push(true);
+                      } else {
+                        checkboxListValue.push(false);
+                      }               
+                    });
+                  }
+                  this.templateForm.get(element.field_name).get(data.field_name).setValue(checkboxListValue);
+                  //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(checkboxListValue);
+                  break;                
+                default:
+                  this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
+                  //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(object[data.field_name]);
+                  break;
+              }              
+            })
+          }
+          break;
+        default:          
+          break;
+      }
+    });
+  }
+  // go to new page 2nd method
+  async detailCardButton(data:any,index:number){
+    // if(this.detailPage){
+    //   //const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
+    //   //this.editedRow(data,index);
+    //   this.modaldetailCardButton(column,data);
+    // }else{
+      const newobj = {
+        "childdata": data,
+        "selected_tab_index": this.selectedIndex
+      }
+      this.dataShareServiceService.setchildDataList(newobj);  
+      this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);  
+      this.router.navigate(['card-detail-view']);
+    // }    
+  }
+  // getButtonDivClass(field){
+  //   return this.commonFunctionService.getButtonDivClass(field);
+  // }
+
+  getButtonDivClass(field){
+    const fields = {...field}    
+    if(fields.field_class && field.field_class != ''){
+      return fields.field_class;
+    }
+    return;
+  }
+  checkGridSelectionMendetory(){
+    let validation = {
+      'status' : true,
+      'msg' : ''
+    }
+    if(this.gridSelectionMendetoryList && this.gridSelectionMendetoryList.length > 0){
+      let check = 0;
+      this.gridSelectionMendetoryList.forEach(field => {        
+        let data:any = [];
+        if(this.custmizedFormValue[field.field_name]){
+          data = this.custmizedFormValue[field.field_name];
+        }
+        if(field.mendetory_fields && field.mendetory_fields.length > 0){
+          if(data && data.length > 0){
+            field.mendetory_fields.forEach(mField => {
+              const fieldName = mField.field_name;
+              data.forEach(row => {
+                if(row && row[fieldName] == undefined || row[fieldName] == '' || row[fieldName] == null){
+                  if(validation.msg == ''){
+                    validation.msg = mField.label + ' of ' + field.label+' is required.';
+                  }
+                  check = 1;
+                }
+              });
+            });
+          }
+        }     
+      });
+      if(check != 0){
+        validation.status = false;
+        return validation;
+      }else{
+        return validation
+      }
+    }else{
+      return validation;
+    }
+  }
+
+  // let these below 2 functions in the last in this file
+  async readAsBase64(photo: Photo) {
+    if (this.plt.is('hybrid')) {
+        const file = await Filesystem.readFile({
+            path: photo.path
+        }); 
+        return file.data;
+    }
+    else {
+        const response = await fetch(photo.webPath);
+        const blob = await response.blob();
+        return await this.convertBlobToBase64(blob);
+    }
+  }
+ 
+  // Helper function
+  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
+      const reader = new FileReader;
+      reader.onerror = reject;
+      //need to uncomment below code
+      reader.onload = () => {
+        let base64 = (<string>reader.result).split(',').pop();
+          resolve(base64);
+      }
+      reader.readAsDataURL(blob);
+  });
 }

@@ -2,11 +2,10 @@
 a {text-decoration:none;}
 .w-100 {width:100% !important;}
 
-
 ion-toolbar, .addNew, ion-item-option{--background:var(--themebg) !important;color:#fff;}
 
-
-
+// common utilities css
+.ion-show{display: block;}
 
 //***---------- Header  ----------***//
 
@@ -59,7 +58,7 @@ ion-header {
 .catlist {
     .homecard {display:flex;align-items:center;background:var(--card-bg-light);border-radius:5px;padding:10px;
         ion-avatar { width:auto;height:auto;
-            img {width:28px;height:28px;vertical-align:middle;}
+            img {width:28px;height:28px;vertical-align:middle;border-radius: 0;}
         } 
         ion-label {margin-left:10px;}
     }
@@ -98,6 +97,8 @@ ion-tabs.footertab {
 .contactlist {margin: 0px 8px;
     ion-item-sliding{margin-bottom:6px;margin-top: 6px;    
         ion-item-options {height:calc(100% - 0px);background: var(--themebg);border-radius: 10px;}
+        ion-item-options.item-options-start ion-item-option{border-radius: 10px 0 0 10px;}
+        ion-item-options.item-options-end ion-item-option{border-radius: 0 10px 10px 0;}
         ion-item-option {line-height:66px;color:#fff;width:50px;}
     }
     ion-item {--padding-start:0px;--inner-padding-end:0px;--inner-border-width:0;background:var(--card-bg-light);--background:var(--card-bg-light);padding:10px;border-radius: 10px;
@@ -212,13 +213,10 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         height:22px;font-size:12px;margin:0px;--background:var(--#{$status}-bg);min-width:70px;
       }
 }
-
-
-
 .error{
     color: red;
     margin: 0px 0px 0px 10px;
-    font-size: 11px;
+    font-size: 11p
 }
 .d-none{
     display: none;
@@ -226,6 +224,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
 .d-inline-block{
     display: inline-block;
 }
+.ion-border_bottom{border-bottom:thin solid rgba(0,0,0,0.42);}
 // 19-04
 .app-grid_selection{
     border: 1px solid #F0F1F3;border-radius: 16px;background: #ffffff;margin-top: 10px;
@@ -249,7 +248,9 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         ion-label.value{font-size: 11px;line-height:18px;}
     }    
     .editable-input-wrapper{max-width: 100%;padding: 2px;margin:1px;
-        input{max-width: 100%;}
+        input{max-width: 100%;border-left: none;border-top: none;border-right: none;border-bottom: thin solid rgba(0,0,0,0.42);}
+        ion-select{padding-left: inherit;padding-top: inherit;border-bottom: thin solid rgba(0, 0, 0, 0.42);}
+        input:focus-visible{outline: none;}
     }
 }
 .app-grid_selection.fixed_button{margin-bottom: 4rem;
@@ -319,3 +320,7 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
 
 ion-fab.cardwithsubheader{margin-bottom: 17%;}
 .click_button_mask{bottom: 0;top: 0;position: absolute;left: 0;right: 0;}
+ng-select.ng-select.ng-touched.ng-invalid{
+    .ng-select-container:after {border-bottom: thin solid red;}
+    .ng-placeholder{color: red;}
+}

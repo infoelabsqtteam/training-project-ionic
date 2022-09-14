@@ -8,10 +8,12 @@
         <div *ngFor="let data of gridData; let i = index" class="contactlist" style="margin:0">
             <ion-item-sliding>
                 <ion-list>
-                    <ion-item lines="none" (click)="addremoveparticipant(data,i)">
+                    <ion-item lines="none">
                         <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="getName(data) != ''" [innerHTML]="getFirstCharOfString(getName(data))"></span></ion-avatar>
-                        <ion-row class="w-100"><ion-col size="12"> <p>{{getName(data)}}</p> </ion-col></ion-row>
-                        <ion-buttons slot="end"><ion-checkbox checked="true" color="appcolor" class="left icon ion-hide" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" [indeterminate]="data.selected"></ion-checkbox></ion-buttons>
+                        <ion-label class="ion-text-wrap" (click)="addremoveparticipant(data,i)">
+                            <ion-text>{{getName(data)}}</ion-text>
+                        </ion-label>
+                        <ion-buttons slot="end"><ion-checkbox checked="true" color="appcolor" class="left icon ion-hide" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox></ion-buttons>
                     </ion-item>
                 </ion-list>
             </ion-item-sliding>
@@ -23,15 +25,17 @@
             <ion-item-sliding class=" app-grid_selection">
                 <ion-item class="ion-no-margin" lines="none" (click)="addremoveparticipant(data,i)">
                     <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="getName(data)" [innerHTML]="getFirstCharOfString(getName(data))"></span></ion-avatar>
-                    <ion-row> <ion-col size="12"> <p>{{getName(data)}}</p> </ion-col></ion-row>
-                    <ion-buttons slot="end"><ion-checkbox checked="true" color="appcolor" class="left icon ion-hide" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" [indeterminate]="data.selected"></ion-checkbox></ion-buttons>
+                    <ion-label>
+                        <ion-text size="12">{{getName(data)}}</ion-text>
+                    </ion-label>
+                    <ion-buttons slot="end"><ion-checkbox checked="true" color="appcolor" class="left icon ion-hide" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected"   [indeterminate]="data.selected"></ion-checkbox></ion-buttons>
                 </ion-item>
 
-                <ion-item-options side="end">
-                    <ion-item-option color="medium" class="pencil-outline" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="edite(i)">
+                <ion-item-options side="end" *ngIf="field.add_list_field != 'add' && !updateMode || field.add_new_enabled">
+                    <ion-item-option color="medium" class="pencil-outline" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="edite(i);">
                         <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
                       </ion-item-option>
-                  <ion-item-option color="danger" class="trash-outline" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="delete(i)">
+                    <ion-item-option color="danger" class="trash-outline" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="delete(i)">
                     <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
                   </ion-item-option>
                 </ion-item-options>

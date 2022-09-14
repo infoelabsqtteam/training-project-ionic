@@ -81,8 +81,12 @@ export class HomePage implements OnInit, OnDestroy {
     this.web_site_name = this.envService.getWebSiteName();
     
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
-      this.cardList = data.data;
-      this.commonDataShareService.setModuleList(this.cardList);
+      if(data && data.data && data.data.length > 0){
+        this.cardList = data.data;
+        this.commonDataShareService.setModuleList(this.cardList);
+      }else{
+        this.storageService.presentToast("Server inactive or data not available")
+      }
     })
   }
 
