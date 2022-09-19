@@ -4,7 +4,7 @@ import { AlertController, Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
-import { AuthService, StorageService, StorageTokenStatus,App_googleService, RestService, ApiService, DataShareService, EnvService } from '@core/ionic-core';
+import { AuthService, StorageService, StorageTokenStatus,App_googleService, RestService, ApiService, DataShareService, EnvService, NotificationService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
@@ -65,7 +65,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private restService: RestService,
     private apiService: ApiService,
     private dataShareService: DataShareService,
-    private env: EnvService
+    private env: EnvService,
+    private notificationService: NotificationService
 
   ) {
     
@@ -229,7 +230,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   comingSoon() {
-    this.storageService.presentToast('Comming Soon...');
+    this.notificationService.presentToast('Comming Soon...',"primary");
   }
 
 }

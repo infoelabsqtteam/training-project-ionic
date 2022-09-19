@@ -3831,7 +3831,7 @@ export class FormComponent implements OnInit, OnDestroy {
       }     
     });
     
-    this.cameraService.presentToast("Image Added");
+    this.notificationService.presentToastOnBottom("Image Added");
   }
 
   setFile(){
@@ -3867,7 +3867,7 @@ export class FormComponent implements OnInit, OnDestroy {
     //   this.images.splice(index, 1);
     // });
     this.selectedphotos.splice(index, 1);
-    this.cameraService.presentToast('File removed.');
+    this.notificationService.presentToastOnBottom('File removed.');
   }
   async removeAttachedDataFromList(index:number,fieldName:any){
     let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');

@@ -363,18 +363,19 @@
           </div>
       </div>
 
-      </ion-col>
-      
+      </ion-col> 
       <ion-col *ngIf="samePageGridSelection == true" class="samePageGridSelection">
         <app-grid-selection [Data]="samePageGridSelectionData" (gridSelectionResponce) = "gridSelectionResponce($event)"></app-grid-selection>
       </ion-col>
-
+    </ion-row>  
+    
+    <ion-row>
       <ion-col>
         <span *ngFor="let action_button of formFieldButtons; let i=index" class="w-100" [ngClass]="getButtonDivClass(action_button)" [id]="action_button._id">
           <ion-button type="button" *ngIf="action_button.type == 'button'" (click)="take_action_on_click(action_button)" color="danger" [disabled]="checkValidator(action_button)" expand="block">{{nextFormUpdateMode && action_button.onclick.api == 'add' ? 'Update':action_button.label}}</ion-button>          
         </span>
       </ion-col>
-    </ion-row>  
+    </ion-row>
     
   </ion-grid>
 </ion-content>
