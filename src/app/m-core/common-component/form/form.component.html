@@ -311,7 +311,7 @@
                       <ion-item appearance="outline" class="example-full-width w-100">
                           <ion-label>{{ fields.label | titlecase}}<span *ngIf="fields.is_mandatory" class="ng-star-inserted"> *</span></ion-label>
                           <input matInput [type]="hide ? 'password' : 'text'" [placeholder]="getTitlecase(fields.placeholder)"   [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name">
-                          <button (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+                          <button (click)="hide = !hide"  [attr.aria-pressed]="hide">
                             <ion-icon slot="end" [name]="hide ? 'visibility_off' : 'visibility'"></ion-icon>
                           </button>
                       </ion-item>

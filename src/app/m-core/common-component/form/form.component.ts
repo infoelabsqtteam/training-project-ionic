@@ -154,18 +154,6 @@ htmlViewConfig:AngularEditorConfig = {
 tinymceConfig = {}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
   @Output() filledFormData = new EventEmitter();
   @Output() addAndUpdateResponce = new EventEmitter();
   @Output() formDetails = new EventEmitter();
@@ -280,7 +268,7 @@ tinymceConfig = {}
   addedDataInList: any;
   readonly:boolean = false;
   selectedIndex= -1;
-
+  hide = true;
 
   	/**
 	 * Convert Files list to normal array list
