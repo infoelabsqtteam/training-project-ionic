@@ -374,6 +374,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
 
     this.collectionname = card.collection_name;
+    this.dataShareServiceService.setCollectionName(card.collection_name);
     this.getGridData(this.collectionname, criteria, parentcard);
   }
 
