@@ -4511,10 +4511,16 @@ export class FormComponent implements OnInit, OnDestroy {
           if(data && data.length > 0){
             field.mendetory_fields.forEach(mField => {
               const fieldName = mField.field_name;
-              data.forEach(row => {
+              data.forEach((row:any,i) => {
                 if(row && row[fieldName] == undefined || row[fieldName] == '' || row[fieldName] == null){
                   if(validation.msg == ''){
-                    validation.msg = mField.label + ' of ' + field.label+' is required.';
+                    let errorPositionInArray:any;
+                    if(row.plainCustomerName){
+                      errorPositionInArray =  " of " + row.plainCustomerName;
+                    }else{
+                      errorPositionInArray = '';
+                    }
+                    validation.msg = mField.label + errorPositionInArray + ' of ' + field.label + ' is required.';
                   }
                   check = 1;
                 }
