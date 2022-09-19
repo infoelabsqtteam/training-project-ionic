@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
+import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService, NotificationService } from '@core/ionic-core';
 import { filter } from 'rxjs';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Platform, ModalController, AlertController, PopoverController } from '@ionic/angular';
@@ -104,6 +104,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private modalController: ModalController,
     private alertController: AlertController,
     private datePipe: DatePipe,
+    private notificationService: NotificationService
   ) 
   {
     // below code is for slider and title name
@@ -120,7 +121,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         if(this.loadMoreData){
           this.setCardData(data.data);
         }else{
-          this.storageService.presentToast("Somethisng went wrong, Data not available");
+          this.notificationService.presentToastOnBottom("Somethisng went wrong, Data not available");
         }
       }
     });
@@ -445,7 +446,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
   
   comingSoon() {
-    this.storageService.presentToast('Comming Soon...');
+    this.notificationService.presentToastOnBottom('Comming Soon...');
   }
 
   call(card:any,Index:number) {
@@ -467,13 +468,13 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.callNumber.callNumber(callingNumber, true)
         .then(res => {
           // console.log('Launched dialer! ' + res);
-          this.storageService.presentToast("Calling on :- " + callingNumber);
+          this.notificationService.presentToastOnBottom("Calling on :- " + callingNumber,"success");
           
           this.callDetailRecord(card, startTimeMs);
         })
         .catch(err => console.log('Error launching dialer ' + err));
     }else{
-      this.storageService.presentToast("Invalid number or Number not found");
+      this.notificationService.presentToastOnBottom("Invalid number or Number not found","danger");
     }
   }
 
@@ -645,13 +646,13 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           if (this.carddata.length === this.totalDataCount || this.totalDataCount === 1) {// App logic to determine if all data is loaded       
             // this.currentPageCount = 1;
             this.ionEvent.target.disabled = true;    // and disable the infinite scroll
-            this.storageService.presentToast("You reached at the End");
+            this.notificationService.presentToastOnBottom("You reached at the End","success");
           }else{
             this.currentPageCount++;
             this.getGridData(this.collectionname);  
           }
         }else{
-          this.storageService.presentToast("No more data");
+          this.notificationService.presentToastOnBottom("No more data","danger");
         }
         
       }, 2000);
@@ -673,7 +674,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         if (this.carddata.length === this.totalDataCount) { // App logic to determine if all data is loaded
           // this.refreshEvent.target.disabled = true;    // Disable the infinite scroll if carddata.length === response.totaldata.length
           // console.log('doRefresh async operation has ended');
-          this.storageService.presentToast("No Updates Available");
+          this.notificationService.presentToastOnMiddle("No Updates Available","success");
         }else{
           if(this.card && this.card.card){
             card = this.card.card;
