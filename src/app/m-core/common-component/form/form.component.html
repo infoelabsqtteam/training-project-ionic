@@ -361,20 +361,50 @@
                   <button mdbBtn type="button" size="sm" class="icon-button  text-white list_of_field_button" mdbWavesEffect (click)="refreshListofField(tableField,false)"><i class="material-icons md-48">autorenew</i></button>
               </div>
           </div>
-      </div>
+        </div>
+        <div class="grid-selection" *ngIf="tableField.type == 'grid_selection_vertical'">
+          <ion-item-divider>
+            <ion-row class="w-100">
+              <ion-col size="9"><ion-label>{{ tableField.label }}</ion-label></ion-col>
+              <ion-col size="3">
+                <ion-button shape="round" *ngIf="tableField.datatype != 'grid_review' && !tableField.is_disabled" (click)="setValue('',tableField,false)" [disabled]="templateFormControl[tableField.field_name].disabled"><ion-icon name="chevron-down-outline"></ion-icon></ion-button>
+                <ion-button shape="round" *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length > 0 && tableField.datatype == 'grid_review' && !tableField.is_disabled" (click)="reviewParameters(tableField,custmizedFormValue[tableField.field_name])" [disabled]="templateFormControl[tableField.field_name].disabled"><ion-icon name="time-outline"></ion-icon></ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-item-divider>
 
+           <table>
+              <tbody>
+              <tr *ngFor="let fieldName of modifiedGridColumns(tableField.gridColumns)" [ngClass]="fieldName.display ? 'ml-1':'d-none'">
+                  <td >{{ fieldName.label | titlecase}}</td>
+                  <td *ngFor="let data of custmizedFormValue[tableField.field_name]; let i = index">
+                          <span disabled *ngIf="fieldName.type=='checkbox'" >
+                              <mat-checkbox color="primary"[checked]="data[fieldName.field_name]" disabled></mat-checkbox>
+                          </span>
+                      <span *ngIf="fieldName.type!='checkbox'" [innerHtml]="getValueForGrid(fieldName,data)"></span>
+                  </td>
+              </tr>
+              </tbody>
+          </table>
+
+        </div>
+        <div *ngIf="tableField.type == 'html_view'">
+          <angular-editor [formControlName]="tableField.field_name" [config]="htmlViewConfig"></angular-editor>                          
+        </div>
       </ion-col>
       
       <ion-col *ngIf="samePageGridSelection == true" class="samePageGridSelection">
         <app-grid-selection [Data]="samePageGridSelectionData" (gridSelectionResponce) = "gridSelectionResponce($event)"></app-grid-selection>
       </ion-col>
+    </ion-row>
 
+    <ion-row>
       <ion-col>
         <span *ngFor="let action_button of formFieldButtons; let i=index" class="w-100" [ngClass]="getButtonDivClass(action_button)" [id]="action_button._id">
           <ion-button type="button" *ngIf="action_button.type == 'button'" (click)="take_action_on_click(action_button)" color="danger" [disabled]="checkValidator(action_button)" expand="block">{{nextFormUpdateMode && action_button.onclick.api == 'add' ? 'Update':action_button.label}}</ion-button>          
         </span>
       </ion-col>
-    </ion-row>  
+    </ion-row>
     
   </ion-grid>
 </ion-content>

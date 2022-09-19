@@ -74,6 +74,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   enableEditOnly:boolean=false;
   loadMoreData:boolean = false;
   refreshlist:boolean = false;
+  enableReviewOnly:boolean=false;
 
   // new var
   gridDataSubscription: any;
@@ -320,7 +321,17 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     }else{
       this.enableEditOnly = false;
-    } 
+    }
+
+    if(card && card.enable_only_review){
+      if(this.detailPage){
+        this.enableReviewOnly = false;
+      }else{
+        this.enableReviewOnly = true;
+      }
+    }else{
+      this.enableReviewOnly = false;
+    }
     if(card && card.add_calling){
       if(this.detailPage){
         this.addCallingFeature = false;
@@ -373,6 +384,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
 
     this.collectionname = card.collection_name;
+    this.dataShareServiceService.setCollectionName(card.collection_name);
     this.getGridData(this.collectionname, criteria, parentcard);
   }
 

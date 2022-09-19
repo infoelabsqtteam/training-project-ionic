@@ -12,7 +12,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { GoogleChartsModule } from 'angular-google-charts';
 import { GridSelectionComponent } from './grid-selection/grid-selection.component';
 import { PopoverComponent } from './popover/popover.component';
-
+import { AngularEditorModule } from '@kolkov/angular-editor';
 const components = [
     FormComponent,
     CardsLayoutComponent,
@@ -30,6 +30,7 @@ const components = [
         CommonModule,
         IonicModule,
         FormsModule, 
+        AngularEditorModule,
         ReactiveFormsModule, 
         HttpClientModule,
         IonicModule.forRoot(),

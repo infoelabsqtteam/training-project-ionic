@@ -324,3 +324,10 @@ ng-select.ng-select.ng-touched.ng-invalid{
     .ng-select-container:after {border-bottom: thin solid red;}
     .ng-placeholder{color: red;}
 }
+
+
+.grid-selection {
+    table {margin-bottom:20px;
+        td,th {font-size:14px;padding:5px 10px;color:#555;border:1px solid #e8e8e8;}
+    }
+}

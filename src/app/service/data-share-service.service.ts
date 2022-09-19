@@ -40,6 +40,9 @@ export class DataShareServiceService {
   storeCardList:any=[];
   childDataList: EventEmitter<any> = new EventEmitter<any>(null);
   childCardData: any = [];
+  setcollectionName: EventEmitter<any> = new EventEmitter<any>(null);
+  collectionName: any = '';
+  
 
 //Usage of search medecine 
   setmedecineData(responce){
@@ -127,6 +130,14 @@ export class DataShareServiceService {
   }
   replaceDatainArray(arraydata:any){
     
+  }  
+  // set Collection name ratherthan currentMenu.name
+  setCollectionName(responce){
+    this.setcollectionName.emit(responce);
+    this.collectionName = responce;
+  }
+  getCollectionName(){
+    return this.collectionName;
   }
   
 }
