@@ -510,6 +510,14 @@ export class FormComponent implements OnInit, OnDestroy {
         this.currentMenu = {};
       }
       this.currentMenu['name'] = this.form.details.collection_name;
+    }else{
+        const collectionName = this.dataShareServiceService.getCollectionName();
+        if(collectionName !=''){
+          if(this.currentMenu == undefined){
+            this.currentMenu = {};
+          }
+          this.currentMenu['name'] = collectionName;
+        }      
     }
     // if(this.form){
     //   if(this.form.details && this.form.details.bulk_update){
@@ -584,7 +592,7 @@ export class FormComponent implements OnInit, OnDestroy {
                 this.minDate = new Date(currentYear - 100, 0, 1);
                 this.maxDate = new Date(currentYear + 1, 11, 31);
               }
-              if(this.plt.is('hybrid')){
+              // if(this.plt.is('hybrid')){
                 let getToday: any  = (new Date()).toISOString();
                 getToday = utcToZonedTime(getToday, this.userTimeZone);
                 getToday = this.datePipe.transform(getToday, "yyyy-MM-ddThh:mm:ss");
@@ -600,10 +608,10 @@ export class FormComponent implements OnInit, OnDestroy {
                 // }
                 element['minDate'] = minDateToday;
                 element['maxDate'] = maxDateFromToday;
-              }else{
-                element['minDate'] = this.minDate;
-                element['maxDate'] = this.maxDate;
-              }
+              // }else{
+              //   element['minDate'] = this.minDate;
+              //   element['maxDate'] = this.maxDate;
+              // }
               this.commonFunctionService.createFormControl(forControl, element, '', "text")
               break; 
             case "daterange":
@@ -671,17 +679,17 @@ export class FormComponent implements OnInit, OnDestroy {
                           this.minDate = new Date(currentYear - 100, 0, 1);
                           this.maxDate = new Date(currentYear + 1, 11, 31);
                         }
-                        if(this.plt.is("hybrid")){
+                        // if(this.plt.is("hybrid")){
                           let minDateToday:any;
                           let maxDateFromToday:any;                
                           minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd");
                           maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd");
                           data['minDate'] = minDateToday
                           data['maxDate'] = maxDateFromToday;
-                        }else{
-                          data['minDate'] = this.minDate;
-                          data['maxDate'] = this.maxDate;
-                        }                        
+                        // }else{
+                        //   data['minDate'] = this.minDate;
+                        //   data['maxDate'] = this.maxDate;
+                        // }                        
                         this.commonFunctionService.createFormControl(list_of_fields, modifyData, '', "text")
                         break; 
                     
