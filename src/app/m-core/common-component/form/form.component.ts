@@ -2,10 +2,10 @@ import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitte
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn, FormArray, FormControl } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
+import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, EnvService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
 import { ItemReorderEventDetail, ModalController, ToastController  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
-
+import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
 import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
 import { Filesystem, Directory } from '@capacitor/filesystem';
@@ -23,12 +23,136 @@ interface User {
   last: string;
 }
 
+declare var tinymce: any;
+
 @Component({
   selector: 'app-form',
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
 })
 export class FormComponent implements OnInit, OnDestroy {
+
+
+
+//https://www.npmjs.com/package/@kolkov/angular-editor
+editorConfig: AngularEditorConfig = {
+  editable: true,
+  spellcheck: true,
+  height: '100px',
+  minHeight: '0',
+  maxHeight: 'auto',
+  width: 'auto',
+  minWidth: '0',
+  translate: 'yes',
+  enableToolbar: true,
+  showToolbar: true,
+  placeholder: 'Enter text here...',
+  defaultParagraphSeparator: '',
+  defaultFontName: '',
+  defaultFontSize: '',
+  fonts: [
+    { class: 'arial', name: 'Arial' },
+    { class: 'times-new-roman', name: 'Times New Roman' },
+    { class: 'calibri', name: 'Calibri' },
+    { class: 'comic-sans-ms', name: 'Comic Sans MS' }
+  ],
+  customClasses: [
+    {
+      name: 'quote',
+      class: 'quote',
+    },
+    {
+      name: 'redText',
+      class: 'redText'
+    },
+    {
+      name: 'titleText',
+      class: 'titleText',
+      tag: 'h1',
+    },
+  ],
+  uploadUrl: 'v1/image',
+  uploadWithCredentials: false,
+  sanitize: true,
+  toolbarPosition: 'top',
+  toolbarHiddenButtons: [
+    [],
+    ['fontSize', 'insertImage', 'insertVideo',]
+  ]
+};
+
+minieditorConfig: AngularEditorConfig = {
+  editable: true,
+  spellcheck: true,
+  height: '100px',
+  minHeight: '0',
+  maxHeight: 'auto',
+  width: 'auto',
+  minWidth: '0',
+  translate: 'yes',
+  enableToolbar: true,
+  showToolbar: true,
+  placeholder: 'Enter text here...',
+  defaultParagraphSeparator: '',
+  defaultFontName: '',
+  defaultFontSize: '',
+  fonts: [
+    { class: 'arial', name: 'Arial' },
+    { class: 'times-new-roman', name: 'Times New Roman' },
+    { class: 'calibri', name: 'Calibri' },
+    { class: 'comic-sans-ms', name: 'Comic Sans MS' }
+  ],
+  customClasses: [
+    {
+      name: 'quote',
+      class: 'quote',
+    },
+    {
+      name: 'redText',
+      class: 'redText'
+    },
+    {
+      name: 'titleText',
+      class: 'titleText',
+      tag: 'h1',
+    },
+  ],
+  uploadUrl: 'v1/image',
+  uploadWithCredentials: false,
+  sanitize: true,
+  toolbarPosition: 'top',
+  toolbarHiddenButtons: [
+    [],
+    ['fontSize',
+    'textColor',
+    'backgroundColor',
+    'customClasses',
+    'link',
+    'unlink',
+    'insertImage',
+    'insertVideo',
+    'insertHorizontalRule',
+    'toggleEditorMode',
+    'justifyLeft',
+    'justifyCenter',
+    'justifyRight',
+    'justifyFull',
+    'indent',
+    'outdent',
+    'insertUnorderedList',
+    'insertOrderedList',
+    'heading',
+    'fontName',
+    'removeFormat',      
+    'strikeThrough']
+  ]
+};
+htmlViewConfig:AngularEditorConfig = {
+  editable: false,
+  showToolbar: false,
+}
+tinymceConfig = {}
+
 
   @Output() filledFormData = new EventEmitter();
   @Output() addAndUpdateResponce = new EventEmitter();
@@ -144,6 +268,17 @@ export class FormComponent implements OnInit, OnDestroy {
   addedDataInList: any;
   readonly:boolean = false;
   selectedIndex= -1;
+  hide = true;
+
+  	/**
+	 * Convert Files list to normal array list
+	 * @param files (Files List)
+	 */
+     files: any[] = [];
+     public xtr: any;
+     public obj: any = {};
+     public uploadData: any = []
+     public uploadFilesData: any = [];
 
   constructor(
     public formBuilder: FormBuilder,
@@ -164,8 +299,68 @@ export class FormComponent implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private http: HttpClient,
     private titlecasePipe: TitleCasePipe,
-    private dataShareServiceService: DataShareServiceService
+    private dataShareServiceService: DataShareServiceService,
+    private envService: EnvService
     ) {
+
+
+      this.tinymceConfig = {
+        height: 500,
+        menubar: false,
+        branding: false,
+        plugins: [
+          'advlist autolink lists link image charmap print preview anchor',
+          'searchreplace visualblocks code fullscreen',
+          'insertdatetime media table paste code help wordcount'
+        ],
+        toolbar:
+          'undo redo | formatselect | bold italic backcolor | \
+          alignleft aligncenter alignright alignjustify | \
+          bullist numlist outdent indent | \ table tabledelete | image | code | removeformat | help',
+        image_title: true,
+        automatic_uploads: true,
+        file_picker_types: 'image',
+        file_picker_callback: function (cb, value, meta) {
+          let input = document.createElement('input');
+          input.setAttribute('type', 'file');
+          input.setAttribute('accept', 'image/*');
+      
+          /*
+            Note: In modern browsers input[type="file"] is functional without
+            even adding it to the DOM, but that might not be the case in some older
+            or quirky browsers like IE, so you might want to add it to the DOM
+            just in case, and visually hide it. And do not forget do remove it
+            once you do not need it anymore.
+          */
+      
+          input.onchange = function () {
+            var file;
+      
+            var reader:any = new FileReader();
+            reader.onload = function () {
+              /*
+                Note: Now we need to register the blob in TinyMCEs image blob
+                registry. In the next release this part hopefully won't be
+                necessary, as we are looking to handle it internally.
+              */
+              var id = 'blobid' + (new Date()).getTime();
+              var blobCache =  tinymce.activeEditor.editorUpload.blobCache;
+              var base64 = reader.result.split(',')[1];
+              var blobInfo = blobCache.create(id, file, base64);
+              blobCache.add(blobInfo);
+      
+              /* call the callback and populate the Title field with the file name */
+              cb(blobInfo.blobUri(), { title: file.name });
+            };
+            reader.readAsDataURL(file);
+          };
+      
+          input.click();
+        },
+        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+      }
+
+
       this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
         this.setStaticData(data);
       });
@@ -510,14 +705,6 @@ export class FormComponent implements OnInit, OnDestroy {
         this.currentMenu = {};
       }
       this.currentMenu['name'] = this.form.details.collection_name;
-    }else{
-        const collectionName = this.dataShareServiceService.getCollectionName();
-        if(collectionName !=''){
-          if(this.currentMenu == undefined){
-            this.currentMenu = {};
-          }
-          this.currentMenu['name'] = collectionName;
-        }      
     }
     // if(this.form){
     //   if(this.form.details && this.form.details.bulk_update){
@@ -592,7 +779,7 @@ export class FormComponent implements OnInit, OnDestroy {
                 this.minDate = new Date(currentYear - 100, 0, 1);
                 this.maxDate = new Date(currentYear + 1, 11, 31);
               }
-              // if(this.plt.is('hybrid')){
+              if(this.plt.is('hybrid')){
                 let getToday: any  = (new Date()).toISOString();
                 getToday = utcToZonedTime(getToday, this.userTimeZone);
                 getToday = this.datePipe.transform(getToday, "yyyy-MM-ddThh:mm:ss");
@@ -608,10 +795,10 @@ export class FormComponent implements OnInit, OnDestroy {
                 // }
                 element['minDate'] = minDateToday;
                 element['maxDate'] = maxDateFromToday;
-              // }else{
-              //   element['minDate'] = this.minDate;
-              //   element['maxDate'] = this.maxDate;
-              // }
+              }else{
+                element['minDate'] = this.minDate;
+                element['maxDate'] = this.maxDate;
+              }
               this.commonFunctionService.createFormControl(forControl, element, '', "text")
               break; 
             case "daterange":
@@ -679,17 +866,17 @@ export class FormComponent implements OnInit, OnDestroy {
                           this.minDate = new Date(currentYear - 100, 0, 1);
                           this.maxDate = new Date(currentYear + 1, 11, 31);
                         }
-                        // if(this.plt.is("hybrid")){
+                        if(this.plt.is("hybrid")){
                           let minDateToday:any;
                           let maxDateFromToday:any;                
                           minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd");
                           maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd");
                           data['minDate'] = minDateToday
                           data['maxDate'] = maxDateFromToday;
-                        // }else{
-                        //   data['minDate'] = this.minDate;
-                        //   data['maxDate'] = this.maxDate;
-                        // }                        
+                        }else{
+                          data['minDate'] = this.minDate;
+                          data['maxDate'] = this.maxDate;
+                        }                        
                         this.commonFunctionService.createFormControl(list_of_fields, modifyData, '', "text")
                         break; 
                     
@@ -952,14 +1139,96 @@ export class FormComponent implements OnInit, OnDestroy {
             this.setListoffieldData();         
             break;
           case "delete_row":
-            // this.deleteGridData();
+             this.deleteGridData();
             break; 
           default:
-            // this.partialDataSave(action_button.onclick,null)
+             this.partialDataSave(action_button.onclick,null)
             break;
       } 
     } 
   }
+
+  deleteGridData(){
+    let checkValidatiaon = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(false),true,this.getFormValue(true));
+    if(typeof checkValidatiaon != 'object'){
+      this.deleteGridRowData = true;
+      const saveFromData = this.getSavePayloadData();
+      if(this.getSavePayload){
+          this.apiService.deleteGridRow(saveFromData);
+      }
+    }else{
+      this.notificationService.showAlert('bg-danger','',checkValidatiaon.msg);
+    } 
+  }
+
+
+
+  partialDataSave(feilds,tableField){       
+    const payload = {
+      data:{}
+    };
+    //for gsd call*************************
+    if(feilds.action_name == 'GSD_CALL'){
+      this.envService.setRequestType("PUBLIC");
+      if(feilds.api != undefined && feilds.api != null && feilds.api != ''){
+        payload['path'] = feilds.api;
+      }
+
+      let list = [];
+      list.push(this.restService.getPaylodWithCriteria(tableField.api_params,tableField.call_back_field,tableField.api_params_criteria,this.getFormValue(false)));
+       payload['data'] = list;
+      this.apiService.DynamicApiCall(payload);
+      this.saveCallSubscribe();
+      //console.log();
+      
+    }
+
+    //for deafult call (like save)*******************
+    else{
+      if(feilds.api != undefined && feilds.api != null && feilds.api != ''){
+        payload['path'] = feilds.api+'/'+this.currentMenu.name
+      }    
+      if(this.updateMode){
+        const _id = this.selectedRow._id;    
+        payload.data['_id'] = _id;
+      }  
+      if(Array.isArray(feilds.payloads_fields) && feilds.payloads_fields.length > 0){
+          if(feilds.payloads_fields[0].toUpperCase() == 'FORM_OBJECT'){
+            const saveFromData = this.getSavePayloadData();
+            if(this.getSavePayload){
+              payload.data = saveFromData.data;
+              if(payload['path'] && payload['path'] != undefined && payload['path'] != null && payload['path'] != ''){
+                this.apiService.DynamicApiCall(payload);
+                this.saveCallSubscribe();
+              } 
+            }
+          }else{
+            feilds.payloads_fields.forEach(feild => {
+              if(feild in this.custmizedFormValue){
+                  payload.data[feild] = this.custmizedFormValue[feild];
+                }
+                else if(feild in this.templateForm.value){
+                  payload.data[feild] = this.templateForm.value[feild]
+                }
+            });
+            if(payload['path'] && payload['path'] != undefined && payload['path'] != null && payload['path'] != ''){
+              this.apiService.DynamicApiCall(payload);
+              this.saveCallSubscribe();
+            }
+          }
+      } 
+    }
+     
+      
+  }
+
+
+  saveCallSubscribe(){
+    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
+      this.setSaveResponce(responce);
+    })
+  }
+
   getFormValue(check){    
     let formValue = this.templateForm.getRawValue();
     let selectedRow = { ...this.selectedRow };     
@@ -1215,7 +1484,7 @@ export class FormComponent implements OnInit, OnDestroy {
     this.submitted = true;
     let hasPermission;
     if(this.currentMenu && this.currentMenu.name){
-      hasPermission = this.permissionService.checkPermission(this.currentMenu.name.toLowerCase( ),'add')
+      hasPermission = this.permissionService.checkPermission(this.currentMenu.name.toLowerCase( ),'add');
     }
     if(this.updateMode){
       hasPermission = this.permissionService.checkPermission(this.currentMenu.name.toLowerCase( ),'edit')
@@ -1292,7 +1561,7 @@ export class FormComponent implements OnInit, OnDestroy {
       // }
       if(this.getSavePayload){
         if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.api && this.currentActionButton.onclick.api != null && this.currentActionButton.onclick.api.toLowerCase() == 'send_email'){
-          //this.apiService.SendEmail(saveFromData)
+          this.apiService.SendEmail(saveFromData)
         }else{
           this.apiService.SaveFormData(saveFromData);
         }        
@@ -1301,6 +1570,7 @@ export class FormComponent implements OnInit, OnDestroy {
       this.notificationService.showAlert(checkValidatiaon.msg,'',['Dismiss']);
     }     
   }
+  
 
   resetForm(){
     //this.formGroupDirective.resetForm();
@@ -1849,9 +2119,21 @@ export class FormComponent implements OnInit, OnDestroy {
   }
 
 
-
-
-
+  responceData(data) {
+    if(this.clickFieldName.type){
+      switch (this.clickFieldName.type) {
+        case "grid_selection":
+        case 'grid_selection_vertical':
+          if(this.clickFieldName.datatype == 'grid_review'){
+            this.custmizedFormValue[this.clickFieldName.field_name] = data;
+          }          
+          break;      
+        default:
+          break;
+      }
+    }
+    this.clickFieldName = {};
+  }
 
   resetFlagsForNewForm(){    
     //this.tableFields = [];
@@ -2571,7 +2853,22 @@ export class FormComponent implements OnInit, OnDestroy {
     this.listOfFieldUpdateMode = false;
   }
 
-
+  modifiedGridColumns(gridColumns){
+    if(gridColumns.length > 0){     
+      gridColumns.forEach(field => {
+        if(this.commonFunctionService.isNotBlank(field.show_if)){
+          if(!this.showIf(field)){
+            field['display'] = false;
+          }else{
+            field['display'] = true;
+          }                
+        }else{
+          field['display'] = true;
+        }
+      });
+    }
+    return gridColumns;
+  }
   
   storeFormDetails(parent_field:any,field:any,index?){
     let targetFieldName ={}
@@ -3176,15 +3473,7 @@ export class FormComponent implements OnInit, OnDestroy {
 
 
 
-	/**
-	 * Convert Files list to normal array list
-	 * @param files (Files List)
-	 */
-   files: any[] = [];
-  public xtr: any;
-  public obj: any = {};
-  public uploadData: any = []
-  public uploadFilesData: any = [];
+
   prepareFilesList(files: Array<any>) {
     for (const item of files) {
       item.progress = 0;
@@ -3839,7 +4128,7 @@ export class FormComponent implements OnInit, OnDestroy {
       }     
     });
     
-    this.notificationService.presentToastOnBottom("Image Added");
+    this.cameraService.presentToast("Image Added");
   }
 
   setFile(){
@@ -3875,7 +4164,7 @@ export class FormComponent implements OnInit, OnDestroy {
     //   this.images.splice(index, 1);
     // });
     this.selectedphotos.splice(index, 1);
-    this.notificationService.presentToastOnBottom('File removed.');
+    this.cameraService.presentToast('File removed.');
   }
   async removeAttachedDataFromList(index:number,fieldName:any){
     let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
