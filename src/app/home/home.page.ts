@@ -1,6 +1,6 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, LoaderService, PermissionService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
+import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, LoaderService, NotificationService, PermissionService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
 import { Platform, AlertController } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -68,7 +68,8 @@ export class HomePage implements OnInit, OnDestroy {
     private dataShareService:DataShareService,
     private apiService:ApiService,
     private restService:RestService,
-    private commonDataShareService:CommonDataShareService
+    private commonDataShareService:CommonDataShareService,
+    private notificationService: NotificationService
   ) 
   {
     this.initializeApp();
@@ -85,7 +86,7 @@ export class HomePage implements OnInit, OnDestroy {
         this.cardList = data.data;
         this.commonDataShareService.setModuleList(this.cardList);
       }else{
-        this.storageService.presentToast("Server inactive or data not available")
+        this.notificationService.presentToastOnMiddle("Server inactive or data not available");
       }
     })
   }
@@ -204,7 +205,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
   
   comingSoon() {
-    this.storageService.presentToast('Comming Soon...');
+    this.notificationService.presentToastOnBottom('Comming Soon...','danger');
   }
 
   pdfurl = "https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf";

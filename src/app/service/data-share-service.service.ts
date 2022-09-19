@@ -9,7 +9,7 @@ export class DataShareServiceService {
   MedicineData: EventEmitter<any> = new EventEmitter<any>(null);
   medicineData:any=[];
 
-// medicine saltList
+  // medicine saltList
   MedicineSaltList: EventEmitter<any> = new EventEmitter<any>(null);
   medicineSaltList:any=[];
 
@@ -33,18 +33,15 @@ export class DataShareServiceService {
   UserDetails: EventEmitter<any> = new EventEmitter<any>(null);
   userdetails:any=[];
 
-//Elab card Master 
+  //Elab card Master 
   setCardmasterData: EventEmitter<any> = new EventEmitter<any>(null);
   cardmasterData:any=[];
   cardList: EventEmitter<any> = new EventEmitter<any>(null);
   storeCardList:any=[];
   childDataList: EventEmitter<any> = new EventEmitter<any>(null);
   childCardData: any = [];
-  setcollectionName: EventEmitter<any> = new EventEmitter<any>(null);
-  collectionName: any = '';
-  
 
-//Usage of search medecine 
+  //Usage of search medecine 
   setmedecineData(responce){
     this.MedicineData.emit(responce);
     this.medicineData = responce;
@@ -52,7 +49,7 @@ export class DataShareServiceService {
   getmedicineData(){
     return this.medicineData;
   }
-// blogs
+  // blogs
   setblogdata(responce){
     this.BlogData.emit(responce);
     this.blogdata = responce;
@@ -104,7 +101,7 @@ export class DataShareServiceService {
   getmedicineSaltList(){
     return this.medicineSaltList;
   }
-//Elab card Master 
+  //Elab card Master 
   setcardData(responce){
     this.setCardmasterData.emit(responce);
     this.cardmasterData = responce;
@@ -130,14 +127,6 @@ export class DataShareServiceService {
   }
   replaceDatainArray(arraydata:any){
     
-  }  
-  // set Collection name ratherthan currentMenu.name
-  setCollectionName(responce){
-    this.setcollectionName.emit(responce);
-    this.collectionName = responce;
-  }
-  getCollectionName(){
-    return this.collectionName;
   }
   
 }

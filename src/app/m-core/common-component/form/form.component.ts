@@ -416,8 +416,6 @@ tinymceConfig = {}
           this.openNextForm(false);
         }
       })
-      this.currentMenu = this.storageService.GetActiveMenu();
-      // this.userInfo = this.storageService.GetUserInfo();
   }
 
   resetFlag(){
@@ -719,15 +717,7 @@ tinymceConfig = {}
         this.currentMenu = {};
       }
       this.currentMenu['name'] = this.form.details.collection_name;
-    }else{
-      const collectionName = this.dataShareServiceService.getCollectionName();
-      if(collectionName !=''){
-        if(this.currentMenu == undefined){
-          this.currentMenu = {};
-        }
-        this.currentMenu['name'] = collectionName;
-      }      
-  }
+    }
     // if(this.form){
     //   if(this.form.details && this.form.details.bulk_update){
     //     this.bulkupdates = true;
@@ -1197,7 +1187,7 @@ tinymceConfig = {}
       }
 
       let list = [];
-      list.push(this.commonFunctionService.getPaylodWithCriteria(tableField.api_params,tableField.call_back_field,tableField.api_params_criteria,this.getFormValue(false)));
+      list.push(this.restService.getPaylodWithCriteria(tableField.api_params,tableField.call_back_field,tableField.api_params_criteria,this.getFormValue(false)));
        payload['data'] = list;
       this.apiService.DynamicApiCall(payload);
       this.saveCallSubscribe();
