@@ -62,16 +62,16 @@
             <ion-accordion-group expand="inset">
               <ion-accordion value="{{tableField._id+'_'+tableField.field_name}}">
                 <ion-item slot="header" color="light" line="inset">
-                  <ion-label>{{ tableField.label | titlecase}}</ion-label>
+                  <ion-label>{{ tableField.label | titlecase}} <ion-text *ngIf="tableField.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label>
                   <ion-button expand="round" slot="end" size="small" fill="outline" *ngIf="dataListForUpload[tableField.field_name] && dataListForUpload[tableField.field_name].length > 0" [innerHtml]="getNumberOfSelectedFile(tableField)"></ion-button>
                   <ion-button expand="round" slot="end" size="small" fill="outline" [id]="tableField._id+'_'+tableField.field_name" (click)="selectImageSource('',tableField)" [formControlName]="tableField.field_name" [disabled]="tableField.is_disabled">
                     <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
                   </ion-button>
-                  <input type="file" id="fileInput" [formControlName]="tableField.field_name" multiple (change)="fileBrowseHandler('',tableField,$event.target)" hidden="true" class="ion-hide" accept="image/*" />
+                  <!-- <input type="file" id="fileInput" [formControlName]="tableField.field_name" multiple (change)="fileBrowseHandler('',tableField,$event.target)" hidden="true" class="ion-hide" accept="image/*" /> -->
                 </ion-item>
                 <div class="ion-padding" slot="content" class="ion-padding-top">
                   <ion-item lines="none" class="ion-margin-bottom" *ngIf="!dataListForUpload[tableField.field_name] || (dataListForUpload[tableField.field_name] && dataListForUpload[tableField.field_name].length == 0)">
-                    <ion-label>No file uploaded, please upload</ion-label>
+                    <ion-label>No file uploaded, <ion-text *ngIf="templateFormControl[tableField.field_name].errors ==null">please upload</ion-text> <ion-text slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].errors?.required">field is <strong>required</strong></ion-text></ion-label>
                   </ion-item>
                   <ion-list class="contactlist ion-margin-start ion-margin-end" *ngIf="dataListForUpload[tableField.field_name] && dataListForUpload[tableField.field_name].length > 0">
                     <ion-item class="ion-margin-bottom" *ngFor="let file of dataListForUpload[tableField.field_name]; let i = index;">
@@ -110,8 +110,9 @@
         </div>
         <div *ngIf="tableField.type == 'textarea'">
           <ion-item>
-            <ion-label position="floating">{{ tableField.label }}</ion-label>
+            <ion-label position="floating">{{ tableField.label }} <ion-text *ngIf="tableField.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label>
             <ion-textarea [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" [required]="tableField.is_mandatory" rows="3" cols="" auto-grow="true" enterkeyhint="enter" inputmode="text" spellcheck="true"></ion-textarea>
+            <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
           </ion-item>
         </div>
         <div *ngIf="tableField.type == 'number'">
@@ -310,10 +311,10 @@
                   <div *ngIf="fields.type == 'password'">
                       <ion-item appearance="outline" class="example-full-width w-100">
                           <ion-label>{{ fields.label | titlecase}}<span *ngIf="fields.is_mandatory" class="ng-star-inserted"> *</span></ion-label>
-                          <input matInput [type]="hide ? 'password' : 'text'" [placeholder]="getTitlecase(fields.placeholder)"   [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name">
-                          <button (click)="hide = !hide"  [attr.aria-pressed]="hide">
-                            <ion-icon slot="end" [name]="hide ? 'visibility_off' : 'visibility'"></ion-icon>
-                          </button>
+                          <input [type]="hide ? 'password' : 'text'" [placeholder]="getTitlecase(fields.placeholder)"   [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name">
+                          <ion-button (click)="hide = !hide">
+                            <ion-icon slot="end" [name]="hide ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+                          </ion-button>
                       </ion-item>
                   </div>
                   <div *ngIf="fields.type == 'email'">
@@ -361,7 +362,7 @@
                   <button mdbBtn type="button" size="sm" class="icon-button  text-white list_of_field_button" mdbWavesEffect (click)="refreshListofField(tableField,false)"><i class="material-icons md-48">autorenew</i></button>
               </div>
           </div>
-        </div>
+      </div>
         <div class="grid-selection" *ngIf="tableField.type == 'grid_selection_vertical'">
           <ion-item-divider>
             <ion-row class="w-100">
@@ -391,13 +392,13 @@
         <div *ngIf="tableField.type == 'html_view'">
           <angular-editor [formControlName]="tableField.field_name" [config]="htmlViewConfig"></angular-editor>                          
         </div>
-      </ion-col>
+      </ion-col> 
       
       <ion-col *ngIf="samePageGridSelection == true" class="samePageGridSelection">
         <app-grid-selection [Data]="samePageGridSelectionData" (gridSelectionResponce) = "gridSelectionResponce($event)"></app-grid-selection>
       </ion-col>
-    </ion-row>
-
+    </ion-row>  
+    
     <ion-row>
       <ion-col>
         <span *ngFor="let action_button of formFieldButtons; let i=index" class="w-100" [ngClass]="getButtonDivClass(action_button)" [id]="action_button._id">

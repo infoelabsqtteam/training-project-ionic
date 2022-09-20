@@ -705,6 +705,14 @@ tinymceConfig = {}
         this.currentMenu = {};
       }
       this.currentMenu['name'] = this.form.details.collection_name;
+    }else{
+      const collectionName = this.dataShareServiceService.getCollectionName();
+      if(collectionName !=''){
+        if(this.currentMenu == undefined){
+          this.currentMenu = {};
+        }
+        this.currentMenu['name'] = collectionName;
+      }      
     }
     // if(this.form){
     //   if(this.form.details && this.form.details.bulk_update){
