@@ -705,6 +705,14 @@ tinymceConfig = {}
         this.currentMenu = {};
       }
       this.currentMenu['name'] = this.form.details.collection_name;
+    }else{
+      const collectionName = this.dataShareServiceService.getCollectionName();
+      if(collectionName !=''){
+        if(this.currentMenu == undefined){
+          this.currentMenu = {};
+        }
+        this.currentMenu['name'] = collectionName;
+      }      
     }
     // if(this.form){
     //   if(this.form.details && this.form.details.bulk_update){
@@ -4800,10 +4808,16 @@ tinymceConfig = {}
           if(data && data.length > 0){
             field.mendetory_fields.forEach(mField => {
               const fieldName = mField.field_name;
-              data.forEach(row => {
+              data.forEach((row:any,i) => {
                 if(row && row[fieldName] == undefined || row[fieldName] == '' || row[fieldName] == null){
                   if(validation.msg == ''){
-                    validation.msg = mField.label + ' of ' + field.label+' is required.';
+                    let errorPositionInArray:any;
+                    if(row.plainCustomerName){
+                      errorPositionInArray =  " of " + row.plainCustomerName;
+                    }else{
+                      errorPositionInArray = '';
+                    }
+                    validation.msg = mField.label + errorPositionInArray + ' of ' + field.label + ' is required.';
                   }
                   check = 1;
                 }
