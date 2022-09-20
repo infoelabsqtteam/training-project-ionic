@@ -2,7 +2,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { EnvService, StorageService } from '@core/ionic-core';
+import { CoreUtilityService, EnvService, StorageService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { ModalController, PopoverController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -75,7 +75,8 @@ export class ContactDetailsPage implements OnInit {
     private formBuilder: FormBuilder,
     private datePipe: DatePipe,
     private CurrencyPipe: CurrencyPipe,
-    private ionLoaderService: IonLoaderService
+    private ionLoaderService: IonLoaderService,
+    private coreUtilityService :CoreUtilityService,
   ) {}
 
   ngOnInit() {
@@ -498,7 +499,7 @@ export class ContactDetailsPage implements OnInit {
                 filterList.push(
                   {
                     "fName": element.field_name,
-                    "fValue": this.dateFormat(formValue.value[element.field_name]),
+                    "fValue": this.coreUtilityService.dateFormat(formValue.value[element.field_name]),
                     "operator": "eq"
                   }
                 )
@@ -515,7 +516,7 @@ export class ContactDetailsPage implements OnInit {
                 filterList.push(
                   {
                     "fName": element.field_name,
-                    "fValue": this.dateFormat(formValue.value[element.field_name].start),
+                    "fValue": this.coreUtilityService.dateFormat(formValue.value[element.field_name].start),
                     "operator": "gte"
                   }
                 ) 
@@ -530,7 +531,7 @@ export class ContactDetailsPage implements OnInit {
                 filterList.push(
                   {
                     "fName": element.field_name,
-                    "fValue": this.dateFormat(formValue.value[element.field_name].end),
+                    "fValue": this.coreUtilityService.dateFormat(formValue.value[element.field_name].end),
                     "operator": "lte"
                   }
                 )
@@ -554,9 +555,6 @@ export class ContactDetailsPage implements OnInit {
   }
   isArray(obj : any ) {
     return Array.isArray(obj)
-  }
-  dateFormat(value) {
-    return this.datePipe.transform(value, 'dd/MM/yyyy')
   }
 
   getCriteriaList(criteria,object){

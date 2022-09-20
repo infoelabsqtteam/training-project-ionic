@@ -4276,25 +4276,6 @@ tinymceConfig = {}
   getDivClassXs(deviceValue?:number){
     return deviceValue;
   };
-
-  convertUtcToLocalDate(val : Date) : Date {        
-      var d = new Date(val); // val is in UTC
-      var localOffset = d.getTimezoneOffset() * 60000;
-      var localTime = d.getTime() - localOffset;
-
-      d.setTime(localTime);
-      return d;
-  }
-
-  convertLocalToUtc(val : Date) : Date { 
-      var d = new Date(val);
-      var localOffset = d.getTimezoneOffset() * 60000;
-      var utcTime = d.getTime() + localOffset;
-
-      d.setTime(utcTime);
-      console.log("D :", d);
-      return d;
-  }
   // open same form on form component
   addListOfFields(field){
     this.storeFormDetails("",field);
@@ -4781,17 +4762,10 @@ tinymceConfig = {}
       this.router.navigate(['card-detail-view']);
     // }    
   }
-  // getButtonDivClass(field){
-  //   return this.commonFunctionService.getButtonDivClass(field);
-  // }
-
   getButtonDivClass(field){
-    const fields = {...field}    
-    if(fields.field_class && field.field_class != ''){
-      return fields.field_class;
-    }
-    return;
+    return this.commonFunctionService.getButtonDivClass(field);
   }
+  
   checkGridSelectionMendetory(){
     let validation = {
       'status' : true,
