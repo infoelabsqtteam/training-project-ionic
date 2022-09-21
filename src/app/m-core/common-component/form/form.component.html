@@ -8,7 +8,7 @@
 <ion-content>
   <ion-grid [formGroup]="templateForm" *ngIf="tableFields.length > 0" novalidate>
     <ion-row *ngIf="handleDisabeIf()">
-      <ion-col *ngFor="let tableField of tableFields; let i = index" [size]="getDivClass(tableField)" [size-sm]="" [size-md]="" [size-lg]="" [size-xl]="" [id]="tableField._id">
+      <ion-col *ngFor="let tableField of tableFields; let i = index" [ngClass]="getDivClass(tableField)" [id]="tableField._id" [size]="getColSize(tableField)" [size-sm]="" [size-md]="" [size-lg]="" [size-xl]="" >
         <div *ngIf="tableField.type == 'text'">
           <ion-item>
             <ion-label position="floating">{{ tableField.label }}</ion-label>
@@ -356,6 +356,28 @@
                           <ion-textarea [placeholder]="getTitlecase(fields.placeholder)" [required]="fields.is_mandatory" [formControlName]="fields.field_name" [disabled]="fields.is_disabled" rows="3" cols="" auto-grow="true" enterkeyhint="enter" inputmode="text" spellcheck="true"></ion-textarea>                
                       </ion-item>
                   </div>
+              </div>
+              <div class="row mb-2" *ngIf="tableField.type == 'list_of_fields' && tableField.datatype != 'key_value'">
+                <div class="col-lg-12 table-responsive table without-filter mt-2" *ngIf="custmizedFormValue[tableField.field_name]">
+                    <table class="table-bordered table-striped table-hover one-line-text" *ngIf="custmizedFormValue[tableField.field_name].length > 0">
+                        <thead>
+                            <tr>
+                                <th width="10%" style="text-align: center" *ngIf="!tableField.add_list_field && tableField.add_list_field != 'add'">Action</th>
+                                <th *ngFor="let item of tableField.list_of_fields" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField,item,0) ? 'd-none' : ''">{{item.label}}</th>                                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let listOfField of custmizedFormValue[tableField.field_name]; let i = index" [ngClass]="listOfField.status == 'I' ? 'd-none':''">
+                                <td class="px-1" style="text-align: center" *ngIf="!tableField.add_list_field && tableField.add_list_field != 'add'">
+                                    <a  mdbBtn floating="true" size="sm" *ngIf="tableField.datatype == 'list_of_object_with_popup'" (click)="updateListofFields(tableField,i)" mdbWavesEffect class="grid-button" [matTooltip]="'Update'"  [matTooltipPosition]="'above'" ><span class="material-icons" >edit</span></a>
+                                    <a mdbBtn floating="true" size="sm" *ngIf="tableField.datatype != 'list_of_object_with_popup'" (click)="editListOfFiedls(listOfField,i)" mdbWavesEffect class="grid-button" [matTooltip]="'Update'"  [matTooltipPosition]="'above'" ><span class="material-icons" >edit</span></a>
+                                    <a mdbBtn floating="true" size="sm" (click)="openModal('confirm-modal',i,'',tableField,listOfField,'delete')" mdbWavesEffect class="grid-button removebtn" [matTooltip]="'Delete'" [matTooltipPosition]="'above'"><span class="material-icons">close</span></a>                        
+                                </td>
+                                <td *ngFor="let item of tableField.list_of_fields" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField,item,i) ? 'd-none' : ''" (click)="showListOfFieldData(listOfField, item)" [innerHtml]="showListFieldValue(listOfField, item)"></td>                                                
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
               </div>
               <div [ngClass]="tableField.etc_fields && tableField.etc_fields.btn_class ? tableField.etc_fields.btn_class:'col-lg-3'" *ngIf="tableField.type == 'list_of_fields'">
                   <button mdbBtn type="button" size="sm" class="icon-button  text-white list_of_field_button" mdbWavesEffect (click)="setValue('',tableField,false)"><mdb-icon fas icon="plus" *ngIf="!listOfFieldUpdateMode"></mdb-icon><i class="material-icons md-48" *ngIf="listOfFieldUpdateMode">update</i></button>
