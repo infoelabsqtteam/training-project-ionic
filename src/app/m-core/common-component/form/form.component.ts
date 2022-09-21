@@ -874,7 +874,7 @@ tinymceConfig = {}
                           this.minDate = new Date(currentYear - 100, 0, 1);
                           this.maxDate = new Date(currentYear + 1, 11, 31);
                         }
-                        if(this.plt.is("hybrid")){
+                        if(this.plt.is('hybrid')){
                           let minDateToday:any;
                           let maxDateFromToday:any;                
                           minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd");
@@ -4226,40 +4226,33 @@ tinymceConfig = {}
     }
   }
   getDivClass(field) {
+      const fieldsLangth = this.tableFields.length;
+      return this.commonFunctionService.getDivClass(field,fieldsLangth);
+  }
+  getColSize(field){
+    let size:any = 12;
     if(field.field_class && field.field_class != ''){
       const fieldsLangth = this.tableFields.length;
-      const returnClass = this.commonFunctionService.getDivClass(field,fieldsLangth)
+      const returnClass = this.commonFunctionService.getDivClass(field,fieldsLangth);
       const classes = returnClass.split('-');
       const lastIndex = classes.length-1;
       const deviceIndex = classes.length-2;
       const deviceName = classes[deviceIndex];
       let deviceValue = classes[lastIndex];
-      // if(this.plt.is("hybrid")){
-  
-        if(deviceName == "xl"){
-          this.getDivClassXl(deviceValue);
-          return '12';
-        }else if(deviceName == "lg"){
-          this.getDivClassLg(deviceValue);
-          return '12';
-        }else if(deviceName == "md"){
-          this.getDivClassMd(deviceValue);
-          return '12';
-        }else if(deviceName == "sm"){
-          this.getDivClassSm(deviceValue);
-          return '12';
-        }else if(deviceName == "xs"){
-          this.getDivClassXs(deviceValue);
-          return '12';
-        }else{
-          return classes[lastIndex];
+      if(this.plt.is('hybrid')){
+        if(deviceName == "xl" || deviceName == "lg" || deviceName == "md" || deviceName == "sm" || deviceName == "xs"){
+          if(deviceValue < 6){
+            size = '6';
+          }else{          
+            size = '12';
+          }
         }
-      // }else{
-      //   return classes[lastIndex];
-      // }
-    }else{
-      return '12';
+      }else{
+        return size;
+      }
     }
+    return size;
+
   }
   getDivClassXl(deviceValue?:number){
     return deviceValue;
@@ -4276,25 +4269,6 @@ tinymceConfig = {}
   getDivClassXs(deviceValue?:number){
     return deviceValue;
   };
-
-  convertUtcToLocalDate(val : Date) : Date {        
-      var d = new Date(val); // val is in UTC
-      var localOffset = d.getTimezoneOffset() * 60000;
-      var localTime = d.getTime() - localOffset;
-
-      d.setTime(localTime);
-      return d;
-  }
-
-  convertLocalToUtc(val : Date) : Date { 
-      var d = new Date(val);
-      var localOffset = d.getTimezoneOffset() * 60000;
-      var utcTime = d.getTime() + localOffset;
-
-      d.setTime(utcTime);
-      console.log("D :", d);
-      return d;
-  }
   // open same form on form component
   addListOfFields(field){
     this.storeFormDetails("",field);
@@ -4781,17 +4755,10 @@ tinymceConfig = {}
       this.router.navigate(['card-detail-view']);
     // }    
   }
-  // getButtonDivClass(field){
-  //   return this.commonFunctionService.getButtonDivClass(field);
-  // }
-
   getButtonDivClass(field){
-    const fields = {...field}    
-    if(fields.field_class && field.field_class != ''){
-      return fields.field_class;
-    }
-    return;
+    return this.commonFunctionService.getButtonDivClass(field);
   }
+  
   checkGridSelectionMendetory(){
     let validation = {
       'status' : true,
@@ -4837,7 +4804,33 @@ tinymceConfig = {}
     }
   }
 
-  // let these below 2 functions in the last in this file
+  checkShowIfListOfFiedlds(parent,field,index){
+    let formValue = this.getFormValue(true);
+    let parentFieldName = parent.field_name;
+    let fieldValue = formValue[parentFieldName];    
+    if(fieldValue && fieldValue.length > 0 && field && field.show_if && field.show_if != null && field.show_if != ''){
+      let check = 0;      
+      for (let index = 0; index < fieldValue.length; index++) {
+        const value = fieldValue[index];
+        formValue[parentFieldName] = value;
+        if(this.commonFunctionService.showIf(field,formValue)){
+          check = 1;
+          break;
+        }        
+      }
+      if(check == 1){
+        return false;
+      }else{
+        return true;
+      }
+    }else{
+      return false;
+    }
+  }
+
+
+
+  // Please let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last in this file
   async readAsBase64(photo: Photo) {
     if (this.plt.is('hybrid')) {
         const file = await Filesystem.readFile({
@@ -4851,12 +4844,9 @@ tinymceConfig = {}
         return await this.convertBlobToBase64(blob);
     }
   }
- 
-  // Helper function
   convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
       const reader = new FileReader;
       reader.onerror = reject;
-      //need to uncomment below code
       reader.onload = () => {
         let base64 = (<string>reader.result).split(',').pop();
           resolve(base64);
