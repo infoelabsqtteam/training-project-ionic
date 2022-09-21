@@ -75,7 +75,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   loadMoreData:boolean = false;
   refreshlist:boolean = false;
   enableReviewOnly:boolean=false;
-
+  downloadReport:boolean=false;
   // new var
   gridDataSubscription: any;
   currentPageCount:number = 1;
@@ -333,6 +333,17 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       this.enableReviewOnly = false;
     }
+
+    if(card && card.enable_only_download_review){
+      if(this.detailPage){
+        this.downloadReport = false;
+      }else{
+        this.downloadReport = true;
+      }
+    }else{
+      this.downloadReport = false;
+    }
+
     if(card && card.add_calling){
       if(this.detailPage){
         this.addCallingFeature = false;
@@ -618,13 +629,28 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     return await modal.present();
   }
   // edit mode Form
-  editedRow(data,index){
+  editedRow(data,index,formName?:any){
     this.editedRowIndex = index;
     this.gridData = data;
     this.selectedgriddataId = this.gridData._id;
     this.updateMode = true;
+    // this.addNew("UPDATE");
+    if(formName){
+      this.addNew(formName);
+    }else{      
     this.addNew("UPDATE");
+    }
   }
+
+  addDownloadReport(data,index){
+    this.editedRowIndex = index;
+    this.gridData = data;
+    this.selectedgriddataId = this.gridData._id;
+    this.updateMode = true;
+    this.addNew("download_report");
+  }
+
+
   getFirstCharOfString(char:any){
     return this.coreUtilityService.getFirstCharOfString(char);
   }

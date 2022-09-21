@@ -142,7 +142,7 @@
           </ion-item>
         </div>
         <div *ngIf="tableField.type == 'radio'">
-          <ion-list>
+          <ion-list *ngIf="tableField.datatype != 'key_value'">
             <ion-radio-group [formControlName]="tableField.field_name" (ionChange)="inputOnChangeFunc('',tableField)">
               <ion-list-header>
                 <ion-label>{{ tableField.label }}</ion-label>
@@ -151,10 +151,25 @@
                 <ion-label [innerHtml]="getddnDisplayVal(staticValue)"></ion-label>
                 <ion-radio slot="start" [value]="staticValue"></ion-radio>
               </ion-item>       
-              
             </ion-radio-group>
           </ion-list>
-        </div>
+
+          <ion-list *ngIf="tableField.datatype == 'key_value'">
+            <ion-radio-group [formControlName]="tableField.field_name" (ionChange)="inputOnChangeFunc('',tableField)">
+              <ion-list-header><ion-label>{{ tableField.label }}</ion-label></ion-list-header>       
+              <ion-item *ngFor="let staticValue of staticData[tableField.ddn_field] | keyvalue">
+                <ion-label [innerHtml]="getddnDisplayVal(staticValue.value)"></ion-label>
+                <ion-radio slot="start" [value]="staticValue.key"></ion-radio>
+              </ion-item>       
+            </ion-radio-group>
+          </ion-list>
+      </div>
+
+
+
+
+
+
         <div *ngIf="tableField.type == 'label'">
           <ion-label>{{ tableField.label }}</ion-label>
         </div>
