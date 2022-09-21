@@ -269,7 +269,7 @@ tinymceConfig = {}
   readonly:boolean = false;
   selectedIndex= -1;
   hide = true;
-
+  checkForDownloadReport:boolean = false;
   	/**
 	 * Convert Files list to normal array list
 	 * @param files (Files List)
@@ -379,6 +379,9 @@ tinymceConfig = {}
           }
         }
       });
+      this.fileDataSubscription = this.dataShareService.getfileData.subscribe(data =>{
+        this.setFileData(data);
+      })
       this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
         this.setSaveResponce(responce);
       });
@@ -404,6 +407,7 @@ tinymceConfig = {}
           this.openNextForm(false);
         }
       })
+      this.onLoadVariable();
   }
 
   resetFlag(){
@@ -426,6 +430,9 @@ tinymceConfig = {}
     if(this.saveResponceSubscription){
       this.saveResponceSubscription.unsubscribe();
     }
+    if(this.fileDataSubscription){
+      this.fileDataSubscription.unsubscribe();
+    }
     if(this.typeaheadDataSubscription){
       this.typeaheadDataSubscription.unsubscribe();
     }
@@ -433,6 +440,13 @@ tinymceConfig = {}
       this.fileDownloadUrlSubscription.unsubscribe();
     }
 
+  }
+
+  ionViewWillEnter() {
+    this.onLoadVariable();
+  }
+  onLoadVariable() {
+    this.dataSaveInProgress = true;
   }
   
   ionViewWillLeave(){
@@ -443,6 +457,7 @@ tinymceConfig = {}
     // this.unsubscribeVariabbles();
   }
   ngOnInit() {
+    
     const id:any = this.commonDataShareService.getFormId();
     this.getNextFormById(id);
     this.handleDisabeIf();
@@ -705,7 +720,16 @@ tinymceConfig = {}
         this.currentMenu = {};
       }
       this.currentMenu['name'] = this.form.details.collection_name;
+    }else{
+      const collectionName = this.dataShareServiceService.getCollectionName();
+      if(collectionName !=''){
+        if(this.currentMenu == undefined){
+          this.currentMenu = {};
+        }
+        this.currentMenu['name'] = collectionName;
+      }      
     }
+    
     // if(this.form){
     //   if(this.form.details && this.form.details.bulk_update){
     //     this.bulkupdates = true;
@@ -1103,10 +1127,10 @@ tinymceConfig = {}
             this.previewModal(this.selectedRow,this.currentMenu,'form-preview-modal')
             break;  
           case "download_report":
-            // this.downloadReport();
+             this.downloadReport();
             break;
           case "public_download_report":
-            // this.publicDownloadReport();
+             this.publicDownloadReport();
             break;
           case "reset":
             this.createFormgroup = true;
@@ -1148,6 +1172,15 @@ tinymceConfig = {}
     } 
   }
 
+  downloadReport(){
+    const downloadReportFromData = this.getSavePayloadData();
+    if(downloadReportFromData != null){
+      downloadReportFromData['_id'] = this.childData._id;
+    }
+    this.checkForDownloadReport = true;
+    this.apiService.GetFileData(downloadReportFromData);
+  }
+
   deleteGridData(){
     let checkValidatiaon = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(false),true,this.getFormValue(true));
     if(typeof checkValidatiaon != 'object'){
@@ -1161,6 +1194,20 @@ tinymceConfig = {}
     } 
   }
 
+
+  publicDownloadReport(){
+    this.checkForDownloadReport = true;
+    let publicDownloadReportFromData = {};
+    let payload = {};
+    if(this.commonFunctionService.isNotBlank(this.selectedRow["_id"]) && this.commonFunctionService.isNotBlank(this.selectedRow["value"])){
+      publicDownloadReportFromData["_id"] = this.selectedRow["_id"];
+      publicDownloadReportFromData["value"] = this.selectedRow["value"];
+      payload["_id"] = this.selectedRow["_id"];
+      payload["data"] = publicDownloadReportFromData;
+      this.apiService.GetFileData(payload);
+    }
+
+  }
 
 
   partialDataSave(feilds,tableField){       
@@ -4183,23 +4230,23 @@ tinymceConfig = {}
     this.apiService.DownloadFile(payload);
   }
   setFileData(getfileData){
-    // if (getfileData != '' && getfileData != null && this.checkForDownloadReport) {
-    //   let link = document.createElement('a');
-    //   link.setAttribute('type', 'hidden');
+    if (getfileData != '' && getfileData != null && this.checkForDownloadReport) {
+      let link = document.createElement('a');
+      link.setAttribute('type', 'hidden');
 
-    //   const file = new Blob([getfileData.data], { type: "application/pdf" });
-    //   const url = window.URL.createObjectURL(file);
-    //   link.href = url;
-    //   link.download = getfileData.filename;
-    //   document.body.appendChild(link);
-    //   link.click();
-    //   link.remove();
-    //   // this.downloadPdfCheck = '';
-    //   this.dataSaveInProgress = true;
-    //   this.checkForDownloadReport = false;
-    //   this.dataSaveInProgress = true;
-    //   this.apiService.ResetFileData();
-    // }
+      const file = new Blob([getfileData.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(file);
+      link.href = url;
+      link.download = getfileData.filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      // this.downloadPdfCheck = '';
+      this.dataSaveInProgress = true;
+      this.checkForDownloadReport = false;
+      this.dataSaveInProgress = true;
+      this.apiService.ResetFileData();
+    }
   }
   setFileDownloadUrl(fileDownloadUrl){
     if (fileDownloadUrl != '' && fileDownloadUrl != null && this.downloadClick != '') {
