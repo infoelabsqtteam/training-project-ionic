@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService, NotificationService } from '@core/ionic-core';
+import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService, NotificationService, PermissionService } from '@core/ionic-core';
 import { filter } from 'rxjs';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Platform, ModalController, AlertController, PopoverController } from '@ionic/angular';
@@ -76,6 +76,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   refreshlist:boolean = false;
   enableReviewOnly:boolean=false;
   downloadReport:boolean=false;
+  downloadPdfBtn:boolean=false;
   // new var
   gridDataSubscription: any;
   currentPageCount:number = 1;
@@ -87,7 +88,18 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   selectedgriddataId:any;
   updateMode:boolean = false;
   ionEvent:any;
-  
+  checkPreviewData = false;
+  currentMenu: any;
+  flagForTdsForm:boolean = false;
+  currentRowIndex:any = -1;
+  checkForDownloadReport:boolean = false;
+  gridButtons:any=[];
+  downloadPdfCheck: any = '';
+  downloadQRCode: any = '';
+  public tab: any = [];
+  details:any = {};  
+  pdfFileSubscription:any;
+
 
   constructor(
     private platform: Platform,
@@ -105,7 +117,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private modalController: ModalController,
     private alertController: AlertController,
     private datePipe: DatePipe,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private permissionService:PermissionService,
   ) 
   {
     // below code is for slider and title name
@@ -126,6 +139,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       }
     });
+    
+    this.pdfFileSubscription = this.dataShareService.downloadPdfData.subscribe(data =>{
+      this.setDownloadPdfData(data);
+    })
     
   }
 
@@ -273,6 +290,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
+    if(this.pdfFileSubscription){
+      this.pdfFileSubscription.unsubscribe();
+    }
   }
 
   getCardDataByCollection(i) {
@@ -323,7 +343,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       this.enableEditOnly = false;
     }
-
     if(card && card.enable_only_review){
       if(this.detailPage){
         this.enableReviewOnly = false;
@@ -333,7 +352,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       this.enableReviewOnly = false;
     }
-
     if(card && card.enable_only_download_review){
       if(this.detailPage){
         this.downloadReport = false;
@@ -343,7 +361,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       this.downloadReport = false;
     }
-
+    if(card && card.enable_download_pdf){
+      if(this.detailPage){
+        this.downloadPdfBtn = false;
+      }else{
+        this.downloadPdfBtn = true;
+      }
+    }else{
+      this.downloadPdfBtn = false;
+    }
     if(card && card.add_calling){
       if(this.detailPage){
         this.addCallingFeature = false;
@@ -396,7 +422,13 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
 
     this.collectionname = card.collection_name;
-    this.dataShareServiceService.setCollectionName(card.collection_name);
+    if(this.collectionname !=''){
+      if(this.currentMenu == undefined){
+        this.currentMenu = {};
+      }
+      this.currentMenu['name'] = this.collectionname;
+      this.dataShareServiceService.setCollectionName(card.collection_name);
+    }
     this.getGridData(this.collectionname, criteria, parentcard);
   }
 
@@ -588,7 +620,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.dataShareServiceService.setcardData(card);
   }
   // add new card or record in cardlist 
-  async addNew(formName?:any){
+  async addNewForm(formName?:any){
     if(formName){
       this.formTypeName = formName;
     }else{
@@ -634,20 +666,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.gridData = data;
     this.selectedgriddataId = this.gridData._id;
     this.updateMode = true;
-    // this.addNew("UPDATE");
     if(formName){
-      this.addNew(formName);
+      this.addNewForm(formName);
     }else{      
-    this.addNew("UPDATE");
+    this.addNewForm("UPDATE");
     }
-  }
-
-  addDownloadReport(data,index){
-    this.editedRowIndex = index;
-    this.gridData = data;
-    this.selectedgriddataId = this.gridData._id;
-    this.updateMode = true;
-    this.addNew("download_report");
   }
 
 
@@ -728,6 +751,155 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
     }else{
       console.log("Top refresh feature disable.");
+    }
+  }
+  gridButtonAction(gridData,index,button){
+    // if(button && button.onclick && button.onclick.action_name){
+    if(button && button !=""){
+      // switch (button.onclick.action_name.toUpperCase()) {
+        switch (button.toUpperCase()) {
+        case "PREVIEW":
+          this.checkPreviewData = true;
+          this.restService.preview(gridData,this.currentMenu,'grid-preview-modal')          
+          break;
+        case "TEMPLATE": 
+          let object =JSON.parse(JSON.stringify(gridData))    
+          console.log(gridData); 
+          // this.templateModal('template-modal',object,index, 'Template')
+          break;
+        case 'UPDATE':
+          // this.editedRowData(index,button.onclick.action_name.toUpperCase())
+          this.editedRowData(index,button.toUpperCase())
+
+          break;
+        case 'DOWNLOAD':
+          let currentMenu = '';
+          if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
+            currentMenu = this.currentMenu.name
+          }
+          this.downloadPdfCheck = this.restService.downloadPdf(gridData,currentMenu);         
+          break;
+          case 'GETFILE':
+            let currentsMenu = '';
+          if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
+            currentsMenu = this.currentMenu.name
+          }
+          this.downloadPdfCheck = this.restService.getPdf(gridData,currentsMenu);         
+          break;
+          case 'TDS':
+            let currentMenuForTds = '';
+            this.flagForTdsForm = true;
+            this.currentRowIndex = index;
+          if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
+            currentMenuForTds = this.currentMenu.name
+          }
+          const getFormData:any = this.restService.getFormForTds(gridData,currentMenuForTds,this.carddata[index]);        
+          if(getFormData._id && getFormData._id != undefined && getFormData._id != null && getFormData._id != ''){
+            getFormData.data['data']=gridData;
+            this.apiService.GetForm(getFormData);
+          }else{
+            getFormData.data=gridData;
+            this.apiService.GetForm(getFormData);
+          }
+          break;
+        case 'CANCEL':
+          this.editedRowData(index,button)
+          break;
+        case 'INLINEEDIT':
+          // this.gridInlineEdit(gridData,index);
+          break;
+        case 'COMMUNICATION':
+          // this.commonFunctionService.openModal('communication-modal',gridData);
+          break;
+        case 'DOWNLOAD_QR':
+          this.downloadQRCode = this.restService.getQRCode(gridData,this.carddata[index]);
+          this.checkForDownloadReport = true;
+          break;
+        case 'DELETE_ROW':
+          if(this.permissionService.checkPermission(this.currentMenu.name, 'delete')){
+            this.editedRowData(index,button)
+          }else{
+            this.notificationService.showAlert("Permission denied","You don't have this Permission",['Dismiss']);
+          }
+          break;
+        // case 'AUDIT_HISTORY':
+        //   if (this.permissionService.checkPermission(this.currentMenu.name, 'auditHistory')) {
+        //     let obj = {
+        //       "aduitTabIndex": this.selectTabIndex,
+        //       "tabname": this.tabs
+        //     }
+        //     this.commonFunctionService.getAuditHistory(gridData,this.carddata[index]);
+        //     this.modalService.open('audit-history',obj);
+        //   }else {
+        //     this.notificationService.showAlert("Permission denied","You don't have this Permission",['Dismiss']);
+        //   }
+        // break;
+        default:
+          this.editedRowData(index,button)
+          break;
+      }
+    }
+  }
+  editedRowData(index,formName) {
+    if (this.permissionService.checkPermission(this.currentMenu.name, 'edit')) {
+      this.editedRowIndex = index;
+      this.gridData = this.carddata[index];
+      this.selectedgriddataId = this.gridData._id;
+      this.updateMode = true;
+      if(formName == 'UPDATE'){   
+        // if(this.checkUpdatePermission(this.carddata[index])){
+        //   return;
+        // }   
+        // if(this.checkFieldsAvailability('UPDATE')){
+        //   this.addNewForm(formName);
+        // }else{
+        //   return;
+        // }  
+        this.addNewForm(formName);      
+      }else{
+        this.addNewForm(formName);
+      }  
+      this.selectedIndex = index;    
+    } else {
+      this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
+    }
+  }
+  checkUpdatePermission(rowdata){
+    if(this.details && this.details.permission_key && this.details.permission_key != '' && this.details.permission_value && this.details.permission_value != ''){ 
+      const value = this.coreUtilityService.getObjectValue(this.details.permission_key,rowdata) 
+      if(value == this.details.permission_value){
+        this.notificationService.showAlert("Can't be update!!!","NO permission",['Dismiss'])
+        return true;
+      }
+    }else{
+      return false;
+    }
+  }
+  checkFieldsAvailability(formName){
+    if(this.card && this.card.card && this.card.card.forms){
+      let form = this.coreUtilityService.getForm(this.card.card.forms,formName);        
+      if(form['tableFields'] && form['tableFields'] != undefined && form['tableFields'] != null){
+        return true;
+      }else{
+        return false;
+      }
+    }else{
+      return false;
+    }
+  }
+  setDownloadPdfData(downloadPdfData){
+    if (downloadPdfData != '' && downloadPdfData != null && this.downloadPdfCheck != '') {
+      let link = document.createElement('a');
+      link.setAttribute('type', 'hidden');
+      const file = new Blob([downloadPdfData.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(file);
+      link.href = url;
+      link.download = downloadPdfData.filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      this.downloadPdfCheck = '';
+      this.apiService.ResetPdfData();
     }
   }
   

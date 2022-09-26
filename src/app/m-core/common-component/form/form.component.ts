@@ -234,6 +234,7 @@ tinymceConfig = {}
   dateValue:any;
   public deleteIndex:any = '';
   public deletefieldName = {};
+  public alertData = {};
 
   samePageGridSelectionData:any;
   samePageGridSelection : boolean = false;
@@ -4865,6 +4866,92 @@ tinymceConfig = {}
     }else{
       return false;
     }
+  }
+
+  showListFieldValue(listOfField, item) {
+    switch (item.type) {
+      case "typeahead":
+          if(item.datatype == "list_of_object"){
+            if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
+              return '<i class="fa fa-eye text-pointer"></i>';
+            } else {
+              return '-';
+            }
+          }else if(item.datatype == "object"){
+            if (item.display_name && item.display_name != "") {
+              return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+            } else {
+              return listOfField[item.field_name];
+            }
+          }
+          else if(item.datatype == "text"){
+            if (item.display_name && item.display_name != "") {
+              return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+            } else {
+              return listOfField[item.field_name];
+            }
+          }
+      case "list_of_string":
+      case "list_of_checkbox":
+        case "grid_selection":
+        if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
+          return '<i class="fa fa-eye text-pointer"></i>';
+        } else {
+          return '-';
+        } 
+      case "checkbox":
+        let value:any = false;
+        if (item.display_name && item.display_name != "") {
+          value = this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+        } else {
+          value = this.getValueForGrid(item,listOfField);
+        }
+        return value ? "Yes" : "No";     
+      default:
+        if (item.display_name && item.display_name != "") {
+          return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+        } else {
+          return this.getValueForGrid(item,listOfField);
+        }
+    }   
+
+  }
+  showListOfFieldData(listOfField,item){
+    let value={};
+    value['data'] = listOfField[item.field_name]    
+    switch (item.type) {
+      case "typeahead":
+          if(item.datatype == "list_of_object"){  
+            // const editemode = false;    
+            // value['gridColumns'] = [
+            //   {
+            //     "field_name":"label",
+            //     "label":item.label
+            //   }
+            // ];      
+            this.viewModal('form_basic-modal', value, item,false);
+          }          
+          break;
+      case "list_of_string":
+      case "list_of_checkbox":
+      case "grid_selection":
+        if(item["gridColumns"] && item["gridColumns"].length > 0){
+          value['gridColumns']=item.gridColumns;
+        }
+        this.viewModal('form_basic-modal', value, item,false);
+        break;      
+      default:
+        break;
+    } 
+  }
+  viewModal(id, object, field,editemode) {
+    this.alertData = {
+      "field": field,
+      "data": object,
+      "menu_name": this.currentMenu.name,
+      'editemode': editemode
+    }
+    // this.modalService.open(id, this.alertData);
   }
 
 

@@ -45,10 +45,13 @@
           <ion-item-option *ngIf="addCallingFeature" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
         </ion-item-options>
         <ion-item-options side="end">
-          <ion-item-option *ngIf="addNewEnabled || enableEditOnly" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled || enableEditOnly" (click)="gridButtonAction(card, i, 'update')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
           <ion-item-option *ngIf="enableReviewOnly" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="eye-outline"></ion-icon>
           </ion-item-option>
-          <ion-item-option *ngIf="downloadReport" (click)="editedRow(card, i, 'download_report')"><ion-icon  slot="icon-only" name="download-outline"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="downloadReport" (click)="gridButtonAction(card, i, 'download_report')"><ion-icon  slot="icon-only" name="download-outline"></ion-icon></ion-item-option>
+          
+          <ion-item-option *ngIf="downloadPdfBtn" (click)="gridButtonAction(card, i, 'download')"><ion-icon  slot="icon-only" name="download-outline"></ion-icon></ion-item-option>
+
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -79,7 +82,7 @@
   </ion-list>
 
   <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" *ngIf="addNewEnabled">
-    <ion-fab-button (click)="addNew()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>
+    <ion-fab-button (click)="addNewForm()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>
   </ion-fab>
 
   <div *ngIf="totalDataCount == 0" class="nodatafound">

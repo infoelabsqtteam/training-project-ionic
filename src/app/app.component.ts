@@ -4,7 +4,7 @@ import { AlertController, Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
-import { AuthService, StorageService, StorageTokenStatus,App_googleService, RestService, ApiService, DataShareService, EnvService, NotificationService } from '@core/ionic-core';
+import { AuthService, StorageService, StorageTokenStatus,App_googleService, RestService, ApiService, DataShareService, EnvService, NotificationService, CommonDataShareService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
@@ -66,7 +66,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private dataShareService: DataShareService,
     private env: EnvService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private commonDataShareService: CommonDataShareService
 
   ) {
     
@@ -222,6 +223,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   showCardTemplate(card:any, index:number){
     this.selectedIndex = index;
+    this.commonDataShareService.setModuleIndex(index);
     this.router.navigate(['card-view']);
     this.dataShareServiceService.setcardData(card);
   }
