@@ -44,13 +44,20 @@
         <ion-item-options side="start">
           <ion-item-option *ngIf="addCallingFeature" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
         </ion-item-options>
-        <ion-item-options side="end">
-          <ion-item-option *ngIf="addNewEnabled || enableEditOnly" (click)="gridButtonAction(card, i, 'update')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
-          <ion-item-option *ngIf="enableReviewOnly" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+        
+        <ion-item-options side="end" *ngIf="gridButtons">
+          <ion-item-option *ngFor="let btn of gridButtons">
+            <span class="material-symbols-outlined" (click)="gridButtonAction(card,i,btn)">{{btn.field_class}}</span>
           </ion-item-option>
-          <ion-item-option *ngIf="downloadReport" (click)="gridButtonAction(card, i, 'download_report')"><ion-icon  slot="icon-only" name="download-outline"></ion-icon></ion-item-option>
           
-          <ion-item-option *ngIf="downloadPdfBtn" (click)="gridButtonAction(card, i, 'download')"><ion-icon  slot="icon-only" name="download-outline"></ion-icon></ion-item-option>
+          <!-- <ion-item-option *ngIf="addNewEnabled || enableEditOnly">
+            <ion-icon slot="icon-only" name="pencil"  (click)="gridButtonAction(card, i, 'update')"></ion-icon>
+          </ion-item-option> -->
+          <!-- <ion-item-option *ngIf="enableReviewOnly">
+            <ion-icon slot="icon-only" name="eye-outline" (click)="editedRow(card, i)"></ion-icon>
+          </ion-item-option> -->
+          <!-- <ion-item-option *ngIf="downloadReport" (click)="gridButtonAction(card, i, 'download_report')"><ion-icon  slot="icon-only" name="download-outline"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="downloadPdfBtn" (click)="gridButtonAction(card, i, 'download')"><ion-icon  slot="icon-only" name="download-outline"></ion-icon></ion-item-option> -->
 
         </ion-item-options>
     </ion-item-sliding>
