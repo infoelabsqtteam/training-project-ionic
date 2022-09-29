@@ -11,7 +11,7 @@ export const environment = {
   //  serverhost: "http://localhost:8104/rest/",
   //serverhost: "https://servermedicea.medicea.in/rest/",
   //  serverhost: "https://sitservermedicea.medicea.in/rest/",
-   serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
+  serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.itcuat.ai",
   appName: "ITC Uat",

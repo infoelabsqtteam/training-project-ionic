@@ -326,7 +326,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     let criteria:any = [];
     let parentcard:any = {};
 
-    if(card){
+    if(card && card.buttons){
       this.gridButtons = card.buttons
     }else{
 
@@ -846,10 +846,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     }
   }
-
-
-
-
 
   editedRowData(index,formName) {
     if (this.permissionService.checkPermission(this.currentMenu.name, 'edit')) {
