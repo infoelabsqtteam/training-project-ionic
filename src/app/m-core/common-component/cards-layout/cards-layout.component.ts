@@ -325,51 +325,61 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   setCardDetails(card) {  
     let criteria:any = [];
     let parentcard:any = {};
-    if(card && card.add_new){
-      if(this.detailPage){
-        this.addNewEnabled = false;
-      }else{
-        this.addNewEnabled = true;
-      }
+
+    if(card && card.buttons){
+      this.gridButtons = card.buttons
     }else{
-      this.addNewEnabled = false;
+
     } 
-    if(card && card.enable_only_edit){
-      if(this.detailPage){
-        this.enableEditOnly = false;
-      }else{
-        this.enableEditOnly = true;
-      }
-    }else{
-      this.enableEditOnly = false;
-    }
-    if(card && card.enable_only_review){
-      if(this.detailPage){
-        this.enableReviewOnly = false;
-      }else{
-        this.enableReviewOnly = true;
-      }
-    }else{
-      this.enableReviewOnly = false;
-    }
-    if(card && card.enable_only_download_review){
-      if(this.detailPage){
-        this.downloadReport = false;
-      }else{
-        this.downloadReport = true;
-      }
-    }else{
-      this.downloadReport = false;
-    }
-    if(card && card.enable_download_pdf){
-      if(this.detailPage){
-        this.downloadPdfBtn = false;
-      }else{
-        this.downloadPdfBtn = true;
-      }
-    }else{
-      this.downloadPdfBtn = false;
-    }
+
+
+
+
+    // if(card && card.add_new){
+    //   if(this.detailPage){
+    //     this.addNewEnabled = false;
+    //   }else{
+    //     this.addNewEnabled = true;
+    //   }
+    // }else{
+    //   this.addNewEnabled = false;
+    // } 
+    // if(card && card.enable_only_edit){
+    //   if(this.detailPage){
+    //     this.enableEditOnly = false;
+    //   }else{
+    //     this.enableEditOnly = true;
+    //   }
+    // }else{
+    //   this.enableEditOnly = false;
+    // }
+    // if(card && card.enable_only_review){
+    //   if(this.detailPage){
+    //     this.enableReviewOnly = false;
+    //   }else{
+    //     this.enableReviewOnly = true;
+    //   }
+    // }else{
+    //   this.enableReviewOnly = false;
+    // }
+    // if(card && card.enable_only_download_review){
+    //   if(this.detailPage){
+    //     this.downloadReport = false;
+    //   }else{
+    //     this.downloadReport = true;
+    //   }
+    // }else{
+    //   this.downloadReport = false;
+    // }
+    // if(card && card.enable_download_pdf){
+    //   if(this.detailPage){
+    //     this.downloadPdfBtn = false;
+    //   }else{
+    //     this.downloadPdfBtn = true;
+    //   }
+    // }else{
+    //   this.downloadPdfBtn = false;
+    // }
     if(card && card.add_calling){
       if(this.detailPage){
         this.addCallingFeature = false;
@@ -754,10 +764,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
   }
   gridButtonAction(gridData,index,button){
-    // if(button && button.onclick && button.onclick.action_name){
-    if(button && button !=""){
-      // switch (button.onclick.action_name.toUpperCase()) {
-        switch (button.toUpperCase()) {
+    if(button && button.onclick && button.onclick.action_name){
+      switch (button.onclick.action_name.toUpperCase()) {
         case "PREVIEW":
           this.checkPreviewData = true;
           this.restService.preview(gridData,this.currentMenu,'grid-preview-modal')          
@@ -765,12 +773,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         case "TEMPLATE": 
           let object =JSON.parse(JSON.stringify(gridData))    
           console.log(gridData); 
-          // this.templateModal('template-modal',object,index, 'Template')
+          //this.templateModal('template-modal',object,index, 'Template')
           break;
         case 'UPDATE':
-          // this.editedRowData(index,button.onclick.action_name.toUpperCase())
-          this.editedRowData(index,button.toUpperCase())
-
+          this.editedRowData(index,button.onclick.action_name.toUpperCase())
           break;
         case 'DOWNLOAD':
           let currentMenu = '';
@@ -803,10 +809,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           }
           break;
         case 'CANCEL':
-          this.editedRowData(index,button)
+          this.editedRowData(index,button.onclick.action_name)
           break;
         case 'INLINEEDIT':
-          // this.gridInlineEdit(gridData,index);
+          //this.gridInlineEdit(gridData,index);
           break;
         case 'COMMUNICATION':
           // this.commonFunctionService.openModal('communication-modal',gridData);
@@ -815,31 +821,32 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           this.downloadQRCode = this.restService.getQRCode(gridData,this.carddata[index]);
           this.checkForDownloadReport = true;
           break;
-        case 'DELETE_ROW':
-          if(this.permissionService.checkPermission(this.currentMenu.name, 'delete')){
-            this.editedRowData(index,button)
-          }else{
-            this.notificationService.showAlert("Permission denied","You don't have this Permission",['Dismiss']);
-          }
-          break;
-        // case 'AUDIT_HISTORY':
-        //   if (this.permissionService.checkPermission(this.currentMenu.name, 'auditHistory')) {
-        //     let obj = {
-        //       "aduitTabIndex": this.selectTabIndex,
-        //       "tabname": this.tabs
-        //     }
-        //     this.commonFunctionService.getAuditHistory(gridData,this.carddata[index]);
-        //     this.modalService.open('audit-history',obj);
-        //   }else {
-        //     this.notificationService.showAlert("Permission denied","You don't have this Permission",['Dismiss']);
-        //   }
-        // break;
+          case 'DELETE_ROW':
+            if(this.permissionService.checkPermission(this.currentMenu.name, 'delete')){
+              this.editedRowData(index,button)
+            }else{
+              this.notificationService.showAlert("Permission denied","You don't have this Permission",['Dismiss']);
+            }
+            break;
+          // case 'AUDIT_HISTORY':
+          //   if (this.permissionService.checkPermission(this.currentMenu.name, 'auditHistory')) {
+          //     let obj = {
+          //       "aduitTabIndex": this.selectTabIndex,
+          //       "tabname": this.tabs
+          //     }
+          //     this.commonFunctionService.getAuditHistory(gridData,this.elements[index]);
+          //     this.modalService.open('audit-history',obj);
+          //   }else {
+          //     this.notificationService.notify("bg-danger", "Permission denied !!!");
+          //   }
+          // break;
         default:
-          this.editedRowData(index,button)
+          this.editedRowData(index,button.onclick.action_name);
           break;
       }
     }
   }
+
   editedRowData(index,formName) {
     if (this.permissionService.checkPermission(this.currentMenu.name, 'edit')) {
       this.editedRowIndex = index;
