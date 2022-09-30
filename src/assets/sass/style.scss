@@ -94,7 +94,7 @@ ion-tabs.footertab {
     ion-segment {height:45px;}
 }
 //***---------- Contact Listing  ----------***//
-.contactlist {margin: 0px 8px;
+.contactlist {margin:0px 8px 40px;
     ion-item-sliding{margin-bottom:6px;margin-top: 6px;    
         ion-item-options {height:calc(100% - 0px);background: var(--themebg);border-radius: 10px;}
         ion-item-options.item-options-start ion-item-option{border-radius: 10px 0 0 10px;}
@@ -104,7 +104,7 @@ ion-tabs.footertab {
     ion-item {--padding-start:0px;--inner-padding-end:0px;--inner-border-width:0;background:var(--card-bg-light);--background:var(--card-bg-light);padding:10px;border-radius: 10px;
         ion-avatar {width:35px;height:35px;color:#fff;text-align:center;background:var(--themebg);font:500 18px/35px Roboto, sans-serif;margin:0 10px;}
         ion-row{background:var(--card-bg-light);width:100%;
-            p {margin:0px;font-size:13px;}
+            p {margin:0px;font-size:13px;margin:0 0 5px 0;}
             .contact_person_name{font-weight:600;}
             .contact_company_name, .contact_person_mobile, .contact_serial_id{font-size:11px;margin:0px;}
         }
@@ -192,7 +192,7 @@ ion-tabs.footertab {
     margin: auto;   
 }
 
-$status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move,Move,MOVE,regret,Regret,REGRET,completed,Completed,COMPLETED,approved,Approved,APPROVED,booked,Booked,BOOKED,dispatching,Dispatching,DISPATCHING,review,Review,REVIEW,scheduling,Scheduling,SCHEDULING,person_incharge,Person_Incharge,PERSON_INCHARGE,testing,Testing,TESTING,invoicing,Invoicing,INVOICING,feasibility,Feasibility,FEASIBILITY,approve,Approve,APPROVE,reject,Reject,REJECT,qa_approval,Qa_Approval,QA_APPROVAL;
+$status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move,Move,MOVE,regret,Regret,REGRET,completed,Completed,COMPLETED,approved,Approved,APPROVED,booked,Booked,BOOKED,dispatching,Dispatching,DISPATCHING,review,Review,REVIEW,scheduling,Scheduling,SCHEDULING,person_incharge,Person_Incharge,PERSON_INCHARGE,testing,Testing,TESTING,invoicing,Invoicing,INVOICING,feasibility,Feasibility,FEASIBILITY,approve,Approve,APPROVE,reject,Reject,REJECT,qa_approval,Qa_Approval;
 
 @each $status in $status_button {
     .status_button  .status_#{$status} {
