@@ -274,6 +274,7 @@
           </ion-item>
         </div>
         <div *ngIf="tableField.type == 'list_of_fields' || tableField.type == 'group_of_fields'">
+          <ion-button expand="full" *ngIf="tableField.datatype != 'list_of_object_with_popup'">{{ tableField.label | titlecase}}</ion-button>
           <ion-accordion-group expand="inset" *ngIf="tableField.datatype == 'list_of_object_with_popup'">
             <ion-accordion value="{{tableField._id+'_'+tableField.field_name}}">
               <ion-item slot="header" color="light">
