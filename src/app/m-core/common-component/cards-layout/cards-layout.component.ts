@@ -329,7 +329,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if(card && card.buttons){
       this.gridButtons = card.buttons
     }else{
-
+      this.gridButtons = []
     } 
 
 
