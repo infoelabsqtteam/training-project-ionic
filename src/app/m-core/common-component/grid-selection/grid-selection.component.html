@@ -1,4 +1,4 @@
-<div class="pages" *ngIf="formName == 'default'">
+<div class="pages" *ngIf="formName == 'default' && (this.selectedData && this.selectedData.length > 0) || (this.gridData && this.gridData.length > 0)">
     <ion-segment class="grid_selection_tab" ngDefaultControl [(ngModel)]="selectedTab" color="appcolor">
         <ion-segment-button value="new"><ion-label>All</ion-label></ion-segment-button>
         <ion-segment-button value="added"><ion-label>Selected</ion-label></ion-segment-button>
@@ -41,6 +41,29 @@
                 </ion-item-options>
             </ion-item-sliding>
         </ion-list> 
+        <div *ngIf="this.selectedData=='' && this.selectedData.length == 0">
+            <ion-card>
+                <ion-card-header>
+                  <ion-card-title>No parameters Selected</ion-card-title>
+                  <!-- <ion-card-subtitle></ion-card-subtitle> -->
+                </ion-card-header>      
+                <ion-card-content>
+                  Please select any one
+                </ion-card-content>
+              </ion-card>          
+        </div>
     </div>
 
+</div>
+
+<div *ngIf="this.gridData=='' && this.gridData.length == 0 && nogridDdata">
+    <ion-card>
+        <ion-card-header>
+          <ion-card-title>No parameters available</ion-card-title>
+          <!-- <ion-card-subtitle></ion-card-subtitle> -->
+        </ion-card-header>      
+        <ion-card-content>
+          This selection has no parameters available
+        </ion-card-content>
+      </ion-card>          
 </div>

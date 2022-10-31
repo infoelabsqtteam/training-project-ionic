@@ -5,13 +5,14 @@
 export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
+  // serverhost: "http://localhost:8104/rest/",
   //serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
   // serverhost: "https://sitserverelabs.e-labs.ai/rest/",
   // serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
-  //  serverhost: "http://localhost:8104/rest/",
   //serverhost: "https://servermedicea.medicea.in/rest/",
   //  serverhost: "https://sitservermedicea.medicea.in/rest/",
   serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
+  // serverhost: "https://serveritclabs.itclabs.com/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.itcuat.ai",
   appName: "ITC Uat",
@@ -21,7 +22,7 @@ export const environment = {
   verify_type : "email",
   app_Version : "@2022 ITC Uat v0.0.1",
   privacy_policy: "",
-  app_share: "https://play.google.com/store/apps/details?id=com.elaboratory.ai"
+  app_share: "https://play.google.com/store/apps/details?id=com.itcuat.ai"
 };
 
 /*

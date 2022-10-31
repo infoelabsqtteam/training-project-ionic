@@ -1,7 +1,8 @@
 {
   "name": "sanjivani-enterprise",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {},
+    "cordova": {}
   },
   "type": "angular"
 }

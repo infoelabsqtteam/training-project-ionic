@@ -29,6 +29,7 @@ import { IonicCoreModule } from '@core/ionic-core';
 import { HomePageModule } from './home/home.module';
 import { McoreModule } from './m-core/m-core.module';
 import { LocationAccuracy } from '@ionic-native/location-accuracy/ngx';
+import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
 
  
 
@@ -66,6 +67,7 @@ import { LocationAccuracy } from '@ionic-native/location-accuracy/ngx';
     AndroidPermissions,
     NativeGeocoder,
     LocationAccuracy,
+    OpenNativeSettings,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     TitleCasePipe

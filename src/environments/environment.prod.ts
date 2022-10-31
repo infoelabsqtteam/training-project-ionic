@@ -1,6 +1,7 @@
 export const environment = {
   production: true,
-  serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
+  serverhost: "https://serveritclabs.itclabs.com/rest/",
+  // serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
   // serverhost: "https://serveraal.allaboutlab.com/rest/",
   // serverhost: "https://serverqualiteklab.e-labs.ai/rest/",
   // serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
@@ -15,5 +16,5 @@ export const environment = {
   verify_type : "email",
   app_Version : "@2022 ITC Uat v0.0.1",
   privacy_policy: "",
-  app_share: ""
+  app_share: "https://play.google.com/store/apps/details?id=com.itcuat.ai"
 };

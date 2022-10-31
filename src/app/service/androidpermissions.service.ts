@@ -5,6 +5,7 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { App_googleService, NotificationService } from '@core/ionic-core';
 import { AlertController } from '@ionic/angular';
+import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +28,7 @@ export class AndroidpermissionsService {
     private dataShareService: DataShareServiceService,
     private notificationService: NotificationService,
     public alertController: AlertController,
+    private nativeSettings: OpenNativeSettings
   ) { }
 
     // requestPermisiions() {
@@ -51,9 +53,6 @@ export class AndroidpermissionsService {
         }]
       });
       await alert.present();
-  }
-  async httpConnectionError(){
-    this.notificationService.showAlert("Check Your Internet Connection. And Try Again Please", 'Connection Error',['OK']);
   }
 
   async createAlert(header, backdropDismiss, message, buttonOptions1, buttonOptions2?): Promise<HTMLIonAlertElement> {
@@ -164,4 +163,12 @@ export class AndroidpermissionsService {
       console.log('Error getting location: ', e);
     }
   }
+
+  openNativeSettings(settingName:any){
+    this.nativeSettings.open(settingName).then(()=>{
+      console.log(settingName + "has been open");
+    });
+  }
+
+
 }

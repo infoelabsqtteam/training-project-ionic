@@ -1,6 +1,6 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, LoaderService, NotificationService, PermissionService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
+import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, NotificationService, RestService, StorageService, StorageTokenStatus } from '@core/ionic-core';
 import { Platform, AlertController } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -74,10 +74,10 @@ export class HomePage implements OnInit, OnDestroy {
   {
     this.initializeApp();
     this.banner_img = [
-      'assets/img/home/banner1.png',
-      'assets/img/home/banner2.png',
-      'assets/img/home/banner3.png',
-      'assets/img/home/banner4.png'
+      'assets/img/home/banner1.jpg',
+      'assets/img/home/banner2.jpg',
+      'assets/img/home/banner3.jpg',
+      'assets/img/home/banner4.jpg'
     ];
     this.web_site_name = this.envService.getWebSiteName();
     
@@ -155,7 +155,7 @@ export class HomePage implements OnInit, OnDestroy {
     const params = 'card_master';
     let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
     data['pageNo'] = 0;
-    data['pageSize'] = 50;
+    data['pageSize'] = 200;
     let payload = {
       'data':data,
       'path':null
@@ -208,7 +208,6 @@ export class HomePage implements OnInit, OnDestroy {
     this.notificationService.presentToastOnBottom('Comming Soon...','danger');
   }
 
-  pdfurl = "https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf";
  
   
 }

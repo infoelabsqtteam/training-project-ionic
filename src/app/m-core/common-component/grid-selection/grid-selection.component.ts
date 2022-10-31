@@ -39,6 +39,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   formName:any= "default";
   readonly:boolean= false;
   updateMode:boolean= false;
+  nogridDdata:boolean= false;
 
 
   constructor(    
@@ -169,6 +170,8 @@ export class GridSelectionComponent implements OnInit, OnChanges {
             });
           });  
           //this.getSelectedData();        
+        }else{
+          this.nogridDdata=true;
         }
       }        
     }

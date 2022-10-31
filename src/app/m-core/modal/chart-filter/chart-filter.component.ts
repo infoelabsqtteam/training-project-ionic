@@ -379,10 +379,10 @@ export class ChartFilterComponent implements OnInit {
         
       }).catch( (error:any) =>{
         if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
-        this.file.createDir(this.file.externalRootDirectory, "E-Download", true).then(() => {
+        this.file.createDir(this.file.externalRootDirectory, "Download", true).then(() => {
           
-          this.file.writeFile(this.file.externalRootDirectory + "/E-Download/",fileName,excelBlobData,{replace:true}).then(() => {
-            this.storageService.presentToast(fileName + " Saved in E-Download");
+          this.file.writeFile(this.file.externalRootDirectory + "/Download/",fileName,excelBlobData,{replace:true}).then(() => {
+            this.storageService.presentToast(fileName + " Saved in Download");
           })
 
         }).catch( (error:any) =>{

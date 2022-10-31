@@ -166,5 +166,8 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
   comingSoon() {
     this.storageService.presentToast('Comming Soon...');
   }
+  griddetail(){
+    this.storageService.presentToast("clicked on eye")
+  }
 
 }

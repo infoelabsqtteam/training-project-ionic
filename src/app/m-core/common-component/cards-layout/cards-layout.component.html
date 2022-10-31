@@ -7,6 +7,18 @@
 </ion-header>
 
 <ion-content class="contactlist">
+  <div *ngIf="nodatafound && this.carddata=='' && this.carddata.length == 0">
+    <ion-card>
+        <div class="ion-text-center"><img alt="No Records found !" *ngIf="nodatafoundImg" [src]="nodatafoundImg" /></div>
+        <!-- <ion-card-header>
+          <ion-card-title>No Records found !</ion-card-title>
+          <ion-card-subtitle></ion-card-subtitle>
+        </ion-card-header>           -->
+        <ion-card-content>
+          Module has no data.
+        </ion-card-content>
+      </ion-card>          
+  </div>
  <ion-list class="contactlist" *ngIf="cardType == 'summary'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="cardlist">
@@ -45,10 +57,11 @@
           <ion-item-option *ngIf="addCallingFeature" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
         </ion-item-options>
         
-        <ion-item-options side="end" *ngIf="gridButtons">
+        <ion-item-options side="end" *ngIf="gridButtons || addNewEnabled">
           <ion-item-option *ngFor="let btn of gridButtons">
             <span class="material-symbols-outlined" (click)="gridButtonAction(card,i,btn)">{{btn.field_class}}</span>
           </ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled && gridButtons.length == 0" class="pencil" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
           
           <!-- <ion-item-option *ngIf="addNewEnabled || enableEditOnly">
             <ion-icon slot="icon-only" name="pencil"  (click)="gridButtonAction(card, i, 'update')"></ion-icon>
@@ -78,12 +91,15 @@
           </ion-row>
         </ion-item>
         
-        <ion-item-options side="start" >
+        <ion-item-options side="start">
           <ion-item-option *ngIf="addCallingFeature" class="call" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
         </ion-item-options>
-        <ion-item-options side="end" >
-          <ion-item-option *ngIf="callStatus" class="chatbox-ellipses-outline" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="chatbox-ellipses-outline"></ion-icon></ion-item-option>
-          <ion-item-option *ngIf="addNewEnabled || enableEditOnly" class="pencil" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
+        <ion-item-options side="end" *ngIf="gridButtons || addNewEnabled">
+          <!-- <ion-item-option *ngIf="callStatus" class="chatbox-ellipses-outline" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="chatbox-ellipses-outline"></ion-icon></ion-item-option> -->
+          <ion-item-option *ngIf="addNewEnabled && gridButtons.length == 0" class="pencil" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngFor="let btn of gridButtons">
+            <span class="material-symbols-outlined" (click)="gridButtonAction(card,i,btn)">{{btn.field_class}}</span>
+          </ion-item-option>
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>

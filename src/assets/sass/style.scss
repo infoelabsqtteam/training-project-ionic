@@ -51,7 +51,8 @@ ion-header {
     .menulist {height:calc(100% - 208px);overflow-y:scroll;}
 }
 //***---------- Banner  ----------***//
-.banner {height:140px;overflow:hidden;
+.banner {
+    // max-height:140;overflow:hidden;
     img {width:100%;}
 }
 //***---------- Home page Category List  ----------***//
@@ -316,4 +317,9 @@ ng-select.ng-select.ng-touched.ng-invalid{
     table {margin-bottom:20px;
         td,th {font-size:14px;padding:5px 10px;color:#555;border:1px solid #e8e8e8;}
     }
+}
+.ion-table-responsive-x{
+    border: 1px solid #e2e2e2;
+    overflow: hidden;
+    overflow-x: scroll;
 }
