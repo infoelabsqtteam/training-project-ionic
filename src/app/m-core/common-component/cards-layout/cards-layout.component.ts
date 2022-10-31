@@ -350,7 +350,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     let parentcard:any = {};
 
     if(card && card.buttons){
-      this.gridButtons = card.buttons
+      this.gridButtons = card.buttons;
     }else{
       this.gridButtons = [];
     } 
