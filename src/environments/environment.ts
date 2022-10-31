@@ -14,15 +14,15 @@ export const environment = {
   serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
   // serverhost: "https://serveritclabs.itclabs.com/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
-  appId: "com.itcuat.ai",
-  appName: "ITC Uat",
-  appPlatformName: "itc-uat",
-  web_site: "ITC Uat",
+  appId: "com.itlabs.ai",
+  appName: "ITC Labs",
+  appPlatformName: "itc-labs",
+  web_site: "ITC Labs",
   razorpay_key : "rzp_test_P7SL8C2oelMvzE",
   verify_type : "email",
-  app_Version : "@2022 ITC Uat v0.0.1",
+  app_Version : "@2022 ITC Labs v0.0.1",
   privacy_policy: "",
-  app_share: "https://play.google.com/store/apps/details?id=com.itcuat.ai"
+  app_share: "https://play.google.com/store/apps/details?id=com.itlabs.ai"
 };
 
 /*

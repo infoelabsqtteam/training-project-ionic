@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.itcuat.ai',
-  appName: 'ITC Uat',
+  appId: 'com.itlabs.ai',
+  appName: 'ITC Labs',
   webDir: 'www',
   bundledWebRuntime: false,
   // server: {

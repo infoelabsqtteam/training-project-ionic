@@ -1,7 +1,7 @@
 {
   "name": "itc-uat",
   "version": "0.0.1",
-  "author": "ITC Uat",
+  "author": "ITC Labs",
   "homepage": "",
   "scripts": {
     "ng": "ng",
