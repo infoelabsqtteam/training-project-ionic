@@ -8,12 +8,18 @@
 <ion-content class="pages">
   <div class="contactdetails"  *ngIf="cardType == 'detail1'">
    
-    <p class="enquerylist" *ngFor="let column of childColumns; index as j">
+    <ion-item class="enquerylist" *ngFor="let column of childColumns; index as j">
       <span [ngClass]="column.class_name ? column.class_name  : ''">{{column.field_label}}</span>
 
-      <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,childDataValue)"></strong>
+      <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime' || column.type == 'info'" [innerHTML]="getValueForGrid(column,childDataValue)"></strong>
+
       <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,childDataValue)"></ion-button>
-    </p>
+
+      <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'info'">
+        <ion-button shape="round" fill="outline" (click)="griddetail()" ></ion-button>
+      </strong>
+    </ion-item>
+
   </div>
 
   <div class="contactprofile" style="height: 40%;" *ngIf="cardType == 'contactdetail'">

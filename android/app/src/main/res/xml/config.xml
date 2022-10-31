@@ -27,5 +27,9 @@
     <param name="android-package" value="cordova.plugin.RequestLocationAccuracy"/>
   </feature>
 
+  <feature name="NativeSettings">
+    <param name="android-package" value="com.phonegap.plugins.nativesettings.NativeSettings"/>
+  </feature>
+
   
 </widget>

@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn, FormArray, FormControl } from "@angular/forms";
-import { DOCUMENT, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common'; 
+import { DOCUMENT, DatePipe, CurrencyPipe } from '@angular/common'; 
 import { Router } from '@angular/router';
 import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, EnvService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
 import { ItemReorderEventDetail, ModalController, ToastController  } from '@ionic/angular';
@@ -15,7 +15,9 @@ import { HttpClient } from '@angular/common/http';
 import { zonedTimeToUtc, utcToZonedTime} from 'date-fns-tz';
 import { parseISO, format, hoursToMilliseconds, isToday } from 'date-fns';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
-// import { isArray } from 'util';
+import {FileOpener} from '@ionic-native/file-opener/ngx';
+import { File } from '@ionic-native/file/ngx';
+import { AndroidpermissionsService } from 'src/app/service/androidpermissions.service';
 
 interface User {
   id: number;
@@ -29,6 +31,7 @@ declare var tinymce: any;
   selector: 'app-form',
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
+  providers: [File]
 })
 export class FormComponent implements OnInit, OnDestroy {
 
@@ -248,7 +251,7 @@ tinymceConfig = {}
   pageLoading: boolean;
   isLinear: boolean;
   listOfFieldUpdateMode: boolean;
-  listOfFieldsUpdateIndex: number;
+  listOfFieldsUpdateIndex: any = -1;
   checkFormFieldAutfocus: boolean;
 
   public nextFormData:any ={};
@@ -299,9 +302,11 @@ tinymceConfig = {}
     private actionSheetCtrl: ActionSheetController,
     private loadingCtrl: LoadingController,
     private http: HttpClient,
-    private titlecasePipe: TitleCasePipe,
     private dataShareServiceService: DataShareServiceService,
-    private envService: EnvService
+    private envService: EnvService,
+    private fileOpener: FileOpener,
+    private file: File,
+    private apppermissionsService: AndroidpermissionsService
     ) {
 
 
@@ -804,14 +809,14 @@ tinymceConfig = {}
                 this.minDate = new Date(currentYear - 100, 0, 1);
                 this.maxDate = new Date(currentYear + 1, 11, 31);
               }
+              let minDateToday:any;
+              let maxDateFromToday:any;                
+              minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
+              maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd") + "T23:59:59";
               if(this.plt.is('hybrid')){
                 let getToday: any  = (new Date()).toISOString();
                 getToday = utcToZonedTime(getToday, this.userTimeZone);
                 getToday = this.datePipe.transform(getToday, "yyyy-MM-ddThh:mm:ss");
-                let minDateToday:any;
-                let maxDateFromToday:any;                
-                minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
-                maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd") + "T23:59:59";
                 // if(this.formTypeName == "default"){
                 //     element['minDate'] = getToday;
                 // }else{
@@ -821,8 +826,8 @@ tinymceConfig = {}
                 element['minDate'] = minDateToday;
                 element['maxDate'] = maxDateFromToday;
               }else{
-                element['minDate'] = this.minDate;
-                element['maxDate'] = this.maxDate;
+                element['minDate'] = minDateToday;
+                element['maxDate'] = maxDateFromToday;
               }
               this.commonFunctionService.createFormControl(forControl, element, '', "text")
               break; 
@@ -891,16 +896,16 @@ tinymceConfig = {}
                           this.minDate = new Date(currentYear - 100, 0, 1);
                           this.maxDate = new Date(currentYear + 1, 11, 31);
                         }
+                        let minDateToday:any;
+                        let maxDateFromToday:any;                
+                        minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd");
+                        maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd");
                         if(this.plt.is('hybrid')){
-                          let minDateToday:any;
-                          let maxDateFromToday:any;                
-                          minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd");
-                          maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd");
                           data['minDate'] = minDateToday
                           data['maxDate'] = maxDateFromToday;
                         }else{
-                          data['minDate'] = this.minDate;
-                          data['maxDate'] = this.maxDate;
+                          data['minDate'] = minDateToday;
+                          data['maxDate'] = maxDateFromToday;
                         }                        
                         this.commonFunctionService.createFormControl(list_of_fields, modifyData, '', "text")
                         break; 
@@ -2676,6 +2681,9 @@ tinymceConfig = {}
           
         };
         if (checkValue == 0) {
+          if(this.listOfFieldsUpdateIndex == undefined){
+            this.listOfFieldsUpdateIndex = -1;
+          }
           if(this.listOfFieldsUpdateIndex != -1){
             //if(this.updateMode){
               let updateCustmizedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[field.field_name]))
@@ -2683,7 +2691,8 @@ tinymceConfig = {}
                 updateCustmizedValue[this.listOfFieldsUpdateIndex][key] = formValue[field.field_name][key];
               })
 // pending for review by vikash (from)
-              const keyName=field.field_name+'_'+field.type;
+              // const keyName=field.field_name+'_'+field.type;
+              let keyName = this.custmizedKey(field);
               if(this.custmizedFormValue[keyName]){
                 Object.keys(this.custmizedFormValue[keyName]).forEach(childkey => {
                   updateCustmizedValue[this.listOfFieldsUpdateIndex][childkey] = this.custmizedFormValue[keyName][childkey];
@@ -3207,26 +3216,30 @@ tinymceConfig = {}
       const staticModal = []
       
       if( params.indexOf("CLTFN") >= 0){
-        // const calculatedCost =  this.commonFunctionService.calculateAdditionalCost(this.getFormValue(true));
-        // this.updateDataOnFormField(calculatedCost);
+        const calculatedCost =  this.commonFunctionService.calculateAdditionalCost(this.getFormValue(true));
+        this.updateDataOnFormField(calculatedCost);
       }
       else{
-        staticModal.push(this.restService.getPaylodWithCriteria(params, callback, criteria, object))      
-        if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
-          if(field && field.formValueAsObjectForQtmp){
-            staticModal[0]["data"]=this.getFormValue(false);
-          }else{
-            staticModal[0]["data"]=this.getFormValue(true);
-          }
-        }
-        // this.store.dispatch(
-        //   new CusTemGenAction.GetStaticData(staticModal)
-        // )
+        staticModal.push(this.checkQtmpApi(params,field,this.restService.getPaylodWithCriteria(params, callback, criteria, object,data_template))); 
+        // staticModal.push(this.restService.getPaylodWithCriteria(params, callback, criteria, object))      
+        // if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
+        //   if(field && field.formValueAsObjectForQtmp){
+        //     staticModal[0]["data"]=this.getFormValue(false);
+        //   }else{
+        //     staticModal[0]["data"]=this.getFormValue(true);
+        //   }
+        // }
+        // // this.store.dispatch(
+        // //   new CusTemGenAction.GetStaticData(staticModal)
+        // // )
         this.apiService.getStatiData(staticModal);
       }
    }
   }
   inputOnChangeFunc(parent,field) {
+    if(parent && parent != '' && parent.field_name && parent.field_name != ""){
+      field['parent'] = parent.field_name;
+    }
     if(field.type == 'checkbox' || field.type == 'date'){
       if (field.onchange_api_params && field.onchange_call_back_field) {        
         let formValue = this.getFormValue(false);
@@ -3270,6 +3283,11 @@ tinymceConfig = {}
           this.updateDataOnFormField(val);
         break;
 
+        case 'getDateInStringFunction':
+          calFormValue = this.commonFunctionService.getDateInStringFunction(tamplateFormValue);
+          this.updateDataOnFormField(calFormValue); 
+        break;
+
         // case 'quote_amount_via_sample_no':
         //   calFormValue = this.commonFunctionService.quote_amount_via_sample_no(tamplateFormValue,this.custmizedFormValue['quotation_param_methods']);
         //   this.updateDataOnFormField(calFormValue);
@@ -3301,14 +3319,14 @@ tinymceConfig = {}
             {"from":"account.name","to":"billing_company"},
         
           ]
-          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field);
           this.updateDataOnFormField(calFormValue); 
         break;
         case 'job_card_series':
           list_of_populated_fields=[
             {"from":"tl_name.name+service_line.name+parent_company.name+/","to":"job_card_name"},
           ]
-          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field);
           this.updateDataOnFormField(calFormValue); 
         break;
         case 'calculation_travel_claim_sheet':
@@ -3332,7 +3350,7 @@ tinymceConfig = {}
             {"from":"account.name","to":"billing_company"},
         
           ]
-          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field);
           this.updateDataOnFormField(calFormValue); 
         break;
         case 'populate_fields_for_new_order_flow':
@@ -3352,7 +3370,7 @@ tinymceConfig = {}
             {"from":"sample_booking.name","to":"billing_company"},
 
           ]
-          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field);
           this.updateDataOnFormField(calFormValue); 
         break;
         case 'populate_fields_for_report':
@@ -3369,7 +3387,7 @@ tinymceConfig = {}
             {"from":"first_name+last_name+ ","to":"reporting_contact_person"},
             {"from":"account.name","to":"reporting_company"},
           ]
-          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field);
           this.updateDataOnFormField(calFormValue); 
           // this.commonFunctionService.populate_fields_for_report(this.templateForm);
         break;
@@ -3388,7 +3406,7 @@ tinymceConfig = {}
           {"from":"contact.name","to":"reporting_contact_person"},
           {"from":"account.name","to":"reporting_company"},
         ]
-        calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+        calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field);
         this.updateDataOnFormField(calFormValue); 
         // this.commonFunctionService.populate_fields_for_report(this.templateForm);
         break;
@@ -3406,15 +3424,22 @@ tinymceConfig = {}
             {"from":"first_name+last_name+ ","to":"reporting_contact_person"},
             {"from":"sample_booking.name","to":"reporting_company"},
           ]
-          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field);
           this.updateDataOnFormField(calFormValue);
           // this.commonFunctionService.populate_fields_for_report(this.templateForm);
         break;
         case 'manufactured_as_customer':
-          list_of_populated_fields = [
-            {"from":"account.name", "to":"sample_details.mfg_by"}
-          ]
-          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          if(field.listOfPopulatedFields && field.listOfPopulatedFields.length > 0){
+            let keysList = ["from","to"]
+            let seprator = ":";
+            list_of_populated_fields = this.commonFunctionService.convertListOfStringToListObject(field.listOfPopulatedFields,keysList,seprator);
+          }else{
+            list_of_populated_fields = [
+              {"from":"account.name", "to":"sample_details.mfg_by"}
+            ]
+          }
+          let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field,multiCollection);
           this.updateDataOnFormField(calFormValue);
           // this.commonFunctionService.manufactured_as_customer(this.templateForm);
         break;
@@ -3422,15 +3447,22 @@ tinymceConfig = {}
           list_of_populated_fields = [
             {"from":"sample_booking.name", "to":"sample_details.mfg_by"}
           ]
-          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field);
           this.updateDataOnFormField(calFormValue);
           // this.commonFunctionService.manufactured_as_customer(this.templateForm);
         break;
         case 'supplied_as_customer':
-          list_of_populated_fields = [
-            {"from":"account.name", "to":"sample_details.supplied_by"}
-]
-          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          if(field.listOfPopulatedFields && field.listOfPopulatedFields.length > 0){
+            let keysList = ["from","to"];
+            let seprator = ":";
+            list_of_populated_fields = this.commonFunctionService.convertListOfStringToListObject(field.listOfPopulatedFields,keysList,seprator);
+          }else{
+            list_of_populated_fields = [
+              {"from":"account.name", "to":"sample_details.supplied_by"}
+            ]
+          }
+           let multiCollection1 = JSON.parse(JSON.stringify(this.multipleFormCollection));
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field,multiCollection1);
           this.updateDataOnFormField(calFormValue);
           // this.commonFunctionService.supplied_as_customer(this.templateForm);
           break;
@@ -3438,7 +3470,7 @@ tinymceConfig = {}
           list_of_populated_fields = [
             {"from":"sample_booking.name", "to":"sample_details.supplied_by"}
           ]
-          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields);
+          calFormValue = this.commonFunctionService.populatefields(this.templateForm.getRawValue(), list_of_populated_fields,field);
           this.updateDataOnFormField(calFormValue);
           // this.commonFunctionService.supplied_as_customer(this.templateForm);
         break;
@@ -3633,31 +3665,31 @@ tinymceConfig = {}
     // }
     // this.curFileUploadField = {};
   }
-  // isDisable(parent,chield){
-  //   const  formValue = this.getFormValue(true); 
-  //   let tobedesabled;
-  //   if(parent == ''){
-  //     tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
-  //     if(tobedesabled){
-  //       if(!this.templateForm.get(chield.field_name).disabled){
-  //         this.templateForm.get(chield.field_name).disable()
-  //       }        
-  //     }else{
-  //       if(this.templateForm.get(chield.field_name).disabled){
-  //         this.templateForm.get(chield.field_name).enable()
-  //       }        
-  //     }
-  //   }else{
-  //     tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
-  //     if(tobedesabled){
-  //       this.templateForm.get(parent).get(chield.field_name).disable()
-  //     }else{
-  //       this.templateForm.get(parent).get(chield.field_name).enable()
-  //     }
-  //   }   
+  isDisable(parent,chield){
+    const  formValue = this.getFormValue(true); 
+    let tobedesabled;
+    if(parent == ''){
+      tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
+      if(tobedesabled){
+        if(!this.templateForm.get(chield.field_name).disabled){
+          this.templateForm.get(chield.field_name).disable()
+        }        
+      }else{
+        if(this.templateForm.get(chield.field_name).disabled){
+          this.templateForm.get(chield.field_name).enable()
+        }        
+      }
+    }else{
+      tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
+      if(tobedesabled){
+        this.templateForm.get(parent).get(chield.field_name).disable()
+      }else{
+        this.templateForm.get(parent).get(chield.field_name).enable()
+      }
+    }   
         
-  //   return tobedesabled;
-  // }
+    return tobedesabled;
+  }
 
   focusField(parent,key){
     const  id = key._id + "_" + key.field_name;
@@ -3726,6 +3758,15 @@ tinymceConfig = {}
           this.isDisable(element.parent,element);
         }else{
           this.isDisable('',element)
+        }
+      });
+    }
+    if(this.mendetoryIfFieldList.length > 0){
+      this.mendetoryIfFieldList.forEach(element => {
+        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+          this.isMendetory(element.parent,element);
+        }else{
+          this.isMendetory('',element)
         }
       });
     }
@@ -3847,8 +3888,8 @@ tinymceConfig = {}
         .then((data) => {
           const object = data['data']; // Here's your selected user!
           if(object['data'] && object['data'].length > 0){
-            let obj =this.getSendData(data);
-            this.gridSelectionResponce(object['data']);
+            let obj =this.getSendData(object['data']);
+            this.gridSelectionResponce(obj);
           }        
       });
       return await modal.present();
@@ -4238,15 +4279,33 @@ tinymceConfig = {}
       const file = new Blob([getfileData.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(file);
       link.href = url;
-      link.download = getfileData.filename;
-      document.body.appendChild(link);
-      link.click();
+      let fileExt:any = '';
+      let fileName:any = '';
+      if(getfileData && getfileData.filename){
+        fileExt = getfileData.filename.split('.').pop();
+        if(fileExt == "pdf"){
+          fileName = getfileData.filename;
+        }else{
+          fileName = getfileData.filename + ".pdf";
+        }
+      }
+      
+      if(this.plt.is("hybrid")){
+        this.downloadToMobile(file,fileName);
+        this.checkForDownloadReport = false;
+      }else{
+        link.download = getfileData.filename;
+        document.body.appendChild(link);
+        link.click();
+      }
       link.remove();
       // this.downloadPdfCheck = '';
       this.dataSaveInProgress = true;
       this.checkForDownloadReport = false;
       this.dataSaveInProgress = true;
       this.apiService.ResetFileData();
+      fileExt = '';
+      fileName = '';
     }
   }
   setFileDownloadUrl(fileDownloadUrl){
@@ -4576,24 +4635,24 @@ tinymceConfig = {}
     return data[column.field_name];
   }
 
-  isDisable(field, object) {
-    const updateMode = false;
-    let disabledrow = false;
-    if (field.is_disabled) {
-      return true;
-    } 
-    if(this.tableFields.disableRowIf && this.tableFields.disableRowIf != ''){
-      disabledrow = this.checkRowIf(object);
-    }
-    if(disabledrow){
-      this.readonly = true;
-      return true;
-    }
-    if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-      return this.commonFunctionService.isDisable(field.etc_fields, updateMode, object);
-    }   
-    return false;
-  }
+  // isDisable(field, object) {
+  //   const updateMode = false;
+  //   let disabledrow = false;
+  //   if (field.is_disabled) {
+  //     return true;
+  //   } 
+  //   if(this.tableFields.disableRowIf && this.tableFields.disableRowIf != ''){
+  //     disabledrow = this.checkRowIf(object);
+  //   }
+  //   if(disabledrow){
+  //     this.readonly = true;
+  //     return true;
+  //   }
+  //   if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
+  //     return this.commonFunctionService.isDisable(field.etc_fields, updateMode, object);
+  //   }   
+  //   return false;
+  // }
   checkRowIf(data:any){
     let check = false;
     if(data.selected){
@@ -4664,8 +4723,7 @@ tinymceConfig = {}
     this.setValue("",field, "", e);
   }
   getTitlecase(value){
-    // return this.commonFunctionService.getTitlecase(value)
-    this.titlecasePipe.transform(value);
+    return this.commonFunctionService.getTitlecase(value);
   }
   /** Reorder objects in array */
 	doReorder(ev: CustomEvent<ItemReorderEventDetail>, draggableItemId: number) {
@@ -4918,7 +4976,8 @@ tinymceConfig = {}
   }
   showListOfFieldData(listOfField,item){
     let value={};
-    value['data'] = listOfField[item.field_name]    
+    value['data'] = listOfField[item.field_name];
+    let editemode = false;   
     switch (item.type) {
       case "typeahead":
           if(item.datatype == "list_of_object"){  
@@ -4929,7 +4988,7 @@ tinymceConfig = {}
             //     "label":item.label
             //   }
             // ];      
-            this.viewModal('form_basic-modal', value, item,false);
+            this.viewModal('form_basic-modal', value, item,editemode);
           }          
           break;
       case "list_of_string":
@@ -4938,7 +4997,12 @@ tinymceConfig = {}
         if(item["gridColumns"] && item["gridColumns"].length > 0){
           value['gridColumns']=item.gridColumns;
         }
-        this.viewModal('form_basic-modal', value, item,false);
+        this.viewModal('form_basic-modal', value, item,editemode);
+        break;
+      case "file":
+        if (value['data'] && value['data'] != '') {
+          this.viewModal('fileview-grid-modal', value, item, editemode);
+        };
         break;      
       default:
         break;
@@ -4952,9 +5016,158 @@ tinymceConfig = {}
       'editemode': editemode
     }
     // this.modalService.open(id, this.alertData);
+    this.notificationService.showAlert("DO modal work","MODAL",['Ok']);
+  }
+  
+  arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
+    const fileExtension = extentionType;
+    let file_Type: any;
+    let file_prefix: any;
+    if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
+      file_Type = "image/" + extentionType;
+      file_prefix = "Image";
+    }else if(fileExtension == "xlsx" || fileExtension == "xls"){
+      file_Type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
+      file_prefix = "Excel";
+    }else if(fileExtension == "pdf"){
+      file_Type = "application/" + extentionType;
+      file_prefix = "PDF";
+    }else{
+      file_Type = "application/octet-stream";
+      file_prefix = "TEXT";
+    }
+
+    let fileName:any;
+    if(filename && filename !=undefined){      
+      fileName = filename;
+    }else{
+      fileName = file_prefix + '_' + new Date().getTime() + "." + fileExtension;
+    }
+    const blobData:Blob = new Blob([arrayBufferData],{type:file_Type});
+    
+    this.downloadToMobile(blobData,fileName);
+
   }
 
+  async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
+    let file_Type:any = '';
+    let folderName:any = '';
+    if(blobData && blobData.type){
+      file_Type = blobData.type;
+    }
+    if(FolderName == undefined || FolderName == null){
+      folderName = 'Download'
+    }else{
+      folderName = FolderName;
+    }
+    let readPermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
+    let writePermission = await this.permissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
 
+    if(readPermission && writePermission){
+
+      // ==========using native file    
+      this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
+
+        this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
+          // confirm alert
+          let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
+          if(openFile == "confirm"){
+            const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
+            const mimeType = file_Type;      
+            this.fileOpener.open(path,mimeType)
+            .then(()=> console.log('File is opened'))
+            .catch(error => console.log('Error opening file ',error));
+          }
+        }).catch( (error:any) =>{
+          this.storageService.presentToast(JSON.stringify(error));
+        })
+        
+      }).catch( (error:any) =>{
+        if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
+          
+          this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
+            console.log('Directory create '+ response);
+            this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
+              this.storageService.presentToast(fileName + " Saved in " + folderName);
+            })
+
+          }).catch( (error:any) =>{
+              this.storageService.presentToast(JSON.stringify(error));
+          })
+        }
+      });
+    }else{
+      let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
+      if(gavepermission == "cancel"){
+        this.apppermissionsService.openNativeSettings('application_details');
+      }
+    }
+  }
+  isMendetory(parent,chield){
+    const  formValue = this.getFormValue(true);   
+    let tobedesabled;
+    if(parent == ''){
+      tobedesabled = this.commonFunctionService.isMendetory(chield,formValue)
+      if(tobedesabled){
+        if(this.templateFormControl[chield.field_name].status == 'VALID'){
+          this.templateForm.get(chield.field_name).setValidators([Validators.required]);
+          this.templateForm.get(chield.field_name).updateValueAndValidity();
+        }       
+      }else{
+        if(this.templateFormControl[chield.field_name].status == 'INVALID'){
+          this.templateForm.get(chield.field_name).clearValidators();
+          this.templateForm.get(chield.field_name).updateValueAndValidity();
+        }        
+      }
+    }else{
+      tobedesabled = this.commonFunctionService.isMendetory(chield,formValue)
+      if(tobedesabled){
+        if(this.templateFormControl[parent][chield.field_name].status == 'VALID'){
+          this.templateForm.get(parent).get(chield.field_name).setValidators([Validators.required]);
+          this.templateForm.get(parent).get(chield.field_name).updateValueAndValidity();
+        } 
+      }else{
+        if(this.templateFormControl[parent][chield.field_name].status == 'INVALID'){
+          this.templateForm.get(parent).get(chield.field_name).clearValidators();
+          this.templateForm.get(parent).get(chield.field_name).updateValueAndValidity();
+        } 
+      }
+    }       
+    return tobedesabled;
+  }
+  getListOfFieldsGridColumn(field:any): Array<any>{
+    let columns = [];
+    if(field && field.list_of_fields && field.list_of_fields.length > 0){
+      columns = JSON.parse(JSON.stringify(field.list_of_fields));
+    }else if(field && field.gridColumns && field.gridColumns.length > 0){
+      columns = JSON.parse(JSON.stringify(field.gridColumns));
+    }
+    return columns;
+  }
+  onClickLoadData(parent,field){
+    if(field && field.onClickApiParams && field.onClickApiParams != ''){        
+      let api_params = field.onClickApiParams;
+      let callBackfield = field.onClickCallBackField;
+      let criteria = field.onClickApiParamsCriteria
+      const payload = this.restService.getPaylodWithCriteria(api_params,callBackfield,criteria,this.getFormValue(false));
+      let payloads = [];
+      payloads.push(this.checkQtmpApi(api_params,field,payload));
+      this.apiService.getStatiData(payloads);
+    }
+  }  
+  checkQtmpApi(params,field,payload){
+    if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
+      let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+      if(field && field.formValueAsObjectForQtmp){            
+        let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(false));
+        payload["data"]=formValue;
+      }else{
+        let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(true));
+        payload["data"]=formValue;
+      }
+    }
+    return payload;
+  }
 
   // Please let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last in this file
   async readAsBase64(photo: Photo) {

@@ -32,10 +32,10 @@ export class GridSelectionModalComponent implements OnInit {
 
   
   // test array
-  data :any =
-      [
-          {"cardType":"demo","company_name":"abc pvt ltd","final_amount":0.00,"quotation_no":"B01-220405RQ00001","contact_person":"Aggregate Bedding Sand 2","mobile":"3887722","email":"jhduy@gmail.com","address1":"patel nagar/delhi","country":"india","state":"Delhi","department_name":"Other","class_name":"test","sample_name":"Urea","department_id":"5fdb24b60715230bd","net_amt":"₹ 7000"}
-      ]
+  data :any = [];
+      // [
+      //     {"cardType":"demo","company_name":"abc pvt ltd","final_amount":0.00,"quotation_no":"B01-220405RQ00001","contact_person":"Aggregate Bedding Sand 2","mobile":"3887722","email":"jhduy@gmail.com","address1":"patel nagar/delhi","country":"india","state":"Delhi","department_name":"Other","class_name":"test","sample_name":"Urea","department_id":"5fdb24b60715230bd","net_amt":"₹ 7000"}
+      // ]
   expandicon: any = "assets/itc-labs/icon/expand-icon.png";
 
   constructor(
@@ -67,6 +67,7 @@ export class GridSelectionModalComponent implements OnInit {
     this.selectedTab = "new";
     this.selecteData = [];  
     this.selecteData = JSON.parse(JSON.stringify(this.Data.selectedData)); 
+    this.selectedData = JSON.parse(JSON.stringify(this.Data.selectedData));
     this.field = this.Data.field;
     if(this.Data.object){
       this.parentObject = this.Data.object;
@@ -199,12 +200,20 @@ export class GridSelectionModalComponent implements OnInit {
     this.coreFunctionService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
   }
 
-  async addremoveparticipant(data){
+  async addremoveparticipant(data,index){
+    let alreadyAdded = false;
+      this.selectedData.forEach(element => {
+        if(element && element._id == data._id){
+          alreadyAdded = true;
+        }
+      });
     const modal = await this.modalController.create({
       component: GridSelectionDetailModalComponent,
       componentProps: {
-        "Data": {"value":data,"column":this.field.gridColumns},
-        "childCardType" : "demo1"
+        "Data": {"value":data,"column":this.field.gridColumns,"alreadyAdded": ""},
+        "index": index,
+        "childCardType" : "demo1",
+        "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""} 
       },
       swipeToClose: false
     });
@@ -229,6 +238,7 @@ export class GridSelectionModalComponent implements OnInit {
         }
       });
     }
+    
     this.closeModal();
   }
   closeModal(){

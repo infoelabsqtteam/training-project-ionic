@@ -124,9 +124,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
-  }
-  
-  
+  }  
   
   ngOnInit() {
     
@@ -198,9 +196,6 @@ export class AppComponent implements OnInit, OnDestroy {
     // this.userInfo = '';
     this.authService.logout('/auth/signine');
   }
-
-  
-
   
   getGridData(criteria?){
     let criteriaList = [];
@@ -216,10 +211,7 @@ export class AppComponent implements OnInit, OnDestroy {
       'path':null
     }
     this.apiService.getGridData(payload);
-  }
-
-  
-  
+  } 
 
   showCardTemplate(card:any, index:number){
     this.selectedIndex = index;
@@ -228,11 +220,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.dataShareServiceService.setcardData(card);
   }
 
-  setData(){    
-  }
-
   comingSoon() {
-    this.notificationService.presentToast('Comming Soon...',"primary");
+    this.notificationService.presentToastOnBottom('Comming Soon...',"primary");
   }
 
 }
