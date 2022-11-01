@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">ITC Labs</string>
     <string name="title_activity_main">ITC Labs</string>
-    <string name="package_name">com.itlabs.ai</string>
-    <string name="custom_url_scheme">com.itlabs.ai</string>
+    <string name="package_name">com.itclabs.ai</string>
+    <string name="custom_url_scheme">com.itclabs.ai</string>
 </resources>

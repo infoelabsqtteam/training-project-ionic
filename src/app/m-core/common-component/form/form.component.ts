@@ -3752,7 +3752,7 @@ tinymceConfig = {}
         }
       }
     }
-    if(this.disableIfFieldList.length > 0){
+    if(this.disableIfFieldList && this.disableIfFieldList.length > 0){
       this.disableIfFieldList.forEach(element => {
         if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
           this.isDisable(element.parent,element);
@@ -3761,7 +3761,7 @@ tinymceConfig = {}
         }
       });
     }
-    if(this.mendetoryIfFieldList.length > 0){
+    if(this.mendetoryIfFieldList && this.mendetoryIfFieldList.length > 0){
       this.mendetoryIfFieldList.forEach(element => {
         if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
           this.isMendetory(element.parent,element);
@@ -3770,7 +3770,7 @@ tinymceConfig = {}
         }
       });
     }
-    if(this.showIfFieldList.length > 0){
+    if(this.showIfFieldList && this.showIfFieldList.length > 0){
       this.showIfFieldList.forEach(element => {
         let id = '';
         if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
