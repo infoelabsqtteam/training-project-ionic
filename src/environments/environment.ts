@@ -13,8 +13,9 @@ export const environment = {
   //  serverhost: "https://sitservermedicea.medicea.in/rest/",
   serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
   // serverhost: "https://serveritclabs.itclabs.com/rest/",
+  // serverhost: "https://prodserveritclabs.e-labs.ai/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
-  appId: "com.itlabs.ai",
+  appId: "com.itclabs.ai",
   appName: "ITC Labs",
   appPlatformName: "itc-labs",
   web_site: "ITC Labs",
@@ -22,7 +23,7 @@ export const environment = {
   verify_type : "email",
   app_Version : "@2022 ITC Labs v0.0.1",
   privacy_policy: "",
-  app_share: "https://play.google.com/store/apps/details?id=com.itlabs.ai"
+  app_share: "https://play.google.com/store/apps/details?id=com.itclabs.ai"
 };
 
 /*
