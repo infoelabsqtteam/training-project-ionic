@@ -75,7 +75,11 @@ export class AppComponent implements OnInit, OnDestroy {
     // this.web_site = appConstants.siteName;
     this.app_Version  = this.env.getAppVersion();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
-      this.cardList = data.data;
+      if(data && data.data && data.data.length > 0){
+        this.cardList = data.data;
+      }else{
+        console.log("Somethisng went wrong, please try again later");
+      }
     })
   }
 
@@ -129,9 +133,9 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit() {
     
     if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-      this.getGridData();
+      // this.getGridData();
       this.authService.getUserPermission(false,'/home');
-      this.router.navigateByUrl('/home');      
+      this.router.navigateByUrl('/home');  
     } 
     else{
       console.log("Token Not active");
@@ -197,21 +201,21 @@ export class AppComponent implements OnInit, OnDestroy {
     this.authService.logout('/auth/signine');
   }
   
-  getGridData(criteria?){
-    let criteriaList = [];
-    if(criteria){
-      criteriaList = criteria;
-    }
-    const params = 'card_master';
-    let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
-    data['pageNo'] = 0;
-    data['pageSize'] = 50;
-    let payload = {
-      'data':data,
-      'path':null
-    }
-    this.apiService.getGridData(payload);
-  } 
+  // getGridData(criteria?){
+  //   let criteriaList = [];
+  //   if(criteria){
+  //     criteriaList = criteria;
+  //   }
+  //   const params = 'card_master';
+  //   let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
+  //   data['pageNo'] = 0;
+  //   data['pageSize'] = 200;
+  //   let payload = {
+  //     'data':data,
+  //     'path':null
+  //   }
+  //   this.apiService.getGridData(payload);
+  // } 
 
   showCardTemplate(card:any, index:number){
     this.selectedIndex = index;

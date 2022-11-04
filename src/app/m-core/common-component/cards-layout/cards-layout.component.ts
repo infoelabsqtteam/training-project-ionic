@@ -298,11 +298,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.gridButtons=[];
     this.currentPageCount = 1;    
     this.carddata=[];
-    if(this.ionEvent && this.ionEvent.type == 'ionInfinite' && this.loadMoreData){
-      this.ionEvent.target.disabled = false;
-    }else if(this.ionEvent && this.ionEvent.type == 'ionRefresh' && this.refreshlist){
-      this.ionEvent.target.disabled = false;
-    }
+    this.checkionEvents();
   }
   ngOnInit() { }
 
@@ -442,15 +438,20 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     if(card.enable_refresh_mode){
       this.refreshlist = card.enable_refresh_mode;
+      this.checkionEvents();
+    }else{
+      this.refreshlist = false;
     }
     if(card && card.enable_load_more ){   
       this.loadMoreData = card.enable_load_more
+      this.checkionEvents();
       if(this.selectedgriddataId && this.selectedgriddataId !=''){
         const cr = "_id;eq;" + this.selectedgriddataId + ";STATIC";
         criteria.push(cr);
         parentcard = card;
       }
     }else{
+      this.loadMoreData = false;
       this.selectedgriddataId = "";
     }
 
@@ -1063,6 +1064,26 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.apppermissionsService.openNativeSettings('application_details');
       }
     }
+  }
+
+  checkionEvents(){
+    if(this.loadMoreData){
+      if(this.ionEvent && this.ionEvent.type == 'ionRefresh'){
+        this.ionEvent.target.disabled = this.loadMoreData;
+      }
+      if(this.ionEvent && this.ionEvent.type == 'ionInfinite'){
+        this.ionEvent.target.disabled = !this.loadMoreData;
+      }
+    }
+    if(this.refreshlist){
+      if(this.ionEvent && this.ionEvent.type == 'ionRefresh'){
+        this.ionEvent.target.disabled = !this.refreshlist;
+      }
+      if(this.ionEvent && this.ionEvent.type == 'ionInfinite'){
+        this.ionEvent.target.disabled = this.refreshlist;
+      }
+    }
+    
   }
 
   convertBlobToBase64 = (blob :Blob)=>new Promise ((resolve,reject) =>{

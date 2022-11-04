@@ -318,8 +318,82 @@ ng-select.ng-select.ng-touched.ng-invalid{
         td,th {font-size:14px;padding:5px 10px;color:#555;border:1px solid #e8e8e8;}
     }
 }
-.ion-table-responsive-x{
+.ion-table-responsive-x-axis {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
     border: 1px solid #e2e2e2;
     overflow: hidden;
     overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+        
+    
+    table {
+        width: 100%;
+        font-size: 13px;
+        border: none;
+        border-bottom: 1px solid #efefef!important;
+        thead {
+            background: #fafafa;
+            font-family: Roboto Condensed,sans-serif;
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            tr {
+                box-shadow: 0 0 1px #ccc;
+                th {
+                    cursor: pointer;
+                    vertical-align: middle;
+                    padding: 5px;
+                    background: #fafafa;
+                    border-top: none;
+                    border-bottom: none;
+                }
+            }
+        }
+        tbody tr td {
+            border: 0;
+            border-left: 1px solid rgba(0,0,0,.05);
+            padding: 0 10px;
+            vertical-align: middle;
+        }
+        .grid-button {
+            width: 24px;
+            height: 24px;
+            line-height: 30px;
+            border-radius: 100%;
+            box-shadow: none;
+            vertical-align: middle;
+            display: inline-block;
+            padding: 0;
+            font-size: 13px;
+            text-align: center;
+            span{font-size: 22px;}
+        }
+    }
+    .table-bordered, .table-bordered td, .table-bordered th {
+        border: 1px solid #dee2e6;
+    }
+}
+.table-responsive>.table-bordered {
+    border: 0;
+}
+table {
+    border-collapse: collapse;
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,.05);
+}
+.ion-table-responsive-x-axis table tbody tr:nth-of-type(2n) td {
+    background-color: #fafafa;
+}
+.ion-margin-horizontal-0{margin-left: 0;margin-right: 0;}
+.ion-margin-vertical-0{margin-top:0;margin-bottom: 0;}
+.ion-padding-horizontal-0{padding-left: 0;padding-right: 0;}
+.ion-padding-vertical-0{padding-top:0;padding-bottom: 0;}
+.one-line-text {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
