@@ -397,3 +397,10 @@ table {
     overflow: hidden;
     white-space: nowrap;
 }
+
+ion-accordion {
+    .contactlist{
+        margin:0 8px;padding:0;
+        ion-item{padding:0px 8px}
+    }
+}
