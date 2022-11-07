@@ -86,7 +86,8 @@ export class HomePage implements OnInit, OnDestroy {
         this.cardList = data.data;
         this.commonDataShareService.setModuleList(this.cardList);
       }else{
-        this.notificationService.presentToastOnMiddle("Server inactive or data not available");
+        this.notificationService.presentToastOnBottom("Somethisng went wrong, please try again later");
+        // console.log("Somethisng went wrong, please try again later");
       }
     })
   }
@@ -135,15 +136,16 @@ export class HomePage implements OnInit, OnDestroy {
 
   ngOnInit() {
     if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-      this.router.navigateByUrl('/home');      
+      this.router.navigateByUrl('/home'); 
+      this.getGridData();     
     }else {
       this.router.navigateByUrl('auth/signine');      
     }
     this.authService.getUserPermission(false,'/home');
-    this.authService._user_info.subscribe(resp => {
-      this.userInfo = resp;
-      this.getGridData();
-    })
+    // this.authService._user_info.subscribe(resp => {
+    //   this.userInfo = resp;
+      
+    // })
   }
 
 
