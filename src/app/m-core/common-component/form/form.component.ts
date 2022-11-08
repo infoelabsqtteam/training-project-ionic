@@ -2607,13 +2607,13 @@ tinymceConfig = {}
                   if(custmizedData.length == 0){
                     checkValue = 1;
                    // this.notificationService.notify("bg-danger", "Please Enter " + element.label);
-                    this.notificationService.showAlert("Alert", "Please Enter " + element.label ,['Dismiss']);
+                    this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
                     return;
                   }
                 }
               }else{
                // this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
-                this.notificationService.showAlert('Alert','Entered value for '+element.label+' is not valid. !!!' ,['Dismiss']);
+                this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
                 return;
               }
               break; 
@@ -2622,12 +2622,12 @@ tinymceConfig = {}
                 if(mendatory){                  
                   checkValue = 1;
                   //this.notificationService.notify("bg-danger", "Please Enter " + element.label);
-                  this.notificationService.showAlert("Alert", "Please Enter " + element.label ,['Dismiss']);
+                  this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
                   return;    
                 }
               }else if(typeof list_of_field_data[element.field_name] != 'object'){
                 //this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
-                this.notificationService.showAlert('Alert','Entered value for '+element.label+' is not valid. !!!' ,['Dismiss']);
+                this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert',['Dismiss']);
                 return;
               }
               break;         
@@ -2640,13 +2640,13 @@ tinymceConfig = {}
                 if(mendatory && custmizedData == ''){
                   if(custmizedData.length == 0){
                     checkValue = 1;
-                    this.notificationService.showAlert("Alert", "Please Enter " + element.label, ['Dismiss']);
+                    this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
                     
                     return;
                   }
                 }
               }else{
-                this.notificationService.showAlert('Alert','Entered value for '+element.label+' is not valid. !!!', ['Dismiss']);
+                this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
                 return;
               }
               break;  
@@ -2656,12 +2656,12 @@ tinymceConfig = {}
                   if(mendatory){
                     if(custmizedData.length == 0){
                       checkValue = 1;
-                      this.notificationService.showAlert("Alert", "Please Enter " + element.label, ['Dismiss']);
+                      this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
                       return;
                     }
                   }
                 }else if(field_control.get(element.field_name).errors?.required || field_control.get(element.field_name).errors?.validDataText){
-                  this.notificationService.showAlert('Alert','Entered value for '+element.label+' is invalidData. !!!', ['Dismiss']);
+                  this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
                   return;
                 }
 
@@ -2671,7 +2671,7 @@ tinymceConfig = {}
               if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
                 if(mendatory ){
                   checkValue = 1;
-                  this.notificationService.showAlert("Alert", "Please Enter " + element.label, ['Dismiss']);
+                  this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
                 }
               }
               break;
@@ -2687,7 +2687,7 @@ tinymceConfig = {}
               alreadyAdded = this.checkDataAlreadyAddedInListOrNot(primary_key_field_name,primary_key_field_value,list);
             }
             if(alreadyAdded){
-              this.notificationService.showAlert('Alert','Entered value for '+element.label+' is already added. !!!', ['Dismiss']);
+              this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
               return;
             }
           }
@@ -2852,8 +2852,8 @@ tinymceConfig = {}
     }
     let objectValue:string = "";
     let supporting_field_type = "";
-    if(typeof formValue[field.field_name] == 'object'){
-      if(formValue[field.field_name] !== null){
+    let typeofObject = typeof formValue[field.field_name];
+    if(typeofObject && typeofObject !=undefined && typeofObject == 'object' && formValue[field.field_name]){
       if('COMPLETE_OBJECT' in formValue[field.field_name]){
         objectValue =formValue[field.field_name]["COMPLETE_OBJECT"];
         delete formValue[field.field_name]["COMPLETE_OBJECT"]
@@ -2874,7 +2874,6 @@ tinymceConfig = {}
         if(supporting_field_type == "COMPLETE_OBJECT") {
           this.getStaticDataWithDependentData();     
         }    
-      }
       }    
     }  
     else if(parentfield && typeof formValue[parentfield.field_name][field.field_name] == 'object'){
@@ -3820,10 +3819,21 @@ tinymceConfig = {}
                 if (this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = [];
               }         
               if(element.is_mandatory){
-                if(this.templateFormControl[element.field_name].status == 'INVALID'){
-                  this.templateForm.get(element.field_name).clearValidators();
-                  this.templateForm.get(element.field_name).updateValueAndValidity();
-                }              
+                if(element.type == "list_of_fields"){
+                  element.list_of_fields.forEach(field =>{
+                    if(field.is_mandatory){
+                      if(this.templateFormControl[element.field_name].get([field.field_name]).status == 'INVALID'){
+                        this.templateFormControl[element.field_name].get([field.field_name]).clearValidators();
+                        this.templateFormControl[element.field_name].get([field.field_name]).updateValueAndValidity();
+                      }
+                    }
+                  })
+                }else{                  
+                  if(this.templateFormControl[element.field_name].status == 'INVALID'){
+                    this.templateForm.get(element.field_name).clearValidators();
+                    this.templateForm.get(element.field_name).updateValueAndValidity();
+                  }
+                }           
               }
             }            
           }                
@@ -3835,10 +3845,21 @@ tinymceConfig = {}
               elementDetails.className += " d-inline-block"; 
               element['show'] = true;
               if(element.is_mandatory){
-                if(this.templateFormControl[element.field_name].status == 'VALID'){
-                  this.templateForm.get(element.field_name).setValidators([Validators.required]);
-                  this.templateForm.get(element.field_name).updateValueAndValidity();
-                }              
+                if(element.type == "list_of_fields"){
+                  element.list_of_fields.forEach(field =>{
+                    if(field.is_mandatory){
+                      if(this.templateFormControl[element.field_name].get([field.field_name]).status == 'VALID'){
+                        this.templateFormControl[element.field_name].get([field.field_name]).setValidators([Validators.required]);
+                        this.templateFormControl[element.field_name].get([field.field_name]).updateValueAndValidity();
+                      }
+                    }
+                  })
+                }else{ 
+                  if(this.templateFormControl[element.field_name].status == 'VALID'){
+                    this.templateForm.get(element.field_name).setValidators([Validators.required]);
+                    this.templateForm.get(element.field_name).updateValueAndValidity();
+                  }
+                }             
               }
             }            
           }
