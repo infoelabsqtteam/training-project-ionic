@@ -3,8 +3,8 @@
         <ion-buttons slot="start">
             <ion-menu-button><img src="assets/img/icons/menu.svg"></ion-menu-button>
         </ion-buttons>
-        <ion-searchbar [(ngModel)]="myInput" (ionChange)="search()"></ion-searchbar>
-        <ion-buttons slot="end" (click)="comingSoon()"><img src="assets/img/icons/bell-Bold.svg"></ion-buttons>
+        <ion-searchbar show-cancel-button="focus" [debounce]="1000" enterkeyhint="search" inputmode="search" [(ngModel)]="myInput" (ionChange)="search()"></ion-searchbar>
+        <ion-buttons *ngIf="notification" slot="end" (click)="comingSoon()"><img src="assets/img/icons/bell-Bold.svg"></ion-buttons>
     </ion-toolbar>
 </ion-header>
 
@@ -28,16 +28,7 @@
     </div>
 
 
-
-
-
-
     <div class="catlist">
-
-        <!-- <div *ngIf="dataCount == 0" class="">
-            <p><strong>No Module Found! Try adjusting your search.</strong></p>
-            <ion-button color="primary" fill="outline" size="small" (click)="commonFunction()">Try again</ion-button>
-        </div> -->
 
         <ion-grid *ngIf="!onlyiconsList">
             <ion-row>
@@ -60,5 +51,31 @@
                 <span>{{cardItem.name}}</span>
             </li>
         </ul>
+
+        <div *ngIf="cardList == null" class="">
+            <ion-card>
+                <!-- <div class="ion-text-center"><img alt="No Modules Assign" *ngIf="nodatafoundImg" [src]="nodatafoundImg" /> </div>-->
+                <ion-card-header>
+                  <ion-card-title>No module assign</ion-card-title>
+                  <!-- <ion-card-subtitle>Card Subtitle</ion-card-subtitle> -->
+                </ion-card-header>              
+                <ion-card-content>
+                    Permission error, No Module Found !
+                </ion-card-content>
+                <ion-button color="primary" fill="clear" size="small" (click)="getGridData()">Try again</ion-button>
+            </ion-card>
+        </div>
+        <div *ngIf="cardList != null && cardList && cardList.length == 0" class="">
+            <ion-card>
+                <ion-card-header>
+                  <ion-card-title>No matching element found</ion-card-title>
+                  <!-- <ion-card-subtitle>Card Subtitle</ion-card-subtitle> -->
+                </ion-card-header>              
+                <ion-card-content>
+                    Try again by adjusting your search value!
+                </ion-card-content>
+            </ion-card>
+        </div>
+        
     </div>
 </ion-content>

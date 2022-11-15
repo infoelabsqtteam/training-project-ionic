@@ -177,7 +177,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   async select(){
     if(this.alreadyAdded){
-      this.storageService.presentToast("Can't perform this action because this record already added");
+      // this.storageService.presentToast("Can't perform this action because this record already added");
+      this.dismissModal(this.data,false);
     }else{
       // if(this.checkValidator()){
         this.storageService.presentToast("Record selected");
