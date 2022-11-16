@@ -12,9 +12,11 @@ ion-toolbar, .addNew, ion-item-option, ion-button{--background:var(--themebg) !i
 ion-header {
     ion-toolbar {
         ion-buttons {margin:10px;}
-        ion-searchbar{padding:0 !important;color:#fff !important;}
+        ion-searchbar{padding:0 !important;color:#fff !important;
+            .searchbar-input-container{margin-right:16px}
+        }
         .sc-ion-searchbar-md-h {--background:rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.07);--box-shadow:none;--border-radius:10px;}
-        .searchbar-search-icon.sc-ion-searchbar-ios, .searchbar-search-icon.sc-ion-searchbar-md {color:#fff;width:16px;}
+        .searchbar-search-icon.sc-ion-searchbar-ios, .searchbar-search-icon.sc-ion-searchbar-md, .searchbar-cancel-button.sc-ion-searchbar-md, .searchbar-cancel-button.sc-ion-searchbar-ios{color:#fff;}
         .cardsearch {display:flex;align-items:center;justify-content:space-between;
             .searchbox {display:flex;}
             ion-input{background:#e6e7e8;border-radius:10px;color:#2e2e2e;
@@ -117,6 +119,9 @@ ion-tabs.footertab {
         ion-item-option.call{background:var(--ion-color-success);}
     }
     
+}
+.contactlist.app-grid_list{margin:0 6px;padding: 0;
+    ion-list{padding: 0;}
 }
 
 
@@ -397,10 +402,12 @@ table {
     overflow: hidden;
     white-space: nowrap;
 }
-
 ion-accordion {
     .contactlist{
         margin:0 8px;padding:0;
         ion-item{padding:0px 8px}
     }
+}
+ion-searchbar{
+    --cancel-button-color:var(--ion-color-white);--icon-color:var(--ion-color-white)
 }
