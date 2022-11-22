@@ -266,11 +266,13 @@ $status_button: active,Active,ACTIVE,inactive,Inactive,INACTIVE,new,New,NEW,move
         ion-icon {margin:0 5px;font-size:16px;}
     }
     
-    .chartbody {padding:5px;min-height:180px;
+    .chartbody {padding:5px;max-height:13rem;min-height:10rem;
         .google-chart {width:auto !important;}
         .google-visualization-table .gradient {font-size:10px;}
         .google-visualization-table-table td {font-size:10px;white-space:nowrap;}
         .spinner {display:flex;align-items:center;justify-content:center;height:100%;position:absolute;width:100%;left:0;top:0;}
+    }
+    .detail-filter.chartbody {padding:5px;max-height:max-content;
     }
 
 }
