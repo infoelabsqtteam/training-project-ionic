@@ -9,6 +9,18 @@ import { Platform } from '@ionic/angular';
 // import { writeFile } from "capacitor-blob-writer";
 // import * as FileSaver from 'file-saver';
 
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY'
+  },
+};
+
 @Component({
   selector: 'app-chart-filter',
   templateUrl: './chart-filter.component.html',
@@ -188,16 +200,26 @@ export class ChartFilterComponent implements OnInit {
   updateData(event:any, field:any) {
     if(event.keyCode == 38 || event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 27 || event.keyCode == 9){
       return false;
-    }    
-    this.callTypeaheadData(field,this.dashboardFilter.getRawValue()); 
+    }
+    let objectValue:any = this.dashboardFilter.getRawValue();
+    if(objectValue[field.field_name]){
+      this.callTypeaheadData(field,objectValue);
+    }else{
+      objectValue[field.field_name] = event.target.value
+      this.callTypeaheadData(field,objectValue);
+    }
   }
   callTypeaheadData(field:any,objectValue:any){
-    this.clearTypeaheadData();   
-    const payload = [];
-    const params = field.api_params;
-    const criteria = field.api_params_criteria;
-    payload.push(this.restService.getPaylodWithCriteria(params, '', criteria, objectValue));
-    this.apiService.GetTypeaheadData(payload);    
+    this.clearTypeaheadData();
+    const field_name = field.field_name;
+    const value = this.commonFunctionService.getObjectValue(field_name,objectValue);
+    if(value && value != ''){
+      const payload = [];
+      const params = field.api_params;
+      const criteria = field.api_params_criteria;
+      payload.push(this.restService.getPaylodWithCriteria(params, '', criteria, objectValue));
+      this.apiService.GetTypeaheadData(payload);
+    }
   }
   clearTypeaheadData() {
     this.apiService.clearTypeaheadData();
