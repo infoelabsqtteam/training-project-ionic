@@ -9,23 +9,72 @@
   <form *ngIf="dashboardItem && dashboardItem.fields && dashboardItem.fields.length >0 && showFilter" [formGroup]="dashboardFilter">
     <ion-grid class="chartfilter">
       <ion-row>
-        <ion-col [size]="field.type == 'typeahead' ? '12' : '6'" *ngFor="let field of dashboardItem.fields; let i = index" [id]="field._id">
+        <ion-col [size]="field.type == 'typeahead' || field.type == 'daterange' ? '12' : '6'" *ngFor="let field of dashboardItem.fields; let i = index" [id]="field._id">
           <ion-item *ngIf="field.type == 'date'">
             <ion-label>{{ field.label }}</ion-label>
-            <ion-input value="{{ dashboardFilter.get(field.field_name).value | date: 'dd.MM.yyyy' }}" id="date" class="ion-text-end" ></ion-input>
-            <ion-popover trigger="date" size="cover">
+            <ion-input value="{{ dashboardFilter.get(field.field_name).value | date }}" id="{{field.type + '_' + field.field_name}}" class="ion-text-end" ></ion-input>
+            <ion-popover trigger="{{field.type + '_' + field.field_name}}">
               <ng-template>
                 <ion-datetime 
+                size="cover"
                 presentation="date" 
                 [formControlName]="field.field_name" 
                 [min]="field.minDate" 
                 [max]="field.maxDate" 
                 [required]="field.is_mandatory" 
-                [id]="field._id+'_'+field.field_name"
+                [id]="field.field_name"
                 locale="en-GB"></ion-datetime>
               </ng-template>
             </ion-popover>
           </ion-item>
+
+          <div *ngIf="field.type == 'daterange'">
+            <ion-item-group>
+              <ion-item-divider>
+                <ion-label>{{field.label | titlecase}}</ion-label>
+              </ion-item-divider>
+            <ion-accordion-group [formGroupName]="field.field_name">
+              <ion-accordion value="start">
+                <ion-item slot="header" lines="none">
+                  <ion-label>Start</ion-label>
+                  <ion-text slot="end">{{ dashboardFilter.get(field.field_name).get('start').value }}</ion-text>
+                </ion-item>
+                <div class="ion-text-center" slot="content">
+                  <ion-datetime  style="margin:auto"
+                  presentation="date" 
+                  formControlName="start" 
+                  (ionChange)="dateonChange($event,field.field_name)" 
+                  [max]="maxDate" 
+                  [min]="minDate" 
+                  locale="en-US" 
+                  id="startDate"
+                  #startDate
+                  ></ion-datetime>
+                </div>
+              </ion-accordion>
+              <ion-accordion value="end">
+                <ion-item slot="header">
+                  <ion-label>End</ion-label>
+                  <ion-text slot="end">{{ dashboardFilter.get(field.field_name).get('end').value }}</ion-text>
+                </ion-item>
+                <div class="ion-text-center" slot="content">
+                  <ion-datetime  style="margin:auto"
+                  presentation="date" 
+                  formControlName="end" 
+                  (ionChange)="dateonChange($event,field.field_name)"
+                  [max]="maxDate" 
+                  [min]="selectedStartDateasMindate" 
+                  locale="en-US" 
+                  id="endDate"
+                  #endDate             
+                  ></ion-datetime>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
+            
+            </ion-item-group>
+          </div>
+
           <div *ngIf="field.type == 'dropdown'">
             <ion-item *ngIf="field.datatype == 'object'">
               <ion-label>{{ field.label }}</ion-label>
@@ -103,6 +152,9 @@
 
 
   <ion-card class="chartcard">
+    <ion-card-header class="charthead" color="danger" *ngIf="chartDatasets[dashboardItem.call_back_field] && chartDatasets[dashboardItem.call_back_field].length == 0">
+      <ion-card-subtitle>NO data found, try again by adjusting your filter value !</ion-card-subtitle>
+    </ion-card-header>
     <ion-card-content class="chartbody detail-filter">
       <canvas class="w-100 canvaschart" id="chartjs" baseChart *ngIf="dashboardItem.package_name == 'chart_js'"
           [chartType]="chartType[dashboardItem.call_back_field]"

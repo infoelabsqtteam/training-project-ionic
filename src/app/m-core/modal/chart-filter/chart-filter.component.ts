@@ -1,6 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { ApiService, CoreUtilityService, DataShareService, PermissionService, RestService, StorageService } from '@core/ionic-core';
+import { ApiService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
 import { Platform } from '@ionic/angular';
@@ -8,6 +8,9 @@ import { Platform } from '@ionic/angular';
 // import { promise } from 'protractor';
 // import { writeFile } from "capacitor-blob-writer";
 // import * as FileSaver from 'file-saver';
+import { DatePipe } from '@angular/common';
+import { zonedTimeToUtc, utcToZonedTime, format} from 'date-fns-tz';
+import { parseISO } from 'date-fns';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -35,6 +38,8 @@ export class ChartFilterComponent implements OnInit {
   @Input() dashletData;
   @Input() filter;
   @Input() staticData;
+  @ViewChild('startDate', { static: false }) startDateSelected:ElementRef<any>;  
+  @ViewChild('endDate', { static: false }) endDateSelected:ElementRef<any>;
 
   // dashboardItem :any = {};
   //dashletData:any = {};
@@ -68,6 +73,12 @@ export class ChartFilterComponent implements OnInit {
   tableData;
   tableHead;
   chartjsimg: any;
+  userTimeZone:any;
+  userLocale:any;
+  selectedStartDate:any;
+  selectedStartDateasMindate;
+  selectedEndDate:any;
+  CheckStartDate:boolean=false;
 
   constructor(
     private platform: Platform,
@@ -78,7 +89,9 @@ export class ChartFilterComponent implements OnInit {
     private commonFunctionService:CoreUtilityService,
     private file: File,
     private storageService:StorageService,
-    private permissionService: PermissionService
+    private permissionService: PermissionService,
+    private datePipe: DatePipe,
+    private notificationService:NotificationService,
   ) {
     this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data =>{
       this.setTypeaheadData(data);
@@ -86,9 +99,12 @@ export class ChartFilterComponent implements OnInit {
     this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
       this.setDashLetData(data);
     }) 
+    this.userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    this.userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
     const currentYear = new Date().getFullYear();
     this.minDate = new Date(currentYear - 100, 0, 1);
     this.maxDate = new Date(currentYear + 1, 11, 31);
+    this.setminmaxDate();
   }
 
   ngOnInit() {
@@ -513,7 +529,49 @@ export class ChartFilterComponent implements OnInit {
     return !this.dashboardFilter.valid;     
   }
 
+  setminmaxDate(){
+    let minDateFromToday:any;
+    let maxDateFromToday:any;
+    minDateFromToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
+    maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd") + "T23:59:59";
+    if(this.platform.is('hybrid')){
+      let getToday: any  = (new Date()).toISOString();
+      getToday = utcToZonedTime(getToday, this.userTimeZone);
+      getToday = this.datePipe.transform(getToday, "yyyy-MM-ddThh:mm:ss");
+      this.minDate = minDateFromToday;
+      this.maxDate = maxDateFromToday;
+    }else{
+      this.minDate = minDateFromToday;
+      this.maxDate = maxDateFromToday;
+    }
+  }
+  dateonChange(e:any,fieldName){
+    if(e.detail.value && e.target.id == "startDate"){
+      this.selectedStartDateasMindate = this.datePipe.transform(e.detail.value, "yyyy-MM-dd") + "T00:00:00";
+      this.CheckStartDate=true;
+      const date = format(parseISO(e.detail.value), 'PP');
+      this.dashboardFilter.get(fieldName).get("start").setValue(date)
+      this.dashboardFilter.get(fieldName).get("end").setValue('');
 
+    }else if(e.detail.value && e.target.id == "endDate"){
+      if(this.CheckStartDate){
+        const date = format(parseISO(e.detail.value), 'PP');
+        this.dashboardFilter.get(fieldName).get("end").setValue(date)
+      }else{
+        this.dashboardFilter.get(fieldName).get("end").setValue('');
+        this.notificationService.presentToastOnBottom("Please First select Start Date","danger")
+      }
+    }else{
+      this.CheckStartDate= false;
+    }
+  }
+  checkStartDateValue(){
+    if(this.startDateSelected["el"].value){
+      this.CheckStartDate=true;
+    }else{
+      this.notificationService.presentToastOnBottom("Please First select Start Date","danger")
+    }
+  }
 
 
 
