@@ -45,7 +45,7 @@
                   </ion-button>
                 </div>
                 <div *ngIf="column.class_name">
-                  <ion-button [ngClass]="column.class_name ? 'column.class_name'  : ''" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)"></ion-button>
+                  <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'  && !card.status && !card.quotation_status && !card.order_status && !card.invoicing_status" [innerHTML]="getValueForGrid(column,card)"></ion-button>
                 </div>
               </div>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
