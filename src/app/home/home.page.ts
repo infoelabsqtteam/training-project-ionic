@@ -96,7 +96,7 @@ export class HomePage implements OnInit, OnDestroy {
         this.cardList = this.coreUtilityService.getUserAutherisedCards(this.cardMasterList);
         if(this.cardList == null){        
           this.notificationService.showAlert("You don't have permission or assign any module.","Permission error !",['Dismiss'])
-        }     
+        }
       }else{
         // this.notificationService.presentToastOnBottom("Somethisng went wrong, please try again later", "danger");
         this.cardList = [];
@@ -105,6 +105,8 @@ export class HomePage implements OnInit, OnDestroy {
     this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{
       if(data == "logged_out"){
         this.cardList = [];
+      }else if(data == "logged_in"){
+        this.getGridData();
       }
     });
 
@@ -142,15 +144,18 @@ export class HomePage implements OnInit, OnDestroy {
 
   }
 
-
-  ngOnDestroy(): void {
-    // this.resetVariables();
+  unsubscribeVariabbles(){
     if (this.cardListSubscription) {
       this.cardListSubscription.unsubscribe();
     }
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
+  }
+
+  ngOnDestroy(): void {
+    // this.resetVariables();
+    this.unsubscribeVariabbles();
   }
 
   ngOnInit() {
