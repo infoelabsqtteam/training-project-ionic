@@ -25,6 +25,7 @@
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
     <ion-title class="" *ngIf="headerTitle !=''">{{headerTitle}}</ion-title>
+    <ion-buttons class="filter ion-text-end" slot="end" (click)="open()"><img src="assets/img/icons/Filter.svg"></ion-buttons>
     <ion-buttons class="filter ion-text-end" slot="end" id="popover-id">
       <ion-icon name="ellipsis-vertical-outline"></ion-icon>
     </ion-buttons>
@@ -48,9 +49,9 @@
         </div>
       </div>
       <ion-buttons class="ion-padding-vertical ion-justify-content-around">
-        <ion-button fill="outline" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
-        <ion-button fill="outline" class="ion-text-capitalize" (click)="clearfilterCard()">Clear</ion-button>
-        <ion-button type="submit" fill="outline" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
+        <ion-button fill="outline" shape="round" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
+        <ion-button fill="outline" shape="round" class="ion-text-capitalize" (click)="clearfilterCard()">Clear</ion-button>
+        <ion-button type="submit" fill="outline" shape="round" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
       </ion-buttons>
     </div>
   </div>
