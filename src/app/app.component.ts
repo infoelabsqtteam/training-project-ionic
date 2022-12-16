@@ -4,7 +4,7 @@ import { AlertController, Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
-import { AuthService, StorageService, StorageTokenStatus,App_googleService, RestService, ApiService, DataShareService, EnvService, NotificationService, CommonDataShareService } from '@core/ionic-core';
+import { AuthService, StorageService, StorageTokenStatus,App_googleService, RestService, ApiService, DataShareService, EnvService, NotificationService, CommonDataShareService, CoreUtilityService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
@@ -17,11 +17,10 @@ import { AndroidpermissionsService } from './service/androidpermissions.service'
 })
 export class AppComponent implements OnInit, OnDestroy {
   private authSub: Subscription;
-  cardListSubscription;
+  cardListSubscription:any;
   userData: any;
   userInfo: any={};
   web_site:string='';
-  side_menu: boolean = true;
   app_Version: String = '';
 
   gridData: any;
@@ -32,6 +31,7 @@ export class AppComponent implements OnInit, OnDestroy {
   cardTypeList: any = {};
   collectionName: any;
   collectionNameList: any = [];
+  showSidebarMenu : boolean = false;
 
   // geoloaction
   coords:any;
@@ -67,7 +67,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private dataShareService: DataShareService,
     private env: EnvService,
     private notificationService: NotificationService,
-    private commonDataShareService: CommonDataShareService
+    private commonDataShareService: CommonDataShareService,
+    private coreUtilityService: CoreUtilityService
 
   ) {
     
@@ -75,8 +76,23 @@ export class AppComponent implements OnInit, OnDestroy {
     // this.web_site = appConstants.siteName;
     this.app_Version  = this.env.getAppVersion();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
-      this.cardList = data.data;
-    })
+      if(data && data.data && data.data.length > 0){
+        // this.cardList = data.data;
+        this.cardList = this.coreUtilityService.getUserAutherisedCards(data.data);
+      }else{
+        console.log("Somethisng went wrong, please try again later");
+      }
+    });
+    
+    this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{      
+      if(data == "logged_in"){
+        this.userInfo = this.storageService.getUserInfo();
+        this.showSidebarMenu = true;
+      }else if(data == "logged_out"){
+        this.resetVariables();
+      }    
+    });
+
   }
 
   initializeApp() {
@@ -89,15 +105,13 @@ export class AppComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           SplashScreen.hide();
         }),4000;
-      }      
-
+      }
       //this.statusBar.overlaysWebView(true);
       this.statusBar.backgroundColorByHexString('#e30010');
       // this.androidpermissionsService.internetPermission();
       // this.permissionService.requestPermisiions();
       // this.androidpermissionsService.checkPermission();
       // this.getCurrentLocation();
-
     });
 
   }
@@ -124,29 +138,32 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
+    if (this.cardListSubscription) {
+      this.cardListSubscription.unsubscribe();
+    }
   }  
   
   ngOnInit() {
     
     if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-      this.getGridData();
+      // this.getGridData();
       this.authService.getUserPermission(false,'/home');
-      this.router.navigateByUrl('/home');      
+      this.router.navigateByUrl('/home');  
     } 
     else{
       console.log("Token Not active");
       this.router.navigateByUrl('/auth/signine');
     }
-
-    this.authService._user_info.subscribe(resp => {
-      if(resp!== null){
-        this.userInfo = resp;
-        this.dataShareServiceService.setUserDetails(resp);
-      }
-      else{
-        this.userInfo = this.dataShareServiceService.getUserDetails();
-      }
-    })
+    
+    // this.authService._user_info.subscribe(resp => {
+    //   if(resp!== null){
+    //     this.dataShareServiceService.setUserDetails(resp);
+    //     this.userInfo = this.dataShareServiceService.getUserDetails();
+    //   }
+    //   else{
+    //     this.userInfo = {};
+    //   }
+    // })
   }
   
   async getCurrentLocation(){
@@ -192,32 +209,37 @@ export class AppComponent implements OnInit, OnDestroy {
     //this.commonFunctionService.getCurrentAddress();
   }
   onLogout() {
-    // this.side_menu = false;
-    // this.userInfo = '';
     this.authService.logout('/auth/signine');
   }
   
-  getGridData(criteria?){
-    let criteriaList = [];
-    if(criteria){
-      criteriaList = criteria;
-    }
-    const params = 'card_master';
-    let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
-    data['pageNo'] = 0;
-    data['pageSize'] = 50;
-    let payload = {
-      'data':data,
-      'path':null
-    }
-    this.apiService.getGridData(payload);
-  } 
+  resetVariables(){
+    this.cardList = [];
+    this.showSidebarMenu = false;
+    this.userInfo = {};
+  }
+  // getGridData(criteria?){
+  //   let criteriaList = [];
+  //   if(criteria){
+  //     criteriaList = criteria;
+  //   }
+  //   const params = 'card_master';
+  //   let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
+  //   data['pageNo'] = 0;
+  //   data['pageSize'] = 200;
+  //   let payload = {
+  //     'data':data,
+  //     'path':null
+  //   }
+  //   this.apiService.getGridData(payload);
+  // } 
 
-  showCardTemplate(card:any, index:number){
-    this.selectedIndex = index;
-    this.commonDataShareService.setModuleIndex(index);
+  showCardTemplate(card:any, index:number){    
+    const moduleList = this.commonDataShareService.getModuleList();
+    const cardclickedindex = this.coreUtilityService.getIndexInArrayById(moduleList,card._id,"_id"); 
+    this.commonDataShareService.setModuleIndex(cardclickedindex);
+    const selectedcard = moduleList[cardclickedindex];
     this.router.navigate(['card-view']);
-    this.dataShareServiceService.setcardData(card);
+    this.dataShareServiceService.setcardData(selectedcard);
   }
 
   comingSoon() {

@@ -1,9 +1,9 @@
 <ion-app>
-    <ion-menu side="start" menuId="custom" contentId="main" *ngIf="userInfo">
-        <ion-content class="sidenav">
+    <ion-menu side="start" menuId="custom" contentId="main">
+        <ion-content class="sidenav" *ngIf="showSidebarMenu">
             <div class="sidebarheader">
                 <div class="profilpic"><ion-icon name="person-circle-outline"></ion-icon></div>
-                <div class="prifiledetails">
+                <div class="prifiledetails" *ngIf="userInfo">
                     <h4 style="margin:0">{{userInfo.name}}</h4><small>{{userInfo.email}}</small>
                 </div>
                 <ion-menu-toggle (click)="onLogout()"><ion-icon name="power-outline"></ion-icon></ion-menu-toggle>

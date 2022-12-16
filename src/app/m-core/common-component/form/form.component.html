@@ -30,8 +30,8 @@
               <ion-button expand="" size="small" fill="outline" [id]="tableField._id+'_'+tableField.field_name" *ngIf="tableField.add_list_field != 'add' && tableField.add_new_enabled" (click)="addListOfFields(tableField)">
                 <ion-icon slot="icon-only" name="add-outline"></ion-icon>
               </ion-button>
-              <ion-note slot="error" class="text-danger" *ngIf="this.custmizedFormValue[tableField.field_name] && this.custmizedFormValue[tableField.field_name].length == 0 &&
-              templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
+              <!-- <ion-note slot="error" class="text-danger" *ngIf="this.custmizedFormValue[tableField.field_name] && this.custmizedFormValue[tableField.field_name].length == 0 &&
+              templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note> -->
 
               <!-- <ion-button expand="" size="small" fill="outline" [id]="tableField._id+'_'+tableField.field_name" *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length > 0 && tableField.datatype == 'grid_review' && !tableField.is_disabled" (click)="reviewParameters(tableField,custmizedFormValue[tableField.field_name])">
                 <ion-icon slot="icon-only" name="information-outline"></ion-icon>
@@ -311,7 +311,7 @@
                   <ion-icon slot="icon-only" name="add-outline"></ion-icon>
                 </ion-button>
               </ion-item>
-              <div class="ion-padding" slot="content" class="ion-padding-vertical">
+              <div slot="content" class="ion-padding-vertical">
                 <ion-item lines="none" *ngIf="!custmizedFormValue[tableField.field_name] || (custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length == 0)">
                   <ion-label>No data added, please add</ion-label>
                 </ion-item>
@@ -414,31 +414,44 @@
                   </ion-button>
               </div>
           </div>
-          
-          <div class="" *ngIf="tableField.type == 'list_of_fields' && tableField.datatype != 'key_value'">
-            <div class="ion-table-responsive-x ion-margin-vertical ion-padding" *ngIf="custmizedFormValue[tableField.field_name]">
-                <table class="table-bordered table-striped table-hover one-line-text" *ngIf="custmizedFormValue[tableField.field_name].length > 0">
-                    <thead>
-                        <tr>
-                            <th width="10%" style="text-align: center" *ngIf="!tableField.add_list_field && tableField.add_list_field != 'add'">Action</th>
-                            <th *ngFor="let item of getListOfFieldsGridColumn(tableField)" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField,item,0) ? 'd-none' : ''">{{item.label}}</th>                                                
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let listOfField of custmizedFormValue[tableField.field_name]; let i = index" [ngClass]="listOfField.status == 'I' ? 'd-none':''">
-                            <td class="px-1" style="text-align: center" *ngIf="!tableField.add_list_field && tableField.add_list_field != 'add'">
-                                <a  floating="true" size="sm" *ngIf="tableField.datatype == 'list_of_object_with_popup' && checkRowDisabledIf(tableField,i)" (click)="updateListofFields(tableField,i)" class="grid-button"><span class="material-symbols-outlined" >edit</span></a>
 
-                                <a floating="true" size="sm" *ngIf="tableField.datatype != 'list_of_object_with_popup' && checkRowDisabledIf(tableField,i)" (click)="editListOfFiedls(listOfField,i)" class="grid-button"><span class="material-symbols-outlined" >edit</span></a>
-                                
-                                <a *ngIf="checkRowDisabledIf(tableField,i)" floating="true" size="sm" (click)="openModal('confirm-modal',i,'',tableField,listOfField,'delete')" class="grid-button removebtn"><span class="material-symbols-outlined">close</span></a>                        
-                            </td>
-                            <td *ngFor="let item of getListOfFieldsGridColumn(tableField)" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField,item,i) ? 'd-none' : 'ion-text-center'" (click)="showListOfFieldData(listOfField, item)" [innerHtml]="showListFieldValue(listOfField, item)"></td>                                                
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-          </div>
+          <ion-accordion-group expand="inset" class="ion-margin-horizontal-0" *ngIf="tableField.type == 'list_of_fields' && tableField.datatype != 'key_value' && tableField.datatype != 'list_of_object_with_popup'">
+            <ion-accordion value="{{tableField._id+'_'+tableField.field_name}}" *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length > 0">
+              <ion-item slot="header" color="light" line="inset">
+                <ion-label>{{ tableField.label | titlecase}} <ion-text *ngIf="tableField.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label>
+                <ion-button expand="round" slot="end" size="small" fill="outline" *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length > 0" [innerHtml]="getNumberOfSelectedRecord(tableField)"></ion-button>
+              </ion-item>
+              <div class="ion-padding" slot="content" class="">
+                <div class="" >
+                  <div class="ion-table-responsive-x-axis ion-margin-vertical" *ngIf="custmizedFormValue[tableField.field_name]">
+                      <table class="table-bordered table-striped table-hover one-line-text" *ngIf="custmizedFormValue[tableField.field_name].length > 0">
+                          <thead>
+                              <tr>
+                                  <th width="25%" style="text-align: center" *ngIf="!tableField.add_list_field && tableField.add_list_field != 'add'">Action</th>
+                                  <th *ngFor="let item of getListOfFieldsGridColumn(tableField)" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField,item,0) ? 'd-none' : ''">{{item.label}}</th>                                                
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr *ngFor="let listOfField of custmizedFormValue[tableField.field_name]; let i = index" [ngClass]="listOfField.status == 'I' ? 'd-none':''">
+                                  <td class="px-1" style="text-align: center" *ngIf="!tableField.add_list_field && tableField.add_list_field != 'add'">
+                                      <a  floating="true" size="small" *ngIf="tableField.datatype == 'list_of_object_with_popup' && checkRowDisabledIf(tableField,i)" (click)="updateListofFields(tableField,i)" class="grid-button"><span class="material-symbols-outlined" >edit</span></a>
+      
+                                      <a floating="true" size="small" *ngIf="tableField.datatype != 'list_of_object_with_popup' && checkRowDisabledIf(tableField,i)" (click)="editListOfFiedls(listOfField,i)" class="grid-button"><span class="material-symbols-outlined" >edit</span></a>
+                                      
+                                      <a *ngIf="checkRowDisabledIf(tableField,i)" floating="true" size="small" (click)="openModal('confirm-modal',i,'',tableField,listOfField,'delete')" class="grid-button removebtn"><span class="material-symbols-outlined">close</span></a>                        
+                                  </td>
+                                  <td *ngFor="let item of getListOfFieldsGridColumn(tableField)" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField,item,i) ? 'd-none' : 'ion-text-center'" (click)="showListOfFieldData(listOfField, item)" [innerHtml]="showListFieldValue(listOfField, item)"></td>                                                
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+                </div>
+                
+              </div>
+            </ion-accordion>
+          </ion-accordion-group>
+          
+          
 
         </div>
         <div class="grid-selection" *ngIf="tableField.type == 'grid_selection_vertical'">

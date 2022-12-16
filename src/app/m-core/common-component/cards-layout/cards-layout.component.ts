@@ -298,11 +298,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.gridButtons=[];
     this.currentPageCount = 1;    
     this.carddata=[];
-    if(this.ionEvent && this.ionEvent.type == 'ionInfinite' && this.loadMoreData){
-      this.ionEvent.target.disabled = false;
-    }else if(this.ionEvent && this.ionEvent.type == 'ionRefresh' && this.refreshlist){
-      this.ionEvent.target.disabled = false;
-    }
+    this.checkionEvents();
   }
   ngOnInit() { }
 
@@ -442,15 +438,20 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     if(card.enable_refresh_mode){
       this.refreshlist = card.enable_refresh_mode;
+      this.checkionEvents();
+    }else{
+      this.refreshlist = false;
     }
     if(card && card.enable_load_more ){   
       this.loadMoreData = card.enable_load_more
+      this.checkionEvents();
       if(this.selectedgriddataId && this.selectedgriddataId !=''){
         const cr = "_id;eq;" + this.selectedgriddataId + ";STATIC";
         criteria.push(cr);
         parentcard = card;
       }
     }else{
+      this.loadMoreData = false;
       this.selectedgriddataId = "";
     }
 
@@ -654,57 +655,61 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
   // add new card or record in cardlist 
   async addNewForm(formName?:any){
-    if(formName){
-      this.formTypeName = formName;
-    }else{
-      this.formTypeName = "default";
-    }
-    this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);
-    let card = this.card;
-    let form:any = {};
-    let id = '5f6d95da9feaa2409c3765cd';
-    if(card && card.card && card.card.form){
-      form = this.coreUtilityService.getForm(card.card.form,formName);
-      if(form && form._id && form._id != ''){
-        id = form._id;
-      }else if(card.card.form && card.card.form._id){
-        form = card.card.form;
-        id = card.card.form._id;
+    if (this.permissionService.checkPermission(this.currentMenu.name, 'add')) {
+      if(formName){
+        this.formTypeName = formName;
+      }else{
+        this.formTypeName = "default";
       }
-    }    
-    this.commonDataShareService.setFormId(id);
-    // this.router.navigate(['crm/form']);
-    const modal = await this.modalController.create({
-      component: FormComponent,
-      componentProps: {
-        "childData": this.gridData,
-        "editedRowIndex": this.editedRowIndex,
-        "addform" : form,
-        "formTypeName" : this.formTypeName,
-      },
-      id: form._id,
-      swipeToClose: true,
-      showBackdrop:true,
-      backdropDismiss:false,
-    });
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss().then((result) => {
-      this.getCardDataByCollection(this.selectedIndex);
-    });
-    return await modal.present();
+      this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);
+      let card = this.card;
+      let form:any = {};
+      let id = '5f6d95da9feaa2409c3765cd';
+      if(card && card.card && card.card.form){
+        form = this.coreUtilityService.getForm(card.card.form,formName);
+        if(form && form._id && form._id != ''){
+          id = form._id;
+        }else if(card.card.form && card.card.form._id){
+          form = card.card.form;
+          id = card.card.form._id;
+        }
+      }    
+      this.commonDataShareService.setFormId(id);
+      // this.router.navigate(['crm/form']);
+      const modal = await this.modalController.create({
+        component: FormComponent,
+        componentProps: {
+          "childData": this.gridData,
+          "editedRowIndex": this.editedRowIndex,
+          "addform" : form,
+          "formTypeName" : this.formTypeName,
+        },
+        id: form._id,
+        swipeToClose: true,
+        showBackdrop:true,
+        backdropDismiss:false,
+      });
+      modal.componentProps.modal = modal;
+      modal.onDidDismiss().then((result) => {
+        this.getCardDataByCollection(this.selectedIndex);
+      });
+      return await modal.present();
+    } else {
+      this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
+    }
   }
   // edit mode Form
-  editedRow(data,index,formName?:any){
-    this.editedRowIndex = index;
-    this.gridData = data;
-    this.selectedgriddataId = this.gridData._id;
-    this.updateMode = true;
-    if(formName){
-      this.addNewForm(formName);
-    }else{      
-    this.addNewForm("UPDATE");
-    }
-  }
+  // editedRow(data,index,formName?:any){
+  //   this.editedRowIndex = index;
+  //   this.gridData = data;
+  //   this.selectedgriddataId = this.gridData._id;
+  //   this.updateMode = true;
+  //   if(formName){
+  //     this.addNewForm(formName);
+  //   }else{      
+  //   this.addNewForm("UPDATE");
+  //   }
+  // }
 
 
   getFirstCharOfString(char:any){
@@ -1063,6 +1068,26 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.apppermissionsService.openNativeSettings('application_details');
       }
     }
+  }
+
+  checkionEvents(){
+    if(this.loadMoreData){
+      if(this.ionEvent && this.ionEvent.type == 'ionRefresh'){
+        this.ionEvent.target.disabled = this.loadMoreData;
+      }
+      if(this.ionEvent && this.ionEvent.type == 'ionInfinite'){
+        this.ionEvent.target.disabled = !this.loadMoreData;
+      }
+    }
+    if(this.refreshlist){
+      if(this.ionEvent && this.ionEvent.type == 'ionRefresh'){
+        this.ionEvent.target.disabled = !this.refreshlist;
+      }
+      if(this.ionEvent && this.ionEvent.type == 'ionInfinite'){
+        this.ionEvent.target.disabled = this.refreshlist;
+      }
+    }
+    
   }
 
   convertBlobToBase64 = (blob :Blob)=>new Promise ((resolve,reject) =>{

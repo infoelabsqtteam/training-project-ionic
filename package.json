@@ -35,7 +35,7 @@
     "@capacitor/splash-screen": "^1.0.2",
     "@capacitor/status-bar": "^1.0.2",
     "@capacitor/storage": "^1.0.3",
-    "@core/ionic-core": "^1.0.0",
+    "@core/ionic-core": "^1.0.2",
     "@ionic-native/android-permissions": "^5.35.0",
     "@ionic-native/call-log": "^5.36.0",
     "@ionic-native/call-number": "^5.34.0",

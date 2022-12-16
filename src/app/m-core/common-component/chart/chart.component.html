@@ -38,7 +38,7 @@
 <div class="row" *ngIf="filteredDashboardData.length >0">
   <div *ngFor="let item of filteredDashboardData; let j = index">
     <ion-card class="chartcard">
-      <ion-card-header class="charthead" *ngIf="item.fields && item.fields.length > 0">
+      <ion-card-header class="charthead" color="medium" *ngIf="item.fields && item.fields.length > 0">
         <ion-card-title>{{item.name}}</ion-card-title>
         <ion-icon (click)="chartmodel(item,true,j)" name="funnel-outline"></ion-icon>
       </ion-card-header>
