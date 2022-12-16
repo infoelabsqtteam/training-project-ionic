@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" (click)="dismissModal()"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-capitalize">{{Data.field.field_label}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+
+<ion-content class="pages">
+  <div class="contactdetails">
+    <p class="enquerylist" *ngFor="let item of infoData; index as i">
+      <span>{{ item.label }}</span>
+      <strong>{{item.name.name}}</strong>
+    </p>
+    <!-- <p class="enquerylist" *ngFor="let item of value; index as i">
+      <span>{{ item.label }}</span>
+      <strong>Data</strong>
+    </p> -->
+  </div>
+</ion-content>

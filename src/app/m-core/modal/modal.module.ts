@@ -11,6 +11,7 @@ import { ChartFilterComponent } from './chart-filter/chart-filter.component';
 import { NgChartsModule } from 'ng2-charts';
 import { GoogleChartsModule } from 'angular-google-charts';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { GridInfoComponent } from './grid-info/grid-info.component';
 // import { File } from '@ionic-native/file/ngx';
 
 const modal =[
@@ -18,7 +19,8 @@ const modal =[
   GridSelectionModalComponent,
   GridSelectionDetailModalComponent,
   CallDataRecordFormComponent,
-  ChartFilterComponent
+  ChartFilterComponent,
+  GridInfoComponent
 ]
 
 @NgModule({
