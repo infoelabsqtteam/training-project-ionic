@@ -93,7 +93,7 @@ export class HomePage implements OnInit, OnDestroy {
       if(data && data.data && data.data.length > 0){
         this.cardMasterList = data.data;
         this.commonDataShareService.setModuleList(this.cardMasterList);
-        this.cardList = this.coreUtilityService.getUserAutherisedCards(this.cardMasterList);
+        // this.cardList = this.coreUtilityService.getUserAutherisedCards(this.cardMasterList);
         if(this.cardList == null){        
           this.notificationService.showAlert("You don't have permission or assign any module.","Permission error !",['Dismiss'])
         }     
@@ -102,11 +102,11 @@ export class HomePage implements OnInit, OnDestroy {
         this.cardList = [];
       }
     });
-    this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{
-      if(data == "logged_out"){
-        this.cardList = [];
-      }
-    });
+    // this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{
+    //   if(data == "logged_out"){
+    //     this.cardList = [];
+    //   }
+    // });
 
   }
 

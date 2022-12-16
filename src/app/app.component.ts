@@ -78,20 +78,20 @@ export class AppComponent implements OnInit, OnDestroy {
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
       if(data && data.data && data.data.length > 0){
         // this.cardList = data.data;
-        this.cardList = this.coreUtilityService.getUserAutherisedCards(data.data);
+        //this.cardList = this.coreUtilityService.getUserAutherisedCards(data.data);
       }else{
         console.log("Somethisng went wrong, please try again later");
       }
     });
     
-    this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{      
-      if(data == "logged_in"){
-        this.userInfo = this.storageService.getUserInfo();
-        this.showSidebarMenu = true;
-      }else if(data == "logged_out"){
-        this.resetVariables();
-      }    
-    });
+    // this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{      
+    //   if(data == "logged_in"){
+    //     this.userInfo = this.storageService.getUserInfo();
+    //     this.showSidebarMenu = true;
+    //   }else if(data == "logged_out"){
+    //     this.resetVariables();
+    //   }    
+    // });
 
   }
 
