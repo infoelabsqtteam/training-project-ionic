@@ -80,6 +80,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       if(!this.searching){
         this.filterCardAgain();
       }
+      this.searchcardfield = "";
     }
 
     selectedSearchValue(serchingvalue:any){
@@ -156,10 +157,12 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
     filterCardAgain(){  
       const value = {}
-      value[this.searchcardfield] = this.searchcardvalue;
-      this.data = {
-        'filterFormData' : value
-      }         
+      if(this.searchcardvalue && this.searchcardvalue.length >= 2){
+        value[this.searchcardfield] = this.searchcardvalue;
+        this.data = {
+          'filterFormData' : value
+        }
+      }        
     }
     closefilterCard(){
       this.data = {};

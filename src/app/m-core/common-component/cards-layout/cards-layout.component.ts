@@ -518,7 +518,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       });
       return await modal.present();
     }else{
-      this.notificationService.presentToastOnBottom("No detail card found","danger");
+      return console.log("No detail card found.");
     }
   }
 

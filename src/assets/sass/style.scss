@@ -94,7 +94,7 @@ ion-tabs.footertab {
 
 // Inner Page Common Tabs
 .menutab {
-    ion-segment {height:45px;}
+    ion-segment {max-height:auto;}
 }
 //***---------- Contact Listing  ----------***//
 .contactlist {margin:0px 8px 40px;
@@ -400,13 +400,13 @@ table {
 .ion-padding-horizontal-0{padding-left: 0;padding-right: 0;}
 .ion-padding-vertical-0{padding-top:0;padding-bottom: 0;}
 .ion-padding-top-0{padding-top: 0;}
-.ion-padding-bottom-0{padding-top: 0;}
-.ion-padding-left-0{padding-top: 0;}
-.ion-padding-right-0{padding-top: 0;}
-.ion-margin-top-0{padding-top: 0;}
-.ion-margin-bottom-0{padding-top: 0;}
-.ion-margin-left-0{padding-top: 0;}
-.ion-margin-right-0{padding-top: 0;}
+.ion-padding-bottom-0{padding-bottom: 0;}
+.ion-padding-left-0{padding-left: 0;}
+.ion-padding-right-0{padding-right: 0;}
+.ion-margin-top-0{margin-top: 0;}
+.ion-margin-bottom-0{margin-bottom: 0;}
+.ion-margin-left-0{margin-left: 0;}
+.ion-margin-right-0{margin-right: 0;}
 .one-line-text {
     text-overflow: ellipsis;
     overflow: hidden;

@@ -8,7 +8,7 @@
 <ion-content class="pages ion-padding-horizontal">
   
   <ion-card class="contactdetails app-grid_selection fixed_button detail_grid" *ngIf="cardType == 'demo1'">
-    <div class="" *ngFor="let column of columnList; let i = index">
+    <div class="" *ngFor="let column of columnList; let i = index" [ngClass]="column.display ? 'd-block':'d-none'">
       <div *ngIf="!column.editable" class="enquerylist ">
         <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>
         <strong [innerHtml]="getValueForGrid(column,data)"></strong>
@@ -52,21 +52,27 @@
         </span>
       </div>
     </div>
+    <ion-card-content *ngIf="columnList.length == 0">
+      <ion-text>Grid Columns are not available In This Field.</ion-text>
+      <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="closeModal()">Go Back</ion-button>
+    </ion-card-content>
   </ion-card>
-  <div class="button_position" *ngIf="!gridselectionverticalbutton">
-      <div class="flex_grid">
-      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="select()" expand="full" >Add</ion-button>
-      <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal()" expand="full" >Cancel</ion-button>
-      </div>
-  </div>
-  <div *ngIf="gridselectionverticalbutton" class="inlineFormGridSelectionButton">
-      <div class="" *ngIf="grid_row_selection">
-          <ion-button type="button" color="appcolor" [disabled]="readonly" (click)="remove()" expand="block" >Remove</ion-button>
-          <ion-button type="button" color="appcolor" [disabled]="readonly"  (click)="select()" expand="block" >Add / Select</ion-button>
-      </div>
-      <div *ngIf="!grid_row_selection">
-        <ion-button  type="button" [disabled]="checkValidator()" color="appcolor" outline="true" size="sm" expand="block"  (click)="selectGridData()">{{ fieldButtonLabel(field)}}</ion-button >
-        <ion-button type="button" color="appcolor" outline="true" size="sm" expand="block" (click)="closeModal()">Close</ion-button>
-      </div>
-  </div>
 </ion-content>
+<ion-footer>  
+  <div class="button_position" *ngIf="!gridselectionverticalbutton">
+    <div class="flex_grid">
+    <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="select()" expand="full" >Add</ion-button>
+    <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal()" expand="full" >Cancel</ion-button>
+    </div>
+</div>
+<div *ngIf="gridselectionverticalbutton" class="inlineFormGridSelectionButton">
+    <div class="" *ngIf="grid_row_selection">
+        <ion-button type="button" color="appcolor" [disabled]="readonly" (click)="remove()" expand="block" >Remove</ion-button>
+        <ion-button type="button" color="appcolor" [disabled]="readonly"  (click)="select()" expand="block" >Add / Select</ion-button>
+    </div>
+    <div *ngIf="!grid_row_selection">
+      <ion-button  type="button" [disabled]="checkValidator()" color="appcolor" outline="true" size="small" expand="block"  (click)="selectGridData()">{{ fieldButtonLabel(field)}}</ion-button >
+      <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="closeModal()">Close</ion-button>
+    </div>
+</div>
+</ion-footer>

@@ -27,7 +27,7 @@
                 <span *ngIf="tableField.add_list_field != 'add' " [innerHtml]="getNumberOfSelectedRecord(tableField)"></span>
               </ion-button>
 
-              <ion-button expand="" size="small" fill="outline" [id]="tableField._id+'_'+tableField.field_name" *ngIf="tableField.add_list_field != 'add' && tableField.add_new_enabled" (click)="addListOfFields(tableField)">
+              <ion-button expand="" size="small" fill="outline" [id]="tableField._id+'_'+tableField.field_name" *ngIf="tableField.add_new_enabled && !tableField.is_disabled && checkGridSelectionButtonCondition(tableField,'add')" (click)="addListOfFields(tableField)">
                 <ion-icon slot="icon-only" name="add-outline"></ion-icon>
               </ion-button>
               <!-- <ion-note slot="error" class="text-danger" *ngIf="this.custmizedFormValue[tableField.field_name] && this.custmizedFormValue[tableField.field_name].length == 0 &&
@@ -78,11 +78,11 @@
                   </ion-item>
                   <ion-list class="contactlist ion-margin-start ion-margin-end" *ngIf="dataListForUpload[tableField.field_name] && dataListForUpload[tableField.field_name].length > 0">
                     <ion-item class="ion-margin-bottom" *ngFor="let file of dataListForUpload[tableField.field_name]; let i = index;">
-                      <!-- <ion-thumbnail slot="start">
+                      <!-- <ion-thumbnail slot="start" *ngIf="file.fileData! && file.fileData !==undefined">
                         <ion-img [src]="'data:image/png;base64,'+file.fileData"></ion-img>
                       </ion-thumbnail> -->
                       <ion-label *ngIf="(file.rollName && file.rollName != null) || (file.fileName && file.fileName != null)">{{file.fileName || file.rollName}}</ion-label>
-                      <ion-label *ngIf="(!file.rollName && file.rollName == null) || (!file.fileName && file.fileName == null)">{{file._id}}</ion-label>
+                      <ion-label *ngIf="(!file.rollName && file.rollName == null)">{{file._id}}</ion-label>
                       <ion-button slot="end" class="" fill="clear" (click)="removeAttachedDataFromList(i,tableField.field_name)">
                         <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
                       </ion-button>
@@ -106,7 +106,7 @@
               {{ tableField.label | titlecase}} is <strong>required</strong>
             </ion-note>
           </ion-item>
-          <ion-item *ngIf="tableField.datatype == 'object'">
+          <!-- <ion-item *ngIf="tableField.datatype == 'object'">
             <ion-label position="floating">{{ tableField.label }} <ion-text *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
             <ion-select [selectedText]="getddnDisplayVal(templateForm.get(tableField.field_name).value)" [formControlName]="tableField.field_name" [compareWith]="compareFn" (ionChange)="setValue('',tableField)" (ionCancel)="clearDropdownField($event, tableField)" cancel-text="Clear">
               <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
@@ -115,7 +115,15 @@
             <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">
               {{ tableField.label | titlecase}} is <strong>required</strong>
             </ion-note>
-          </ion-item>
+          </ion-item> -->
+          <div *ngIf="tableField.datatype == 'object'">
+            <ng-select [placeholder]="tableField.label" [bindLabel]="'name'" [formControlName]="tableField.field_name" notFoundText="No records found" [compareWith]="compareFn" (keyup)="getTypeahead($event,'',tableField)" (change)="setValue('',tableField)">
+              <ng-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ng-option>
+            </ng-select>
+            <ion-note class="text-danger error ion-padding-horizontal" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">
+              {{ tableField.label | titlecase}} is <strong>required</strong>
+            </ion-note>
+          </div>
         </div>
         <div *ngIf="tableField.type == 'textarea'">
           <ion-item>
@@ -299,7 +307,7 @@
         </div>
         <div *ngIf="tableField.type == 'list_of_fields' || tableField.type == 'group_of_fields'">
           <!-- <ion-button expand="full" *ngIf="tableField.datatype != 'list_of_object_with_popup'">{{ tableField.label | titlecase}}</ion-button> -->
-          <ion-accordion-group expand="inset" class="ion-margin-horizontal-0 accordion-margin-vertical">
+          <ion-accordion-group expand="inset" class="ion-margin-horizontal-0 ion-margin-vertical-0">
             <ion-accordion value="{{tableField._id+'_'+tableField.field_name}}" *ngIf="tableField.datatype == 'list_of_object_with_popup'" class="accordian-with-popup">
               <ion-item slot="header" color="light">
                 <ion-label>{{ tableField.label | titlecase}} <ion-text *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
@@ -350,12 +358,12 @@
               <div class="ion-padding" slot="content" class="">
                 
                 <div [formGroupName]="tableField.field_name" class="not-list_of_object_with_popup" *ngIf="tableField.list_of_fields != null && tableField.datatype != 'list_of_object_with_popup'">
-                  <div *ngFor="let fields of tableField.list_of_fields; let i = index" [id]="fields._id">
+                  <div *ngFor="let fields of tableField.list_of_fields; let i = index" [id]="fields._id+'_'+tableField.field_name">
                     <div *ngIf="fields.type == 'text'">
                         <ion-item>
                           <ion-label position="floating">{{ fields.label | titlecase }} <ion-text *ngIf="fields.is_mandatory" class=""> *</ion-text></ion-label>
-                          <ion-input type="text" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" *ngIf="fields.datatype != 'first_cap'" [id]="fields._id+'_'+fields.field_name" [required]="fields.is_mandatory"></ion-input>
-                          <ion-input type="text" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" *ngIf="fields.datatype == 'first_cap'" [id]="fields._id+'_'+fields.field_name" [required]="fields.is_mandatory"></ion-input>
+                          <ion-input type="text" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" *ngIf="fields.datatype != 'first_cap'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name" [required]="fields.is_mandatory"></ion-input>
+                          <ion-input type="text" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" *ngIf="fields.datatype == 'first_cap'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name" [required]="fields.is_mandatory"></ion-input>
                           <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
                           <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('maxlenght')">Maximum of {{ tableField.max_length }} characters</ion-note>
                           <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('minlength')">Minimum of {{ tableField.min_length }} characters</ion-note>
@@ -364,7 +372,7 @@
                     <div *ngIf="fields.type == 'password'">
                         <ion-item appearance="outline" class="example-full-width w-100">
                             <ion-label>{{ fields.label | titlecase}}<ion-text *ngIf="fields.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label>
-                            <input [type]="hide ? 'password' : 'text'" [placeholder]="getTitlecase(fields.placeholder)"   [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name">
+                            <input [type]="hide ? 'password' : 'text'" [placeholder]="getTitlecase(fields.placeholder)"   [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name">
                             <ion-button (click)="hide = !hide">
                               <ion-icon slot="end" [name]="hide ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
                             </ion-button>
@@ -373,7 +381,7 @@
                     <div *ngIf="fields.type == 'email'">
                         <ion-item appearance="outline" class="example-full-width w-100">
                             <ion-label>{{ fields.label | titlecase}} <ion-text *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
-                            <ion-input type="email" [placeholder]="getTitlecase(fields.placeholder)" [formControlName]="fields.field_name" [required]="fields.is_mandatory" [id]="fields._id+'_'+fields.field_name"></ion-input>
+                            <ion-input type="email" [placeholder]="getTitlecase(fields.placeholder)" [formControlName]="fields.field_name" [required]="fields.is_mandatory" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
                             <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
                             <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.email">{{ tableField.label | titlecase}} address must be <strong>valid</strong></ion-note>
                         </ion-item>                            
@@ -382,7 +390,7 @@
                         <ion-item>
                             <ion-label>{{ fields.label | titlecase}}<ion-text *ngIf="fields.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label>
                             <ion-input type="date"
-                              [id]="fields._id + '_' + fields.field_name"
+                              [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"
                               class="ion-text-end  ion-flex-direction-row-reverse--"
                               [required]="fields.is_mandatory" (ionChange)="inputOnChangeFunc('',fields)"
                               [disabled]="fields.is_disabled"
@@ -397,9 +405,9 @@
                     <div *ngIf="fields.type == 'number'">
                       <ion-item>
                         <ion-label position="floating">{{ fields.label | titlecase}} <ion-text *ngIf="fields.is_mandatory" class=""> *</ion-text></ion-label>
-                        <ion-input type="number" inputmode="numeric || tel" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" (keyup)="inputOnChangeFunc(tableField,fields)" *ngIf="fields.datatype != 'text' && fields.datatype != 'numberOnly'" [id]="fields._id+'_'+fields.field_name"></ion-input>
-                        <ion-input type="tel" inputmode="numeric || tel" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" [minlength]="fields.min_length" [maxlength]="fields.max_length" *ngIf="fields.datatype == 'text'" [id]="fields._id+'_'+fields.field_name"></ion-input>
-                        <ion-input type="tel" inputmode="numeric || tel" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" NumberOnly="true" (keyup)="inputOnChangeFunc(tableField,fields)" *ngIf="fields.datatype == 'numberOnly'" [id]="fields._id+'_'+fields.field_name"></ion-input>
+                        <ion-input type="number" inputmode="numeric || tel" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" (keyup)="inputOnChangeFunc(tableField,fields)" *ngIf="fields.datatype != 'text' && fields.datatype != 'numberOnly'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
+                        <ion-input type="tel" inputmode="numeric || tel" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" [minlength]="fields.min_length" [maxlength]="fields.max_length" *ngIf="fields.datatype == 'text'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
+                        <ion-input type="tel" inputmode="numeric || tel" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" NumberOnly="true" (keyup)="inputOnChangeFunc(tableField,fields)" *ngIf="fields.datatype == 'numberOnly'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
                         <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
                         <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('maxlength')">Enter valid {{ tableField.label}} of {{ tableField.min_length }} characters</ion-note>
                         <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('minlength')">{{tableField.label}} should be {{ tableField.min_length }} characters</ion-note>
@@ -408,7 +416,7 @@
                     <div *ngIf="fields.type == 'textarea'">
                         <ion-item appearance="outline" class="example-full-width w-100">
                             <ion-label position="floating">{{ fields.label | titlecase}} <ion-text *ngIf="tableField.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label>
-                            <ion-textarea [placeholder]="getTitlecase(fields.placeholder)" [required]="fields.is_mandatory" [formControlName]="fields.field_name" [disabled]="fields.is_disabled" rows="3" cols="" auto-grow="true" enterkeyhint="enter" inputmode="text" spellcheck="true"></ion-textarea>                
+                            <ion-textarea [placeholder]="getTitlecase(fields.placeholder)" [required]="fields.is_mandatory" [formControlName]="fields.field_name" [disabled]="fields.is_disabled" rows="3" cols="" auto-grow="true" enterkeyhint="enter" inputmode="text" spellcheck="true" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-textarea>                
                         </ion-item>
                     </div>
                   </div>
@@ -423,7 +431,7 @@
                   </ion-item>
                 </div>
 
-                <ion-card *ngIf="tableField.type == 'list_of_fields' && tableField.datatype != 'key_value'" class="accordian-without-keyValue">
+                <ion-card *ngIf="tableField.type == 'list_of_fields' && tableField.datatype != 'key_value' && custmizedFormValue[tableField.field_name]" class="accordian-without-keyValue" [ngClass]="custmizedFormValue[tableField.field_name].length > 0 ? 'ion-margin-top-0' : 'ion-margin-top-0 ion-margin-bottom-0'">
                   <ion-card-content class="ion-table-responsive-x-axis ion-padding-horizontal-0 ion-padding-top-0" *ngIf="custmizedFormValue[tableField.field_name] && checkObjectSize(custmizedFormValue[tableField.field_name])">
                       <table class="table-bordered table-striped table-hover one-line-text" *ngIf="checkObjectSize(custmizedFormValue[tableField.field_name])">
                           <thead>

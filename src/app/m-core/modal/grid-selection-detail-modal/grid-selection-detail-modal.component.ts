@@ -39,6 +39,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   toastMsg:string;
   grid_row_selection: boolean = false;
   action_button_SaveupdateData = false;
+  grid_row_refresh_icon: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -47,7 +48,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     private apiService:ApiService,
     private restService:RestService,
     private storageService: StorageService,
-    private coreFunctionService: CoreUtilityService,
+    private notificationService: NotificationService
   ) { 
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
@@ -78,27 +79,13 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   onload(){
     this.cardType = this.childCardType;
-    if(this.Data){
-      if(this.Data['column'].length > 0){
-        this.columnList  = this.Data['column'];
-      }
-      if(this.Data['value'] !=""){
-        this.data  = this.Data['value'];
-      }
-      if(this.Data['field'] != ""){
-        this.field = this.Data['field'];
-      }
-      if(this.field && this.field.grid_row_selection) {
-        this.grid_row_selection = true;
-      } else {
-        this.grid_row_selection = false;
-      }
-      if(this.field && this.field.is_disabled){
-        this.readonly = this.field.is_disabled;
-      }
+    if(this.Data && this.Data['column'] && this.Data['column'].length > 0){
+      this.showModal(this.Data);
       this.alreadyAdded  = this.Data['alreadyAdded'];      
+    }else{
+      // this.notificationService.presentToastOnMiddle("Grid Columns are not available In This Field.","danger");
     }
-    this.getStaticDataWithDependentData();
+    // this.getStaticDataWithDependentData();
   }
   setTopHeaderTitle(){
     if(this.formInfo){
@@ -113,17 +100,70 @@ export class GridSelectionDetailModalComponent implements OnInit {
       }
     }
   }
+  showModal(alert) {
+    // this.selecteData = [];
+    // this.selecteData = alert.selectedData;
+    this.field = alert.field;
+    let parentObject:any={};
+    if (alert.value) {
+      this.data = alert.value;
+    }
+    if (alert.parentObject) {
+      parentObject = alert.parentObject;
+    }
+    // if (alert.field.onchange_api_params == "" || alert.field.onchange_api_params == null) {
+    //   this.gridData = JSON.parse(JSON.stringify(alert.selectedData));
+    // }
+    // else {
+    //   this.setGridData = true;
+    //   this.gridData = [];
+    // }
+    if (this.field.gridColumns && this.field.gridColumns.length > 0) {
+      let gridColumns = this.CommonFunctionService.updateFieldInList('display',this.field.gridColumns);
+      gridColumns.forEach(field => {
+        if (this.CommonFunctionService.isNotBlank(field.show_if)) {
+          if (!this.CommonFunctionService.showIf(field, parentObject)) {
+            field['display'] = false;
+          } else {
+            field['display'] = true;
+          }
+        } else {
+          field['display'] = true;
+        }
+        if(field['field_class']){
+          field['field_class'] = field['field_class'].trim();
+        }
+      });
+      this.columnList = gridColumns;
+      // this.gridViewModalSelection.show();
+    } else {
+      this.notificationService.presentToastOnMiddle("Grid Columns are not available In This Field.","danger")
+    }
+    if (this.field && this.field.grid_row_selection) {
+      this.grid_row_selection = true;
+    } else {
+      this.grid_row_selection = false;
+    }
+    if (this.field && this.field.grid_row_refresh_icon) {
+      this.grid_row_refresh_icon = true;
+    } else {
+      this.grid_row_refresh_icon = false;
+    }
+    if(this.field && this.field.is_disabled){
+      this.readonly = this.field.is_disabled;
+    } 
+
+    //For dropdown data in grid selection
+    this.getStaticDataWithDependentData()
+
+  }
   async updateModeRejectedGridReadOnly(){
     let msg = ""
     let checkRowDisabledIf = await !this.checkRowDisabledIf(this.field,this.data)
     if(checkRowDisabledIf){
       if(this.data && this.data.approvedStatus == "Approved" || this.data.approvedStatus == "Rejected"){
         this.readonly = true;
-        if(this.data.approvedStatus == "Approved"){
-          msg = "This record already added and approved";
-        }else{
-          msg = "This record already rejected";
-        }
+        msg = "This record already "+this.data.approvedStatus;
       }
     }else{
       if(this.data && this.data.rejectedCustomers && this.data.add_new_enabled){
@@ -143,7 +183,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   checkRowDisabledIf(field,data){
     const condition = field.disableRowIf;
     if(condition){
-      return !this.coreFunctionService.checkDisableRowIf(condition,data);
+      return !this.CommonFunctionService.checkDisableRowIf(condition,data);
     }
     return true;    
   }

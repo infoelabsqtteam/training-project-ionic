@@ -1,0 +1,128 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" (click)="closeModal('close')"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-buttons>
+    <!-- <ion-title class="ion-no-padding ion-text-capitalize">{{Data.field.field_label}}</ion-title> -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pages">
+  <div class="">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{Data.field.field_label}}</ion-card-title>
+        <!-- <ion-card-subtitle>{{Data.field.field_label}}</ion-card-subtitle> -->
+      </ion-card-header>
+      <ion-card-content class="ion-table-responsive-x-axis ion-padding-horizontal-0 ion-padding-top-0">
+        <table class="table-bordered table-striped one-line-text" *ngIf="data.length > 0 && gridColumns.length > 0">
+          <thead>
+            <tr>
+              <th class="p-1" *ngIf="!bulkDownload">#</th>
+              <th *ngIf="bulkDownload" class="text-center"><ion-checkbox  color="primary" class="mb-0"  [checked]="isChecked()" [indeterminate]="isIndeterminate()" (change)="$event ? toggleAll($event) : null"></ion-checkbox></th>
+              <th class="p-1" *ngFor="let coloum of gridColumns"><div class="heading" [style.width]="getGridColumnWidth(coloum)" [style.text-align]="coloum.text_align"><span class="grid-heading-nowrap" [title]="coloum.label">{{ coloum.label }}</span></div></th>
+              <!-- <th *ngIf="rateShow" class="p-1" width="20%">Rate</th> -->
+            </tr>
+          </thead>
+          <tbody >
+            <tr *ngFor="let item of data; let i = index" class="grid-filter">
+              <td scope="row" class="p-1" *ngIf="!bulkDownload">{{ i + 1 }}</td>
+              <td *ngIf="bulkDownload" class="text-center">
+                <ion-checkbox color="primary" (click)="$event.stopPropagation()"
+                (change)="$event ? toggle(i, $event) : null"
+                [checked]="item.selected">
+                </ion-checkbox>
+              </td>
+              <td class="p-1" *ngFor="let coloum of gridColumns">
+                <div *ngIf="!editedColumne">
+                    <div *ngIf="coloum.type != 'checkbox'"><span [innerHtml]="getddnDisplayVal(getValueForGrid(coloum,item))"></span></div>
+                    <div *ngIf="coloum.type == 'checkbox'">
+                      <ion-checkbox  color="primary" [disabled]="coloum.is_disabled" [(ngModel)]="item[coloum.field_name]"></ion-checkbox>
+                  </div>
+                </div>
+                <!-- <div *ngIf="editedColumne">
+                    <div *ngIf="!coloum.editable" class="grid-data" [style.width]="getGridColumnWidth(coloum)" [style.text-align]="coloum.text_align"><span class="grid-coloumn-nowrap" [ngClass]="coloum.field_class != ''?coloum.field_class:''" [innerHtml]="getddnDisplayVal(getValueForGrid(coloum,item))"></span></div>
+                    <div *ngIf="coloum.editable">  
+                      <div *ngIf="coloum.type == 'boolean'">
+                          <ion-checkbox  color="primary"  [(ngModel)]="item[coloum.field_name]"></ion-checkbox>
+                      </div>
+                      <div *ngIf="coloum.type == 'checkbox'">
+                        <ion-checkbox  color="primary"  [(ngModel)]="item[coloum.field_name]"></ion-checkbox>
+                      </div>
+                      <div *ngIf="coloum.type.toLowerCase() == 'text'">
+                          <input  type="text" class="w-75 form-control form-control-sm d-inline mr-2"  [(ngModel)]="item[coloum.field_name]" >
+                      </div>
+                      <div *ngIf="coloum.type.toLowerCase() == 'dropdown'">
+                        <div appearance="outline" style="min-width: 130px;" *ngIf="coloum.datatype == 'object'">
+                            <ng-select [compareWith]="compareObjects" [(ngModel)]="item[coloum.field_name]" (change)="setValue(coloum,i)">
+                                <ng-option *ngFor="let staticValue of copyStaticData[coloum.ddn_field][i]" [value]="staticValue">
+                                    {{getddnDisplayVal(staticValue)}}
+                                </ng-option>
+                            </ng-select>
+                        </div>
+                        <div appearance="outline" style="min-width: 130px;" *ngIf="coloum.datatype != 'object'">
+                            <ng-select [(ngModel)]="item[coloum.field_name]" (change)="setValue(coloum,i)">
+                                <ng-option *ngFor="let staticValue of copyStaticData[coloum.ddn_field][i]" [value]="staticValue">
+                                    {{getddnDisplayVal(staticValue)}}
+                                </ng-option>
+                            </ng-select>
+                        </div>
+                      </div>
+                    </div>
+                </div> -->
+              </td>
+              <!-- <td *ngIf="rateShow" class="p-1">
+                <input type="number" class="form-control form-control-sm"  [formControlName]="i" (keyup)="addRates()">
+              </td> -->
+            </tr>
+            <!-- <tr *ngIf="rateShow">
+              <td class="p-1"></td>
+              <td class="p-1" [attr.colspan]="gridColumns.length">Total</td>
+              <td class="p-1">{{ rateTotal }}</td>
+            </tr> -->
+          </tbody>
+        </table>
+        <table class="table-bordered table-striped one-line-text" *ngIf="gridColumns.length == 0">
+          <thead>
+            <tr>
+              <th class="p-1">#</th>
+              <th class="p-1"><div class="heading"><span class="grid-heading-nowrap">{{ coloumName }}</span></div></th>
+              <th *ngIf="rateShow" class="p-1" width="20%">Rate</th>
+            </tr>
+          </thead>
+          <tbody [formGroup]="rateForm">
+            <tr *ngFor="let item of data; let i = index">
+              <td scope="row" class="p-1">{{ i + 1 }}</td>
+              <td class="p-1"><div class="heading"><span class="grid-coloumn-nowrap" >{{ getddnDisplayVal(item) }}</span></div></td>
+              <td *ngIf="rateShow" class="p-1" class="grid-filter">
+                <input type="number" class="form-control form-control-sm"  [formControlName]="i" (keyup)="addRates()">
+              </td>
+            </tr>
+            <tr *ngIf="rateShow">
+              <td class="p-1"></td>
+              <td class="p-1" >Total</td>
+              <td class="p-1">{{ rateTotal }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="contactdetails" *ngIf="data && data! && data !=undefined && data['object']">
+          <div class="ion-padding-vertical">
+            <p class="enquerylist" *ngFor="let column of gridColumns; index as j">
+              <span [ngClass]="column.class_name ? column.class_name  : ''">{{column.label}}</span>
+        
+              <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type.toLowerCase() == 'text' || column.type == 'date' || column.type == 'datetime' || column.type == 'info'" [innerHTML]="getValueForGrid(column,data)"></strong>
+        
+              <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,data)"></ion-button>
+            </p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-item>
+    <ion-button  type="button" mdbBtn color="primary" slot="start" size="small" class="waves-light" mdbWavesEffect (click)="multipleDownload()" *ngIf="bulkDownload" [disabled]="!checkSelectedData()">Download Selected</ion-button>
+    <ion-button  type="button" mdbBtn color="primary" slot="end" size="small" class="waves-light" mdbWavesEffect (click)="save()" *ngIf="editeMode">Ok</ion-button>
+    <ion-button type="button" mdbBtn color="primary" outline="true" slot="end" size="small" class="waves-light" mdbWavesEffect data-dismiss="modal" (click)="closeModal('close')">Close</ion-button>
+  </ion-item>
+</ion-footer>

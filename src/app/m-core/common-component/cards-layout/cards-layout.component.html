@@ -1,7 +1,7 @@
 <ion-header class="menutab" #header *ngIf="!popoverMenu">
-  <ion-segment *ngIf="tabMenu && tabMenu.length > 0">
+  <ion-segment [scrollable]="true" *ngIf="tabMenu && tabMenu.length > 0">
     <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(i)" [class.segment-button-checked]="selectedIndex == i" [ngClass]="" value="{{tabItem.name}}">
-      <ion-label>{{tabItem.name}}</ion-label>
+      <ion-label class="ion-margin-vertical-0">{{tabItem.name}}</ion-label>
     </ion-segment-button>
   </ion-segment>
 </ion-header>
