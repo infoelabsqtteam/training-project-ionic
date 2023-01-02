@@ -60,3 +60,5 @@ ion-card.app-grid_selection.detail_grid{ margin-left: auto;margin-right: auto;pa
 .ion-flex-direction-column-reverse{flex-direction: column-reverse;}
 .ion-icon-large-font{font-size: 22px;}
 .form_label{--background: var(--themebg);border-radius: 6px;color: var(--ion-color-white);}
+ion-accordion-group.accordion-margin-vertical{margin-top: .2em;margin-bottom: .2em;}
+ion-accordion-group ~ ion-accordion-group.accordion-group-expand-inset.md > ion-accordion.accordion-expanding:first-of-type, ion-accordion-group.accordion-group-expand-inset.md > ion-accordion.accordion-expanded:first-of-type{margin-bottom: 0;}

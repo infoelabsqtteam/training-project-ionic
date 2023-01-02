@@ -250,7 +250,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       const modal = await this.modalController.create({
         component: GridSelectionDetailModalComponent,
         componentProps: {
-          "Data": {"value":data,"column":this.field.gridColumns,"field":this.field,"alreadyAdded": alreadyAdded},
+          "Data": {"value":data,"column":this.field.gridColumns,"field":this.field,"alreadyAdded": alreadyAdded,"parentObject":this.parentObject},
           "index": index,
           "childCardType" : "demo1",
           "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""}          

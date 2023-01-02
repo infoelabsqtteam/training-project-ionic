@@ -29,6 +29,7 @@ export class GridSelectionModalComponent implements OnInit {
   grid_row_refresh_icon:boolean = false;
 
   selectedTab:string = "new";
+  setGridData:boolean=false;
 
   
   // test array
@@ -60,7 +61,9 @@ export class GridSelectionModalComponent implements OnInit {
         this.responseData = [];
       }
       this.copyStaticData = data;
-      this.setStaticData(data);
+      if(this.setGridData && this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null){
+        this.setStaticData(data);
+      }
     })
   }
   onload(){
@@ -76,6 +79,7 @@ export class GridSelectionModalComponent implements OnInit {
       this.gridData = JSON.parse(JSON.stringify(this.Data.selectedData));
     }
     else{
+      this.setGridData = true;
       this.gridData = [];
     }
     if(this.field.gridColumns && this.field.gridColumns.length > 0){
@@ -177,7 +181,8 @@ export class GridSelectionModalComponent implements OnInit {
                 }
               }
             });
-          });          
+          });  
+          this.setGridData = false;        
         }
       }        
     }

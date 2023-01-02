@@ -131,7 +131,7 @@ export class AppComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  ngOnDestroy() {
+  unsubscribeVariabbles(){
     if (this.authSub) {
       this.authSub.unsubscribe();
     }
@@ -141,6 +141,10 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.cardListSubscription) {
       this.cardListSubscription.unsubscribe();
     }
+  }
+
+  ngOnDestroy() {
+    this.unsubscribeVariabbles();
   }  
   
   ngOnInit() {

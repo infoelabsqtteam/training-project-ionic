@@ -2,19 +2,19 @@
   <ion-toolbar *ngIf="!this.popoverTabbing">
     <ion-buttons slot="start" (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
     <div class="cardsearch">
-      <ion-select interface="popover" placeholder="Search Value" [(ngModel)]="searchcardfield" (ionChange)="selectedSearchValue(searchcardfield)">
+      <ion-select interface="popover" class="ion-padding-left-0" placeholder="Search Value" [(ngModel)]="searchcardfield" (ionChange)="selectedSearchValue(searchcardfield)">
         <ion-select-option *ngFor="let columns of columnList; index as i" [value]="columns.field_name">{{columns.field_label}}</ion-select-option>
       </ion-select>
       <div class="searchbox">
           <ion-title [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>
-          <ion-input placeholder="search" class="align-self: auto" (ionChange)="filterCardAgain()" [(ngModel)]="searchcardvalue" clearInput [placeholder] animated="true" [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
+          <ion-input enterkeyhint="search" placeholder="search" class="align-self: auto" (ionChange)="filterCardAgain()" [(ngModel)]="searchcardvalue" clearInput [placeholder] animated="true" [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
             <span (click)="togglesearch()"><ion-icon name="arrow-back" size="small" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon></span>
           </ion-input>
-          <ion-buttons slot="end" (click)="togglesearch()">
+          <!-- <ion-buttons slot="end" (click)="togglesearch()">
             <ion-icon name="search" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}"></ion-icon>
             <ion-icon name="close-outline" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon>
-          </ion-buttons>
-          <ion-buttons class="filter ion-text-end" slot="end" (click)="open()"><img src="assets/img/icons/Filter.svg"></ion-buttons>
+          </ion-buttons> -->
+          <!-- <ion-buttons class="filter ion-text-end" slot="end" (click)="open()"><img src="assets/img/icons/Filter.svg"></ion-buttons> -->
       </div>
 
     </div>
@@ -25,6 +25,7 @@
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
     <ion-title class="" *ngIf="headerTitle !=''">{{headerTitle}}</ion-title>
+    <ion-buttons class="filter ion-text-end" slot="end" (click)="open()"><img src="assets/img/icons/Filter.svg"></ion-buttons>
     <ion-buttons class="filter ion-text-end" slot="end" id="popover-id">
       <ion-icon name="ellipsis-vertical-outline"></ion-icon>
     </ion-buttons>
@@ -48,9 +49,9 @@
         </div>
       </div>
       <ion-buttons class="ion-padding-vertical ion-justify-content-around">
-        <ion-button fill="outline" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
-        <ion-button fill="outline" class="ion-text-capitalize" (click)="clearfilterCard()">Clear</ion-button>
-        <ion-button type="submit" fill="outline" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
+        <ion-button fill="outline" shape="round" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
+        <ion-button fill="outline" shape="round" class="ion-text-capitalize" (click)="clearfilterCard()">Clear</ion-button>
+        <ion-button type="submit" fill="outline" shape="round" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
       </ion-buttons>
     </div>
   </div>

@@ -108,6 +108,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   downloadProgress:any;
   nodatafoundImg :any = "../../../../assets/nodatafound.png";
   nodatafound:boolean = false;
+  hasDetaildCard:boolean = false;
 
   constructor(
     private platform: Platform,
@@ -299,6 +300,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.currentPageCount = 1;    
     this.carddata=[];
     this.checkionEvents();
+    this.hasDetaildCard=false;
   }
   ngOnInit() { }
 
@@ -349,11 +351,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.gridButtons = card.buttons;
     }else{
       this.gridButtons = [];
-    } 
-
-
-
-
+    }
     if(card && card.add_new){
       if(this.detailPage){
         this.addNewEnabled = false;
@@ -454,7 +452,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.loadMoreData = false;
       this.selectedgriddataId = "";
     }
-
+    if(card && card.child_card && card.child_card['_id']){
+      this.hasDetaildCard = true;
+    }else{
+      this.hasDetaildCard = false;
+    }
     this.collectionname = card.collection_name;
     if(this.collectionname !=''){
       if(this.currentMenu == undefined){
@@ -486,6 +488,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   async modaldetailCardButton(column, data){
+    if(this.hasDetaildCard){
      const cardmaster=this.dataShareServiceService.getCardList();
       // const cardmaster = this.commonDataShareService.getModuleList();
       const childColumn = this.childColumn;
@@ -514,6 +517,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.detailPage = false;
       });
       return await modal.present();
+    }else{
+      return console.log("No detail card found.");
+    }
   }
 
   // go to new page 2nd method

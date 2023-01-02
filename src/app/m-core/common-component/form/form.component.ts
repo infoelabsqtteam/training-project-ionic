@@ -181,6 +181,8 @@ tinymceConfig = {}
   forms:any={};
   form:any ={};
   formIndex:number=0;
+  pdfViewLink:any='';
+  pdfViewListData:any=[];
   tableFields:any=[];
   formFieldButtons:any=[];
   currentMenu:any={};
@@ -218,6 +220,8 @@ tinymceConfig = {}
   curFileUploadField:any={}
   curFileUploadFieldparentfield:any={};
   public curTreeViewField: any = {};
+  curFormField:any={};
+  curParentFormField:any={};
   currentTreeViewFieldParent:any = {};
   public tempVal = {};
 
@@ -417,6 +421,7 @@ tinymceConfig = {}
           this.openNextForm(false);
         }
       })
+
       this.onLoadVariable();
   }
 
@@ -448,6 +453,9 @@ tinymceConfig = {}
     }
     if(this.fileDownloadUrlSubscription){
       this.fileDownloadUrlSubscription.unsubscribe();
+    }
+    if(this.gridSelectionOpenOrNotSubscription){
+      this.gridSelectionOpenOrNotSubscription.unsubscribe();
     }
 
   }
@@ -488,13 +496,13 @@ tinymceConfig = {}
     }
   }
   setStaticData(staticData:any){
-    // if(staticData['staticDataMessgae'] != null && staticData['staticDataMessgae'] != ''){
-    //   this.storageService.presentToast(staticData['staticDataMessgae']);
-    //   const fieldName = {
-    //     "field" : "staticDataMessgae"
-    //   }
-    //   this.apiService.ResetStaticData(fieldName);
-    // }
+    if(staticData['staticDataMessgae'] != null && staticData['staticDataMessgae'] != ''){
+      this.notificationService.presentToastOnBottom(staticData['staticDataMessgae'], "danger");
+      const fieldName = {
+        "field" : "staticDataMessgae"
+      }
+      this.apiService.ResetStaticData(fieldName);
+    }
     this.staticData = staticData;
     Object.keys(this.staticData).forEach(key => { 
       if(this.staticData[key]){   
@@ -505,18 +513,18 @@ tinymceConfig = {}
     this.tableFields.forEach(element => {
       switch (element.type) {              
         case 'pdf_view':
-          // if(isArray(this.copyStaticData[element.ddn_field]) && this.copyStaticData[element.ddn_field] != null){
-          //   const data = this.copyStaticData[element.ddn_field][0];
-          //   if(data['bytes'] && data['bytes'] != '' && data['bytes'] != null){
-          //     const arrayBuffer = data['bytes'];
-          //     // this.pdfViewLink = encodeURIComponent(escape(window.atob( arrayBuffer )));
-          //     // this.pdfViewLink = decodeURIComponent(escape(window.atob( arrayBuffer )));
-          //     this.pdfViewLink = arrayBuffer;
-          //     this.pdfViewListData = JSON.parse(JSON.stringify(this.copyStaticData[element.ddn_field]))
-          //   }
-          // }else{
-          //   this.pdfViewLink = '';
-          // }             
+          if(this.commonFunctionService.isArray(this.copyStaticData[element.ddn_field]) && this.copyStaticData[element.ddn_field] != null){
+            const data = this.copyStaticData[element.ddn_field][0];
+            if(data['bytes'] && data['bytes'] != '' && data['bytes'] != null){
+              const arrayBuffer = data['bytes'];
+              // this.pdfViewLink = encodeURIComponent(escape(window.atob( arrayBuffer )));
+              // this.pdfViewLink = decodeURIComponent(escape(window.atob( arrayBuffer )));
+              this.pdfViewLink = arrayBuffer;
+              this.pdfViewListData = JSON.parse(JSON.stringify(this.copyStaticData[element.ddn_field]))
+            }
+          }else{
+            this.pdfViewLink = '';
+          }             
           break;
         case 'info_html':
         case 'html_view':
@@ -546,6 +554,11 @@ tinymceConfig = {}
     }
 
     if(this.staticData["COMPLETE_OBJECT"] && this.staticData["COMPLETE_OBJECT"] != null){
+      if(this.curFormField && this.curFormField.resetFormAfterQtmp){
+        this.resetForm();
+        this.curFormField = {};
+        this.curParentFormField = {};
+      }
       this.updateDataOnFormField(this.staticData["COMPLETE_OBJECT"]);          
       this.selectedRow = this.staticData["COMPLETE_OBJECT"];
       this.complete_object_payload_mode = true;
@@ -725,7 +738,7 @@ tinymceConfig = {}
   }
   
   setForm(){
-    if(this.form.details && this.form.details.collection_name && this.form.details.collection_name != ''){
+    if(this.form.details && this.form.details.collection_name && this.form.details.collection_name != '' && (this.currentMenu != undefined || this.envService.getRequestType() == 'PUBLIC')){
       if(this.currentMenu == undefined){
         this.currentMenu = {};
       }
@@ -852,74 +865,83 @@ tinymceConfig = {}
             case "list_of_fields":
             case "group_of_fields":
               const list_of_fields = {};
-              if (element.list_of_fields.length > 0) {
-                element.list_of_fields.forEach((data) => {
-                  let modifyData = JSON.parse(JSON.stringify(data));
-                  modifyData.parent = element.field_name;
-                  //show if handling
-                  if(data.show_if && data.show_if != ''){
-                    this.showIfFieldList.push(modifyData);
-                  }
-                  //disable if handling
-                  if((data.disable_if && data.disable_if != '') || (data.disable_on_update && data.disable_on_update != '' && data.disable_on_update != undefined && data.disable_on_update != null)){                          
-                    this.disableIfFieldList.push(modifyData);
-                  }                      
-                  if(element.type == 'list_of_fields'){
-                    modifyData.is_mandatory=false;
-                  }
-                  if(data.field_name && data.field_name != ''){
-                    switch (data.type) {
-                      case "list_of_checkbox":
-                        this.commonFunctionService.createFormControl(list_of_fields, modifyData, [], "list")
-                        this.checkBoxFieldListValue.push(modifyData);
-                        break;
-                      case "date":
-                        let currentYear = new Date().getFullYear();
-                        if(data.datatype == 'object'){
-                          this.minDate = new Date();
-                          if(data.etc_fields && data.etc_fields != null){
-                            if(data.etc_fields.minDate){
-                              if(data.etc_fields.minDate == '-1'){
-                                this.minDate = new Date(currentYear - 100, 0, 1);
-                              }else{
-                                this.minDate.setDate(new Date().getDate() - Number(data.etc_fields.minDate));
+              if(element){
+                if (element.list_of_fields && element.list_of_fields.length > 0) {
+                  element.list_of_fields.forEach((data) => {
+                    let modifyData = JSON.parse(JSON.stringify(data));
+                    modifyData.parent = element.field_name;
+                    //is disable handling
+                    //if parent is disabled then it's non disabled list_of_field will be disabled
+                    if(element.is_disabled){
+                      if(!modifyData.is_disabled){
+                        modifyData.is_disabled = element.is_disabled;
+                      }
+                    }                    
+                    //show if handling
+                    if(data.show_if && data.show_if != ''){
+                      this.showIfFieldList.push(modifyData);
+                    }
+                    //disable if handling
+                    if((data.disable_if && data.disable_if != '') || (data.disable_on_update && data.disable_on_update != '' && data.disable_on_update != undefined && data.disable_on_update != null)){                          
+                      this.disableIfFieldList.push(modifyData);
+                    }                      
+                    if(element.type == 'list_of_fields'){
+                      modifyData.is_mandatory=false;
+                    }
+                    if(data.field_name && data.field_name != ''){
+                      switch (data.type) {
+                        case "list_of_checkbox":
+                          this.commonFunctionService.createFormControl(list_of_fields, modifyData, [], "list")
+                          this.checkBoxFieldListValue.push(modifyData);
+                          break;
+                        case "date":
+                          let currentYear = new Date().getFullYear();
+                          if(data.datatype == 'object'){
+                            this.minDate = new Date();
+                            if(data.etc_fields && data.etc_fields != null){
+                              if(data.etc_fields.minDate){
+                                if(data.etc_fields.minDate == '-1'){
+                                  this.minDate = new Date(currentYear - 100, 0, 1);
+                                }else{
+                                  this.minDate.setDate(new Date().getDate() - Number(data.etc_fields.minDate));
+                                }
                               }
                             }
-                          }
-                          this.maxDate = new Date();
-                          if(data.etc_fields && data.etc_fields != null){
-                            if(data.etc_fields.maxDate){
-                              if(data.etc_fields.maxDate == '-1'){
-                                this.maxDate = new Date(currentYear + 1, 11, 31);
-                              }else{
-                                this.maxDate.setDate(new Date().getDate() + Number(data.etc_fields.maxDate));
+                            this.maxDate = new Date();
+                            if(data.etc_fields && data.etc_fields != null){
+                              if(data.etc_fields.maxDate){
+                                if(data.etc_fields.maxDate == '-1'){
+                                  this.maxDate = new Date(currentYear + 1, 11, 31);
+                                }else{
+                                  this.maxDate.setDate(new Date().getDate() + Number(data.etc_fields.maxDate));
+                                }
                               }
                             }
+                          }else{
+                            this.minDate = new Date(currentYear - 100, 0, 1);
+                            this.maxDate = new Date(currentYear + 1, 11, 31);
                           }
-                        }else{
-                          this.minDate = new Date(currentYear - 100, 0, 1);
-                          this.maxDate = new Date(currentYear + 1, 11, 31);
-                        }
-                        let minDateToday:any;
-                        let maxDateFromToday:any;                
-                        minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd");
-                        maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd");
-                        if(this.plt.is('hybrid')){
-                          data['minDate'] = minDateToday
-                          data['maxDate'] = maxDateFromToday;
-                        }else{
-                          data['minDate'] = minDateToday;
-                          data['maxDate'] = maxDateFromToday;
-                        }                        
-                        this.commonFunctionService.createFormControl(list_of_fields, modifyData, '', "text")
-                        break; 
-                    
-                      default:
-                        this.commonFunctionService.createFormControl(list_of_fields, modifyData, '', "text")
-                        break;
-                    } 
-                  }                 
-                });
+                          let minDateToday:any;
+                          let maxDateFromToday:any;                
+                          minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd");
+                          maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd");
+                          if(this.plt.is('hybrid')){
+                            data['minDate'] = minDateToday
+                            data['maxDate'] = maxDateFromToday;
+                          }else{
+                            data['minDate'] = minDateToday;
+                            data['maxDate'] = maxDateFromToday;
+                          }                        
+                          this.commonFunctionService.createFormControl(list_of_fields, modifyData, '', "text")
+                          break; 
+                      
+                        default:
+                          this.commonFunctionService.createFormControl(list_of_fields, modifyData, '', "text")
+                          break;
+                      } 
+                    }                 
+                  });
+                }
               }
               this.commonFunctionService.createFormControl(forControl, element, list_of_fields, "group");                
               break;
@@ -1738,7 +1760,9 @@ tinymceConfig = {}
     }
   }
   getStaticDataWithDependentData(){
-    const staticModal = []
+    const staticModal = [];
+    let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+    let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(true));
     this.tableFields.forEach(element => {
       if(element.field_name && element.field_name != ''){
         if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != "") {
@@ -1758,7 +1782,8 @@ tinymceConfig = {}
         let object = this.selectedRow[fieldName];        
         if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
           const checkFormGroup = element.onchange_call_back_field.indexOf("FORM_GROUP");
-          if(checkFormGroup == -1){
+          const checkCLTFN = element.onchange_api_params.indexOf('CLTFN')
+          if(checkFormGroup == -1 && checkCLTFN == -1){
 
             const payload = this.restService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.selectedRow)
             if(element.onchange_api_params.indexOf('QTMP') >= 0){
@@ -1815,7 +1840,7 @@ tinymceConfig = {}
         staticModal.push(this.restService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,this.selectedRow))
       }
     });
-    let staticModalGroup = this.restService.commanApiPayload([],this.tableFields,this.formFieldButtons,this.selectedRow);
+    let staticModalGroup = this.restService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
     if(staticModalGroup.length > 0){
       staticModalGroup.forEach(element => {
         staticModal.push(element);
@@ -2294,52 +2319,124 @@ tinymceConfig = {}
   //   this.typeAheadData = [];
   // }
 
-  custmizedKey(parentfield){
-    let custmizedKey = parentfield.field_name;
-    switch (parentfield.type) {
-      case "list_of_fields":
-      case "group_of_fields":
-        custmizedKey = parentfield.field_name+'_'+parentfield.type                
-        break;          
-      default:
-        custmizedKey = parentfield.field_name;
-        break;
-    }
-    return custmizedKey;
-  }
-
-  checkDataAlreadyAddedInListOrNot(primary_key,incomingData,alreadyDataAddedlist){
-    if(alreadyDataAddedlist == undefined){
-      alreadyDataAddedlist = [];
-    }
-    let alreadyExist = "false";
-    if(typeof incomingData == 'object'){
-      alreadyDataAddedlist.forEach(element => {
-        if(element._id == incomingData._id){
-          alreadyExist =  "true";
-        }
-      });
-    }
-    else if(typeof incomingData == 'string'){
-      alreadyDataAddedlist.forEach(element => {
-        if(typeof element == 'string'){
-          if(element == incomingData){
-            alreadyExist =  "true";
-          }
-        }else{
-          if(element[primary_key] == incomingData){
-            alreadyExist =  "true";
-          }
-        }
+  checkDataAlreadyAddedInListOrNot(field,incomingData,alreadyDataAddedlist,i?){
+    
+    // if(alreadyDataAddedlist == undefined){
+    //   alreadyDataAddedlist = [];
+    // }
+    // let alreadyExist = "false";
+    // if(typeof incomingData == 'object'){
+    //   alreadyDataAddedlist.forEach(element => {
+    //     if(element._id == incomingData._id){
+    //       alreadyExist =  "true";
+    //     }
+    //   });
+    // }
+    // else if(typeof incomingData == 'string'){
+    //   alreadyDataAddedlist.forEach(element => {
+    //     if(typeof element == 'string'){
+    //       if(element == incomingData){
+    //         alreadyExist =  "true";
+    //       }
+    //     }else{
+    //       if(element[primary_key] == incomingData){
+    //         alreadyExist =  "true";
+    //       }
+    //     }
       
-      });
-    }else{
-      alreadyExist =  "false";
+    //   });
+    // }else{
+    //   alreadyExist =  "false";
+    // }
+    // if(alreadyExist == "true"){
+    //   return true;
+    // }else{
+    //   return false;
+    // }
+    if(field && field.type == "date"){
+      incomingData = ""+incomingData;
     }
-    if(alreadyExist == "true"){
-      return true;
+    let checkStatus = {
+      status : false,
+      msg : ""
+    };
+    if(field && field.allowDuplicacy){
+      checkStatus.status = false;
+      return checkStatus;
     }else{
-      return false;
+      let primary_key = field.field_name
+      let criteria = primary_key+"#eq#"+incomingData;
+      let primaryCriteriaList=[];
+      primaryCriteriaList.push(criteria);
+      if(field && field.primaryKeyCriteria && this.commonFunctionService.isArray(field.primaryKeyCriteria) && field.primaryKeyCriteria.length > 0){
+        field.primaryKeyCriteria.forEach(criteria => {          
+          const crList = criteria.split("#");
+          const cr = crList[0]+"#"+crList[1]+"#"+incomingData;
+          primaryCriteriaList.push(cr);
+        });
+      }
+      if(alreadyDataAddedlist == undefined){
+        alreadyDataAddedlist = [];
+      }
+      let alreadyExist = false;
+      if(typeof incomingData == 'object'){
+        alreadyDataAddedlist.forEach(element => {
+          if(element._id == incomingData._id){
+            alreadyExist =  true;
+          }
+        });
+      }
+      else if(typeof incomingData == 'string'){
+        for (let index = 0; index < alreadyDataAddedlist.length; index++) {
+          const element = alreadyDataAddedlist[index];
+          if(i == undefined || i == -1){
+            if(typeof element == 'string'){
+              if(element == incomingData){
+                alreadyExist =  true;
+              }
+            }else{
+              if(primaryCriteriaList && primaryCriteriaList.length > 0){
+                for (let index = 0; index < primaryCriteriaList.length; index++) {
+                  const cri = primaryCriteriaList[index];
+                  alreadyExist = this.commonFunctionService.checkIfCondition(cri,element,field.type);
+                  if(alreadyExist){
+                    const crList = cri.split("#");
+                    switch (crList[1]) {
+                      case "lte":
+                        checkStatus.msg = "Entered value for "+field.label+" is gretter then to "+crList[0]+". !!!";
+                        break;
+                      case "gte":
+                        checkStatus.msg = "Entered value for "+field.label+" is less then to "+crList[0]+". !!!";
+                        break;                  
+                      default:
+                        checkStatus.msg = "Entered value for "+field.label+" is already added. !!!";
+                        break;
+                    }
+                    break;
+                  }                
+                }
+              }
+              // if(element[primary_key] == incomingData){
+              //   alreadyExist =  "true";
+              // }
+            }
+            if(alreadyExist){
+              break;
+            } 
+          }else{
+            break;
+          }       
+        };
+      }else{
+        alreadyExist =  false;
+      }
+      if(alreadyExist){
+        checkStatus.status = true;
+        return checkStatus;
+      }else{
+        checkStatus.status = false;
+        return checkStatus;
+      }
     }
   }
 
@@ -2390,7 +2487,7 @@ tinymceConfig = {}
       case "list_of_string":
         if (add) {
           if(parentfield != ''){
-            const custmizedKey = this.custmizedKey(parentfield);   
+            const custmizedKey = this.commonFunctionService.custmizedKey(parentfield);   
             const value = formValue[parentfield.field_name][field.field_name]
             if(this.custmizedFormValue[custmizedKey] && this.custmizedFormValue[custmizedKey][field.field_name] && this.checkDataAlreadyAddedInListOrNot(field.field_name,value, this.custmizedFormValue[custmizedKey][field.field_name])){
               //this.notificationService.showAlert('bg-danger','Entered value for '+field.label+' is already added. !!!');
@@ -2451,7 +2548,7 @@ tinymceConfig = {}
           if (add) {
             if(parentfield != ''){
               const value = formValue[parentfield.field_name][field.field_name]
-              const custmizedKey = this.custmizedKey(parentfield);
+              const custmizedKey = this.commonFunctionService.custmizedKey(parentfield);
               if(this.custmizedFormValue[custmizedKey] && this.custmizedFormValue[custmizedKey][field.field_name] && this.checkDataAlreadyAddedInListOrNot(field.field_name,value, this.custmizedFormValue[custmizedKey][field.field_name])){
                 //this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
                 this.notificationService.showAlert('Entered value for '+field.label+' is already added. !!!' ,'',['Dismiss']);
@@ -2578,125 +2675,129 @@ tinymceConfig = {}
         }
         break;
       case "list_of_fields":
-        let checkValue = 0;
-        let list_of_field_data = formValue[field.field_name]
-        let field_control = this.templateForm.get(field.field_name);        
-        for (let index = 0; index < field.list_of_fields.length; index++) {
-          const element = field.list_of_fields[index];
-          const custmizedKey = this.custmizedKey(field);
-          let custmizedData = '';
-          let mendatory = false;
-          if(element.is_mandatory){
-            if(element && element.show_if && element.show_if != ''){
-              if(this.checkFieldShowOrHide(element)){
-                mendatory = true;
-              }else{
-                mendatory = false;
-              }
-            }else{
-              mendatory = true;
-            }            
-          }
-          if(this.custmizedFormValue[custmizedKey] && this.custmizedFormValue[custmizedKey][element.field_name]){
-            custmizedData = this.custmizedFormValue[custmizedKey][element.field_name]
-          }         
-          switch (element.datatype) {
-            case 'list_of_object':              
-              if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
-                if(mendatory && custmizedData == ''){
-                  if(custmizedData.length == 0){
-                    checkValue = 1;
-                   // this.notificationService.notify("bg-danger", "Please Enter " + element.label);
-                    this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
-                    return;
-                  }
-                }
-              }else{
-               // this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
-                this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
-                return;
-              }
-              break; 
-            case 'object':
-              if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
-                if(mendatory){                  
-                  checkValue = 1;
-                  //this.notificationService.notify("bg-danger", "Please Enter " + element.label);
-                  this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
-                  return;    
-                }
-              }else if(typeof list_of_field_data[element.field_name] != 'object'){
-                //this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
-                this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert',['Dismiss']);
-                return;
-              }
-              break;         
-            default:
-              break;
-          }
-          switch (element.type) {
-            case 'list_of_string':
-              if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
-                if(mendatory && custmizedData == ''){
-                  if(custmizedData.length == 0){
-                    checkValue = 1;
-                    this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
+        // let checkValue = 0;
+        // let list_of_field_data = formValue[field.field_name]
+        // let field_control = this.templateForm.get(field.field_name);        
+        // for (let index = 0; index < field.list_of_fields.length; index++) {
+        //   const element = field.list_of_fields[index];
+        //   const custmizedKey = this.custmizedKey(field);
+        //   let custmizedData = '';
+        //   let mendatory = false;
+        //   if(element.is_mandatory){
+        //     if(element && element.show_if && element.show_if != ''){
+        //       if(this.checkFieldShowOrHide(element)){
+        //         mendatory = true;
+        //       }else{
+        //         mendatory = false;
+        //       }
+        //     }else{
+        //       mendatory = true;
+        //     }            
+        //   }
+        //   if(this.custmizedFormValue[custmizedKey] && this.custmizedFormValue[custmizedKey][element.field_name]){
+        //     custmizedData = this.custmizedFormValue[custmizedKey][element.field_name]
+        //   }         
+        //   switch (element.datatype) {
+        //     case 'list_of_object':              
+        //       if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+        //         if(mendatory && custmizedData == ''){
+        //           if(custmizedData.length == 0){
+        //             checkValue = 1;
+        //            // this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+        //             this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
+        //             return;
+        //           }
+        //         }
+        //       }else{
+        //        // this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
+        //         this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
+        //         return;
+        //       }
+        //       break; 
+        //     case 'object':
+        //       if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+        //         if(mendatory){                  
+        //           checkValue = 1;
+        //           //this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+        //           this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
+        //           return;    
+        //         }
+        //       }else if(typeof list_of_field_data[element.field_name] != 'object'){
+        //         //this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
+        //         this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert',['Dismiss']);
+        //         return;
+        //       }
+        //       break;         
+        //     default:
+        //       break;
+        //   }
+        //   switch (element.type) {
+        //     case 'list_of_string':
+        //       if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+        //         if(mendatory && custmizedData == ''){
+        //           if(custmizedData.length == 0){
+        //             checkValue = 1;
+        //             this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
                     
-                    return;
-                  }
-                }
-              }else{
-                this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
-                return;
-              }
-              break;  
-            case 'typeahead':
-              if(element.datatype == "text"){
-                if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
-                  if(mendatory){
-                    if(custmizedData.length == 0){
-                      checkValue = 1;
-                      this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
-                      return;
-                    }
-                  }
-                }else if(field_control.get(element.field_name).errors?.required || field_control.get(element.field_name).errors?.validDataText){
-                  this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
-                  return;
-                }
+        //             return;
+        //           }
+        //         }
+        //       }else{
+        //         this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
+        //         return;
+        //       }
+        //       break;  
+        //     case 'typeahead':
+        //       if(element.datatype == "text"){
+        //         if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+        //           if(mendatory){
+        //             if(custmizedData.length == 0){
+        //               checkValue = 1;
+        //               this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
+        //               return;
+        //             }
+        //           }
+        //         }else if(field_control.get(element.field_name).errors?.required || field_control.get(element.field_name).errors?.validDataText){
+        //           this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
+        //           return;
+        //         }
 
-              }
-              break;        
-            default:
-              if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
-                if(mendatory ){
-                  checkValue = 1;
-                  this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
-                }
-              }
-              break;
-          }
+        //       }
+        //       break;        
+        //     default:
+        //       if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+        //         if(mendatory ){
+        //           checkValue = 1;
+        //           this.notificationService.showAlert('Please Enter ' + element.label ,'Alert', ['Dismiss']);
+        //         }
+        //       }
+        //       break;
+        //   }
 
 
-          if(element.primary_key_for_list){
-            let primary_key_field_name = element.field_name;
-            let primary_key_field_value = formValue[field.field_name][element.field_name];            
-            let alreadyAdded = false;
-            if(this.custmizedFormValue[field.field_name]){
-              let list = this.custmizedFormValue[field.field_name];
-              alreadyAdded = this.checkDataAlreadyAddedInListOrNot(primary_key_field_name,primary_key_field_value,list);
-            }
-            if(alreadyAdded){
-              this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
-              return;
-            }
-          }
+        //   if(element.primary_key_for_list){
+        //     let primary_key_field_name = element.field_name;
+        //     let primary_key_field_value = formValue[field.field_name][element.field_name];            
+        //     let alreadyAdded = {
+        //       status : false
+        //     };
+        //     if(this.custmizedFormValue[field.field_name]){
+        //       let list = this.custmizedFormValue[field.field_name];
+        //       alreadyAdded = this.checkDataAlreadyAddedInListOrNot(primary_key_field_name,primary_key_field_value,list);
+        //     }
+        //     if(alreadyAdded.status){
+        //       this.notificationService.showAlert('Entered value for '+ element.label +' is not valid. !!!' ,'Alert', ['Dismiss']);
+        //       return;
+        //     }
+        //   }
           
-        };
-        if (checkValue == 0) {
-          if(this.listOfFieldsUpdateIndex == undefined){
-            this.listOfFieldsUpdateIndex = -1;
-          }
+        // };
+        let list = [];
+        if(this.custmizedFormValue[field.field_name]){
+          list = this.custmizedFormValue[field.field_name];
+        }
+        let checkDublicate = this.checkDublicateOnForm(field.list_of_fields,formValue[field.field_name],list,this.listOfFieldsUpdateIndex,field);
+        if (!checkDublicate.status) {
           if(this.listOfFieldsUpdateIndex != -1){
             //if(this.updateMode){
               let updateCustmizedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[field.field_name]))
@@ -2705,7 +2806,7 @@ tinymceConfig = {}
               })
 // pending for review by vikash (from)
               // const keyName=field.field_name+'_'+field.type;
-              let keyName = this.custmizedKey(field);
+              let keyName = this.commonFunctionService.custmizedKey(field);
               if(this.custmizedFormValue[keyName]){
                 Object.keys(this.custmizedFormValue[keyName]).forEach(childkey => {
                   updateCustmizedValue[this.listOfFieldsUpdateIndex][childkey] = this.custmizedFormValue[keyName][childkey];
@@ -2736,7 +2837,8 @@ tinymceConfig = {}
               }
               // pending for review by vikash (to)
               this.custmizedFormValue[field.field_name] =   updateCustmizedValue; 
-              this.custmizedFormValue[keyName] = {}
+              this.custmizedFormValue[keyName] = {};
+              this.dataListForUpload[keyName] = {};
             // }else{
             //   const updateCustmizedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[field.field_name]))
             //   updateCustmizedValue[this.listOfFieldsUpdateIndex] = JSON.parse(JSON.stringify(formValue[field.field_name]))
@@ -2808,7 +2910,9 @@ tinymceConfig = {}
             });
           }else{
             this.templateForm.get(field.field_name).reset(); 
-          }         
+          }
+        }else{
+          this.notificationService.presentToastOnBottom(checkDublicate.msg,"danger");
         }
         break;
       case 'grid_selection':
@@ -3218,6 +3322,8 @@ tinymceConfig = {}
     let callback = field.onchange_call_back_field;
     let criteria = field.onchange_api_params_criteria;
     const paramlist = params.split(";");
+    let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+    let completeObject = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
     if(paramlist.length>1){
       
     }else{
@@ -3234,7 +3340,7 @@ tinymceConfig = {}
         this.updateDataOnFormField(calculatedCost);
       }
       else{
-        staticModal.push(this.checkQtmpApi(params,field,this.restService.getPaylodWithCriteria(params, callback, criteria, object,data_template))); 
+        staticModal.push(this.checkQtmpApi(params,field,this.restService.getPaylodWithCriteria(params, callback, criteria, completeObject, data_template))); 
         // staticModal.push(this.restService.getPaylodWithCriteria(params, callback, criteria, object))      
         // if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
         //   if(field && field.formValueAsObjectForQtmp){
@@ -3788,7 +3894,7 @@ tinymceConfig = {}
       this.showIfFieldList.forEach(element => {
         let id = '';
         if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
-          id = element._id;
+          id = id = element._id+'_'+element.parent;
         }else{
           id = element._id;
         }
@@ -3797,7 +3903,7 @@ tinymceConfig = {}
           if(elementDetails && elementDetails != null){
             const classes = Array.from(elementDetails.classList)
             if(!classes.includes('d-none')){
-              this.removeClass(elementDetails,' d-inline-block');
+              this.removeClass(elementDetails,' d-block');
               elementDetails.className += " d-none";
               element['show'] = false;
               const objectValue = this.templateForm.getRawValue();
@@ -3840,9 +3946,9 @@ tinymceConfig = {}
         }else{          
           if(elementDetails && elementDetails != null){
             const classes = Array.from(elementDetails.classList)
-            if(!classes.includes('d-inline-block')){
+            if(!classes.includes('d-block')){
               this.removeClass(elementDetails,' d-none');
-              elementDetails.className += " d-inline-block"; 
+              elementDetails.className += " d-block"; 
               element['show'] = true;
               if(element.is_mandatory){
                 if(element.type == "list_of_fields"){
@@ -3888,6 +3994,21 @@ tinymceConfig = {}
     modifiedField['display'] = display; 
     field = modifiedField;
     return display;
+  }
+  checkGridSelectionButtonCondition(field,button){
+    let check = true;
+    switch (button) {
+      case 'add':
+        if(field && field.addNewButtonIf && field.addNewButtonIf != ''){
+          let modifyedField:any = {};
+          modifyedField['show_if'] = field.addNewButtonIf;
+          check = this.showIf(modifyedField);
+        }
+        break;    
+      default:
+        break;
+    }
+    return check;
   }
   formControlChanges(){
     if(this.templateForm && this.templateForm.valueChanges && this.templateForm.valueChanges != null){
@@ -4437,8 +4558,13 @@ tinymceConfig = {}
   }
  
   loadPreviousForm(){
+    let multiFormLength = this.multipleFormCollection.length;
     const lastIndex = this.multipleFormCollection.length - 1;
     const formCollecition = this.multipleFormCollection[lastIndex];
+    let previousFormData = {};
+    if(multiFormLength > 1){
+      previousFormData = this.multipleFormCollection[multiFormLength - 2];
+    }
     this.form = formCollecition['form'];
     this.modal.id = this.form._id;
     this.resetFlagsForNewForm();
@@ -4465,6 +4591,9 @@ tinymceConfig = {}
     let nextFormData ={};
     if(formCollecition && formCollecition['next_form_data'] && formCollecition['next_form_data']['form']){
       nextFormData = formCollecition['next_form_data']['form']; 
+    }
+    if(previousFormData && previousFormData['index'] != undefined && previousFormData['index'] >= 0){
+      this.nextFormUpdateMode = true;
     }
     let previousFormFocusFieldValue = '';
     if(this.commonFunctionService.isNotBlank(this.previousFormFocusField.add_new_target_field)){
@@ -4564,40 +4693,45 @@ tinymceConfig = {}
         case 'grid_selection':
           let fieldData = previousformData[fieldName]
           let index = previousFormCollection['index'];
-          if(this.commonFunctionService.isArray(fieldData)){
-            if(index != undefined && index >= 0){
-              fieldData[index] = currentFormValue;
+          let checkDublicate = this.checkDublicateOnForm(this.tableFields,this.templateForm.getRawValue(),fieldData,index);
+          if(!checkDublicate.status){
+            if(this.commonFunctionService.isArray(fieldData)){
+              if(index != undefined && index >= 0){
+                fieldData[index] = currentFormValue;
+              }else{
+                currentFormValue['customEntry']=true; 
+                fieldData.push(currentFormValue);
+              }
             }else{
-              currentFormValue['customEntry']=true; 
+              fieldData = [];
+              currentFormValue['customEntry']=true;
               fieldData.push(currentFormValue);
-            }
-          }else{
-            fieldData = [];
-            currentFormValue['customEntry']=true;
-            fieldData.push(currentFormValue);
-          }     
-          
-          if(index != undefined && index >= 0){
-            this.custmizedFormValue = {};
-            this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(fieldData));
-            previousformData[fieldName] = this.custmizedFormValue[fieldName];
-            this.multipleFormCollection[previousFormIndex]['data'] = previousformData; 
-            this.nextFormUpdateMode = false;
-            this.close();
-          }else{
-            this.donotResetField();
-            this.custmizedFormValue = {};
-            this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(fieldData));
-            previousformData[fieldName] = this.custmizedFormValue[fieldName];
-            this.multipleFormCollection[previousFormIndex]['data'] = previousformData; 
-
+            }     
             
-            this.templateForm.reset()
-            if(Object.keys(this.donotResetFieldLists).length > 0){
-              this.updateDataOnFormField(this.donotResetFieldLists);
-              this.donotResetFieldLists = {};
-            }
+            if(index != undefined && index >= 0){
+              this.custmizedFormValue = {};
+              this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(fieldData));
+              previousformData[fieldName] = this.custmizedFormValue[fieldName];
+              this.multipleFormCollection[previousFormIndex]['data'] = previousformData; 
+              this.nextFormUpdateMode = false;
+              this.close();
+            }else{
+              this.donotResetField();
+              this.custmizedFormValue = {};
+              this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(fieldData));
+              previousformData[fieldName] = this.custmizedFormValue[fieldName];
+              this.multipleFormCollection[previousFormIndex]['data'] = previousformData; 
 
+              
+              this.templateForm.reset()
+              if(Object.keys(this.donotResetFieldLists).length > 0){
+                this.updateDataOnFormField(this.donotResetFieldLists);
+                this.donotResetFieldLists = {};
+              }
+
+            }
+          }else{
+            this.notificationService.presentToastOnBottom(checkDublicate.msg, "danger");
           }
           break;      
         default:
@@ -4611,6 +4745,156 @@ tinymceConfig = {}
       this.multipleFormCollection[previousFormIndex]['data'] = previousformData; 
       this.close();
     } 
+  }
+  checkDublicateOnForm(fields,value,list,i,parent?){
+    let checkDublic = {
+      status : false,
+      msg : ""
+    }
+    if(fields && fields.length > 0){
+      let checkValue = 0;
+      let field_control:any = "";
+      let list_of_field_data = value;
+      for (let index = 0; index < fields.length; index++) {
+        const element = fields[index];
+        let custmizedKey = '';
+        let custmizedData = '';
+        if(parent && parent != ''){
+          custmizedKey = this.commonFunctionService.custmizedKey(parent);
+          field_control = this.templateForm.get(parent.field_name);
+        }
+        if(custmizedKey && custmizedKey != '' && this.custmizedFormValue[custmizedKey] && this.custmizedFormValue[custmizedKey][element.field_name]){
+          custmizedData = this.custmizedFormValue[custmizedKey][element.field_name]
+        }else{
+          if(this.custmizedFormValue[element.field_name] && this.custmizedFormValue[element.field_name].length > 0){
+            custmizedData = this.custmizedFormValue[element.field_name]
+          }          
+        }
+        let mendatory = false;
+        if(element.is_mandatory){
+          if(element && element.show_if && element.show_if != ''){
+            if(this.checkFieldShowOrHide(element)){
+              mendatory = true;
+            }else{
+              mendatory = false;
+            }
+          }else{
+            mendatory = true;
+          }            
+        }                   
+        switch (element.datatype) {
+          case 'list_of_object':              
+            if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+              if(mendatory && custmizedData == ''){
+                if(custmizedData.length == 0){
+                  checkValue = 1;
+                  checkDublic.status = true
+                  checkDublic.msg = "Please Enter " + element.label;
+                  //this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+                  return checkDublic;
+                }
+              }
+            }else{
+              checkDublic.status = true
+              checkDublic.msg = 'Entered value for '+element.label+' is not valid. !!!';
+              //this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
+              return checkDublic;
+            }
+            break; 
+          case 'object':
+            if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+              if(mendatory){                  
+                checkValue = 1;
+                checkDublic.status = true
+                checkDublic.msg = "Please Enter " + element.label;
+                //this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+                return checkDublic;    
+              }
+            }else if(typeof list_of_field_data[element.field_name] != 'object'){
+              checkDublic.status = true
+              checkDublic.msg = 'Entered value for '+element.label+' is not valid. !!!';
+              //this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
+              return checkDublic;
+            }
+            break;         
+          default:
+            break;
+        }
+        switch (element.type) {
+          case 'list_of_string':
+            if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+              if(mendatory && custmizedData == ''){
+                if(custmizedData.length == 0){
+                  checkValue = 1;
+                  checkDublic.status = true
+                  checkDublic.msg = "Please Enter " + element.label;
+                  //this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+                  return checkDublic;
+                }
+              }
+            }else{
+              checkDublic.status = true
+              checkDublic.msg = 'Entered value for '+element.label+' is not valid. !!!';
+              //this.notificationService.notify('bg-danger','Entered value for '+element.label+' is not valid. !!!');
+              return checkDublic;
+            }
+            break;  
+          case 'typeahead':
+            if(element.datatype == "text"){
+              if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+                if(mendatory){
+                  if(custmizedData.length == 0){
+                    checkValue = 1;
+                    checkDublic.status = true
+                    checkDublic.msg = "Please Enter " + element.label;
+                    //this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+                    return checkDublic;
+                  }
+                }
+              }else if(field_control && field_control != "" && field_control.get(element.field_name).errors?.required || field_control.get(element.field_name).errors?.validDataText){
+                checkDublic.status = true
+                checkDublic.msg = 'Entered value for '+element.label+' is invalidData. !!!';
+                //this.notificationService.notify('bg-danger','Entered value for '+element.label+' is invalidData. !!!');
+                return checkDublic;
+              }
+
+            }
+            break;        
+          default:
+            if (list_of_field_data[element.field_name] == '' || list_of_field_data[element.field_name] == null) {
+              if(mendatory ){
+                checkValue = 1;
+                checkDublic.msg = "Please Enter " + element.label;
+                //this.notificationService.notify("bg-danger", "Please Enter " + element.label);
+              }
+            }
+            break;
+        }
+        if(element.primary_key_for_list){
+          let primary_key_field_value = value[element.field_name];            
+          let alreadyAdded:any = {
+            status : false,
+            msg : ""
+          };
+          if(list && list.length > 0){
+            alreadyAdded = this.checkDataAlreadyAddedInListOrNot(element,primary_key_field_value,list,i);
+          }
+          if(alreadyAdded && alreadyAdded.status){
+            checkDublic.status = true;
+            if(alreadyAdded.msg && alreadyAdded.msg != ""){
+              checkDublic.msg = alreadyAdded.msg;
+            }else{
+              checkDublic.msg = "Entered value for "+element.label+" is already added. !!!";
+            }
+            break;
+          }
+        }
+      };
+      if (checkValue == 1) {
+        checkDublic.status = true;
+      }
+    }
+    return checkDublic;
   }
   donotResetField(){
     //let FormValue = this.templateForm.getRawValue();
@@ -4822,13 +5106,13 @@ tinymceConfig = {}
             element.list_of_fields.forEach((data) => {
               switch (data.type) {                
                 case "list_of_string":
-                  const custmisedKey = this.custmizedKey(element);
+                  const custmisedKey = this.commonFunctionService.custmizedKey(element);
                   if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
                   this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];
                   break;
                 case "typeahead":
                   if (data.datatype == 'list_of_object') {
-                    const custmisedKey = this.custmizedKey(element);
+                    const custmisedKey = this.commonFunctionService.custmizedKey(element);
                     if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
                     this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];    
                   } else {
@@ -5203,6 +5487,12 @@ tinymceConfig = {}
       }
     }
     return payload;
+  }
+  checkObjectSize(object){
+    if(object != undefined && object != null){
+      return (Object.keys(object).length > 0)
+    }
+    return false;
   }
 
   // Please let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last in this file
