@@ -36,7 +36,7 @@ export class HomePage implements OnInit, OnDestroy {
   cardList: any = [];
   img_src: any = "./assets/expense.png";
   col_size: number = 3;
-  onlyiconsList:boolean =false;
+  homePageLayout:string;
   
   // for search
   carddata: any;
@@ -58,6 +58,7 @@ export class HomePage implements OnInit, OnDestroy {
   cardMasterList:any;
   userAuthModules:any;
   cardListSubscription:any;
+  appCardMasterDataSize:number;
 
 
   constructor(
@@ -86,9 +87,9 @@ export class HomePage implements OnInit, OnDestroy {
       'assets/img/home/banner3.jpg',
       'assets/img/home/banner4.jpg'
     ];
+    this.homePageLayout = this.envService.getAppHomePageLayout();
     this.web_site_name = this.envService.getWebSiteName();
-    
-    // this.userAuthModules = this.storageService.GetModules();
+    this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
       if(data && data.data && data.data.length > 0){
         this.cardMasterList = data.data;
@@ -98,7 +99,6 @@ export class HomePage implements OnInit, OnDestroy {
           this.notificationService.showAlert("You don't have permission or assign any module.","Permission error !",['Dismiss'])
         }
       }else{
-        // this.notificationService.presentToastOnBottom("Somethisng went wrong, please try again later", "danger");
         this.cardList = [];
       }
     });
@@ -183,7 +183,7 @@ export class HomePage implements OnInit, OnDestroy {
     const params = 'card_master';
     let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
     data['pageNo'] = 0;
-    data['pageSize'] = 200;
+    data['pageSize'] = this.appCardMasterDataSize;
     let payload = {
       'data':data,
       'path':null

@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { LoadingController, AlertController, Platform } from '@ionic/angular';
+import { LoadingController, AlertController, Platform, IonRouterOutlet } from '@ionic/angular';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AuthService, StorageService,LoaderService, CoreUtilityService, NotificationService, EnvService } from '@core/ionic-core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'lib-signine',
@@ -31,13 +32,34 @@ export class SignineComponent implements OnInit {
     private notificationService:NotificationService,
     private platform: Platform,
     private ionLoaderService: IonLoaderService,
-    private envService: EnvService
+    private envService: EnvService,
+    private routerOutlet: IonRouterOutlet
   ) { 
+    this.initializeApp();
     if(this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true;
     }else{
      this.VerifyType = false;
     }
+  }
+
+  initializeApp() {
+    this.platform.ready().then(() => {});
+
+    this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+      console.log('Press Back Button!');
+      this.notificationService.presentToastOnBottom("Press again to exit the app");
+      processNextHandler();
+
+    });
+    this.platform.backButton.subscribeWithPriority(5, () => {
+      console.log('Press Again Back Button!');
+      if (!this.routerOutlet.canGoBack()) {
+        App.exitApp();
+      }
+
+    });
+
   }
 
   ngOnInit() {

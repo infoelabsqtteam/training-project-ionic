@@ -4319,7 +4319,7 @@ tinymceConfig = {}
 
   async selectImage(source: CameraSource) {
     const image = await Camera.getPhoto({
-      quality: 90,
+      quality: 60,
       allowEditing: false,
       resultType: CameraResultType.Uri,
       source: source,      
@@ -4338,7 +4338,7 @@ tinymceConfig = {}
   async selectMultipleImages(){
     
     const multipleImagesOption:GalleryImageOptions = {
-      quality: 100,
+      quality: 60,
       limit: 0,     
       correctOrientation: true,
       presentationStyle: "popover"
@@ -4373,8 +4373,6 @@ tinymceConfig = {}
         this.setFile();
       }     
     });
-    
-    this.cameraService.presentToast("Image Added");
   }
 
   setFile(){
@@ -4399,7 +4397,8 @@ tinymceConfig = {}
       });
     }
     if(uploadData && uploadData.length > 0){
-      this.fileUploadResponce(uploadData);
+      this.fileUploadResponce(uploadData);    
+      this.notificationService.presentToastOnBottom("Image Added", "success");
     }
   }
 
@@ -4410,7 +4409,7 @@ tinymceConfig = {}
     //   this.images.splice(index, 1);
     // });
     this.selectedphotos.splice(index, 1);
-    this.cameraService.presentToast('File removed.');
+    this.notificationService.presentToastOnBottom('File removed', "success");
   }
   async removeAttachedDataFromList(index:number,fieldName:any){
     let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
@@ -4459,7 +4458,6 @@ tinymceConfig = {}
       // this.downloadPdfCheck = '';
       this.dataSaveInProgress = true;
       this.checkForDownloadReport = false;
-      this.dataSaveInProgress = true;
       this.apiService.ResetFileData();
       fileExt = '';
       fileName = '';
