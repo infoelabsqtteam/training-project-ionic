@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter, Output } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter, Output, HostListener } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn, FormArray, FormControl } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe } from '@angular/common'; 
 import { Router } from '@angular/router';
@@ -18,6 +18,8 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
 import {FileOpener} from '@ionic-native/file-opener/ngx';
 import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from 'src/app/service/androidpermissions.service';
+import { PopoverModalService } from '../../../service/modal-service/popover-modal.service'
+import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 
 interface User {
   id: number;
@@ -162,10 +164,14 @@ tinymceConfig = {}
   @Output() formDetails = new EventEmitter();
   @Input() editedRowIndex: number;
   @Input() formName: string;
+  @Input() selectContact: string;
   @Input() childData: any;  
   @Input() addform: any;
   @Input() formTypeName:string;
   @Input() modal: any;
+  @Input() isBulkUpdate:boolean;
+  @Input() bulkDataList:any;
+  bulkupdates:boolean = false;
 
   
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
@@ -237,6 +243,7 @@ tinymceConfig = {}
   isGridSelectionOpen: boolean = true;
   deleteGridRowData: boolean = false;
   clickFieldName:any={};
+  selectedgridselectionField:any;
 
   dateValue:any;
   public deleteIndex:any = '';
@@ -282,11 +289,17 @@ tinymceConfig = {}
 	 * Convert Files list to normal array list
 	 * @param files (Files List)
 	 */
-     files: any[] = [];
-     public xtr: any;
-     public obj: any = {};
-     public uploadData: any = []
-     public uploadFilesData: any = [];
+    files: any[] = [];
+    public xtr: any;
+    public obj: any = {};
+    public uploadData: any = []
+    public uploadFilesData: any = [];
+  
+    term:any={};
+
+    @HostListener('document:click') clickout() {
+      this.term = {};
+    }
 
   constructor(
     public formBuilder: FormBuilder,
@@ -310,7 +323,8 @@ tinymceConfig = {}
     private envService: EnvService,
     private fileOpener: FileOpener,
     private file: File,
-    private apppermissionsService: AndroidpermissionsService
+    private apppermissionsService: AndroidpermissionsService,
+    private popoverModalService: PopoverModalService
     ) {
 
 
@@ -752,16 +766,15 @@ tinymceConfig = {}
         this.currentMenu['name'] = collectionName;
       }      
     }
-    
-    // if(this.form){
-    //   if(this.form.details && this.form.details.bulk_update){
-    //     this.bulkupdates = true;
-    //   }
-    //   else{
-    //     this.bulkupdates = false;
-    //   }
-    //   this.formDetails.emit(this.form);
-    // }
+    if(this.form){
+      if(this.form.details && this.form.details.bulk_update){
+        this.bulkupdates = true;
+      }
+      else{
+        this.bulkupdates = false;
+      }
+      this.formDetails.emit(this.form);
+    }
     if(this.form['tableFields'] && this.form['tableFields'] != undefined && this.form['tableFields'] != null){
       this.tableFields = JSON.parse(JSON.stringify(this.form['tableFields']));
       this.getTableField = false;
@@ -780,7 +793,8 @@ tinymceConfig = {}
     if (this.tableFields.length > 0 && this.createFormgroup) {
       this.createFormgroup = false;
       const forControl = {};
-      this.checkBoxFieldListValue = []
+      this.checkBoxFieldListValue = [];
+      let staticModalGroup = [];
       // this.filePreviewFields=[];
       this.tableFields.forEach(element => {
         if(element.type == 'pdf_view'){
@@ -795,9 +809,6 @@ tinymceConfig = {}
               break;
             case "checkbox":
               this.commonFunctionService.createFormControl(forControl, element, false, "checkbox")
-              break; 
-            case "typeahead":
-              this.commonFunctionService.createFormControl(forControl, element, null, "text")
               break;
             case "date":
               let currentYear = new Date().getFullYear();
@@ -881,6 +892,10 @@ tinymceConfig = {}
                     if(data.show_if && data.show_if != ''){
                       this.showIfFieldList.push(modifyData);
                     }
+                    //Mendetory If handling
+                    if(data.mandatory_if && data.mandatory_if != ''){
+                      this.mendetoryIfFieldList.push(modifyData);
+                    }
                     //disable if handling
                     if((data.disable_if && data.disable_if != '') || (data.disable_on_update && data.disable_on_update != '' && data.disable_on_update != undefined && data.disable_on_update != null)){                          
                       this.disableIfFieldList.push(modifyData);
@@ -894,6 +909,9 @@ tinymceConfig = {}
                           this.commonFunctionService.createFormControl(list_of_fields, modifyData, [], "list")
                           this.checkBoxFieldListValue.push(modifyData);
                           break;
+                        case "checkbox":
+                            this.commonFunctionService.createFormControl(list_of_fields, modifyData, false, "checkbox")
+                            break;
                         case "date":
                           let currentYear = new Date().getFullYear();
                           if(data.datatype == 'object'){
@@ -956,6 +974,10 @@ tinymceConfig = {}
                       //show if handling
                       if(data.show_if && data.show_if != ''){
                         this.showIfFieldList.push(modifyData);
+                      }
+                      //mendetory if handling
+                      if(data.mandatory_if && data.mandatory_if != ''){
+                        this.mendetoryIfFieldList.push(modifyData);
                       }
                       //disable if handling
                       if((data.disable_if && data.disable_if != '') || (data.disable_on_update && data.disable_on_update != '' && data.disable_on_update != undefined && data.disable_on_update != null)){                          
@@ -1056,7 +1078,7 @@ tinymceConfig = {}
           }
         });
       }
-      if (forControl) {
+      if (forControl && this.tableFields.length > 0) {
         let validators = {};
         validators['validator'] = [];
         if(this.customValidationFiels && this.customValidationFiels.length > 0){
@@ -1079,31 +1101,123 @@ tinymceConfig = {}
       }
       
       let staticModal=[];
-     
-      
-      let object =this.templateForm.getRawValue();
-      let staticModalGroup = this.restService.commanApiPayload([],this.tableFields,this.formFieldButtons,object);
-      if(staticModalGroup != undefined && staticModalGroup != null){
-        if(staticModalGroup.length > 0){
-          staticModalGroup.forEach(data =>{
-            staticModal.push(data);
-          })
+      if(this.selectContact != ''){
+        let selectContactObject = this.selectContact;
+        let account={};
+        let contact={};            
+        let payload = {};
+        // this.tabFilterData.forEach(element => {
+        //   if(element && element._id){
+        //     if(element._id == this.selectContact){
+        //       selectContactObject = element;
+        //     }
+        //   }          
+        // });
+        if(selectContactObject && selectContactObject['_id']){
+          contact = {
+            "_id":selectContactObject['_id'],
+            "name":selectContactObject['name'],
+            "code":selectContactObject['serialId']
+          }
+          if(selectContactObject['lead']){
+            account = selectContactObject['lead'];
+          }
         }
+        this.tableFields.forEach(element => {
+          
+          if(element.field_name == 'account'){
+            this.templateForm.get('account').setValue(account);
+            if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
+              payload = this.restService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.getFormValue(true)) 
+              if(element.onchange_api_params.indexOf("FORM_GROUP") >= 0 || element.onchange_api_params.indexOf("QTMP") >= 0){
+                payload["data"]=this.getFormValue(true);
+              } 
+              staticModal.push(payload);
+            }
+          }
+          if(element.field_name == 'contact'){
+            this.templateForm.get('contact').setValue(contact);
+            if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) { 
+              payload = this.restService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.getFormValue(true)) 
+              if(element.onchange_api_params.indexOf("FORM_GROUP") >= 0 || element.onchange_api_params.indexOf("QTMP") >= 0){
+                payload["data"]=this.getFormValue(true);
+              }                  
+              staticModal.push(payload);
+            }
+          } 
+          if(element.type == 'stepper'){
+            element.list_of_fields.forEach(stepData => {
+              stepData.list_of_fields.forEach(data => {
+                if(data.field_name == 'account'){
+                  this.templateForm.get(stepData.field_name).get('account').setValue(account);
+                  if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) { 
+                    payload = this.restService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.getFormValue(true)) 
+                    if(data.onchange_api_params.indexOf("FORM_GROUP") >= 0 || data.onchange_api_params.indexOf("QTMP") >= 0){
+                      payload["data"]=this.getFormValue(true);
+                    }  
+                    staticModal.push(payload);
+                  }
+                }
+                if(data.field_name == 'contact'){
+                  if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) { 
+                    payload = this.restService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.getFormValue(true)) 
+                    if(data.onchange_api_params.indexOf("FORM_GROUP") >= 0 || data.onchange_api_params.indexOf("QTMP") >= 0){
+                      payload["data"]=this.getFormValue(true);
+                    }  
+                    staticModal.push(payload);
+                  }
+                } 
+              });
+            });
+          }             
+        });
+            
       }
-      
-      if(this.form && this.form.api_params && this.form.api_params != null && this.form.api_params != "" && this.form.api_params != undefined && this.selectedRowIndex == -1){            
-                  
-        let criteria = [];
-        if(this.form.api_params_criteria && this.form.api_params_criteria != null){
-          criteria=this.form.api_params_criteria
+      if(this.tableFields.length > 0 && this.editedRowIndex == -1){ 
+        let object =this.templateForm.getRawValue();
+        let formValue = object;
+        if(this.multipleFormCollection && this.multipleFormCollection.length > 0){
+          let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+          formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
         }
-        staticModal.push(this.restService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,this.templateForm.getRawValue()))
-        
-      }
-      if(staticModal.length > 0 && this.editedRowIndex == -1){
-        this.apiService.getStatiData(staticModal);        
-      }
-      
+        let staticModalG = this.restService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
+        if(staticModalG && staticModalG.length > 0){
+          staticModalG.forEach(element => {
+            staticModalGroup.push(element);
+          });
+        }
+        if(staticModalGroup != undefined && staticModalGroup != null){
+          if(staticModalGroup.length > 0){
+            staticModalGroup.forEach(data =>{
+              staticModal.push(data);
+            })
+          }
+        }
+        // if(this.tab && this.tab.api_params && this.tab.api_params != null && this.tab.api_params != "" && this.tab.api_params != undefined && this.selectedRowIndex == -1){      
+        //   let criteria = [];
+        //   if(this.tab.api_params_criteria && this.tab.api_params_criteria != null){
+        //     criteria=this.tab.api_params_criteria
+        //   }
+        //   staticModal.push(this.restService.getPaylodWithCriteria(this.tab.api_params,this.tab.call_back_field,criteria,{}))
+          
+        // }
+        if(this.form && this.form.api_params && this.form.api_params != null && this.form.api_params != "" && this.form.api_params != undefined && this.selectedRowIndex == -1){
+
+          if(this.form.api_params == 'QTMP:EMAIL_WITH_TEMP:QUOTATION_LETTER'){
+            object = this.saveResponceData;
+          } 
+          let criteria = [];
+          if(this.form.api_params_criteria && this.form.api_params_criteria != null){
+            criteria=this.form.api_params_criteria
+          }
+          staticModal.push(this.restService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,this.templateForm.getRawValue()))
+          
+        }
+        if(staticModal.length > 0){
+          this.apiService.getStatiData(staticModal);        
+        }
+
+      }      
 
     }
   }
@@ -1394,12 +1508,15 @@ tinymceConfig = {}
             });
             break;
           case 'group_of_fields':
+            modifyFormValue[element.field_name] = formValue[element.field_name];
             element.list_of_fields.forEach(data => {
               switch (data.type) {
                 case 'date':
                   if(data && data.date_format && data.date_format != ''){
                     modifyFormValue[element.field_name][data.field_name] = this.datePipe.transform(formValue[element.field_name][data.field_name],'dd/MM/yyyy');
-                  }            
+                  }else {
+                    modifyFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name];
+                  }
                   break;
               
                 default:
@@ -1439,7 +1556,8 @@ tinymceConfig = {}
             }          
             break;
           default:
-            modifyFormValue = formValue;
+            modifyFormValue[element.field_name] = formValue[element.field_name];
+            // modifyFormValue = formValue;
             break;
         }
       });
@@ -1481,48 +1599,48 @@ tinymceConfig = {}
           
         }
       })
-    //   if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
-    //     this.checkBoxFieldListValue.forEach(element => {
-    //       if (this.staticData[element.ddn_field]) {
-    //         const listOfCheckboxData = [];
-    //         let data = [];
-    //         if(this.updateMode || this.complete_object_payload_mode){
-    //           if(element.parent){
-    //             data = selectedRow[element.parent][element.field_name];
-    //           }else{
-    //             data = selectedRow[element.field_name];
-    //           }
-    //         }else{
-    //           if(element.parent){
-    //             data = modifyFormValue[element.parent][element.field_name];
-    //           }else{
-    //             data = modifyFormValue[element.field_name];
-    //           }
-    //         }
-    //         let currentData = this.staticData[element.ddn_field];
-    //         if(data && data.length > 0){
-    //           data.forEach((data, i) => {
-    //             if (data) {
-    //               listOfCheckboxData.push(currentData[i]);
-    //             }
-    //           });
-    //         }
-    //         if (this.updateMode || this.complete_object_payload_mode) {
-    //           if(element.parent){
-    //             selectedRow[element.parent][element.field_name] = listOfCheckboxData;
-    //           }else{
-    //             selectedRow[element.field_name] = listOfCheckboxData;
-    //           }
-    //         } else {
-    //           if(element.parent){
-    //             modifyFormValue[element.parent][element.field_name] = listOfCheckboxData;
-    //           }else{
-    //             modifyFormValue[element.field_name] = listOfCheckboxData
-    //           }
-    //         }
-    //       }
-    //     });
-    //   }
+      if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
+        this.checkBoxFieldListValue.forEach(element => {
+          if (this.staticData[element.ddn_field]) {
+            const listOfCheckboxData = [];
+            let data = [];
+            if(this.updateMode || this.complete_object_payload_mode){
+              if(element.parent){
+                data = selectedRow[element.parent][element.field_name];
+              }else{
+                data = selectedRow[element.field_name];
+              }
+            }else{
+              if(element.parent){
+                data = modifyFormValue[element.parent][element.field_name];
+              }else{
+                data = modifyFormValue[element.field_name];
+              }
+            }
+            let currentData = this.staticData[element.ddn_field];
+            if(data && data.length > 0){
+              data.forEach((data, i) => {
+                if (data) {
+                  listOfCheckboxData.push(currentData[i]);
+                }
+              });
+            }
+            if (this.updateMode || this.complete_object_payload_mode) {
+              if(element.parent){
+                selectedRow[element.parent][element.field_name] = listOfCheckboxData;
+              }else{
+                selectedRow[element.field_name] = listOfCheckboxData;
+              }
+            } else {
+              if(element.parent){
+                modifyFormValue[element.parent][element.field_name] = listOfCheckboxData;
+              }else{
+                modifyFormValue[element.field_name] = listOfCheckboxData
+              }
+            }
+          }
+        });
+      }
       Object.keys(this.dataListForUpload).forEach(key => {
         if (this.updateMode || this.complete_object_payload_mode) {
           if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
@@ -1553,6 +1671,33 @@ tinymceConfig = {}
       })
     } 
 
+    if(this.selectContact != '' && this.selectContact != undefined){
+      let selectContactObject = {}
+      let account={};
+      let contact={};
+      // this.tabFilterData.forEach(element => {
+      //   if(element._id == this.selectContact){
+      //     selectContactObject = element;
+      //   }
+      // });
+      if(selectContactObject['_id']){
+        contact = {
+          "_id":selectContactObject['_id'],
+          "name":selectContactObject['name'],
+          "code":selectContactObject['serialId']
+        }
+        if(selectContactObject['lead']){
+          account = selectContactObject['lead'];
+        }
+      }
+      if(this.updateMode || this.complete_object_payload_mode){
+        selectedRow['account'] = account;
+        selectedRow['contact'] = contact;
+      }else{
+        modifyFormValue['account'] = account;
+        modifyFormValue['contact'] = contact;
+      }
+    }
     valueOfForm = this.updateMode || this.complete_object_payload_mode ? selectedRow : modifyFormValue;
        
        
@@ -2270,34 +2415,46 @@ tinymceConfig = {}
     return gridSelectedData;
   }
 
-
-
-
-
-
-
-  getTypeahead(event, parentfield, field) { 
+  updateData(event, parentfield, field) {
+    // if(event.keyCode == 38 || event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 27 || event.keyCode == 9){
+    //   return false;
+    // } 
     const value = event.target.value;
-    this.templateForm.get(field.field_name).setValue(value);
-    let objectValue = this.getFormValue(false); 
-    // if(field.datatype == 'text'){
-    //   let typeaheadTextControl:any = {}
-    //   if(parentfield != ''){
-    //     typeaheadTextControl = this.templateForm.get(parentfield.field_name).get(field.field_name);    
-    //   }else{
-    //     typeaheadTextControl = this.templateForm.controls[field.field_name];
-    //   }  
-    //   if(objectValue[field.field_name] == null || objectValue[field.field_name] == '' || objectValue[field.field_name] == undefined){
-    //     if(field.is_mandatory){
-    //       typeaheadTextControl.setErrors({ required: true });
-    //     }else{
-    //       typeaheadTextControl.setErrors(null);
-    //     }        
-    //   }else{        
-    //     typeaheadTextControl.setErrors({ validDataText: true });
-    //   }      
-    // }
-    this.callTypeaheadData(field,objectValue);       
+    // this.templateForm.get(field.field_name).setValue(value);
+    let objectValue = this.getFormValue(false);
+    if(objectValue[field.field_name] == null || objectValue[field.field_name] == "" || typeof  objectValue[field.field_name] == "object"){
+      objectValue[field.field_name] = value;
+    }
+    const fieldValue = this.commonFunctionService.getObjectValue(field.field_name,objectValue);
+    this.lastTypeaheadTypeValue = fieldValue;
+    if(fieldValue != '' && fieldValue != undefined){
+      this.addNewRecord = true;
+    }else{
+      this.addNewRecord = false;
+    }
+    if(field.datatype == 'text'){
+      let typeaheadTextControl:any = {}
+      if(parentfield != ''){
+        typeaheadTextControl = this.templateForm.get(parentfield.field_name).get(field.field_name);    
+      }else{
+        typeaheadTextControl = this.templateForm.controls[field.field_name];
+      }  
+      if(objectValue[field.field_name] == null || objectValue[field.field_name] == '' || objectValue[field.field_name] == undefined){
+        if(field.is_mandatory){
+          typeaheadTextControl.setErrors({ required: true });
+        }else{
+          typeaheadTextControl.setErrors(null);
+        }        
+      }else{        
+        typeaheadTextControl.setErrors({ validDataText: true });
+      }      
+    }
+    this.callTypeaheadData(field,objectValue);
+    if(parentfield != ''){
+      this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = true;      
+    }else{
+      this.tempVal[field.field_name + "_add_button"] = true;
+    }       
 
   }
   get templateFormControl() {
@@ -2309,15 +2466,43 @@ tinymceConfig = {}
     const payload = [];
     const params = field.api_params;
     const criteria = field.api_params_criteria;
-    payload.push(this.restService.getPaylodWithCriteria(params, '', criteria, objectValue));
+    payload.push(this.restService.getPaylodWithCriteria(params, '', criteria, objectValue, field.data_template));
     this.apiService.GetTypeaheadData(payload);    
   }
   clearTypeaheadData() {
     this.apiService.clearTypeaheadData();
   }
-  // setValue(){
-  //   this.typeAheadData = [];
-  // }
+
+  updateAddNewField(parent,child){
+    if(child && child.onchange_get_next_form){
+      let fieldValue:any = '';
+      if(parent != ''){
+        fieldValue = this.templateForm.get(parent.field_name).get(child.field_name).value;
+      }else{
+        fieldValue = this.templateForm.get(child.field_name).value;
+      }
+      if(fieldValue && fieldValue._id && fieldValue._id != ''){
+        this.onchangeNextForm = true;
+        const reqCriteria = ["_id;eq;" + fieldValue._id + ";STATIC"];
+        const reqParams = child.api_params;
+        this.getDataForNextForm(reqParams,reqCriteria);
+        this.tempVal[child.field_name + "_add_button"] = false;
+      }
+    }else{
+      this.storeFormDetails(parent,child);
+      this.updateAddNew = true;
+    }    
+  }
+
+  isEnable(parent,field, elementType) {
+    //this.tempVal[field+"_"+elementType] = true;
+    if(parent != ''){
+      return this.tempVal[parent + '_' + field + "_" + elementType];
+    }else{
+      return this.tempVal[field + "_" + elementType];
+    }
+    
+  }
 
   checkDataAlreadyAddedInListOrNot(field,incomingData,alreadyDataAddedlist,i?){
     
@@ -2482,15 +2667,17 @@ tinymceConfig = {}
   }
 
   setValue(parentfield:any,field:any, add?:any, event?:any) {
-    let formValue = this.templateForm.getRawValue()    
+    let formValue = this.templateForm.getRawValue();
+    this.curFormField = field;
+    this.curParentFormField = parentfield;
     switch (field.type) {
       case "list_of_string":
         if (add) {
           if(parentfield != ''){
             const custmizedKey = this.commonFunctionService.custmizedKey(parentfield);   
-            const value = formValue[parentfield.field_name][field.field_name]
-            if(this.custmizedFormValue[custmizedKey] && this.custmizedFormValue[custmizedKey][field.field_name] && this.checkDataAlreadyAddedInListOrNot(field.field_name,value, this.custmizedFormValue[custmizedKey][field.field_name])){
-              //this.notificationService.showAlert('bg-danger','Entered value for '+field.label+' is already added. !!!');
+            const value = formValue[parentfield.field_name][field.field_name];
+            const checkDublic = this.checkDataAlreadyAddedInListOrNot(field,value, this.custmizedFormValue[custmizedKey][field.field_name]);
+            if(this.custmizedFormValue[custmizedKey] && this.custmizedFormValue[custmizedKey][field.field_name] && checkDublic.status){
               this.notificationService.showAlert('Entered value for '+field.label+' is already added. !!!' ,'',['Dismiss']);
             }else{
               if (!this.custmizedFormValue[custmizedKey]) this.custmizedFormValue[custmizedKey] = {};
@@ -2510,8 +2697,8 @@ tinymceConfig = {}
             
           }else{
             const value = formValue[field.field_name];
-            if(this.custmizedFormValue[field.field_name] && this.checkDataAlreadyAddedInListOrNot(field.field_name,value,this.custmizedFormValue[field.field_name])){
-              //this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
+            const checkDublic = this.checkDataAlreadyAddedInListOrNot(field,value,this.custmizedFormValue[field.field_name]);
+            if(this.custmizedFormValue[field.field_name] && checkDublic.status){
               this.notificationService.showAlert('Entered value for '+field.label+' is already added. !!!' ,'',['Dismiss']);
             }else{
               if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
@@ -2549,8 +2736,8 @@ tinymceConfig = {}
             if(parentfield != ''){
               const value = formValue[parentfield.field_name][field.field_name]
               const custmizedKey = this.commonFunctionService.custmizedKey(parentfield);
-              if(this.custmizedFormValue[custmizedKey] && this.custmizedFormValue[custmizedKey][field.field_name] && this.checkDataAlreadyAddedInListOrNot(field.field_name,value, this.custmizedFormValue[custmizedKey][field.field_name])){
-                //this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
+              const checkDublic = this.checkDataAlreadyAddedInListOrNot(field,value, this.custmizedFormValue[custmizedKey][field.field_name]);
+              if(this.custmizedFormValue[custmizedKey] && this.custmizedFormValue[custmizedKey][field.field_name] && checkDublic.status){
                 this.notificationService.showAlert('Entered value for '+field.label+' is already added. !!!' ,'',['Dismiss']);
               }else{
                 if (!this.custmizedFormValue[custmizedKey]) this.custmizedFormValue[custmizedKey] = {};
@@ -2568,8 +2755,8 @@ tinymceConfig = {}
               
             }else{
               const value = formValue[field.field_name];
-                if(this.custmizedFormValue[field.field_name] && this.checkDataAlreadyAddedInListOrNot(field.field_name,value,this.custmizedFormValue[field.field_name])){
-                  //this.notificationService.notify('bg-danger','Entered value for '+field.label+' is already added. !!!');
+              const checkDublic = this.checkDataAlreadyAddedInListOrNot(field,value,this.custmizedFormValue[field.field_name]);
+                if(this.custmizedFormValue[field.field_name] && checkDublic.status){
                   this.notificationService.showAlert('Entered value for '+field.label+' is already added. !!!' ,'',['Dismiss']);
                 }else{
                   if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
@@ -2814,7 +3001,7 @@ tinymceConfig = {}
               }
               if(this.dataListForUpload[keyName]){
                 Object.keys(this.dataListForUpload[keyName]).forEach(childkey => {                  
-                  updateCustmizedValue[childkey] = this.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);;
+                  updateCustmizedValue[this.listOfFieldsUpdateIndex][childkey] = this.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
                 })
               }
               if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
@@ -2916,6 +3103,20 @@ tinymceConfig = {}
         }
         break;
       case 'grid_selection':
+        //----------------------this is for confirm modal to add or remove (form component confirm modal) when grid selection field is open.
+        this.dataShareService.setIsGridSelectionOpenOrNot(false);
+        this.curTreeViewField = field;
+        this.currentTreeViewFieldParent = parentfield;
+        if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+        // let selectedData = this.getGridSelectedData(this.custmizedFormValue[field.field_name],field);
+        // const gridModalData = {
+        //   "field": this.curTreeViewField,
+        //   "selectedData":selectedData,
+        //   "object": this.getFormValue(true)
+        // }
+        //this.modalService.open('grid-selection-modal', gridModalData);
+        this.openGridSelectionModal(field);
+        break;
       case 'grid_selection_vertical':
         //----------------------this is for confirm modal to add or remove (form component confirm modal) when grid selection field is open.
         this.dataShareService.setIsGridSelectionOpenOrNot(false);
@@ -2923,13 +3124,23 @@ tinymceConfig = {}
         this.currentTreeViewFieldParent = parentfield;
         if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
         let selectedData = this.getGridSelectedData(this.custmizedFormValue[field.field_name],field);
+        let alreadyAdded = false;
+        if(selectedData && selectedData.length>0){
+          selectedData.forEach(element => {
+            if(element){
+              alreadyAdded = true;
+            }
+          });
+        }
         const gridModalData = {
           "field": this.curTreeViewField,
-          "selectedData":selectedData,
-          "object": this.getFormValue(true)
+          "value":selectedData[0],
+          "column":field.gridColumns,
+          "alreadyAdded":alreadyAdded,
+          "parentObject": this.getFormValue(true)
         }
-        //this.modalService.open('grid-selection-modal', gridModalData);
-        this.openGridSelectionModal(field);
+        this.openGridSelectionDetailModal(gridModalData);
+        // this.openGridSelectionModal(field);
         break;
       default:
         break;
@@ -2940,7 +3151,9 @@ tinymceConfig = {}
       //   let formValue = this.getFormValue(true);
       //   this.changeDropdown(field.onchange_api_params, field.onchange_call_back_field, field.onchange_api_params_criteria, formValue,field.onchange_data_template);
       // }else if(field.type != 'list_of_fields'){
-        let formValue = this.getFormValue(false);
+        // let formValue = this.getFormValue(false);
+        let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+        let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(false));
         this.changeDropdown(field, formValue,field.onchange_data_template);
       // }
     }
@@ -3006,9 +3219,34 @@ tinymceConfig = {}
       this.clearTypeaheadData();
     }
 
-  } 
+  }
 
-
+  async openGridSelectionDetailModal(data:any, cardtype?:string) {
+    if(cardtype! || cardtype =="" || cardtype ==undefined){
+      cardtype = "demo1"
+    }
+    // if(cpmonentName){
+      const modal = await this.modalController.create({
+        component: GridSelectionDetailModalComponent,
+        // cssClass: id+"-class",
+        componentProps: {
+          'Data': data,
+          "childCardType":cardtype
+        },
+        animated: true,
+        // id:id
+      });
+      modal.onDidDismiss()
+        .then((data) => {
+          const object = data['data'];
+          if(object['data'] && object['data'].length > 0){
+            let obj =this.getSendData(object['data']);
+            this.gridSelectionResponce(obj);
+          }        
+      });
+      return await modal.present();
+    // }
+  }
 
   refreshListofField(field,updatemode){    
     if(field.do_not_refresh_on_add && updatemode){
@@ -3844,7 +4082,7 @@ tinymceConfig = {}
     }
   }
 
-  handleDisabeIf(){
+  async handleDisabeIf(){
     if(this.checkFormFieldAutfocus && this.tableFields.length > 0){
       if(this.previousFormFocusField && this.previousFormFocusField._id){
         this.focusField("",this.previousFormFocusField)        
@@ -3894,7 +4132,7 @@ tinymceConfig = {}
       this.showIfFieldList.forEach(element => {
         let id = '';
         if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
-          id = id = element._id+'_'+element.parent;
+          id = element._id+'_'+element.parent;
         }else{
           id = element._id;
         }
@@ -3903,7 +4141,7 @@ tinymceConfig = {}
           if(elementDetails && elementDetails != null){
             const classes = Array.from(elementDetails.classList)
             if(!classes.includes('d-none')){
-              this.removeClass(elementDetails,' d-block');
+              this.removeClass(elementDetails,'d-block');
               elementDetails.className += " d-none";
               element['show'] = false;
               const objectValue = this.templateForm.getRawValue();
@@ -3947,7 +4185,7 @@ tinymceConfig = {}
           if(elementDetails && elementDetails != null){
             const classes = Array.from(elementDetails.classList)
             if(!classes.includes('d-block')){
-              this.removeClass(elementDetails,' d-none');
+              this.removeClass(elementDetails,'d-none');
               elementDetails.className += " d-block"; 
               element['show'] = true;
               if(element.is_mandatory){
@@ -3978,8 +4216,14 @@ tinymceConfig = {}
     }    
     
   }
-  removeClass = (element, name) => {    
-    element.className = element.className.replace(name, "");
+  removeClass = (element,name) => {    
+    // element.className = element.className.replace(name, "");
+    // element.className = element.className.removeClass(name);
+    if(element.classList && element.classList.length >0 && element.classList.contains(name)){
+      element.classList.remove(name);
+    }else if(element.className && element.className.includes(name)){
+      element.className = element.className.replace(name, "");
+    }
   }
   showIf(field){
     const  objectc = this.selectedRow?this.selectedRow:{}
@@ -4019,14 +4263,15 @@ tinymceConfig = {}
   }
 
   async  openGridSelectionModal(field){
+    this.selectedgridselectionField='';
     if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
-    let selectedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[field.field_name]))
+    let selectedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[field.field_name]));
+    this.selectedgridselectionField = field;
     const gridModalData = {
       "field": field,
       "selectedData":selectedValue,
       "object": this.getFormValue(true),
-      "formTypeName" : this.formTypeName,
-      
+      "formTypeName" : this.formTypeName,      
     }
     this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();
     if(this.samePageGridSelection){
@@ -5141,7 +5386,18 @@ tinymceConfig = {}
                   }
                   this.templateForm.get(element.field_name).get(data.field_name).setValue(checkboxListValue);
                   //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(checkboxListValue);
-                  break;                
+                  break; 
+                case "file":
+                case "input_with_uploadfile":
+                  if(object[data.field_name] != null && object[data.field_name] != undefined){
+                    let custmizedKey = this.commonFunctionService.custmizedKey(element);
+                    if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
+                    if (!this.dataListForUpload[custmizedKey][data.field_name]) this.dataListForUpload[custmizedKey][data.field_name] = [];
+                    this.dataListForUpload[custmizedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
+                    const value = this.modifyFileSetValue(object[data.field_name]);
+                    this.templateForm.get(element.field_name).get(data.field_name).setValue(value);
+                  }
+                  break;               
                 default:
                   this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
                   //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(object[data.field_name]);
@@ -5491,6 +5747,11 @@ tinymceConfig = {}
       return (Object.keys(object).length > 0)
     }
     return false;
+  }
+
+  handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
+    console.log("Item", ev.detail.from, 'Dragged from index', ev.detail.from, 'to', ev.detail.to);
+    ev.detail.complete();
   }
 
   // Please let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last in this file

@@ -1,24 +1,12 @@
 <ion-header collapse="fade" class="ion-no-border">
   <ion-toolbar>
-    <ion-buttons slot="start" (click)="dismissModal([])"><ion-icon name="arrow-back-outline"></ion-icon></ion-buttons>
-      <ion-searchbar></ion-searchbar>
+    <ion-buttons slot="start" (click)="dismissModal([])"><ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon></ion-buttons>
+      <!-- <ion-searchbar></ion-searchbar> -->
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="pages">
-    <div *ngIf="(this.selectedData=='' && this.selectedData.length == 0) || (this.gridData=='' && this.gridData.length == 0)">
-        <ion-card>
-            <ion-card-header>
-              <ion-card-title>No parameters available</ion-card-title>
-              <!-- <ion-card-subtitle></ion-card-subtitle> -->
-            </ion-card-header>          
-            <ion-card-content>
-              This selection has no parameters available
-            </ion-card-content>
-          </ion-card>          
-    </div>
-
-    <div *ngIf="(this.selectedData && this.selectedData.length > 0)|| (this.gridData && this.gridData.length > 0)">
+    <div *ngIf="(this.selectedData && this.selectedData.length > 0) || (this.gridData && this.gridData.length > 0)">
         <ion-segment class="grid_selection_tab" ngDefaultControl [(ngModel)]="selectedTab" color="appcolor" (ionChange)="segmentChanged($event)">
             <ion-segment-button value="new" >
                 <ion-label>New</ion-label>
@@ -65,11 +53,22 @@
                         </div>            
                     </ion-col>        
                 </ion-row>
-            </div>        
+            </div> 
+            <div *ngIf="this.gridData=='' && this.gridData.length == 0">
+                <ion-card>
+                    <ion-card-header>
+                      <ion-card-title>No parameters available</ion-card-title>
+                      <!-- <ion-card-subtitle></ion-card-subtitle> -->
+                    </ion-card-header>          
+                    <ion-card-content>
+                      This selection has no parameters available
+                    </ion-card-content>
+                  </ion-card>          
+            </div>       
         </div>
 
         <div *ngIf="selectedTab == 'added'" >
-            <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of getSelectedData(); let i = index">
+            <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of selectedData; let i = index">
                 <ion-item class=""  lines="none">
                     <ion-buttons slot="start" >
                     <ion-checkbox checked="true" color="appcolor" class="left icon" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox>
@@ -105,7 +104,18 @@
                         </div>            
                     </ion-col>        
                 </ion-row>
-            </div>         
+            </div>
+            <div *ngIf="this.selectedData=='' && this.selectedData.length == 0">
+                <ion-card>
+                    <ion-card-header>
+                      <ion-card-title>No parameters Selected</ion-card-title>
+                      <!-- <ion-card-subtitle></ion-card-subtitle> -->
+                    </ion-card-header>      
+                    <ion-card-content>
+                      Please select parameter
+                    </ion-card-content>
+                  </ion-card>          
+            </div>
         </div>
         <div class="button_position">
             <div class="flex_grid">
@@ -115,6 +125,14 @@
         </div>
     </div>
 
+    <ion-card *ngIf="(this.gridData && this.gridData.length == 0) && (this.selectedData && this.selectedData.length == 0)">
+        <ion-card-header>
+            <ion-card-title>No parameters available</ion-card-title>
+        </ion-card-header>        
+        <ion-card-content>
+            No parameneters available for selection.
+        </ion-card-content>
+    </ion-card>
   
    
 </ion-content>

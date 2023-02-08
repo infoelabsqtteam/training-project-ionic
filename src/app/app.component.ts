@@ -46,6 +46,7 @@ export class AppComponent implements OnInit, OnDestroy {
   connectSubscription: any;
   networkAlert:any;
   gridDataSubscription:any;
+  appCardMasterDataSize:number;
 
   @Output() collection_name = new EventEmitter<string>();
 
@@ -73,7 +74,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ) {
     
     this.initializeApp();
-    // this.web_site = appConstants.siteName;
+    // this.web_site = appConstants.siteName;    
+    this.appCardMasterDataSize = this.env.getAppCardMasterDataSize();
     this.app_Version  = this.env.getAppVersion();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
       if(data && data.data && data.data.length > 0){
@@ -100,6 +102,10 @@ export class AppComponent implements OnInit, OnDestroy {
       window.addEventListener('offline', () => {
         this.androidpermissionsService.internetExceptionError();
       });
+      window.addEventListener('online', () => {
+        this.notificationService.presentToastOnTop("Your internet connection is back.", "success");
+        this.getGridData();
+      });
       if (Capacitor.isPluginAvailable('SplashScreen')) {
         // SplashScreen.hide();
         setTimeout(() => {
@@ -114,21 +120,6 @@ export class AppComponent implements OnInit, OnDestroy {
       // this.getCurrentLocation();
     });
 
-  }
-
-  async showNetworkAlert(){
-    const alert = await this.alertController.create({
-      header: 'No Internet Connection',
-      backdropDismiss: false,
-      message: 'You Do not have Internet Connection ',
-      buttons: [{
-        text: "OK",
-        handler: () => {
-          navigator['app'].exitApp();
-        }
-      }]
-    });
-    await alert.present();
   }
 
   unsubscribeVariabbles(){
@@ -221,21 +212,21 @@ export class AppComponent implements OnInit, OnDestroy {
     this.showSidebarMenu = false;
     this.userInfo = {};
   }
-  // getGridData(criteria?){
-  //   let criteriaList = [];
-  //   if(criteria){
-  //     criteriaList = criteria;
-  //   }
-  //   const params = 'card_master';
-  //   let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
-  //   data['pageNo'] = 0;
-  //   data['pageSize'] = 200;
-  //   let payload = {
-  //     'data':data,
-  //     'path':null
-  //   }
-  //   this.apiService.getGridData(payload);
-  // } 
+  getGridData(criteria?){
+    let criteriaList = [];
+    if(criteria){
+      criteriaList = criteria;
+    }
+    const params = 'card_master';
+    let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
+    data['pageNo'] = 0;
+    data['pageSize'] = this.appCardMasterDataSize;
+    let payload = {
+      'data':data,
+      'path':null
+    }
+    this.apiService.getGridData(payload);
+  } 
 
   showCardTemplate(card:any, index:number){    
     const moduleList = this.commonDataShareService.getModuleList();

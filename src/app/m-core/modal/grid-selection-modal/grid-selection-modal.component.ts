@@ -53,6 +53,13 @@ export class GridSelectionModalComponent implements OnInit {
     this.subscribe();
 
   }
+  ionViewWillLeave(){
+    this.unsubscribe();
+  }
+  ngOnDestroy() {
+    //Abobe ionViewwillLeave is working fine.
+    // this.unsubscribe();
+  }
   subscribe(){
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
       if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field)  && data[this.field.ddn_field]){
@@ -65,6 +72,11 @@ export class GridSelectionModalComponent implements OnInit {
         this.setStaticData(data);
       }
     })
+  }
+  unsubscribe(){
+    if(this.staticDataSubscriber){
+      this.staticDataSubscriber.unsubscribe();
+    }
   }
   onload(){
     this.selectedTab = "new";
@@ -115,7 +127,7 @@ export class GridSelectionModalComponent implements OnInit {
     }
 
     //For dropdown data in grid selection
-    this.getStaticDataWithDependentData()
+    // this.getStaticDataWithDependentData();
   }
   getStaticDataWithDependentData(){
     const staticModal = []
@@ -215,7 +227,7 @@ export class GridSelectionModalComponent implements OnInit {
     const modal = await this.modalController.create({
       component: GridSelectionDetailModalComponent,
       componentProps: {
-        "Data": {"value":data,"column":this.field.gridColumns,"alreadyAdded": ""},
+        "Data": {"value":data,"column":this.field.gridColumns,"alreadyAdded": alreadyAdded,"field":this.field},
         "index": index,
         "childCardType" : "demo1",
         "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""} 
@@ -286,6 +298,7 @@ export class GridSelectionModalComponent implements OnInit {
     } else{
       this.gridData[index].selected=false;
     }
+    this.getSelectedData();
   }
   // exists(item) {
   //   return this.selectedData.indexOf(item) > -1;
@@ -349,16 +362,20 @@ export class GridSelectionModalComponent implements OnInit {
     this.selectedTab = ev.target.value;
   }
   getSelectedData(){
-    const selectedData = [];
+    this.selectedData = [];    
     if(this.gridData && this.gridData.length > 0){
       this.gridData.forEach(element => {
         if(element && element.selected){
-          selectedData.push(element);
+          this.selectedData.push(element);
         }
       });
-      return selectedData;
-    }else{
-      return selectedData;
+    }
+    if(this.selecteData && this.selecteData.length > 0 && this.field.add_new_enabled){
+      this.selecteData.forEach(element => {
+        if(element && element.customEntry){
+          this.selectedData.push(element);
+        }
+      });      
     }
   }
 

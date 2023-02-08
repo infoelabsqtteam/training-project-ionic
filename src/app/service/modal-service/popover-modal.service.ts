@@ -26,15 +26,17 @@ async getModal(component: any, componentProps?: any, mode?: 'md' | 'ios', cssCla
   });
 }
 
-async presentModal() {
+async presentModal(anyComponent:string, data:any) {
+  let id:any = anyComponent.toLowerCase;
   const modal = await this.modalController.create({
-    component: FormComponent,
-    cssClass: 'my-custom-class',
+    component: anyComponent,
+    cssClass: id+"-class",
     componentProps: {
-      'firstName': 'Douglas',
-      'lastName': 'Adams',
-      'middleInitial': 'N'
-    }
+      'Data': data,
+    },
+    animated: true,
+    keyboardClose: true,
+    id:id
   });
   return await modal.present();
 }

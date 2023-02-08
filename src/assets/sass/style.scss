@@ -27,6 +27,7 @@ ion-header {
              .hidden-btn{display:none;transition:1s ease-in-out;}
              .active-search{flex:1;display:flex;transition:1s ease-in-out;}
              .visible-btn{transition:1s ease-in-out;}
+             ion-select{min-width: 7.5rem;max-width: 10rem;}
         }
         
     }
@@ -435,3 +436,8 @@ ion-searchbar{
         }
     }
 }
+.ion-padding-default{padding: 5px;}
+.ion-padding-top-default{padding-top: 5px;}
+.ion-padding-bottom-default{padding-bottom: 5px;}
+.ion-padding-left-default{padding-left: 5px;}
+.ion-padding-right-default{padding-right: 5px;}

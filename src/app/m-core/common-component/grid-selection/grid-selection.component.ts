@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
 import { AlertController, ModalController } from '@ionic/angular';
+import { Subscriber, Subscription } from 'rxjs';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 
 @Component({
@@ -22,7 +23,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   parentObject={};
   gridData:any=[];
   listOfGridFieldName:any =[]; 
-  staticDataSubscriber:any;
+  staticDataSubscriber:Subscription;
   responseData:any;
   copyStaticData:[] = [];
 
@@ -305,7 +306,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       }
     }
     this.getSelectedData();
-    let obj =this.getSendData()
+    let obj =this.getSendData();
     this.gridSelectionResponce.emit(obj);
   }  
   getSelectedData(){

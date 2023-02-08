@@ -30,7 +30,7 @@
                 </ion-item>
 
                 <ion-item-options side="end" *ngIf="field.add_list_field != 'add' && !updateMode || field.add_new_enabled">
-                    <ion-item-option color="medium" class="pencil-outline" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="edite(i);">
+                    <ion-item-option color="app-color" class="pencil-outline" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="edite(i);">
                         <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
                       </ion-item-option>
                     <ion-item-option color="danger" class="trash-outline" *ngIf="field.add_new_enabled && checkRowDisabledIf(field,i)" expandable (click)="delete(i)">

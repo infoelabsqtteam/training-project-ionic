@@ -50,6 +50,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   popoverItems:any =[];
   popoverMenu:boolean;
   selectedgriddataId:any;
+  selectedSearchCardField:any={}
   
     constructor(
       private storageService: StorageService,
@@ -84,10 +85,18 @@ export class CardViewPage implements OnInit, OnDestroy {
       }
       this.searchcardfield = "";
     }
-
-    selectedSearchValue(serchingvalue:any){
+    selectedSearchValue(serchingvalue:any){ 
+      this.searchcardvalue = "";     
+      this.selectedSearchCardField = {};
       if(serchingvalue){
         this.searching = true;
+        for (let index = 0; index < this.columnList.length; index++) {
+          const element = this.columnList[index];
+          if(serchingvalue === element.field_name){
+            this.selectedSearchCardField = element;
+          }
+          
+        }
       }
     }    
   
@@ -138,6 +147,8 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.popoverItems = [];
       this.commonDataShareService.setSelectedTabIndex(-1);
       this.selectedgriddataId = "";
+      this.searchcardvalue = "";
+      this.selectedSearchCardField = {};
     }
     open(){
       this.openFilter=!this.openFilter;
@@ -270,7 +281,8 @@ export class CardViewPage implements OnInit, OnDestroy {
     } 
     tabSwichingChanges(){   
       this.searchcardfield = "";
-      if(this.searchcardvalue)this.searchcardvalue = "";
+      if(this.searchcardvalue) this.searchcardvalue = "";
+      if(this.selectedSearchCardField) this.selectedSearchCardField = {};
       this.searching=false;
     }
 
