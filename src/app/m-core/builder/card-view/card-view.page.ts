@@ -1,4 +1,4 @@
-import { Component, OnInit, Optional, OnDestroy, SimpleChanges} from '@angular/core';
+import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2} from '@angular/core';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
 import { Platform, ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { filter } from 'rxjs';
@@ -15,6 +15,7 @@ import { PopoverComponent } from '../../common-component/popover/popover.compone
 
 export class CardViewPage implements OnInit, OnDestroy {
 
+  @ViewChild("primaryheader") primaryheader: HTMLElement;
     //common function
     cardList: any = [];
     selectedIndex= -1;
@@ -36,7 +37,6 @@ export class CardViewPage implements OnInit, OnDestroy {
   filterForm: FormGroup;
   createFormgroup: boolean = true;
   openFilter: boolean = false;
-  openTravelFilter: boolean = false;
   filterCount: 0;
   searching:boolean = false;
   searchcardvalue:string = '';
@@ -47,10 +47,10 @@ export class CardViewPage implements OnInit, OnDestroy {
   popoverTabbing:any; 
   headerTitle:string;
   popoverdata:any;
-  popoverItems:any;
+  popoverItems:any =[];
   popoverMenu:boolean;
   selectedgriddataId:any;
-
+  
     constructor(
       private storageService: StorageService,
       private coreUtilityService :CoreUtilityService,
@@ -61,12 +61,14 @@ export class CardViewPage implements OnInit, OnDestroy {
       public modalController: ModalController,
       private router:Router,
       public popoverController: PopoverController,
-      @Optional() private readonly routerOutlet?: IonRouterOutlet      
+      public renderer: Renderer2,
+      @Optional() private readonly routerOutlet?: IonRouterOutlet,
     ){}
   
     ionViewWillEnter(){
       this.load();
       this.searching = false;
+      this.renderer.setStyle(this.primaryheader['el'], 'webkitTransition', 'top 700ms');
     }
 
     ngOnInit() {}
@@ -78,7 +80,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.searching = !this.searching;
       this.searchcardvalue = "";
       if(!this.searching){
-        this.filterCardAgain();
+        this.filterCardByDropdownValue();
       }
       this.searchcardfield = "";
     }
@@ -87,8 +89,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       if(serchingvalue){
         this.searching = true;
       }
-    }
-    
+    }    
   
     load(){
       this.carddata = [];
@@ -130,7 +131,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.carddata = [];
       this.tabMenu = [];
       this.openFilter = false;
-      this.filterForm.reset();
+      if(this.filterForm) this.filterForm.reset();
       this.searchcardfield = '';
       this.popoverMenu = false;
       this.popoverTabbing = false;
@@ -139,38 +140,33 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.selectedgriddataId = "";
     }
     open(){
-      this.openFilter=!this.openFilter
-      this.data={};
+      this.openFilter=!this.openFilter;
+      // this.data={};
     }
-    openTravel(){
-      this.openTravelFilter=!this.openTravelFilter
-      this.data={};
-      // this.travelCardList =["Travel Mangement","Travel Report"];
-
-    }
-    // filterdata
     filterCard(){  
-      this.openFilter = false;
+      this.open();
       this.data = {
         'filterFormData' : this.filterForm.getRawValue()
       }
     }
-    filterCardAgain(){  
+    filterCardByDropdownValue(){  
       const value = {}
-      if(this.searchcardvalue && this.searchcardvalue.length >= 2){
+      if(this.searchcardvalue && this.searchcardvalue.length >= 3){
         value[this.searchcardfield] = this.searchcardvalue;
         this.data = {
           'filterFormData' : value
         }
-      }        
+      } 
+      if(this.searchcardvalue.length === 0){ 
+        this.data = {};
+      }    
     }
     closefilterCard(){
-      this.data = {};
       this.openFilter = false;
     }
     clearfilterCard(){
-      this.data = {};
       this.filterForm.reset();
+      this.data = {};
     } 
     columnListOutput(columnList){
       this.columnList = columnList;
@@ -216,26 +212,23 @@ export class CardViewPage implements OnInit, OnDestroy {
     //   }
     //   // this.childColumn = card.child_card;
     // }
-    async presentPopover(ev: any) {
-      const popover = await this.popoverController.create({
-        component: PopoverComponent,
-        cssClass: 'my-custom-class',
-        event: ev,
-        translucent: true,
-        componentProps: {
-          "popoverItems" : this.popoverItems 
-        }
-      });
-      popover.componentProps.popover = popover;
-      popover.onDidDismiss().then((result) => {
-        this.getCardDataByCollection(this.selectedIndex);
-      });
-      return await popover.present();
-      // await popover.present();
-    
-      const { role } = await popover.onDidDismiss();
-      console.log('onDidDismiss resolved with role', role);
-    }
+    // async presentPopover(ev: any) {
+    //   const popover = await this.popoverController.create({
+    //     component: PopoverComponent,
+    //     cssClass: 'my-custom-class',
+    //     event: ev,
+    //     translucent: true,
+    //     componentProps: {
+    //       "popoverItems" : this.popoverItems 
+    //     }
+    //   });
+    //   popover.componentProps.popover = popover;
+    //   popover.onDidDismiss().then((result) => {        
+    //     console.log('onDidDismiss resolved with role', result);
+    //     this.getCardDataByCollection(this.selectedIndex);
+    //   });
+    //   return await popover.present();
+    // }
     popoverOutput(popoverdata:any){
       if(popoverdata && popoverdata.name){ 
         this.headerTitle = popoverdata.name;
@@ -247,12 +240,38 @@ export class CardViewPage implements OnInit, OnDestroy {
           "selectedTabIndex": popoverdata.selectedTabIndex,
           "tabs" : popoverdata.tabs
         }
-        // this.card = popoverdata;
       }
-      //  const { role } = await popoverdata.onDidDismiss();
     }
     popoverMenuItem(menuitem:any){
       this.popoverItems = menuitem;
+    }
+    primaryheaderNewEmit(setStyleValue){
+      if (setStyleValue.scrollValue >= 50) {
+        this.renderer.setStyle(this.primaryheader['el'], 'top', setStyleValue.setTopValue);
+      } else {
+        this.renderer.setStyle(this.primaryheader['el'], 'top', setStyleValue.setTopValue);
+      }
+    }
+    tabmenuClick(item:any,index:number){
+      this.tabSwichingChanges();
+      if(item && item.name){
+        this.popoverOutput(item);
+      }
+      this.selectedIndex = index;
+      this.carddata = [];
+      this.createFormgroup = true;
+      const tab = this.popoverItems[index];
+      const moduleList = this.commonDataShareService.getModuleList();
+      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id"); 
+      const card = moduleList[tabIndex];
+      this.card['card'] = card;
+      this.card.selectedTabIndex = index;
+      this.popoverOutput(this.card);
+    } 
+    tabSwichingChanges(){   
+      this.searchcardfield = "";
+      if(this.searchcardvalue)this.searchcardvalue = "";
+      this.searching=false;
     }
 
   }

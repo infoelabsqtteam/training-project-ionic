@@ -18,7 +18,7 @@ ion-header {
         .sc-ion-searchbar-md-h {--background:rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.07);--box-shadow:none;--border-radius:10px;}
         .searchbar-search-icon.sc-ion-searchbar-ios, .searchbar-search-icon.sc-ion-searchbar-md, .searchbar-cancel-button.sc-ion-searchbar-md, .searchbar-cancel-button.sc-ion-searchbar-ios{color:#fff;}
         .cardsearch {display:flex;align-items:center;justify-content:space-between;
-            .searchbox {display:flex;}
+            .searchbox {display:flex;margin-right: .3rem;}
             ion-input{background:#e6e7e8;border-radius:10px;color:#2e2e2e;
                 .native-input{padding:5px;}
                  ion-icon{padding-left:5px;}
@@ -420,4 +420,18 @@ ion-accordion {
 }
 ion-searchbar{
     --cancel-button-color:var(--ion-color-white);--icon-color:var(--ion-color-white)
+}
+
+.segmentTabMenu {
+    --min-height: 35px;
+    ion-segment{
+    --background:var(--themebg);
+        ion-segment-button{
+            min-height: 35px;
+            ion-label{font-size: 12px;color: gainsboro;text-transform: capitalize;font-weight: 600;letter-spacing: 1.2px;}
+        }
+        ion-segment-button.segment-button-checked {
+            ion-label{color: var(--ion-color-white);}
+        }
+    }
 }

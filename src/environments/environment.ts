@@ -5,13 +5,8 @@
 export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
-  // serverhost: "http://localhost:8104/rest/",
-  //serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
-  // serverhost: "https://sitserverelabs.e-labs.ai/rest/",
-  // serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
-  //serverhost: "https://servermedicea.medicea.in/rest/",
-  //  serverhost: "https://sitservermedicea.medicea.in/rest/",
-  serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
+  serverhost: "http://localhost:8104/rest/",
+  // serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
   // serverhost: "https://serveritclabs.itclabs.com/rest/",
   // serverhost: "https://prodserveritclabs.e-labs.ai/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
@@ -23,7 +18,9 @@ export const environment = {
   verify_type : "email",
   app_Version : "@2022 ITC Labs v0.0.1",
   privacy_policy: "",
-  app_share: "https://play.google.com/store/apps/details?id=com.itclabs.ai"
+  app_share: "https://play.google.com/store/apps/details?id=com.itclabs.ai",
+  appCardMasterDataSize: 200,
+  appHomePageLayout:"layout1"
 };
 
 /*

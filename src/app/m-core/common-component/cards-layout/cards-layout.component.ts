@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService, NotificationService, PermissionService } from '@core/ionic-core';
@@ -23,6 +23,8 @@ import { AndroidpermissionsService } from '../../../service/androidpermissions.s
   providers: [File]
 })
 export class CardsLayoutComponent implements OnInit, OnChanges {
+  
+  @ViewChild('cardView') cardViewContent: ElementRef<any>;
 
   @Input() card:any;
   @Input() data:any ={};
@@ -30,6 +32,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   @Input() searchcard:any;
   @Output() formNameTypeTravel = new EventEmitter();
   @Output() popoverTabbing = new EventEmitter();
+  @Output() primaryheaderNew = new EventEmitter();
 
 
 
@@ -131,7 +134,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private http: HttpClient,
     private fileOpener: FileOpener,
     private file: File,
-    private apppermissionsService: AndroidpermissionsService
+    private apppermissionsService: AndroidpermissionsService,
+    public renderer: Renderer2  
   ) 
   {
     // below code is for slider and title name
@@ -255,6 +259,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     });
 
   }
+  ionViewwillEnter(){}
 
   ionViewwillLeave(){
     this.carddata=[];
@@ -268,7 +273,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.onloadVariables();
     if(this.data && this.data.filterFormData){
       this.filterForm['value'] = this.data.filterFormData;
-      this.getGridData(this.collectionname);
+      // this.getGridData(this.collectionname);
+      if(this.card && this.card.card && this.card.card.name){
+        this.setCardDetails(this.card.card);
+      }
     }else if(this.data && this.data.searchData && this.data.searchData.length > 0){
       let criteria = [];
       if(this.card && this.card.card && this.card.card){
@@ -281,16 +289,16 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
       
     }else{
+      this.filterForm['value'] = {};
       if(this.data && this.data._id){
         this.detailPage = true;
       }
       if(this.card && this.card.card && this.card.card.name){
-        this.setCardAndTab(this.card)
+        this.setCardAndTab(this.card);
       }
       if(this.card && this.card.card && this.card.card.grid_selection_inform != null){
         this.dataShareService.setGridSelectionCheck(this.card.card.grid_selection_inform)
       }
-      this.filterForm['value'] = {};
     }
   }
 
@@ -302,7 +310,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.checkionEvents();
     this.hasDetaildCard=false;
   }
-  ngOnInit() { }
+  ngOnInit() {     
+    // this.renderer.setStyle(this.cardViewContent['el'], 'webkitTransition', 'top 700ms');
+  }
 
   ngOnDestroy(): void {
     // if (this.cardListSubscription) {
@@ -313,6 +323,21 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     if(this.pdfFileSubscription){
       this.pdfFileSubscription.unsubscribe();
+    }
+  }
+  
+  onContentScroll(event:any) {
+    let scrollEventVal:any = {};
+    if (event.detail.scrollTop >= 50) {
+      this.renderer.setStyle(this.cardViewContent['el'], 'top', '-69px');
+      scrollEventVal['scrollValue'] = event.detail.scrollTop;
+      scrollEventVal['setTopValue'] = "-69px";
+      this.primaryheaderNew.emit(scrollEventVal);
+    } else {
+      this.renderer.setStyle(this.cardViewContent['el'], 'top', '0px');
+      scrollEventVal['scrollValue'] = event.detail.scrollTop;
+      scrollEventVal['setTopValue'] = "0px";
+      this.primaryheaderNew.emit(scrollEventVal);
     }
   }
 
@@ -334,9 +359,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.tabMenu = cardWithTab.tabs;
       this.selectedIndex = cardWithTab.selectedTabIndex;
       this.popoverMenu = cardWithTab.popoverTabbing;
-      if(cardWithTab && cardWithTab.popoverTabbing){
+      // if(cardWithTab && cardWithTab.popoverTabbing){
         this.popoverTabbing.emit(this.tabMenu);
-      }
+      // }
     }else{
       this.tabMenu = [];
       this.selectedIndex = -1;
@@ -526,7 +551,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   async detailCardButton(column, data){
     if(this.detailPage){
       //const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
-      //this.editedRow(data,index);
       this.modaldetailCardButton(column,data);
     }else{
       const newobj = {
@@ -704,18 +728,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
     }
   }
-  // edit mode Form
-  // editedRow(data,index,formName?:any){
-  //   this.editedRowIndex = index;
-  //   this.gridData = data;
-  //   this.selectedgriddataId = this.gridData._id;
-  //   this.updateMode = true;
-  //   if(formName){
-  //     this.addNewForm(formName);
-  //   }else{      
-  //   this.addNewForm("UPDATE");
-  //   }
-  // }
 
 
   getFirstCharOfString(char:any){
@@ -748,8 +760,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         event.target.complete();
         // this.loadMoreData = true;
         if(this.currentPageCount <= this.totalPageCount){
-          if (this.carddata.length === this.totalDataCount || this.totalDataCount === 1) {// App logic to determine if all data is loaded       
-            // this.currentPageCount = 1;
+          if (this.carddata.length === this.totalDataCount || this.totalDataCount === 1) {// App logic to determine if all data is loaded
             this.ionEvent.target.disabled = true;    // and disable the infinite scroll
             this.notificationService.presentToastOnBottom("You reached at the End","success");
           }else{
@@ -779,7 +790,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         if (this.carddata.length === this.totalDataCount) { // App logic to determine if all data is loaded
           // this.refreshEvent.target.disabled = true;    // Disable the infinite scroll if carddata.length === response.totaldata.length
           // console.log('doRefresh async operation has ended');
-          this.notificationService.presentToastOnMiddle("No Updates Available","success");
+          this.notificationService.presentToastOnBottom("No Updates Available","success");
         }else{
           if(this.card && this.card.card){
             card = this.card.card;
@@ -1077,6 +1088,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   checkionEvents(){
+    if(this.refreshlist){
+      if(this.ionEvent && this.ionEvent.type == 'ionRefresh'){
+        this.ionEvent.target.disabled = !this.refreshlist;
+      }
+      if(this.ionEvent && this.ionEvent.type == 'ionInfinite'){
+        this.ionEvent.target.disabled = this.refreshlist;
+      }
+    }
     if(this.loadMoreData){
       if(this.ionEvent && this.ionEvent.type == 'ionRefresh'){
         this.ionEvent.target.disabled = this.loadMoreData;
@@ -1085,12 +1104,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.ionEvent.target.disabled = !this.loadMoreData;
       }
     }
-    if(this.refreshlist){
+    if(this.loadMoreData && this.refreshlist){
       if(this.ionEvent && this.ionEvent.type == 'ionRefresh'){
         this.ionEvent.target.disabled = !this.refreshlist;
       }
       if(this.ionEvent && this.ionEvent.type == 'ionInfinite'){
-        this.ionEvent.target.disabled = this.refreshlist;
+        this.ionEvent.target.disabled = !this.loadMoreData;
       }
     }
     

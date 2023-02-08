@@ -1,10 +1,10 @@
-<ion-header class="menutab" #header *ngIf="!popoverMenu">
+<!-- <ion-header class="menutab" #header *ngIf="!popoverMenu">
   <ion-segment [scrollable]="true" *ngIf="tabMenu && tabMenu.length > 0">
     <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(i)" [class.segment-button-checked]="selectedIndex == i" [ngClass]="" value="{{tabItem.name}}">
       <ion-label class="ion-margin-vertical-0">{{tabItem.name}}</ion-label>
     </ion-segment-button>
   </ion-segment>
-</ion-header>
+</ion-header> -->
 
 <ion-content class="contactlist">
   <div *ngIf="nodatafound && this.carddata=='' && this.carddata.length == 0">
@@ -27,7 +27,7 @@
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
-              <div class="ion-text-end status_button">
+              <div class="ion-text-end status_button" *ngIf="column.type == 'button'">
                 <div *ngIf="card.quotation_status">
                   <ion-button [ngClass]="card.quotation_status ? 'status_' + card.quotation_status : 'default-status'" *ngIf="column.type == 'button' && card.quotation_status" [innerHTML]="getValueForGrid(column,card)">
                   </ion-button>
@@ -49,6 +49,10 @@
                 </div>
               </div>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'file'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'time'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'boolean'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'icon'" [innerHTML]="getValueForGrid(column,card)"></p>
             </ion-col>
           </ion-row>
         </ion-item>
@@ -86,7 +90,10 @@
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
               <ion-label><h5 [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></h5></ion-label>
               <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)"></ion-button>
-              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p><p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'file'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'time'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'boolean'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'icon'" [innerHTML]="getValueForGrid(column,card)"></p>
             </ion-col>
           </ion-row>
         </ion-item>

@@ -559,8 +559,9 @@
     <ion-row>
       <ion-col>
         <span *ngFor="let action_button of formFieldButtons; let i=index" class="w-100" [ngClass]="getButtonDivClass(action_button)" [id]="action_button._id">
-          <ion-button type="button" *ngIf="action_button.type == 'button'" (click)="take_action_on_click(action_button)" color="danger" [disabled]="checkValidator(action_button)" expand="block">{{nextFormUpdateMode && action_button.onclick.api == 'add' ? 'Update':action_button.label}}</ion-button>          
-        </span>
+          <ion-button type="button" *ngIf="action_button.type == 'button' && dataSaveInProgress" (click)="take_action_on_click(action_button)" color="danger" [disabled]="checkValidator(action_button)" expand="block">{{nextFormUpdateMode && action_button.onclick.api == 'add' ? 'Update':action_button.label}}</ion-button>       
+        </span>         
+        <ion-button  expand="block" *ngIf="!dataSaveInProgress" class="ion-text-capitalize">Please wait.. <ion-spinner slot="end" name="circular" ></ion-spinner></ion-button>  
       </ion-col>
     </ion-row>
     
