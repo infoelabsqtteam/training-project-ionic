@@ -1,4 +1,4 @@
-<div class="pages" *ngIf="formName == 'default' && (this.selectedData && this.selectedData.length > 0) || (this.gridData && this.gridData.length > 0)">
+<div class="pages" *ngIf="samePageGridSelection && (this.selectedData && this.selectedData.length > 0) || (this.gridData && this.gridData.length > 0)">
     <ion-segment class="grid_selection_tab" ngDefaultControl [(ngModel)]="selectedTab" color="appcolor">
         <ion-segment-button value="new"><ion-label>All</ion-label></ion-segment-button>
         <ion-segment-button value="added"><ion-label>Selected</ion-label></ion-segment-button>
@@ -15,6 +15,17 @@
                     <ion-buttons slot="end"><ion-checkbox checked="true" color="appcolor" class="left icon ion-hide" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox></ion-buttons>
                 </ion-item>
             </ion-item-sliding>
+        </div>
+        <div *ngIf="this.gridData=='' && this.gridData.length == 0">
+            <ion-card>
+                <ion-card-header>
+                  <ion-card-title>No parameters available</ion-card-title>
+                  <!-- <ion-card-subtitle></ion-card-subtitle> -->
+                </ion-card-header>          
+                <ion-card-content>
+                  This selection has no parameters available
+                </ion-card-content>
+              </ion-card>          
         </div>
     </div>
 
@@ -46,7 +57,7 @@
                   <!-- <ion-card-subtitle></ion-card-subtitle> -->
                 </ion-card-header>      
                 <ion-card-content>
-                  Please select any one
+                    Please select parameter
                 </ion-card-content>
               </ion-card>          
         </div>
@@ -54,14 +65,13 @@
 
 </div>
 
-<div *ngIf="this.gridData=='' && this.gridData.length == 0 && nogridDdata">
-    <ion-card>
-        <ion-card-header>
-          <ion-card-title>No parameters available</ion-card-title>
-          <!-- <ion-card-subtitle></ion-card-subtitle> -->
-        </ion-card-header>      
-        <ion-card-content>
-          This selection has no parameters available
-        </ion-card-content>
-      </ion-card>          
-</div>
+<ion-card *ngIf="(this.gridData && this.gridData.length == 0) && (this.selectedData && this.selectedData.length == 0)">
+    <ion-card-header>
+        <ion-card-title *ngIf="!reloadBtn">No parameters available</ion-card-title>
+        <ion-card-title *ngIf="reloadBtn">Please wait..</ion-card-title>
+    </ion-card-header>        
+    <ion-card-content>
+        No parameneters available for selection.
+    </ion-card-content>
+    <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="reloadStaticData()" [disabled]="reloadBtn"><ion-text *ngIf="reloadBtn">Please wait..</ion-text><ion-spinner name="lines-sharp-small" *ngIf="reloadBtn"></ion-spinner><ion-text *ngIf="!reloadBtn">Reload Parameters</ion-text></ion-button>
+</ion-card>

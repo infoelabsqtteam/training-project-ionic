@@ -17,7 +17,7 @@
         </ion-segment>
 
         <div *ngIf="selectedTab == 'new'">
-            <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of gridData; let i = index">
+            <div class="app-grid_selection ion-margin-start ion-margin-end ion-padding-default" *ngFor="let data of gridData; let i = index">
                 <ion-item class=""  lines="none">
                     <ion-buttons slot="start" >
                     <ion-checkbox checked="true" color="appcolor" class="left icon" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox>
@@ -47,7 +47,7 @@
                                     <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" >
                                 </div>
                                 <div *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
-                                <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
+                                    <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)">
                                 </div>
                             </ion-item>
                         </div>            
@@ -63,12 +63,13 @@
                     <ion-card-content>
                       This selection has no parameters available
                     </ion-card-content>
-                  </ion-card>          
+                    <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="reloadStaticData()" [disabled]="reloadBtn"><ion-text *ngIf="reloadBtn">Please Wait..</ion-text><ion-spinner name="lines-sharp-small" *ngIf="reloadBtn"></ion-spinner><ion-text *ngIf="!reloadBtn">Reload Parameters</ion-text></ion-button>
+                </ion-card>          
             </div>       
         </div>
 
         <div *ngIf="selectedTab == 'added'" >
-            <div class="app-grid_selection ion-margin-start ion-margin-end" *ngFor="let data of selectedData; let i = index">
+            <div class="app-grid_selection ion-margin-start ion-margin-end ion-padding-default" *ngFor="let data of selectedData; let i = index">
                 <ion-item class=""  lines="none">
                     <ion-buttons slot="start" >
                     <ion-checkbox checked="true" color="appcolor" class="left icon" name="" (click)="$event.stopPropagation()" (ionChange)="$event ? toggle(data, $event, i) : null" [checked]="data.selected" ></ion-checkbox>
@@ -114,7 +115,7 @@
                     <ion-card-content>
                       Please select parameter
                     </ion-card-content>
-                  </ion-card>          
+                </ion-card>          
             </div>
         </div>
         <div class="button_position">
@@ -127,12 +128,13 @@
 
     <ion-card *ngIf="(this.gridData && this.gridData.length == 0) && (this.selectedData && this.selectedData.length == 0)">
         <ion-card-header>
-            <ion-card-title>No parameters available</ion-card-title>
+            <ion-card-title *ngIf="!reloadBtn">No parameters available</ion-card-title>
+            <ion-card-title *ngIf="reloadBtn">Please wait..</ion-card-title>
         </ion-card-header>        
         <ion-card-content>
             No parameneters available for selection.
         </ion-card-content>
-    </ion-card>
-  
+        <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="reloadStaticData()" [disabled]="reloadBtn"><ion-text *ngIf="reloadBtn">Please wait..</ion-text><ion-spinner name="lines-sharp-small" *ngIf="reloadBtn"></ion-spinner><ion-text *ngIf="!reloadBtn">Reload Parameters</ion-text></ion-button>
+    </ion-card>  
    
 </ion-content>

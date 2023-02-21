@@ -23,7 +23,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   parentObject={};
   gridData:any=[];
   listOfGridFieldName:any =[]; 
-  staticDataSubscriber:Subscription;
+  staticDataSubscriber:any;
   responseData:any;
   copyStaticData:[] = [];
 
@@ -37,10 +37,10 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   expandicon: any = "assets/itc-labs/icon/expand-icon.png";
 
   data :any = [];
-  formName:any= "default";
   readonly:boolean= false;
-  updateMode:boolean= false;
   nogridDdata:boolean= false;
+  samePageGridSelection=false;
+  reloadBtn=false;
 
 
   constructor(    
@@ -56,16 +56,12 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   
 
   ngOnInit() {
-    if(this.Data && this.Data.formTypeName !=""){
-      // this.formName = this.Data.formTypeName; 
-      this.formName = "default";
-      if(this.Data.formTypeName === "UPDATE"){  
-        this.selectedTab = "added";
-      }
+    this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();    
+    if(this.Data?.updateMode && this.Data.updateMode){  
+      this.selectedTab = "added";
     }else{
-      this.formName = "default";
+      this.selectedTab = "new";
     }
-
   }
   ngOnChanges(changes: SimpleChanges) {
     if(this.Data){
@@ -75,7 +71,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   subscribe(){
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
-      if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field)  && data[this.field.ddn_field]){
+      if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field) && data[this.field.ddn_field]){
         this.responseData = data[this.field.ddn_field];
       }else{
         this.responseData = [];
@@ -84,13 +80,33 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       this.setStaticData(data);
     })
   }
+  reloadStaticData(){
+    this.reloadBtn = true;
+    let data:any = this.dataShareService.getStatiData();
+    this.copyStaticData = data;
+    if(this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null && data[this.field.ddn_field] != undefined){
+      if((Array.isArray(data[this.field.ddn_field]) && data[this.field.ddn_field].length > 0)){
+        this.setStaticData(data);
+      }else if(!Array.isArray(data[this.field.ddn_field])){
+        this.setStaticData(data);
+      }else{
+        this.resetReloadBtn();
+      }
+    }else{
+      this.resetReloadBtn();      
+    }
+  }
+  resetReloadBtn(){
+    setTimeout(() => {
+      this.reloadBtn = false;
+    }, 1000);
+  }
   ngOnDestroy(){
     if(this.staticDataSubscriber){
       this.staticDataSubscriber.unsubscribe();
     }
   }
   onload(){
-    this.selectedTab = "new";
     this.selecteData = [];  
     this.selecteData = JSON.parse(JSON.stringify(this.Data.selectedData)); 
     this.selectedData = JSON.parse(JSON.stringify(this.Data.selectedData));
@@ -182,7 +198,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     return this.coreFunctionService.getValueForGrid(field, object);
   }
   isDisable(field, object) {
-    this.updateMode = false;
+    const updateMode = false;
     let disabledrow = false;
     if (field.is_disabled) {
       return true;
@@ -195,7 +211,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       return true;
     }
     if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-      return this.coreFunctionService.isDisable(field.etc_fields, this.updateMode, object);
+      return this.coreFunctionService.isDisable(field.etc_fields, updateMode, object);
     }   
     return false;
   }
