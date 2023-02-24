@@ -96,7 +96,7 @@ export class HomePage implements OnInit, OnDestroy {
         this.commonDataShareService.setModuleList(this.cardMasterList);
         this.cardList = this.coreUtilityService.getUserAutherisedCards(this.cardMasterList);
         if(this.cardList == null){        
-          this.notificationService.showAlert("You don't have permission or assign any module.","Permission error !",['Dismiss'])
+          this.notificationService.presentToastOnBottom("You don't have permission or assign any module.","danger")
         }
       }else{
         this.cardList = [];

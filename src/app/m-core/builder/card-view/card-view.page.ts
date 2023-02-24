@@ -162,7 +162,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
     filterCardByDropdownValue(){  
       const value = {}
-      if(this.searchcardvalue && this.searchcardvalue.length >= 3){
+      if(this.searchcardvalue && this.searchcardvalue.length >= 1){
         value[this.searchcardfield] = this.searchcardvalue;
         this.data = {
           'filterFormData' : value

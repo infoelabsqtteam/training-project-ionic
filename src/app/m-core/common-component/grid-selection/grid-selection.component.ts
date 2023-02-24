@@ -38,6 +38,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
 
   data :any = [];
   readonly:boolean= false;
+  updateMode:boolean= false;
   nogridDdata:boolean= false;
   samePageGridSelection=false;
   reloadBtn=false;
@@ -59,6 +60,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();    
     if(this.Data?.updateMode && this.Data.updateMode){  
       this.selectedTab = "added";
+      this.updateMode = this.Data.updateMode;
     }else{
       this.selectedTab = "new";
     }

@@ -94,7 +94,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   totalDataCount:number;
   totalPageCount:number;
   formTypeName:any;
-  selectedgriddataId:any;
+  selectedgriddataId:any="";
   updateMode:boolean = false;
   ionEvent:any;
   checkPreviewData = false;
@@ -224,21 +224,16 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   resetVariabls(){
-    if(this.formTypeName == "UPDATE"){
-      this.formTypeName = '';
-      this.currentPageCount = 1;
-    }else if(this.formTypeName == "default"){
-      this.formTypeName = '';
-      this.editedRowIndex = -1;
-      this.currentPageCount = 1;
-      this.carddata = [];
-      this.gridData = {};
-      // this.loadMoreData = true;
-    }else{
-      this.editedRowIndex = -1;
-      this.currentPageCount = 1;
-      this.gridData = {};
+    if(this.updateMode){
     }
+    if(!this.updateMode){
+      this.carddata = []; 
+      this.selectedgriddataId="";
+    }
+    this.formTypeName = '';
+    this.editedRowIndex = -1;
+    this.currentPageCount = 1;
+    this.gridData = {};
   }
 
   initializeApp() {
@@ -448,8 +443,13 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.columnList = card.fields;      
     }
     if(this.createFormgroup){
-      // this.createFormgroup = false;
-      this.columnListOutput.emit(this.columnList);
+      let columnList:any =[];
+      this.columnList.forEach(element => {
+        if(element.sort){
+          columnList.push(element);
+        }
+      });
+      this.columnListOutput.emit(columnList);
     }
     if(card && card.parent_criteria){
       if (card.api_params_criteria && card.api_params_criteria.length > 0 ) {

@@ -3266,7 +3266,6 @@ tinymceConfig = {}
           "parentObject": this.getFormValue(true)
         }
         this.openGridSelectionDetailModal(gridModalData);
-        // this.openGridSelectionModal(field);
         break;
       default:
         break;
@@ -4455,6 +4454,10 @@ tinymceConfig = {}
   }
 
   async  openGridSelectionModal(field){
+    if(field.gridColumns && field.gridColumns.length > 0){
+      const gridColumns = this.modifiedGridColumns(field.gridColumns);
+      field.gridColumns = gridColumns;
+    }
     this.samePageGridSelectionData = {}
     this.selectedgridselectionField='';
     if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
@@ -5646,23 +5649,26 @@ tinymceConfig = {}
           data = this.custmizedFormValue[field.field_name];
         }
         if(field.mendetory_fields && field.mendetory_fields.length > 0){
+          field.mendetory_fields = this.modifiedGridColumns(field.mendetory_fields);
           if(data && data.length > 0){
             field.mendetory_fields.forEach(mField => {
               const fieldName = mField.field_name;
-              data.forEach((row:any,i) => {
-                if(row && row[fieldName] == undefined || row[fieldName] == '' || row[fieldName] == null){
-                  if(validation.msg == ''){
-                    let errorPositionInArray:any;
-                    if(row.plainCustomerName){
-                      errorPositionInArray =  " of " + row.plainCustomerName;
-                    }else{
-                      errorPositionInArray = '';
+              if(mField.display){
+                data.forEach((row:any,i) => {
+                  if(row && row[fieldName] == undefined || row[fieldName] == '' || row[fieldName] == null){
+                    if(validation.msg == ''){
+                      let errorPositionInArray:any;
+                      if(row.plainCustomerName){
+                        errorPositionInArray =  " of " + row.plainCustomerName;
+                      }else{
+                        errorPositionInArray = '';
+                      }
+                      validation.msg = mField.label + errorPositionInArray + ' of ' + field.label + ' is required.';
                     }
-                    validation.msg = mField.label + errorPositionInArray + ' of ' + field.label + ' is required.';
+                    check = 1;
                   }
-                  check = 1;
-                }
-              });
+                });
+              }
             });
           }
         }     

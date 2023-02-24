@@ -33,6 +33,7 @@
         <div class="contactlist app-grid_list ion-margin-start ion-margin-end" *ngFor="let data of selectedData; let i = index">
             <ion-item-sliding class="">
                 <ion-item class="ion-no-margin" lines="none" (click)="addremoveparticipant(data,i)">
+                    <ion-badge slot="end" class="" color="appcolor">{{i+1}}</ion-badge>
                     <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="getName(data)" [innerHTML]="getFirstCharOfString(getName(data))"></span></ion-avatar>
                     <ion-label>
                         <ion-text size="12">{{getName(data)}}</ion-text>
