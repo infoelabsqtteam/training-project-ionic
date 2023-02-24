@@ -90,6 +90,7 @@ export class SignineComponent implements OnInit {
     let loginObj = this.loginForm.value; 
     this.authService.login(loginObj.userId, loginObj.password,'/home');
     this.loginForm.reset();
+    this.ionLoaderService.hideLoader();
   }
 
   showtxtpass() {

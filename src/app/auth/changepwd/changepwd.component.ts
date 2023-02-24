@@ -104,11 +104,12 @@ export class ChangepwdComponent implements OnInit {
   }
 
   oldpasswordmismatch(){
-    if(this.changepwdform.value.newpwd !== this.changepwdform.value.confpwd && this.changepwdform.value.confpwd != '')
-    { 
-      this.passwordNotMatch = true;
-    }else{
+    if(this.changepwdform.value.newpwd === this.changepwdform.value.confpwd){ 
+      this.changepwdform.controls['confpwd'].setErrors(null);;
       this.passwordNotMatch = false;
+    }else{
+      this.changepwdform.controls['confpwd'].setErrors({'invalid': true});
+      this.passwordNotMatch = true;
     }
   }
 
@@ -172,11 +173,12 @@ export class ChangepwdComponent implements OnInit {
   }
 
   passwordmismatch(){
-    if(this.vForm.value.password !== this.vForm.value.confpwd && this.vForm.value.confpwd != '')
-    { 
-      this.passwordNotMatch = true;
-    }else{
+    if(this.vForm.value.password === this.vForm.value.confpwd){ 
+      this.vForm.controls['confpwd'].setErrors(null);;
       this.passwordNotMatch = false;
+    }else{
+      this.vForm.controls['confpwd'].setErrors({'invalid': true});
+      this.passwordNotMatch = true;
     }
   }
   

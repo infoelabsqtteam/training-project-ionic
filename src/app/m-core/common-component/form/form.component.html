@@ -40,10 +40,6 @@
                 </ion-button> -->
 
               </ion-item>
-              <!-- <div class="d-none" *ngIf="custmizedFormValue[tableField.field_name]">
-                <iont-text *ngFor="let fieldName of modifiedGridColumns(tableField.gridColumns)" class="text-nowrap" [ngClass]="fieldName.display ? 'd-none':'d-none'">{{ fieldName.label | titlecase}}
-                </iont-text>
-              </div> -->
             </div>
             <div *ngIf="samePageGridSelection == true && (tableField.field_name == selectedgridselectionField.field_name)" class="samePageGridSelection">
               <ion-accordion-group expand="inset" class="ion-margin-horizontal-0 ion-margin-vertical-0" [value]="tableField._id+'_'+tableField.field_name">
