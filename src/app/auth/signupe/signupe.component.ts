@@ -61,7 +61,7 @@ export class SignupeComponent implements OnInit {
     }
     
     const data = {email: email, password: password, name: name, mobileNumber: mobile, domain:"", userId: userId}
-    //note: if autologin =true then set redirection= '/home', And if alotogin =false then set redirection= '/auth/signine'
+    //note: if autologin =true then set redirection= '/home', And if autologin =false then set redirection= '/auth/signine'
     const payload = { data:data, redirection:'/home',"autologin":true};
     this.authService.signup(payload);
     this.signUpForm.reset();
