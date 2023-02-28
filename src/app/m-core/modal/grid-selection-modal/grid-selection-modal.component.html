@@ -128,13 +128,13 @@
 
     <ion-card *ngIf="(this.gridData && this.gridData.length == 0) && (this.selectedData && this.selectedData.length == 0)">
         <ion-card-header>
-            <ion-card-title *ngIf="!reloadBtn">No parameters available</ion-card-title>
+            <ion-card-title *ngIf="!reloadBtn">No {{ field.label }} Available</ion-card-title>
             <ion-card-title *ngIf="reloadBtn">Please wait..</ion-card-title>
         </ion-card-header>        
         <ion-card-content>
-            No parameneters available for selection.
+            No  <span class="ion-text-lowercase">{{ field.label }}</span>  available for selection.
         </ion-card-content>
-        <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="reloadStaticData()" [disabled]="reloadBtn"><ion-text *ngIf="reloadBtn">Please wait..</ion-text><ion-spinner name="lines-sharp-small" *ngIf="reloadBtn"></ion-spinner><ion-text *ngIf="!reloadBtn">Reload Parameters</ion-text></ion-button>
+        <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="reloadStaticData()" [disabled]="reloadBtn"><ion-text *ngIf="reloadBtn">Please wait..</ion-text><ion-spinner name="lines-sharp-small" *ngIf="reloadBtn"></ion-spinner><ion-text *ngIf="!reloadBtn">Reload {{ field.label }} </ion-text></ion-button>
     </ion-card>  
    
 </ion-content>
