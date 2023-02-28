@@ -108,7 +108,7 @@ ion-tabs.footertab {
     ion-item {--padding-start:0px;--inner-padding-end:0px;--inner-border-width:0;background:var(--card-bg-light);--background:var(--card-bg-light);padding:10px;border-radius: 10px;
         ion-avatar {width:35px;height:35px;color:#fff;text-align:center;background:var(--themebg);font:500 18px/35px Roboto, sans-serif;margin:0 10px;}
         ion-row{background:var(--card-bg-light);width:100%;
-            p {margin:0px;font-size:13px;margin:0 0 5px 0;}
+            p {margin:0px;font-size:13px;margin:0 0 5px 0;white-space: nowrap;overflow-x: hidden;text-overflow: ellipsis;}
             .contact_person_name{font-weight:600;}
             .contact_company_name, .contact_person_mobile, .contact_serial_id{font-size:11px;margin:0px;}
         }
