@@ -112,6 +112,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   nodatafoundImg :any = "../../../../assets/nodatafound.png";
   nodatafound:boolean = false;
   hasDetaildCard:boolean = false;
+  childgridsubscription:any;
 
   constructor(
     private platform: Platform,
@@ -161,6 +162,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.pdfFileSubscription = this.dataShareService.downloadPdfData.subscribe(data =>{
       this.setDownloadPdfData(data);
     })
+    this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
+      if(data && data.gridColumns){
+        this.childColumns = data.gridColumns;
+      }
+    });
     this.nodatafound=false;
     
   }
@@ -318,6 +324,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     if(this.pdfFileSubscription){
       this.pdfFileSubscription.unsubscribe();
+    }
+    if(this.childgridsubscription){
+      this.childgridsubscription.unsubscribe();
     }
   }
   
@@ -477,7 +486,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.loadMoreData = false;
       this.selectedgriddataId = "";
     }
-    if(card && card.child_card && card.child_card['_id']){
+    if(card && (card.child_card && card.child_card['_id']) || (card.grid && card.grid['_id'])){
+      if(card.grid && card.grid['_id']){
+        this.getChildGridFieldsbyId(card.grid['_id']);
+      }
       this.hasDetaildCard = true;
     }else{
       this.hasDetaildCard = false;
@@ -938,6 +950,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       return false;
     }
+  }
+  getChildGridFieldsbyId(childrGridId:string){
+      const params = "grid";
+      const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
+      const payload = this.restService.getPaylodWithCriteria(params, '', criteria, {});
+      this.apiService.GetChildGrid(payload);
   }
   // myFiles:any;
   setDownloadPdfData(downloadPdfData){

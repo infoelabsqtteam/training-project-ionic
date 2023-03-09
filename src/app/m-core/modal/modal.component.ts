@@ -48,7 +48,13 @@ export class ModalComponent implements OnInit {
   setGridDetails(alert){
     let typeofData:string = "";
     this.field = alert.field;
-    this.coloumName = this.field.field_label;
+    if(this.field.field_label){
+      this.coloumName = this.field.field_label;
+    }else if(this.field.label){
+      this.coloumName = this.field.label;
+    }else {
+      this.coloumName = "";
+    }
     this.data = JSON.parse(JSON.stringify(alert.data.data));
     typeofData = typeof (this.data);  //giving wrong type of array so set below stattement
     if(this.data.length > 0) typeofData = "array";
