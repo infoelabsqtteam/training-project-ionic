@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -9,6 +9,7 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { DataShareServiceService } from './service/data-share-service.service';
 import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
 import { AndroidpermissionsService } from './service/androidpermissions.service';
+import { Title } from '@angular/platform-browser';
 
  
 @Component({ 
@@ -51,6 +52,10 @@ export class AppComponent implements OnInit, OnDestroy {
   @Output() collection_name = new EventEmitter<string>();
 
   selectedIndex= -1;
+  themeSettingSubscription:Subscription;
+  applicationSettingSubscription:Subscription;
+  favIcon: HTMLLinkElement = document.querySelector('#favIcon');
+  themeName:any = '';
 
   constructor(
     private platform: Platform,
@@ -66,17 +71,45 @@ export class AppComponent implements OnInit, OnDestroy {
     private restService: RestService,
     private apiService: ApiService,
     private dataShareService: DataShareService,
-    private env: EnvService,
+    private envService: EnvService,
     private notificationService: NotificationService,
     private commonDataShareService: CommonDataShareService,
-    private coreUtilityService: CoreUtilityService
+    private coreUtilityService: CoreUtilityService,
+    private titleService:Title,
 
   ) {
     
     this.initializeApp();
+    this.restService.getApplicationAllSettings();
+    if(this.dataShareService.themeSetting != undefined){
+      this.themeSettingSubscription = this.dataShareService.themeSetting.subscribe(
+        data =>{
+          const themeSetting = data;
+          if(themeSetting && themeSetting.length > 0) {
+            const settingObj = themeSetting[0];
+            this.storageService.setThemeSetting(settingObj);
+            this.envService.setThemeSetting(settingObj);
+            this.dataShareService.resetThemeSetting([]);            
+          }
+        })
+    }
+    if(this.dataShareService.applicationSetting != undefined){
+      this.applicationSettingSubscription = this.dataShareService.applicationSetting.subscribe(
+        data =>{
+          const applicationSetting = data;
+          if(applicationSetting && applicationSetting.length > 0) {
+            const settingObj = applicationSetting[0];
+            this.storageService.setApplicationSetting(settingObj);
+            this.envService.setEnvApplicationSetting();
+            this.loadPage();
+            this.dataShareService.subscribeTemeSetting("setting");
+            this.dataShareService.resetApplicationSetting([]);
+          }
+        })
+    }
     // this.web_site = appConstants.siteName;    
-    this.appCardMasterDataSize = this.env.getAppCardMasterDataSize();
-    this.app_Version  = this.env.getAppVersion();
+    this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
+    this.app_Version  = this.envService.getAppVersion();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
       if(data && data.data && data.data.length > 0){
         // this.cardList = data.data;
@@ -86,7 +119,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     });
     
-    this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{      
+    this.cardListSubscription = this.dataShareService.settingData.subscribe(data =>{      
       if(data == "logged_in"){
         this.userInfo = this.storageService.getUserInfo();
         this.showSidebarMenu = true;
@@ -139,16 +172,29 @@ export class AppComponent implements OnInit, OnDestroy {
   }  
   
   ngOnInit() {
+    this.router.events.subscribe(event =>{
+      if (event instanceof NavigationEnd) {
+        if(event.urlAfterRedirects == "/"){ 
+          this.redirectToHomePage();
+        }
+        if (
+          event.id === 1 &&
+          event.url === event.urlAfterRedirects && !event.url.startsWith("/download-manual-report") && !event.url.startsWith("/verify") && !event.url.startsWith("/pbl") && !event.url.startsWith("/unsubscribe") && !event.url.startsWith("/privacy-policy")
+        ) {
+          this.redirectToHomePageWithStorage();
+        }
+      }      
+   })
     
-    if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-      // this.getGridData();
-      this.authService.getUserPermission(false,'/home');
-      this.router.navigateByUrl('/home');  
-    } 
-    else{
-      console.log("Token Not active");
-      this.router.navigateByUrl('/auth/signine');
-    }
+    // if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
+    //   // this.getGridData();
+    //   this.authService.getUserPermission(false,'/home');
+    //   this.router.navigateByUrl('/home');  
+    // } 
+    // else{
+    //   console.log("Token Not active");
+    //   this.router.navigateByUrl('/auth/signine');
+    // }
     
     // this.authService._user_info.subscribe(resp => {
     //   if(resp!== null){
@@ -159,6 +205,36 @@ export class AppComponent implements OnInit, OnDestroy {
     //     this.userInfo = {};
     //   }
     // })
+  }
+  redirectToHomePage(){
+    //this.storageService.removeDataFormStorage();
+    //this.localSetting();
+    this.redirectToHomePageWithStorage();
+  }
+  redirectToHomePageWithStorage(){
+    if(!this.checkApplicationSetting()){
+      this.restService.getApplicationAllSettings();
+    }
+    if(this.checkIdTokenStatus()){      
+      this.authService.getUserPermission(false,'/home');
+      this.router.navigateByUrl('/home');  
+      // this.authApiService.redirectionWithMenuType();
+    }else{
+      this.authService.redirectToSignPage();
+    }
+  }
+  checkIdTokenStatus(){
+    let tokenStatus = false;
+    if (this.storageService != null && this.storageService.GetIdToken() != null) {      
+      if(this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE){
+        tokenStatus = true;           
+      }else{
+        tokenStatus = false; 
+      }
+    }else{
+      tokenStatus = false; 
+    }
+    return tokenStatus;
   }
   
   async getCurrentLocation(){
@@ -204,7 +280,7 @@ export class AppComponent implements OnInit, OnDestroy {
     //this.commonFunctionService.getCurrentAddress();
   }
   onLogout() {
-    this.authService.logout('/auth/signine');
+    this.authService.logout();
   }
   
   resetVariables(){
@@ -239,6 +315,22 @@ export class AppComponent implements OnInit, OnDestroy {
 
   comingSoon() {
     this.notificationService.presentToastOnBottom('Comming Soon...',"primary");
+  }
+  checkApplicationSetting(){
+    let exists = false;
+    let applicationSetting = this.storageService.getApplicationSetting();
+    if(applicationSetting){
+      exists = true;
+    }else{
+      exists = false;
+    }
+    return exists;
+  }
+
+  loadPage(){
+    this.favIcon.href = this.storageService.getLogoPath() + "favicon.ico";
+    this.titleService.setTitle(this.storageService.getPageTitle());
+    this.themeName = this.storageService.getPageThmem();
   }
 
 }
