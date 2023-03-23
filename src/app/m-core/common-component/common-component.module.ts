@@ -13,13 +13,15 @@ import { GoogleChartsModule } from 'angular-google-charts';
 import { GridSelectionComponent } from './grid-selection/grid-selection.component';
 import { PopoverComponent } from './popover/popover.component';
 import { AngularEditorModule } from '@kolkov/angular-editor';
+import { GmapViewComponent } from './gmap-view/gmap-view.component'
 const components = [
     FormComponent,
     CardsLayoutComponent,
     ModalDetailCardComponent,
     ChartComponent,
     GridSelectionComponent,
-    PopoverComponent
+    PopoverComponent,
+    GmapViewComponent
   ];
 
 @NgModule({

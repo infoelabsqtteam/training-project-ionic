@@ -6,7 +6,7 @@
   </ion-segment>
 </ion-header> -->
 
-<ion-content class="contactlist">
+<ion-content class="">
   <div *ngIf="nodatafound && this.carddata=='' && this.carddata.length == 0">
     <ion-card>
         <div class="ion-text-center"><img alt="No Records found !" *ngIf="nodatafoundImg" [src]="nodatafoundImg" /></div>
@@ -84,7 +84,7 @@
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="cardlist">
           <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="card.first_name != ''" [innerHTML]="getFirstCharOfString(card.first_name)"></span></ion-avatar>
-          <ion-row *ngIf="columnList && columnList.length > 0">
+          <ion-row *ngIf="columnList && columnList.length > 0" >
             <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="detailCardButton(column,card)">
               <p [ngClass]="column.class_name ? column.class_name  : ''" class="ion-text-end" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
@@ -110,6 +110,37 @@
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
+
+  <!-- <ion-accordion-group class="accordianList" expand="inset" *ngIf="cardType == 'trackOnMap'">
+    <ion-accordion class="" [value]="card.id" *ngFor="let card of locationData; index as i"  (click)="modaldetailCardButton(column,card)"> -->
+      <!-- <ion-item lines="none" slot="header" color="">
+        <ion-label>{{card.recordName}}</ion-label>
+      </ion-item> -->
+      <ion-accordion-group class="accordianList" expand="inset" *ngIf="cardType == 'trackOnMap'">
+        <div lines="none" class="ion-padding-default mapcardRecord" *ngFor="let card of carddata; index as i">
+          <ion-card class="ion-margin-horizontal-0 ion-margin-vertical-0">
+            <ion-card-content class="ion-padding-top-default ion-padding-bottom-default">        
+              <ion-row>
+                <ion-col size="8" class="ion-text-left">{{card.name}}</ion-col>
+                <ion-col size="4" class="ion-text-right">{{card.status | titlecase}}</ion-col>
+                <!-- <ion-col size="12" class="ion-text-right">{{getGeocodeAddress(card.endPoint)}}</ion-col> -->
+              </ion-row>
+              <ion-row *ngIf="card.status == 'DELIVERED'">
+                <ion-col><ion-button expand="block" size="small" fill="outline">View</ion-button></ion-col>
+              </ion-row>
+              <ion-item lines="none" *ngIf="card.status != 'DELIVERED'">
+                <ion-button *ngFor="let btn of gridButtons" shape="round" size="small" expand="block" color="primary" (click)="gridButtonAction(card,i,btn)" [disabled]="(card.status == 'DELIVERED' || card.status == 'PROGRESS') ? true : false">{{btn.field_name == 'cancel' ? 'Reject' : btn.label}}</ion-button>
+                <!-- <ion-button shape="round" size="small" expand="block" color="primary" id="openModal" (click)="actionBtnClicked(i,'reject')" [disabled]="(card.status == 'DELIVERED' || card.status == 'PROGRESS' || card.status == 'ACCEPTED') ? true : false">Reject</ion-button> -->
+                <ion-button shape="round" size="small" expand="block" color="primary" (click)="actionBtnClicked(i,'accept')" [disabled]="(card.status == 'DELIVERED' || card.status == 'PROGRESS' || card.status == 'ACCEPTED') ? true : false">Accept</ion-button>
+                <ion-button shape="round" size="small" expand="block" color="primary" (click)="startDeliveryItem(card,i)" [disabled]="(card.status == 'ASSIGNED') ? true : false">Start</ion-button>
+                <!-- <ion-button shape="round" size="small" expand="block" color="primary" [disabled]="card.completed">Modify</ion-button> -->
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ion-accordion-group>
+    <!-- </ion-accordion>
+  </ion-accordion-group> -->
 
   <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" *ngIf="addNewEnabled">
     <ion-fab-button (click)="addNewForm()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>

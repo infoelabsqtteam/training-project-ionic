@@ -1,10 +1,10 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService, NotificationService, PermissionService } from '@core/ionic-core';
+import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService, NotificationService, PermissionService, App_googleService } from '@core/ionic-core';
 import { filter } from 'rxjs';
 import { CallNumber } from '@ionic-native/call-number/ngx';
-import { Platform, ModalController, AlertController, PopoverController } from '@ionic/angular';
+import { Platform, ModalController, AlertController, PopoverController, isPlatform } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card.component';
 import { FormComponent } from '../form/form.component';
@@ -15,6 +15,7 @@ import { HttpClient, HttpEventType } from '@angular/common/http';
 import { FileOpener } from '@ionic-native/file-opener/ngx';
 import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
+import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 
 @Component({
   selector: 'app-cards-layout',
@@ -113,6 +114,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   nodatafound:boolean = false;
   hasDetaildCard:boolean = false;
   childgridsubscription:any;
+  // GPS variables below
+  currentLatLng:any;
+  userLocation:any;
+  saveResponceSubscription:any;
+  geocoder:any;
 
   constructor(
     private platform: Platform,
@@ -136,7 +142,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private fileOpener: FileOpener,
     private file: File,
     private apppermissionsService: AndroidpermissionsService,
-    public renderer: Renderer2  
+    public renderer: Renderer2,
+    private app_googleService: App_googleService
   ) 
   {
     // below code is for slider and title name
@@ -168,6 +175,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     });
     this.nodatafound=false;
+
+    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
+      this.setSaveResponce(responce);
+    });
     
   }
 
@@ -296,6 +307,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
       if(this.card && this.card.card && this.card.card.name){
         this.setCardAndTab(this.card);
+        // testing map data dummy
+        // if(this.card.card.card_type && this.card.card.card_type['name'] === "trackOnMap"){
+        //   this.locationData = [
+        //     {"id":1,"status":"delivered","completed":true,"recordName":"Record 1","recordId":"ADGFH987sg","sourceLocation":{"heading":"ASC Group","latitude":28.5846658,"longitude":77.3146088},"destinationLocation":{"heading":"Select Citywalk Mall","latitude":28.5285747,"longitude":77.2184834}},
+        //     {"id":2,"status":"notpicked","completed":false,"recordName":"Record 2","recordId":"UYUGFH9867","sourceLocation":{"heading":"ITC Labs","latitude":30.6738005,"longitude":76.8339402},"destinationLocation":{"heading":"Qualitek Labs Pvt Ltd","latitude":28.605614,"longitude":77.352368}},
+        //     {"id":3,"status":"notpicked","completed":false,"recordName":"Record 3","recordId":"FGTRYHB765","sourceLocation":{"heading":"ITC Labs","latitude":30.6738005,"longitude":76.8339402},"destinationLocation":{"heading":"Select Citywalk Mall","latitude":28.5285747,"longitude":77.2184834}}
+        //   ]
+        // }
+        // testing map data dummy end
       }
       if(this.card && this.card.card && this.card.card.grid_selection_inform != null){
         this.dataShareService.setGridSelectionCheck(this.card.card.grid_selection_inform)
@@ -372,7 +392,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
   }
 
-  setCardDetails(card) {  
+  async setCardDetails(card) {  
     let criteria:any = [];
     let parentcard:any = {};
 
@@ -446,6 +466,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     // }
     if (card.card_type !== '') {
       this.cardType = card.card_type.name;
+    }
+    if(this.cardType == "trackOnMap"){
+      this.requestAppPermission();
     }
     // this.childColumn = card.child_card;
     if(card.fields && card.fields.length > 0){
@@ -646,6 +669,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }        
       } 
     }
+    
+    let user = this.storageService.getUserInfo();
+    object["user"]=user;
     let data = this.restService.getPaylodWithCriteria(params,'',cardCriteria,object);
     this.currentPage = this.currentPageCount - 1;
     data['pageNo'] = this.currentPage;
@@ -1132,6 +1158,173 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     
   }
+  async requestAppPermission() {
+    let isGpsEnable = false;
+    if(isPlatform('hybrid')){
+      const permResult = await this.permissionService.checkAppPermission("ACCESS_FINE_LOCATION");
+      if(permResult){
+        isGpsEnable = await this.app_googleService.askToTurnOnGPS();
+        if(isGpsEnable){
+          this.userLocation = await this.app_googleService.getUserLocation();
+          this.currentLatLng ={
+            lat:this.userLocation.latitude,
+            lng:this.userLocation.longitude
+          }
+          return true;
+        }
+      }
+    }else{
+      
+      if(navigator.geolocation){
+        const successCallback = (position) => {
+          console.log("Web current Location: ",position);
+          if(position && position.coords){
+            this.userLocation = position;
+            let pos = position.coords;
+            this.currentLatLng ={
+              lat:pos.latitude,
+              lng:pos.longitude
+            }
+            return true;
+          }
+        };      
+        const errorCallback = (error) => {
+          console.log(error);
+          this.currentLatLng = {}
+          return false;
+        };
+        navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+      }
+    }
+    
+  }
+  async actionBtnClicked(index:number,btnStatus:any){
+    let header:string = "Are you sure !";
+    let msg:string = "Wanna do this?";
+    if(btnStatus == "reject"){
+      header = 'Reject Item';
+      msg = 'Do you wanna Reject the Item Delivery ?'
+    }else if(btnStatus == "accept"){
+      header = 'Accept Item';
+      msg = 'Accept this Item for Delivery ?'
+    }
+    let confirmDelete:any = await this.notificationService.confirmAlert(header,msg);
+    let selectedRow:any = {};
+    selectedRow = this.carddata[index];
+    if(confirmDelete === "confirm"){
+      if(btnStatus == "reject"){ 
+        selectedRow['status'] = "REJECTED";
+        selectedRow['rejectedDateTime'] = this.datePipe.transform(new Date(), "dd-MM-yyyyThh:mm:ss");
+        // this.carddata.splice(index,1);
+      }
+      if(btnStatus == "accept"){ 
+        selectedRow['status'] = "ACCEPTED";
+        selectedRow['acceptedDateTime'] = this.datePipe.transform(new Date(), "dd-MM-yyyyThh:mm:ss");
+      }
+      this.carddata[index]=selectedRow;
+      let payload = {
+        'data':selectedRow,
+        'curTemp': this.collectionname
+      }
+      this.apiService.SaveFormData(payload);
+    }
+  }
+  setSaveResponce(saveFromDataRsponce){
+    if (saveFromDataRsponce) {
+      if (saveFromDataRsponce.success && saveFromDataRsponce.success != '') {
+        if (saveFromDataRsponce.success == 'success' && !this.updateMode) {
+          // this.getGridData(this.collectionname,);
+          this.setCardDetails(this.card.card);
+        }
+      }
+    }
+  }
+  async startDeliveryItem(data:any,index:number){
+    await this.requestAppPermission();
+    if(this.currentLatLng && this.currentLatLng.lat){
+      
+      if(data.status != "PROGRESS"){    
+        let packageRef = {"_id":data._id,"name":data.name};
+        let wayPointList = [];
+        if(this.currentLatLng){
+          wayPointList.push(this.currentLatLng);
+        }else{      
+          wayPointList.push(data.startPoint);
+        }
+        let startTime = this.datePipe.transform(new Date(), "dd-MM-yyyyThh:mm:ss");
+        // if(this.userLocation.timestamp){
+        //   startTime = this.datePipe.transform(this.userLocation.timestamp, "dd-MM-yyyyThh:mm:ss");
+        // }
+        // wayPointList.push(data.endPoint);
+        let trackObject = {
+          "packageRef":packageRef,
+          "startTimeStamp": startTime,
+          "startPoint":data.startPoint,
+          "endPoint" : data.endPoint,
+          "waypoints" : wayPointList
+        }
+        let payload = {
+          "curTemp" : "location_tracker",
+          "data":trackObject
+        }
+        this.apiService.SaveFormData(payload);
+        data.status = "PROGRESS";
+        let packagePayload = {
+          "curTemp":this.collectionname,
+          "data":data
+        }
+        this.apiService.SaveFormData(packagePayload);
+      }
+      let additionalData:any = {
+        "collectionName":this.collectionname,
+        "currentLatLng":this.currentLatLng
+      }
+      const modal = await this.modalController.create({
+        component: GmapViewComponent,
+        cssClass: 'my-custom-modal-css',
+        componentProps: { 
+          "selectedRowData": data,
+          "selectedRowIndex": index,
+          "additionalData": additionalData,
+        },
+        showBackdrop:true,
+        backdropDismiss:false,
+      });
+      modal.componentProps.modal = modal;
+      modal.onDidDismiss().then((result) => {
+        console.log("Google map Modal Closed", result);
+        if(result && result.data && result.data.status == "DELIVERED"){
+            let packagePayload = {
+            "curTemp":this.collectionname,
+            "data":result.data
+          }
+          this.apiService.SaveFormData(packagePayload);
+        }
+        // this.getCardDataByCollection(this.selectedIndex);
+      });
+      return await modal.present();
+      
+    }else{
+      this.requestAppPermission();
+    }
+  }
+  async getGeocodeAddress(LatLng:any) {
+    this.geocoder = new google.maps.Geocoder();
+    // const latlngStr = ;
+    const latlng = {
+      lat: parseFloat(LatLng.lat),
+      lng: parseFloat(LatLng.lng),
+    };
+  
+    this.geocoder.geocode({ location: latlng }).then((response) => {
+        if (response.results[0]) {
+          console.log(response.results[0])
+        } else {
+          window.alert("No results found");
+        }
+      })
+      .catch((e) => window.alert("Geocoder failed due to: " + e));
+  }
 
   convertBlobToBase64 = (blob :Blob)=>new Promise ((resolve,reject) =>{
     const reader = new FileReader;
@@ -1144,3 +1337,4 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   
 
 }
+;

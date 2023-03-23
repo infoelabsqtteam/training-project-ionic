@@ -441,3 +441,26 @@ ion-searchbar{
 .ion-padding-bottom-default{padding-bottom: 5px;}
 .ion-padding-left-default{padding-left: 5px;}
 .ion-padding-right-default{padding-right: 5px;}
+.accordianList {
+    ion-accordion.accordion-collapsed {
+        ion-item{
+            border-radius: 10px;
+        }
+    }
+    ion-accordion.accordion-expanded {
+        ion-item{
+            border-radius: 10px 10px 0 0;
+        }
+        div.content{
+            background: rgba(var(--card-bg-light),.125);
+        }
+    }
+}
+.mapcardRecord {
+    ion-card-content{
+        background:var(--card-bg-light);
+        ion-item{
+        --background: var(--card-bg-light);
+        }
+    }
+}
