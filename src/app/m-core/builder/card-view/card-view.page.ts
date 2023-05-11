@@ -51,6 +51,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   popoverMenu:boolean;
   selectedgriddataId:any;
   selectedSearchCardField:any={}
+  nestedCardSubscribe:any;
   
     constructor(
       private storageService: StorageService,
@@ -107,10 +108,6 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.getCardDataByCollection(index);
     }
   
-    resetVariables(){
-      this.card = {}
-    }
-  
     ngOnDestroy(): void {
       this.resetVariables();
     }
@@ -130,13 +127,40 @@ export class CardViewPage implements OnInit, OnDestroy {
       }
       if(cardWithTab && cardWithTab.popoverTabbing) {
         this.popoverTabbing = cardWithTab.popoverTabbing;
-      }  
+      }else{
+        this.popoverTabbing = cardWithTab.popoverTabbing;
+      }
     }
     
     comingSoon() {
       this.storageService.presentToast('Comming Soon...');
     }
-    goBack(){
+    async goBack(){
+      const multipleCardCollection = this.commonDataShareService.getMultipleCardCollection();
+      let previousCollectiondData:any = {};
+      let multiCardLength = multipleCardCollection.length;
+      const lastIndex = multipleCardCollection.length - 1;
+      if(multiCardLength > 1){
+        previousCollectiondData = multipleCardCollection[multiCardLength - 2];
+      }
+      if(multipleCardCollection && multipleCardCollection.length >0){
+        previousCollectiondData = multipleCardCollection[lastIndex];
+        if(previousCollectiondData){          
+          this.card = previousCollectiondData.card;
+          this.commonDataShareService.setModuleIndex(previousCollectiondData.module_index);
+        }
+        multipleCardCollection.splice(lastIndex,1);
+        this.commonDataShareService.setMultipleCardCollection(multipleCardCollection);
+        this.commonDataShareService.setNestedCard(previousCollectiondData);
+        this.router.navigateByUrl('card-view');
+      }else{
+        this.router.navigateByUrl('home');
+        this.resetVariables();
+      }
+    }    
+  
+    resetVariables(){
+      this.card = {}      
       this.carddata = [];
       this.tabMenu = [];
       this.openFilter = false;
@@ -284,6 +308,9 @@ export class CardViewPage implements OnInit, OnDestroy {
       if(this.searchcardvalue) this.searchcardvalue = "";
       if(this.selectedSearchCardField) this.selectedSearchCardField = {};
       this.searching=false;
+    }
+    parentCardName(name:string){
+      this.headerTitle = name;
     }
 
   }

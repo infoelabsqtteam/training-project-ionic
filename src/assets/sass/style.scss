@@ -464,3 +464,14 @@ ion-searchbar{
         }
     }
 }
+
+.appFullWebkitHeight{
+    height: -webkit-fill-available;
+}
+.globalBtn{
+    height: 22px;
+    font-size: 12px;
+    margin: 0px;
+    --background: var(--Active-bg);
+    min-width: 70px;
+}

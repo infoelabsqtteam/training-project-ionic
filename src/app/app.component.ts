@@ -52,8 +52,8 @@ export class AppComponent implements OnInit, OnDestroy {
   @Output() collection_name = new EventEmitter<string>();
 
   selectedIndex= -1;
-  themeSettingSubscription:Subscription;
-  applicationSettingSubscription:Subscription;
+  themeSettingSubscription:any;
+  applicationSettingSubscription:any;
   favIcon: HTMLLinkElement = document.querySelector('#favIcon');
   themeName:any = '';
 
@@ -127,6 +127,8 @@ export class AppComponent implements OnInit, OnDestroy {
         this.resetVariables();
       }    
     });
+    
+    // this.loadJsGoogleMap();
 
   }
 
@@ -147,12 +149,13 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       //this.statusBar.overlaysWebView(true);
       this.statusBar.backgroundColorByHexString('#e30010');
-      // this.androidpermissionsService.internetPermission();
-      // this.permissionService.requestPermisiions();
-      // this.androidpermissionsService.checkPermission();
-      // this.getCurrentLocation();
     });
 
+  }
+
+  async loadJsGoogleMap(){
+    // this.storageService.setObject('JsGoogleMap',this.app_googleService.loadGoogleMaps());
+    localStorage.setItem('JsGoogleMap',JSON.stringify(await this.app_googleService.loadGoogleMaps()));
   }
 
   unsubscribeVariabbles(){

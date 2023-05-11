@@ -30,22 +30,25 @@
             <ion-labe slot="end" *ngIf="directionsData.duration.text">{{directionsData.duration.text}}</ion-labe>
         </ion-item>
     </div>
-    <div class="tracking">
-        <ion-item *ngFor="let location of locationTraces; index as i">
-            <ion-label class="ion-text-wrap">
-                <ion-label>Heading: {{location.heading? location.heading : 'Current Position'}}</ion-label>
-                <ion-label>Time: {{location.timestamp | date:'dd/MM/yyy, h:mm a'}}</ion-label>
-                <ion-label>Latitude: {{location.latitude? location.latitude : 'null'}} </ion-label>
-                <ion-label>Longitude: {{location.longitude? location.longitude : 'null'}}</ion-label>
-                <ion-label>Accuracy: {{location.accuracy? location.accuracy : 'null'}}</ion-label>
-                <ion-label>AltitudeAccuracy: {{location.altitudeAccuracy? location.altitudeAccuracy : 'null'}}</ion-label>
-                <ion-label>Altitude: {{location.altitude? location.altitude : 'null'}}</ion-label>
-                <ion-label>Speed: {{location.speed? location.speed : 'null'}}</ion-label>
-            </ion-label>
-        </ion-item>
-    </div>
 </ion-content>
 <ion-footer>
-    <ion-button expand="full" size="" fill="outline" [ngClass]="isTracking == false ? 'ion-show':'ion-hide'" (click)="getCurrentLocation()">Navigate <ion-icon slot="end" name="navigate-outline"></ion-icon></ion-button>
-    <ion-button expand="full" size="" fill="outline" [ngClass]="isTracking == true ? 'ion-show':'ion-hide'" (click)="packagedelivered()">Deliverd <ion-icon slot="end" name="pin-outline"></ion-icon></ion-button>
+    <!-- <ion-item> -->
+        <ion-row>
+            <ion-col size="6">
+                <!-- <ion-button expand="full" size="" fill="outline" [ngClass]="isTracking == true ? 'ion-show':'ion-hide'" (click)="customButtonClick('deliver')" [disabled]="">Deliverd <ion-icon slot="end" name="pin-outline"></ion-icon></ion-button> -->
+                <ion-button expand="block" size="small" fill="outline" [ngClass]="isTracking == true ? 'ion-show':'ion-hide'" (click)="customButtonClick('reach')" [disabled]="reachBtn">{{reachBtnText}} 
+                    <ion-icon  *ngIf="!reachBtn" slot="end" name="pin-outline"></ion-icon>
+                    <ion-spinner *ngIf="reachBtnSpinner" slot="end" name="circular" ></ion-spinner>
+                </ion-button>
+            </ion-col>
+            <ion-col size="6">
+                <ion-button expand="block" size="small" fill="outline" [ngClass]="isTracking == true ? 'ion-show':'ion-hide'" (click)="customButtonClick('left')" [disabled]="leftBtn">{{leftBtnText}} 
+                    <!-- <ion-icon *ngIf="!leftBtn"  name="bicycle-outline"></ion-icon> -->
+                    <span class="material-symbols-outlined" slot="end">move</span>
+                    <ion-spinner *ngIf="leftBtnSpinner" slot="end" name="circular" ></ion-spinner>
+                </ion-button>
+                <!-- <ion-button expand="full" size="" fill="outline" [ngClass]="isTracking == true ? 'ion-show':'ion-hide'" (click)="editPackage()">Upload Image<ion-icon slot="end" name="navigate-outline"></ion-icon></ion-button> -->
+            </ion-col>
+        </ion-row>
+    <!-- </ion-item> -->
 </ion-footer>

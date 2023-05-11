@@ -1573,6 +1573,39 @@ tinymceConfig = {}
               }
             }
             break;
+            case 'time':
+              if(element && element.date_format && element.date_format != ''){
+                selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
+              }else{
+                // required format 01:30 PM (client) and 01:30 PM as String (server)
+                let MTime:any = formValue[element.field_name];
+                if(MTime !="" && MTime != null && MTime !=undefined){
+                  let splitHrMin:any = MTime.split(":");                  
+                  // const selectedHr:any = (getHrFormat < 10) ? "0" + getHrFormat : getHrFormat;  
+                  let formattedTime = new Date(`2023-01-01T${splitHrMin[0]}:${splitHrMin[1]}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+                  // console.log("formattedTime ", formattedTime);
+                  selectedRow[element.field_name] = formattedTime;
+                  
+                  // below code with ion-datetime input work, need to do changes
+                  // // if(MTime && MTime.length > 10){
+                  //   // const isotime = new Date(isoValue);
+                  //   // const time = new Date(value);
+                  //   const hours = time.getHours();
+                  //   const minutes = time.getMinutes();
+                  //   const formattedTime = new Date(`2022-01-01T${hours}:${minutes}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+                  //   console.log(formattedTime);
+                  //   const now = new Date();
+                  //   const newTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+                  //   const resultIonTime = newTime.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+                  //   console.log(resultIonTime);
+                  //   MTime = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
+                  //   let utcDate:any = zonedTimeToUtc(MTime, this.userTimeZone);
+                  //   selectedRow[element.field_name] = utcDate;
+                  // // }
+
+                }
+              }
+              break;
           default:
             selectedRow[element.field_name] = formValue[element.field_name];
             break;
@@ -1642,6 +1675,26 @@ tinymceConfig = {}
 
             }          
             break;
+            case 'time':
+              if(element && element.date_format && element.date_format != ''){
+                modifyFormValue[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
+              }else{
+                // required format 01:30 PM (client) and 01:30 PM as String (server)
+                let MTime:any = formValue[element.field_name];
+                if(MTime !="" && MTime != null && MTime !=undefined){
+                  let splitHrMin:any = MTime.split(":");
+                  const getHr:any = splitHrMin[0];
+                  const getMin:any = splitHrMin[1];
+                  
+                  // const selectedHr:any = (getHrFormat < 10) ? "0" + getHrFormat : getHrFormat;
+  
+                  let formattedTime = new Date(`2023-01-01T${splitHrMin[0]}:${splitHrMin[1]}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+                  // console.log("formattedTime ", formattedTime);
+                  modifyFormValue[element.field_name] = formattedTime;
+
+                }
+              }
+              break;
           default:
             modifyFormValue[element.field_name] = formValue[element.field_name];
             // modifyFormValue = formValue;
@@ -2099,7 +2152,7 @@ tinymceConfig = {}
           let fieldName = element.field_name;
           let object = formValue[fieldName];
           if(element && element.field_name && element.field_name != ''){
-            switch (element.type) { 
+            switch (element.type) {
               case "grid_selection":
               case 'grid_selection_vertical':
               case "list_of_string":
@@ -2405,6 +2458,48 @@ tinymceConfig = {}
                       transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'T'HH:mm:ssZZZZZ", this.userTimeZone);
                       // let pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'";
                       // let output = format(zonedTime, pattern, { timeZone: userTimeZone })
+
+                    }else{
+                      transformzonedTime='';
+                    }
+                    this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
+                  }
+                }
+                break;
+              case "time":
+                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                  if(element.time_format && element.time_format != '' && typeof object === 'string'){
+                    const time = object[element.field_name];
+                    this.templateForm.controls[element.field_name].setValue(time)
+                  }else{
+                    const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
+                    let transformzonedTime :any;
+                    let zonedTime:any;
+                    if(value !='' && value !=null && value !=undefined){
+                      //new way required foramt for Ionic TimeFormat to convert into 24hr is "07:05:45 PM"
+                      let splitServerValue = value.split(" ");
+                      let addsec = splitServerValue[0] +":"+'00'+" "+splitServerValue[1];
+                      let date = new Date("2023-01-01 " + addsec);
+                      // Format the date object into a 24 hour time string
+                      transformzonedTime = date.toLocaleTimeString([], { hour12: false });
+                      console.log("format :",transformzonedTime);
+
+                      // below code with ion-datetime input work, need to do changes
+                      // const isoValue = new Date(value).toISOString();
+                      // const isotime = new Date(isoValue);
+                      // let splitHrMin:any = value.split(":");
+                      // const getHr:any = splitHrMin[0];
+                      // const splitMinFormat:any = splitHrMin[1];
+                      // const getMin:any = splitMinFormat.split(" ");
+                      // const time = new Date(value);
+                      // const hours = time.getHours();
+                      // const minutes = time.getMinutes();
+                      // const formattedTime = new Date(`2022-01-01T${splitHrMin[0]}:${getMin}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+                      // console.log(formattedTime);
+                      // const now = new Date();
+                      // const newTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+                      // const resultIonTime = newTime.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+                      // console.log(resultIonTime);
 
                     }else{
                       transformzonedTime='';
@@ -5974,6 +6069,13 @@ tinymceConfig = {}
   handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
     console.log("Item", ev.detail.from, 'Dragged from index', ev.detail.from, 'to', ev.detail.to);
     ev.detail.complete();
+  }
+  getTimeFormat(field){
+    if(field && field.time_format && field.time_format != ''){
+      return Number(field.time_format);
+    }else{
+      return Number('12');
+    }    
   }
 
   // Please let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last in this file

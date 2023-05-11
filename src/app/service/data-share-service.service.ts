@@ -138,5 +138,14 @@ export class DataShareServiceService {
   getCollectionName(){
     return this.collectionName;
   }
+  async getCurrentTime(newDate:any){
+    var dt = newDate
+    var hours = dt.getHours(); // gives the value in 24 hours format
+    var AmOrPm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    var minutes = dt.getMinutes();
+    var finalTime = hours + ':' + minutes + ' ' + AmOrPm;
+    return finalTime;
+  }
   
 }

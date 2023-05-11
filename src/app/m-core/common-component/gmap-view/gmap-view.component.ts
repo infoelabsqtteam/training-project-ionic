@@ -1,11 +1,12 @@
 import { Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
-import { App_googleService, DataShareService, EnvService, NotificationService, PermissionService, CoreUtilityService, RestService, ApiService } from '@core/ionic-core';
+import { App_googleService, DataShareService, EnvService, NotificationService, PermissionService, CoreUtilityService, RestService, ApiService, StorageService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, Platform } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
 import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { map } from 'rxjs';
 import { DatePipe } from '@angular/common';
+import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
 @Component({
   selector: 'app-gmap-view',
@@ -19,7 +20,7 @@ export class GmapViewComponent implements OnInit {
 
   @Input() selectedRowData:any ={};
   @Input() selectedRowIndex:number;
-  @Output() outputdata = new EventEmitter();
+  @Output() mapOutPutData = new EventEmitter();
   @Input() additionalData:any = {};
   @Input() modal: any;
   SelectedItemName:string="";
@@ -73,7 +74,14 @@ export class GmapViewComponent implements OnInit {
   directionsData:any={}; 
   currentPostionIconUrl:any = '../../../../assets/img/icons/current-location-1.png';
   destinationPostionIconUrl:any = '../../../../assets/img/icons/destination-location-1.png';
-
+  googleAddress:any;
+  reachBtn:boolean = false;
+  leftBtn:boolean = false;
+  deliverBtn:boolean = false;
+  reachBtnText:string = "";
+  leftBtnText:string = "";
+  reachBtnSpinner:boolean = false;
+  leftBtnSpinner:boolean = false;
 
 
   constructor(
@@ -81,16 +89,18 @@ export class GmapViewComponent implements OnInit {
     private notificationService: NotificationService,
     private alertCtrl: AlertController,
     private permissionService: PermissionService,
-    private ngZone: NgZone,
     private platform: Platform,
     private envService: EnvService,
     private dataShareService: DataShareService,
     private renderer: Renderer2,
     private actionSheetController: ActionSheetController,
-    private coreFunctionService: CoreUtilityService,
     private restService: RestService,
     private apiService: ApiService,
+    private ngZone: NgZone,
+    private coreFunctionService: CoreUtilityService,
     private datePipe: DatePipe,
+    private storageService: StorageService,
+    private dataShareServiceService: DataShareServiceService
   ) {   
     this.currentPostionIconUrl = '../../../../assets/img/icons/current-location-1.png';
     this.destinationPostionIconUrl = '../../../../assets/img/icons/destination-location-1.png';
@@ -101,19 +111,6 @@ export class GmapViewComponent implements OnInit {
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
     })
-    // this.currentMenu = this.storageService.GetActiveMenu();
-    // if (this.currentMenu.name != '') {
-    //   this.getMaplist({});
-    // }
-    // const payloadList = [
-    //   {
-    //     "api_params" : 'location_tracker',
-    //     "call_back_field" : 'location_list',
-    //     "criteria":[],
-    //     'object' : {}
-    //   }
-    // ]
-    // this.getCall(payloadList);
 
   }
 
@@ -125,58 +122,87 @@ export class GmapViewComponent implements OnInit {
     this.onload();
     this.checkPermissionandRequest();
   }
-  dismissModal(data?:any){
-    this.modal.dismiss(data);
+  ngonDestroy(){
+    if(this.gridDataSubscription){
+      this.gridDataSubscription.unsubscribe();
+    }
+    if(this.staticDataSubscription){
+      this.staticDataSubscription.unsubscribe();
+    }
   }
 
   async onload(){
-    if(this.selectedRowData){
-      
-      this.getCall(this.selectedRowData);
-
-      if(this.selectedRowData.name){
-        this.SelectedItemName = this.selectedRowData.name;
-      }
-      if(this.selectedRowData.endPoint){
-        if(this.selectedRowData.endPoint && this.selectedRowData.endPoint !=null){
-          
-          if(this.selectedRowData && this.selectedRowData.destinationName){
-            this.destinationLocationData['heading'] = this.selectedRowData.destinationName;
-          }else{
-            this.destinationLocationData['heading'] = "Destination Location";
-          }
-          this.destinationLatLng = this.selectedRowData.endPoint;
-          this.destinationLocationData['latlng'] = this.destinationLatLng
-          // this.destinationLatLng = {
-          //   lat: this.selectedRowData.endPoint.lat,
-          //   lng: this.selectedRowData.endPoint.lng,
-          // }
-          if(this.additionalData && this.additionalData.currentLatLng && this.additionalData.currentLatLng.lat){
-            this.currentLatLng = this.additionalData.currentLatLng;
-            this.loadMap();
-          }
-          // this.createMap(this.center);
-          // this.loadMap();
-        }
-      }
+    // this.googleMaps = JSON.parse(JSON.stringify(localStorage.getItem('JsGoogleMap')));
+    if(this.selectedRowData){      
+      this.collectionCustomFunction(this.selectedRowData);      
+    }else{
+      // this.notificationService.presentToastOnBottom("Something went wrong.");
     }
+  }
+
+  async collectionCustomFunction(selectedrowdata:any){
+    let collectionName:any ='';
+    if(this.additionalData && this.additionalData.collectionName){
+      collectionName= this.additionalData.collectionName
+    }
+    switch (collectionName.toLowerCase()) {
+      case "travel_tracking_master":
+        this.isTracking = true;
+        if(selectedrowdata.name){
+          this.SelectedItemName = selectedrowdata.name;
+        }
+        if(selectedrowdata.leftDateTime ==null){
+          this.leftBtn = false;
+        }else{
+          this.leftBtn = true;
+        }        
+        if(this.leftBtn){
+          this.leftBtnText = "Delivered";
+        }else{
+          this.leftBtnText = "Left";
+        }
+        if(selectedrowdata.reachDateTime ==null){
+          this.reachBtn = false;
+        }else{
+          this.reachBtn = true;
+        }
+        if(this.reachBtn){
+          this.reachBtnText = "Reached";
+        }else{
+          this.reachBtnText = "Reach";
+        }
+        if(this.additionalData?.destinationAddress && this.additionalData?.destinationAddress?.formatted_address){
+          this.destinationLocationData['heading'] = this.additionalData?.destinationAddress?.formatted_address;
+        }else if(selectedrowdata && selectedrowdata.customerAddress){
+          this.destinationLocationData['heading'] = selectedrowdata.customerAddress;
+        }else{
+          this.destinationLocationData['heading'] = "Destination Location";
+        }
+        if(this.additionalData && this.additionalData.currentLatLng && this.additionalData.currentLatLng.lat && this.additionalData?.destinationAddress && this.additionalData?.destinationAddress?.geometry.location){
+          this.destinationLatLng = this.additionalData?.destinationAddress?.geometry.location;
+          this.currentLatLng = this.additionalData.currentLatLng;
+          this.loadMap();
+        }
+        // this.createMap(this.center);
+        break;
+      default: 
+        // this.notificationService.presentToast("error ");
+    }
+
+      
   }
 
   async checkPermissionandRequest(){
     if (this.platform.is('hybrid')) {
-      const permResult = await this.permissionService.checkAppPermission("ACCESS_FINE_LOCATION");
-      console.log('ACCESS_FINE_LOCATION request result: ', permResult);
-      if(permResult){
+      let permResult = await this.app_googleService.checkGPSPermission();
+      if(!permResult){
         this.enableGPSandgetCoordinates();
-      }else{
-        this.requestPermissions();
       }
     }else{
       if (navigator.geolocation) {
         // const successCallback = (position) => {
         //   console.log(position);
         //   this.canUseGPS=true;
-        //   this.storeWatchPosition(position);
         // };      
         // const errorCallback = (error) => {
         //   console.log(error);
@@ -193,7 +219,6 @@ export class GmapViewComponent implements OnInit {
         //   if(value && value['message']){
         //     this.notificationService.presentToastOnBottom(value['message'],"danger");
         //   }else{
-        //     this.storeWatchPosition(value);
         //   }
         // });
       } else { 
@@ -252,7 +277,7 @@ export class GmapViewComponent implements OnInit {
 
   async enableGPSandgetCoordinates(enableGPS?:any){
     if(this.platform.is('hybrid')){
-      enableGPS = await this.checkGPSPermission();
+      enableGPS = await this.app_googleService.checkGPSPermission();
       if(enableGPS){
         this.canUseGPS = true;
         this.positionOptions['enableHighAccuracy'] = enableGPS;   
@@ -265,20 +290,6 @@ export class GmapViewComponent implements OnInit {
       this.positionOptions['timeout'] = 10000;
     }
   }
-  storeWatchPosition(resp){    
-    this.isTracking = true;
-    this.locationTraces.push({
-      accuracy:resp.coords.accuracy,
-      altitude:resp.coords.altitude,
-      altitudeAccuracy:resp.coords.altitudeAccuracy,
-      heading:resp.coords.heading,
-      latitude:resp.coords.latitude,
-      longitude:resp.coords.latitude,
-      speed:resp.coords.speed,
-      timestamp:resp.timestamp        
-    });
-  }
-
  async watchPosition() {
     try {
         this.isTracking = true;
@@ -342,48 +353,85 @@ export class GmapViewComponent implements OnInit {
     this.destinationLocationMarkerId = '';
     this.currentLocationMarkerId = '';
   }
-  packagedelivered(){
-    let deliveredTime = this.datePipe.transform(new Date(), "dd-MM-yyyyThh:mm:ss");
-    if(this.elements && this.elements.length == 1){
-      const element = this.elements[0];
-      element['endTimeStamp'] = deliveredTime;
-      element['waypoints'] = this.waypoints;
-      let payload = {
-        "curTemp" : "location_tracker",
-        "data":element
+  async customButtonClick(buttonName?:any){
+    const isGpsEnable = await this.app_googleService.checkGPSPermission();
+    if(isGpsEnable){
+      if(buttonName == "reach"){
+        this.reachBtn = true;
+        this.reachBtnSpinner = true;
+      }else if(buttonName == "left"){
+        this.leftBtn = true;
+        this.leftBtnSpinner = true;
+      }else if(buttonName == "deliver"){
+        this.deliverBtn = true;
       }
-      this.apiService.SaveFormData(payload);
-      
-      this.selectedRowData.status = "DELIVERED";
-      // let packagePayload = {
-      //   "curTemp":this.collectionname,
-      //   "data":data
-      // }
-      // this.apiService.SaveFormData(packagePayload);
-      this.clearWatch();
-      this.dismissModal(this.selectedRowData);
+      let currentposition:any = await this.app_googleService.getUserLocation();
+      if(currentposition && currentposition.lat !=null && currentposition.lng !=null){
+        let currentlatlng: any = {
+          'lat': currentposition.lat,
+          'lng': currentposition.lng,
+        }
+        if(buttonName == "reach"){
+          this.selectedRowData['reachDateTime'] = JSON.parse(JSON.stringify(new Date()));
+          this.selectedRowData['reachTime'] = await this.dataShareServiceService.getCurrentTime(new Date()); 
+          this.selectedRowData['reachLocation'] = currentlatlng;
+          this.selectedRowData['trackingStatus'] = "REACHED";
+          this.reachBtn = false;
+          this.reachBtnSpinner=false;
+        }else if(buttonName == "left"){
+          this.selectedRowData['leftDateTime'] = JSON.parse(JSON.stringify(new Date()));
+          this.selectedRowData['leftTime'] = await this.dataShareServiceService.getCurrentTime(new Date()); 
+          this.selectedRowData['leftLocation'] = currentlatlng;
+          this.selectedRowData['trackingStatus'] = "DELIVERED";
+          this.leftBtn = false;
+          this.leftBtnSpinner = false;
+          await this.clearWatch();
+          this.dismissModal(this.selectedRowData,"delivered");
+        }else if(buttonName == "deliver"){
+          this.selectedRowData['deliverDateTime'] = JSON.parse(JSON.stringify(new Date()));
+          this.selectedRowData['deliverLocation'] = currentlatlng;
+        }
+        
+        this.collectionCustomFunction(this.selectedRowData);      
+        this.saveData(this.selectedRowData);
 
-    }else{
-      this.getCall(this.selectedRowData);
-      this.notificationService.presentToastOnBottom("Please wait for a while!");
-    }
-  }
-
-  async checkGPSPermission(){
-    if(this.platform.is('hybrid')){
-      const enableGPS = await this.app_googleService.askToTurnOnGPS();
-      return enableGPS;
-    }else{
-      let canUseGPS :any= {}
-      // let canUseGPS:any = await this.app_googleService.requestLocationPermission();
-      canUseGPS = await (await Geolocation.checkPermissions()).location;
-      if(canUseGPS == "granted"){
-        return true;
       }else{
-        return false;
+        if(!currentposition.gpsenable){
+          if(buttonName == "reach"){
+            this.reachBtn = false;
+            this.reachBtnSpinner = false;
+          }else if(buttonName == "left")
+          this.leftBtn = false;
+          this.leftBtnSpinner = false;
+        }
+        this.notificationService.presentToastOnBottom("Something went wrong, please try again.");
       }
     }
+
+    // }else{
+    //   this.getCall(this.selectedRowData);
+    //   this.notificationService.presentToastOnBottom("Please wait for a while!, Something went wrong.");
+    // }
   }
+  dismissModal(data?:any,role?:any){
+    if(data !=null){
+      this.modal.dismiss(data,role);      
+    }else{
+      this.modal.dismiss(this.selectedRowData,)
+    }
+  }
+  async saveData(selectedRowData){    
+    let payload = {
+      "curTemp" : this.additionalData.collectionName,
+      "data":selectedRowData
+    }
+    this.apiService.SaveFormData(payload);
+  }
+
+  async editPackage(){
+    this.mapOutPutData.emit(this.selectedRowIndex);
+  }
+
   async postGPSPermission(canUseGPS: boolean) {
     if (canUseGPS) { this.watchPosition(); }
     else {
@@ -459,7 +507,7 @@ export class GmapViewComponent implements OnInit {
   }
   
   async getCurrentLocation() {
-    const enableGPS = await this.checkGPSPermission();
+    const enableGPS = await this.app_googleService.checkGPSPermission();
     if(enableGPS){
       if(this.platform.is("hybrid")){
         const currentLatLng = await this.app_googleService.getUserLocation();
@@ -485,7 +533,6 @@ export class GmapViewComponent implements OnInit {
             }
             return true;
           }
-          // this.storeWatchPosition(position);
         };      
         const errorCallback = (error: any) => {
           console.log(error);
@@ -495,7 +542,7 @@ export class GmapViewComponent implements OnInit {
         // let coordinates:any =  await Geolocation.getCurrentPosition(this.positionOptions);
         // let coordinates:any = await this.app_googleService.getUserLocation();
         if(coordinates && coordinates['message'] == "Timeout expired"){
-          this.getCurrentLocation();
+          this.notificationService.presentToastOnBottom("Something Went wrong. Please try again.");
         }else if(coordinates && coordinates['lat'] && coordinates['lng']){          
           this.center = {
             lat:coordinates.lat,
@@ -539,35 +586,37 @@ export class GmapViewComponent implements OnInit {
 
   setGridData(gridData){
     if (gridData) {
-      if (gridData.data && gridData.data.length > 0) {
-        this.elements = JSON.parse(JSON.stringify(gridData.data));
-        this.waypoints =[];
-        this.elements.forEach((element,i) => {
-          element.waypoints.forEach((waypoints,j) => {
-            const object  = { 
-              "lat": waypoints.lat, 
-              "lng": waypoints.lng 
-            }
-            if(j == 0){
-              this.currentLatLng = object;
-            }else if(waypoints.length - 1 == i){
-              this.destinationLatLng = object;
-              this.lat = waypoints.lat;
-              this.lng = waypoints.lng;
-            }else{
-              this.waypoints.push(object);
-            }
-            
-          });
-        // if(element.waypoints && element.waypoints.length > 0){
-        //   element.waypoints.forEach(waypoint => {
-        //     this.waypoints.push(waypoint);            
-        //   });
-        // }
-        });
-      } else {
-        this.elements = [];
-      }
+      // if(this.watchId ==''){
+        if (gridData.data && gridData.data.length > 0) {
+          this.elements = JSON.parse(JSON.stringify(gridData.data));
+            this.waypoints =[];
+            this.elements.forEach((element,i) => {
+              element.waypoints.forEach((waypoints,j) => {
+                const object  = { 
+                  "lat": waypoints.lat, 
+                  "lng": waypoints.lng 
+                }
+                if(j == 0){
+                  this.currentLatLng = object;
+                }else if(waypoints.length - 1 == i){
+                  this.destinationLatLng = object;
+                  this.lat = waypoints.lat;
+                  this.lng = waypoints.lng;
+                }else{
+                  this.waypoints.push(object);
+                }
+                
+              });
+            // if(element.waypoints && element.waypoints.length > 0){
+            //   element.waypoints.forEach(waypoint => {
+            //     this.waypoints.push(waypoint);            
+            //   });
+            // }
+            });
+        } else {
+          this.elements = [];
+        }
+      // }
     }
   }
   setStaticData(staticData){
@@ -581,7 +630,7 @@ export class GmapViewComponent implements OnInit {
 
   getCall(selectedData){
     let crList:any = [];
-    const cr = "packageRef._id;eq;" + selectedData._id + ";STATIC";
+    const cr = "_id;eq;" + selectedData._id + ";STATIC";
     crList.push(cr);
 
     let data = this.restService.getPaylodWithCriteria('location_tracker','',crList,'');
@@ -592,33 +641,12 @@ export class GmapViewComponent implements OnInit {
       'path':"null"
     }
     this.apiService.getGridData(payload);
-
-    
-    // const payloadList = [
-    //     {
-    //       "api_params" : 'location_tracker',
-    //       "call_back_field" : 'location_list',
-    //       "criteria":crList,
-    //       'object' : {}
-    //     }
-    //   ]
-
-    // const stati_group = [];
-    // payloadList.forEach(element => {
-    //   const getCompanyPayload = this.restService.getPaylodWithCriteria(element.api_params,element.call_back_field,element.criteria,element.object)
-    //   stati_group.push(getCompanyPayload);
-    // });
-    // if(stati_group.length > 0){
-    //   // this.store.dispatch(
-    //   //   new CusTemGenAction.GetStaticData(stati_group)
-    //   // )  
-    //   this.apiService.getStatiData(stati_group);      
-    // }
   }
 
   // JS Google Map Func.
   async loadMap(){
     try{
+      // let googleMaps = this.googleMaps
       let googleMaps = await this.app_googleService.loadGoogleMaps();
       this.googleMaps = googleMaps;
       const mapEl = this.mapRef.nativeElement;
@@ -626,7 +654,7 @@ export class GmapViewComponent implements OnInit {
         center: this.center,
         zoom: 12,
         disableDefaultUI: false,
-        // mapTypeId: 'satellite'
+        // mapTypeId: 'roadmap', //satellite, roadmap
       };
 
       this.map = new googleMaps.Map(mapEl,mapOptions);
@@ -650,11 +678,13 @@ export class GmapViewComponent implements OnInit {
         },
         suppressMarkers: true
       });
-      await this.drawRoute();
+      await this.gmDrawRoute();
 
       this.map.setCenter(this.currentLatLng);
       this.renderer.addClass(mapEl, 'visible');
-      this.watchPosition();
+      // if(this.watchId == ''){
+      //   this.watchPosition();
+      // }
       
       // this.addDestinationMarker(currentLatLng);
       // this.ongoogleMapClick();
@@ -682,7 +712,8 @@ export class GmapViewComponent implements OnInit {
 
   }
   async gmdestinationPositionMarker(destinationlatlng){
-      let destinationLatLng = new google.maps.LatLng(destinationlatlng.lat, destinationlatlng.lng);      
+      let destinationLatLng = new google.maps.LatLng(destinationlatlng.lat, destinationlatlng.lng);
+      // let destinationLatLng = destinationlatlng;
       let destinationPositionIcon = {
         url: this.destinationPostionIconUrl,
         scaledSize: new google.maps.Size(30, 30), //scaled Size
@@ -698,9 +729,9 @@ export class GmapViewComponent implements OnInit {
       });
       this.destinationLocationMarkerId = destinationIconMarker;      
       destinationIconMarker.setMap(this.map);
-      this.ongoogleMapDestinationMarkerClick();
+      // this.ongoogleMapDestinationMarkerClick();
   }
-  async drawRoute(){
+  async gmDrawRoute(){
     const directionRequest = {
       origin: this.currentLatLng, //For Curent laction use this.currentLatLng , For Dummy Location use this.center
       destination: this.destinationLatLng,
@@ -713,10 +744,8 @@ export class GmapViewComponent implements OnInit {
         console.log("directionsDisplay: ", response);
         const directionsData = response.routes[0].legs[0];
         this.directionsData = directionsData;
-        // console.log("directionsData: ", directionsData);
-        // const distance = directionsData.distance.text;
-        // const duration = directionsData.duration.text;
-        // console.log("duration : ", duration)
+        this.ongoogleMapDestinationMarkerClick();
+        this.ongoogleMapOriginMarkerClick();
       }else{
         console.log("status: ", status);
         // this.notificationService.presentToastOnBottom("status", "danger");
@@ -726,23 +755,39 @@ export class GmapViewComponent implements OnInit {
 
   }
   ongoogleMapDestinationMarkerClick(){
-    const contentString = '<h1 id="googleMarkerHeading" class="googleMarkerHeading" style="font-size:16px;margin:0;">'+this.destinationLocationData.heading+'</h1>' + '<p><a aria-label="Show location on map" title="Show location on map" target="_blank" href="https://www.google.com/maps/@'+ this.destinationLatLng.lat +','+ this.destinationLatLng.lng +','+ '13z?hl=en-US&amp;gl=US" class="gm-iv-marker-link">View on Google Maps</a></p>'
+    let origin = "&origin=" + this.currentLatLng.lat + "," + this.currentLatLng.lng;
+    let destination = "&destination=" + this.destinationLatLng.lat + "," + this.destinationLatLng.lng;
+    let markerHeading = "";
+    if(this.directionsData && this.directionsData.end_address){
+      markerHeading = this.directionsData.end_address
+    }else{
+      markerHeading = this.destinationLocationData.heading
+    } 
+    const contentString = '<h1 id="googleMarkerHeading" class="googleMarkerHeading" style="font-size:16px;margin:0;">'+ markerHeading +'</h1>' + '<p><a aria-label="Show location on map" title="Show location on map" target="_blank" href="https://www.google.com/maps/dir/?api=1'+ origin + destination +'&travelmode=driving'+ ',13z?hl=en-US&amp;gl=US" class="gm-iv-marker-link">View on Google Maps</a></p>'
     const infowindow = new google.maps.InfoWindow({
       content: contentString,
       ariaLabel: this.destinationLocationData.heading,
       
     });
     this.markerClickListener = this.googleMaps.event.addListener(this.destinationLocationMarkerId, "click", () => {
-      if (this.destinationLocationMarkerId.getAnimation() !== null) {
-        this.destinationLocationMarkerId.setAnimation(null);
-      } else {
-        window.setTimeout(() => {
-          this.destinationLocationMarkerId.setAnimation(google.maps.Animation.BOUNCE);          
-        }, 3000);
-      }
-      this.map.setZoom(16);
       this.map.setCenter(this.destinationLocationMarkerId.getPosition() as google.maps.LatLng);
+      this.map.setZoom(16);
       infowindow.open(this.map, this.destinationLocationMarkerId);
+    });
+  }
+  ongoogleMapOriginMarkerClick(){
+    let markerHeading = "";
+    if(this.directionsData && this.directionsData.start_address){
+      markerHeading = this.directionsData.start_address
+    } 
+    const contentString = '<h1 id="googleMarkerHeading" class="googleMarkerHeading" style="font-size:16px;margin:0;">'+ markerHeading +'</h1>'
+    const infowindow = new google.maps.InfoWindow({
+      content: contentString,
+      ariaLabel: this.directionsData.start_address,      
+    });
+    this.markerClickListener = this.googleMaps.event.addListener(this.currentLocationMarkerId, "click", () => {
+      this.map.setCenter(this.currentLocationMarkerId.getPosition() as google.maps.LatLng)
+      infowindow.open(this.map, this.currentLocationMarkerId);      
     });
   }
   //End JS Google Map Func.

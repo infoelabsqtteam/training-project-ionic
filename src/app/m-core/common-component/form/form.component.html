@@ -282,6 +282,35 @@
               </ion-popover>
             </ion-item>
           </div>
+          <div *ngIf="tableField.type == 'time'">
+              <ion-item appearance="outline" class="example-full-width w-100">
+                <ion-label>{{ tableField.label | titlecase}} <ion-text *ngIf="tableField.is_mandatory" class=""> *</ion-text></ion-label>
+                <!-- <ion-input value="{{ templateForm.get(tableField.field_name).value | date: 'shortTime' }}" id="{{tableField._id + '_' + tableField.field_name}}" class="ion-text-end  ion-flex-direction-row-reverse" [required]="tableField.is_mandatory" [disabled]="tableField.is_disabled" readonly>
+                  <ion-icon name="time-outline" class="ion-padding-start ion-icon-large-font"></ion-icon>
+                </ion-input> -->
+                <ion-input type="time" value="{{ templateForm.get(tableField.field_name)?.value}}" id="{{tableField._id + '_' + tableField.field_name}}" [formControlName]="tableField.field_name" class="ion-text-end  ion-flex-direction-row-reverse" [required]="tableField.is_mandatory" [disabled]="tableField.is_disabled" >
+                </ion-input>
+
+                  <!-- <ion-popover trigger="{{tableField._id + '_' + tableField.field_name}}" >
+                    <ng-template>
+                      <ion-datetime
+                        [id]="tableField.field_name + '_' + tableField._id"
+                        size="cover"
+                        presentation="time"
+                        [formControlName]="tableField.field_name"
+                        locale="en-US"
+                        hourCycle="h12"
+                        [preferWheel]="true"
+                        show-clear-button="true"
+                        [showDefaultButtons]="true"
+                        displayFormat="h:mm A" 
+                        pickerFormat="h:mm A" 
+                      >
+                      </ion-datetime>
+                    </ng-template>
+                  </ion-popover> -->
+              </ion-item>
+          </div> 
           <div *ngIf="tableField.type == 'gst_number'">
             <ion-item>
               <ion-label position="floating">{{ tableField.label }} <ion-text *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
