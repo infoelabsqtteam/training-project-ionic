@@ -432,7 +432,7 @@
                       <div *ngIf="fields.type == 'gst_number'">
                         <ion-item class="">
                             <ion-label>{{ fields.label | titlecase}} <ion-text *ngIf="fields.is_mandatory" class=""> *</ion-text></ion-label>
-                            <input matInput type="text" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"> 
+                            <input type="text" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"> 
                             <ion-note slot="error" class="text-danger" *ngIf="templateForm.get(tableField.field_name)['controls'][fields.field_name].touched && templateForm.get(tableField.field_name)['controls'][fields.field_name].errors?.required">
                                 {{ fields.label | titlecase}} is <strong>required</strong>
                             </ion-note>
@@ -812,6 +812,23 @@
                 </div>
               </ion-accordion>
             </ion-accordion-group>                        
+          </div>
+          <div *ngIf="tableField.type == 'gmap' || tableField.type == 'gmapview'">
+              <div class="input-container w-100">
+                  <label for="search" position="floating">{{ tableField.label | titlecase}}</label>
+                  <input type="text" class="w-100 not-ioninput" autocomplete="on" (keyup)="gmapSearchPlaces($event,tableField)" [placeholder]="tableField.placeholder ? tableField.placeholder : tableField.label | titlecase" [required]="tableField.is_mandatory" spellcheck="off" type="text" #search [formControlName]="tableField.field_name" (keydown.enter)="$event.preventDefault()">
+              </div>
+              <div *ngIf="tableField.type == 'gmapview'">
+                <!-- <capacitor-google-map #capacitormap style="min-height: 250px;max-height: 350px;width: 100%" height="250px" width="100%"></capacitor-google-map> -->
+                  <google-map #angularGoogleMap style="min-height: 250px;max-height: 350px;width: 100%" height="250px" width="100%" [center]="center" [zoom]="zoom" (mapClick)="mapClick($event,tableField)">
+                      <map-marker #marker="mapMarker"
+                          *ngIf="center"
+                          [position]="center"
+                          (mapClick)="openInfoWindow(marker)">
+                      </map-marker>
+                      <map-info-window>{{address}}</map-info-window>
+                  </google-map>
+              </div>
           </div>
         </div>
       </ion-col> 

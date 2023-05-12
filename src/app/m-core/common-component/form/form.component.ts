@@ -1,25 +1,28 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter, Output, HostListener } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter, Output, HostListener, NgZone } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn, FormArray, FormControl } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { ApiService, CommonDataShareService, CoreUtilityService, DataShareService, EnvService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
-import { ItemReorderEventDetail, ModalController, ToastController  } from '@ionic/angular';
+import { ApiService, App_googleService, CommonDataShareService, CoreUtilityService, DataShareService, EnvService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
+import { AlertController, ItemReorderEventDetail, ModalController, ToastController, isPlatform  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
 import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { finalize, last } from 'rxjs';
+import { Observable, catchError, finalize, last, map, of } from 'rxjs';
 import { CameraService } from 'src/app/service/camera-service/camera.service';
 import { HttpClient } from '@angular/common/http';
 import { zonedTimeToUtc, utcToZonedTime} from 'date-fns-tz';
-import { parseISO, format, hoursToMilliseconds, isToday } from 'date-fns';
+import { parseISO, format, hoursToMilliseconds, isToday, add } from 'date-fns';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import {FileOpener} from '@ionic-native/file-opener/ngx';
 import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from 'src/app/service/androidpermissions.service';
 import { PopoverModalService } from '../../../service/modal-service/popover-modal.service'
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
+// import { GoogleMap, MapType } from '@capacitor/google-maps';
+import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
+import { environment } from 'src/environments/environment';
 
 interface User {
   id: number;
@@ -171,12 +174,16 @@ tinymceConfig = {}
   @Input() modal: any;
   @Input() isBulkUpdate:boolean;
   @Input() bulkDataList:any;
-  bulkupdates:boolean = false;
-
-  
+  @ViewChild('capacitormap') capMapRef: ElementRef<HTMLElement>;
+  @ViewChild('search') searchElementRef: ElementRef; 
+  @ViewChild(MapInfoWindow) infoWindow: MapInfoWindow;
+  @ViewChild(GoogleMap) public map!: GoogleMap;
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
   selectedphotos:any= [];  
   downloadClick='';
+  bulkupdates:boolean = false;  
+  // newCapMap: GoogleMap;
+  apiLoaded: Observable<boolean>;
   
   ionicForm: FormGroup;
   defaultDate = "1987-06-30";
@@ -278,9 +285,10 @@ tinymceConfig = {}
 
   latitude: number = 0;
   longitude: number = 0;
-  zoom: number = 0;
+  zoom: number = 10;  
+  center: google.maps.LatLngLiteral = {lat: 0, lng: 0};
   address: string;
-  // private geoCoder;
+  capMapMarkerId:string = '';
 
   focusFieldParent:any={};
   currentForm_id = "";
@@ -324,16 +332,19 @@ tinymceConfig = {}
     private plt: Platform, 
     private actionSheetCtrl: ActionSheetController,
     private loadingCtrl: LoadingController,
-    private http: HttpClient,
+    private httpClient: HttpClient,
     private dataShareServiceService: DataShareServiceService,
     private envService: EnvService,
     private fileOpener: FileOpener,
     private file: File,
     private apppermissionsService: AndroidpermissionsService,
-    private popoverModalService: PopoverModalService
+    private popoverModalService: PopoverModalService,
+    private app_googleService: App_googleService,
+    private alertController: AlertController,
+    private ngZone: NgZone
     ) {
 
-
+      // this.mapsApiLoaded();
       this.tinymceConfig = {
         height: 500,
         menubar: false,
@@ -482,13 +493,19 @@ tinymceConfig = {}
 
   ionViewWillEnter() {
     this.onLoadVariable();
+    this.checkPermissionandRequest();
+  }
+  ionViewDidEnter(){
+    // this.createMap();
   }
   onLoadVariable() {
     this.dataSaveInProgress = true;
-  }
-  
+  }  
   ionViewWillLeave(){
     this.unsubscribeVariabbles();
+  }
+  ngAfterViewInit(){
+    // this.gmapSearchPlaces();
   }
   ngOnDestroy() {
     //Abobe ionViewwillLeave is working fine.
@@ -499,6 +516,7 @@ tinymceConfig = {}
     this.getNextFormById(id);
     this.handleDisabeIf();
     this.formControlChanges();
+    this.checkPermissionandRequest();
   }
   private getNextFormById(id: string) {
     const params = "form";
@@ -1551,11 +1569,12 @@ tinymceConfig = {}
               }
             });
             break;
-          // case 'gmap':
-          //   selectedRow['latitude'] = this.latitude;
-          //   selectedRow['longitude'] = this.longitude;
-          //   selectedRow['address'] = this.address;
-          //   break;
+          case 'gmap':
+          case "gmapview":
+            selectedRow['latitude'] = this.latitude;
+            selectedRow['longitude'] = this.longitude;
+            selectedRow['address'] = this.address;
+            break;
           case 'date':
             if(element && element.date_format && element.date_format != ''){
               selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
@@ -1573,7 +1592,7 @@ tinymceConfig = {}
               }
             }
             break;
-            case 'time':
+          case 'time':
               if(element && element.date_format && element.date_format != ''){
                 selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
               }else{
@@ -1645,11 +1664,12 @@ tinymceConfig = {}
               }
             });
             break;
-          // case 'gmap':
-          //   modifyFormValue['latitude'] = this.latitude;
-          //   modifyFormValue['longitude'] = this.longitude;
-          //   modifyFormValue['address'] = this.address;
-          //   break;
+          case 'gmap':
+          case "gmapview":
+            modifyFormValue['latitude'] = this.latitude;
+            modifyFormValue['longitude'] = this.longitude;
+            modifyFormValue['address'] = this.address;
+            break;
           case 'date':
             if(element && element.date_format && element.date_format != ''){
               modifyFormValue[element.field_name] = this.datePipe.transform(formValue[element.field_name],element.date_format);
@@ -1973,10 +1993,13 @@ tinymceConfig = {}
       }
     });
   }
-  close(){    
+  close(){
     this.apiService.resetStaticAllData();
     this.copyStaticData = {};
     this.typeAheadData = [];
+    this.latitude = 0;
+    this.longitude = 0;
+    this.address = "";
     //this.commonFunctionService.resetStaticAllData();
     this.selectedRow = {};
     this.checkFormAfterCloseModel();
@@ -2146,9 +2169,16 @@ tinymceConfig = {}
   }
   updateDataOnFormField(formValue){
     const checkDataType = typeof formValue;
-    if(checkDataType == 'object' && !this.commonFunctionService.isArray(formValue)){
+    if(checkDataType == 'object' && !this.commonFunctionService.isArray(formValue) && this.tableFields && this.tableFields.length > 0){
       this.tableFields.forEach(element => {
         if(!element.hideOnMobile){
+          // if(element && element.field_name && element.field_name != ''){
+          //   let fieldName = element.field_name;
+          //   let object = formValue[fieldName];
+          //   if(object != null && object != undefined){
+          //     this.updateFormValue(element,formValue);
+          //   }
+          // }
           let fieldName = element.field_name;
           let object = formValue[fieldName];
           if(element && element.field_name && element.field_name != ''){
@@ -2407,23 +2437,24 @@ tinymceConfig = {}
                   }
                 }
               break; 
-              // case "gmap":
-              // if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-              //   if(formValue['longitude']){
-              //     this.longitude = formValue['longitude'];
-              //   }
-              //   if(formValue['latitude']){
-              //     this.latitude = formValue['latitude'];
-              //   }
-              //   if(formValue['zoom']){
-              //     this.zoom = formValue['zoom'];
-              //   }    
-              //   if(this.longitude != 0 && this.latitude != 0){
-              //     this.getAddress(this.latitude,this.longitude)
-              //   } 
-              //   this.templateForm.controls[element.field_name].setValue(object)
-              // }
-              // break;
+              case "gmap":
+              case "gmapview":
+                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                  if(formValue['longitude']){
+                    this.longitude = formValue['longitude'];
+                  }
+                  if(formValue['latitude']){
+                    this.latitude = formValue['latitude'];
+                  }
+                  if(formValue['zoom']){
+                    this.zoom = formValue['zoom'];
+                  }    
+                  if(this.longitude != 0 && this.latitude != 0){
+                    this.getAddressfromLatLng(this.latitude,this.longitude)
+                  } 
+                  this.templateForm.controls[element.field_name].setValue(object)
+                }
+                break;
               case "daterange":
                 if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
                   let list_of_dates = [
@@ -2474,7 +2505,6 @@ tinymceConfig = {}
                   }else{
                     const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
                     let transformzonedTime :any;
-                    let zonedTime:any;
                     if(value !='' && value !=null && value !=undefined){
                       //new way required foramt for Ionic TimeFormat to convert into 24hr is "07:05:45 PM"
                       let splitServerValue = value.split(" ");
@@ -2555,20 +2585,21 @@ tinymceConfig = {}
         });
       }
     }
-  }
-  
+  }  
   
   checkValidator(action_button){
-    const field_name = action_button.field_name.toLowerCase();
-    switch (field_name) {
-      case "save":
-      case "update":
-      case "updateandnext":
-      case "send_email":
-        return !this.templateForm.valid;
-      default:
-        return;
-    }      
+    if(action_button.field_name){
+      const field_name = action_button.field_name.toLowerCase();
+      switch (field_name) {
+        case "save":
+        case "update":
+        case "updateandnext":
+        case "send_email":
+          return !this.templateForm.valid;
+        default:
+          return;
+      }
+    }     
   }
 
 
@@ -6077,6 +6108,288 @@ tinymceConfig = {}
       return Number('12');
     }    
   }
+  async checkPermissionandRequest(){    
+    let permResult = await this.app_googleService.checkGPSPermission();
+    if (isPlatform('hybrid')) {
+      if(!permResult){
+        this.enableGPSandgetCoordinates();
+      }else{
+        this.setCurrentLocation();
+      }
+    }else{
+      if (navigator?.geolocation) {
+        this.enableGPSandgetCoordinates();
+      } else { 
+        this.notificationService.presentToastOnBottom("Geolocation is not supported by this browser.", "danger");
+      }
+    }
+  }
+  async gpsEnableAlert(){     
+    const alert = await this.alertController.create({
+      cssClass: 'my-gps-class',
+      header: 'Please Enable GPS !',
+      message: 'For smooth app experience please give us your location access.',
+      buttons: [
+        {
+          text: 'No, thanks',
+          role: 'cancel',
+        },
+        {
+          text: 'OK',
+          role: 'confirmed',
+          handler: () => {
+            this.requestAppPermission();
+          },
+        },
+      ],
+    });
+
+  await alert.present();
+  }
+  async enableGPSandgetCoordinates(){
+    const isGpsEnable:boolean = await this.app_googleService.checkGPSPermission();
+    if(isGpsEnable){
+      this.requestAppPermission();
+    }else{
+      this.gpsEnableAlert();
+    }
+  }
+  async requestAppPermission() {
+    let isGpsEnable = false;
+    if(isPlatform('hybrid')){
+      const permResult = await this.permissionService.checkAppPermission("ACCESS_FINE_LOCATION");
+      if(permResult){
+        isGpsEnable = await this.app_googleService.askToTurnOnGPS();
+        if(isGpsEnable){
+          this.setCurrentLocation();
+        }
+        else{
+          this.enableGPSandgetCoordinates();
+        }
+      }
+    }else{      
+      await this.getCoordinatesOnBrowser();
+    }    
+  }
+
+  async getCoordinatesOnBrowser(){
+    const successCallback = (position) => {
+      let latLng = position.coords;
+      if(latLng && latLng['latitude'] && latLng['longitude']){ 
+        this.latitude = latLng['latitude'];
+        this.longitude = latLng['longitude']
+        this.center = {
+          lat:latLng.latitude,
+          lng:latLng.longitude
+        }
+      }
+    };      
+    const errorCallback = (error: any) => {
+      console.log(error);
+      this.notificationService.presentToastOnBottom(error, "danger");
+    };
+    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+  }
+  async setCurrentLocation(){
+    if(isPlatform('hybrid')){
+      let currentLatLng:any = await this.app_googleService.getUserLocation();
+      if((currentLatLng && currentLatLng.lat) || (currentLatLng && currentLatLng.latitude)){
+        this.latitude = currentLatLng.lat ? currentLatLng.lat : currentLatLng.latitude;
+        this.longitude = currentLatLng.lng ? currentLatLng.lng : currentLatLng.longitude;
+        this.center ={
+          'lat':this.latitude,
+          'lng':this.longitude
+        }
+      }else{
+        console.log("Error while getting Location")
+      }
+    }else{
+      await this.getCoordinatesOnBrowser();
+    }
+    this.zoom = 10;
+  }
+  // async mapsApiLoaded(){
+  //   let apiKey:any = environment.googleMapsApiKey;    
+  //   this.apiLoaded = this.httpClient.jsonp('https://maps.googleapis.com/maps/api/js?key='+ apiKey +'&libraries=places', 'callback')
+  //       .pipe(
+  //         map(() => true),
+  //         catchError(() => of(false)),
+  //       );
+  // }
+  async gmapSearchPlaces(inputData?:any,field?:any){
+    if(inputData?.target?.value){
+      if(this.searchElementRef != undefined){
+        // this.searchElementRef['el'].value  = inputData.target.value; // for ion-input
+        this.searchElementRef.nativeElement.value  = inputData.target.value;
+      }
+    }
+    // if(Common.GOOGLE_MAP_IN_FORM == "true"){
+      // if(this.apiLoaded){
+        // this.geoCoder = new google.maps.Geocoder;
+        if(this.longitude == 0 && this.latitude == 0){
+          await this.setCurrentLocation();
+        }
+        this.center = {
+          "lat": this.latitude,
+          "lng": this.longitude
+        }
+        if(this.searchElementRef != undefined){
+          let autocomplete = new google.maps.places.Autocomplete(
+            this.searchElementRef.nativeElement
+          );
+          autocomplete.addListener('place_changed', () => {
+            this.ngZone.run(() => {
+              let place: google.maps.places.PlaceResult = autocomplete?.getPlace();
+              if (place.geometry === undefined || place.geometry === null) {
+                return;
+              }
+              this.searchElementRef.nativeElement.value = place.name;
+              this.address = place.formatted_address;
+              this.latitude = place.geometry.location.lat();
+              this.longitude = place.geometry.location.lng();
+              this.center = {
+                "lat": this.latitude,
+                "lng": this.longitude
+              }
+              this.zoom = 17;
+              this.setAddressOnForm(field);
+              // this.addCapMarker(this.center);
+              this.getAddressfromLatLng(this.latitude, this.longitude);
+            });
+          });
+        }
+      // }
+    // }
+  }
+  async mapClick(event: google.maps.MapMouseEvent,field?:any) {
+    this.zoom = 17;
+    this.center = (event.latLng.toJSON());
+    await this.getAddressfromLatLng(this.center.lat, this.center.lng);
+    this.setAddressOnForm(field);
+  }
+  openInfoWindow(marker: MapMarker) {
+    this.infoWindow.open(marker);
+  }
+  
+  async getAddressfromLatLng(latitude, longitude)  {
+    if(latitude && longitude){
+      let location = {
+        "location" : {
+        'lat': latitude,
+        'lng': longitude
+        }
+      }
+      let address:any = await this.app_googleService.getGoogleAddressFromString(location);
+      if(address && address.formatted_address){
+        this.address = address.formatted_address;
+        this.latitude = address?.geometry?.location?.lat;
+        this.longitude = address?.geometry?.location?.lng;
+      }
+    }
+  }
+  setAddressOnForm(field:any){
+    if(this.templateForm?.get(field?.field_name)){
+      this.templateForm.get(field?.field_name).setValue(this.address);
+    }else if(this.templateForm?.get('address')){
+      this.templateForm.get('address').setValue(this.address);
+    }
+  }
+  // create Capacitor  map and add markers
+  // async createMap(latlng?,field?) {
+  //   try{
+  //     let lat = 0;
+  //     let lng = 0;
+  //     if(latlng !=undefined){
+  //       lat = latlng.lat ? latlng.lat : latlng.latitude;
+  //       lng = latlng.lng ? latlng.lng : latlng.longitude;
+  //     }else{
+  //       lat = this.center.lat;
+  //       lng = this.center.lng;
+  //     }
+  //     this.newCapMap = await GoogleMap.create({
+  //       id: 'capa-google-map',
+  //       element: this.capMapRef.nativeElement,
+  //       apiKey: this.envService.getGoogleMapApiKey(),
+  //       config: {
+  //         center: {
+  //           lat : lat,
+  //           lng : lng
+  //         },
+  //         zoom: 15,
+  //       },
+  //     });
+  //     await this.addCapMarker(latlng? latlng : this.center);     
+  //     await this.newCapMap.enableTrafficLayer(true);
+  //     if(isPlatform('hybrid')){
+  //       await this.newCapMap.enableIndoorMaps(true);
+  //       await this.newCapMap.setMapType(MapType.Satellite);
+  //       await this.newCapMap.enableCurrentLocation(true); 
+  //     }
+  //     this.addListeners();
+  //   }catch(e){
+  //     console.log("CapMap Error :", e);
+  //   }
+  // }
+  // async addCapMarker(marker){
+  //   if(this.capMapMarkerId) await this.removeMarker(this.capMapMarkerId);
+  //   this.capMapMarkerId = await this.newCapMap.addMarker({
+  //     coordinate: {
+  //       lat: marker.lat ? marker.lat : marker.latitude,
+  //       lng: marker.lng ? marker.lng : marker.longitude
+  //     },
+  //     draggable : false,
+  //   })
+  //   const CameraConfig:any = {
+  //     coordinate: {
+  //       lat: marker.lat ? marker.lat : marker.latitude,
+  //       lng: marker.lng ? marker.lng : marker.longitude
+  //     },
+  //     zoom: 15,
+  //     animate: true
+  //   }
+  //   this.newCapMap.setCamera(CameraConfig);
+  // }
+  // async removeMarker(markerId?:any){
+  //   await  this.newCapMap.removeMarker(markerId ? markerId : this.capMapMarkerId);
+  // }
+  // async addListeners(){
+  //   await this.newCapMap.setOnMarkerClickListener((event) => {
+  //     console.log("setOnMarkerClickListener :",event);
+  //     this.capMapMarkerId = event.markerId;
+  //     this.latitude = event.latitude;
+  //     this.longitude = event.longitude;
+  //     this.center = {
+  //       lat : event.latitude,
+  //       lng : event.longitude
+  //     }
+  //   })
+  //   await this.newCapMap.setOnMapClickListener(async (event) => {
+  //     console.log("setOnMapClickListener :",event);
+  //     this.latitude = event.latitude;
+  //     this.longitude = event.longitude;
+  //     this.center = {
+  //       lat : event.latitude,
+  //       lng : event.longitude
+  //     }
+  //     await this.getAddressfromLatLng(this.center.lat, this.center.lng);
+  //     this.addCapMarker(event);
+  //   })
+  //   await this.newCapMap.setOnMyLocationButtonClickListener((event) => {
+  //     console.log("setOnMyLocationButtonClickListener :",event);
+  //     this.addCapMarker(event);
+  //   })
+  //   await this.newCapMap.setOnMyLocationClickListener((event) => {
+  //     console.log("setOnMyLocationClickListener :",event);
+  //     this.latitude = event.latitude;
+  //     this.longitude = event.longitude;
+  //     this.center = {
+  //       lat : event.latitude,
+  //       lng : event.longitude
+  //     }      
+  //     this.addCapMarker(event);
+  //   })
+    
+  // }
 
   // Please let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last in this file
   async readAsBase64(photo: Photo) {

@@ -1253,7 +1253,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     const alert = await this.alertController.create({
       cssClass: 'my-gps-class',
       header: 'Please Enable GPS !',
-      message: 'For smooth app experience please give us your location and phone access.',
+      message: 'For smooth app experience please give us your location access.',
       buttons: [
         {
           text: 'No, thanks',
