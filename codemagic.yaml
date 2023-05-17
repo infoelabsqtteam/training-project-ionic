@@ -89,7 +89,7 @@ workflows:
       vars:
         PACKAGE_NAME: "com.e-labs.ai"
         GOOGLE_PLAY_TRACK: alpha
-      node: v14.7.2
+      node: v14.0.0
     triggering:
       events:
         - push
