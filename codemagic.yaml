@@ -8,7 +8,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: io.codemagic.ionicsample
+        bundle_identifier: com.e-labs.ai
       vars:
         # Ionic Xcode worskspace and scheme
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
@@ -57,8 +57,8 @@ workflows:
     publishing:
       email:
         recipients:
-          - user_one@example.com
-          - user_two@example.com
+          - gourav@e-labs.ai
+          - kunal@e-labs.ai
         notify:
           success: false     # To not receive a notification when a build succeeds
           failure: false     # To not receive a notification when a build fails
@@ -87,7 +87,7 @@ workflows:
       groups:
         - google_play # <-- (Includes GCLOUD_SERVICE_ACCOUNT_CREDENTIALS <-- Put CONTENTS of your Gloud crendentials file here)
       vars:
-        PACKAGE_NAME: "io.codemagic.ionicsample"
+        PACKAGE_NAME: "com.e-labs.ai"
         GOOGLE_PLAY_TRACK: alpha
       node: latest
     triggering:
@@ -100,7 +100,7 @@ workflows:
           include: true
           source: true
     scripts:
-      - name: Install npm dependencies for Ionic project
+      - name: Install npm dependencies for Ionic Capacito project
         script: |
           npm install
       - name: Set Android SDK location
@@ -131,8 +131,8 @@ workflows:
     publishing:
       email:
         recipients:
-          - user_1@example.com
-          - user_2@example.com
+          - gourav@e-labs.ai
+          - kunal@e-labs.ai
         notify:
           success: true
           failure: false
