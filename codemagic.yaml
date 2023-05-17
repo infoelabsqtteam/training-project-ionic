@@ -83,9 +83,9 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       android_signing:
-        - keystore_reference
+        - codemagic_elabs_keystore
       groups:
-        - google_play # <-- (Includes GCLOUD_SERVICE_ACCOUNT_CREDENTIALS <-- Put CONTENTS of your Gloud crendentials file here)
+        - google_credentials # <-- (Includes GCLOUD_SERVICE_ACCOUNT_CREDENTIALS <-- Put CONTENTS of your Gloud crendentials file here)
       vars:
         PACKAGE_NAME: "com.e-labs.ai"
         GOOGLE_PLAY_TRACK: alpha
@@ -135,8 +135,27 @@ workflows:
           - kunal@e-labs.ai
         notify:
           success: true
-          failure: false
+          failure: true
       google_play:
+        # Contents of the JSON key file for Google Play service account saved
+        # as a secure environment variable
         credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: true
+        
+        # Name of the track internal, alpha, beta, production, internal app sharing,
+        # or your custom track name
+        track: alpha
+        
+        # Optional Priority of the release (only set if in-app updates are supported)
+        # integer in range [0, 5]
+        in_app_update_priority: 3
+
+        # Optional. Rollout fraction (set only if releasing to a fraction of users)
+        # value between (0, 1)
+        rollout_fraction: 0.25
+
+        # Optional boolean To be used ONLY if your app cannot be sent for review automatically *
+        changes_not_sent_for_review: true
+
+        # Optional boolean. Publish artifacts under a draft release.
+        # Can not be used together with rollout_fraction. Defaults to false
+        submit_as_draft: true
