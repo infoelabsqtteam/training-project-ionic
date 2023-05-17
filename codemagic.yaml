@@ -155,7 +155,3 @@ workflows:
 
         # Optional boolean To be used ONLY if your app cannot be sent for review automatically *
         changes_not_sent_for_review: true
-
-        # Optional boolean. Publish artifacts under a draft release.
-        # Can not be used together with rollout_fraction. Defaults to false
-        submit_as_draft: true
