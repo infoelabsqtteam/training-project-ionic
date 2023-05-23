@@ -8,7 +8,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.e-labs.ai
+        bundle_identifier: com.itclabs.ai
       vars:
         # Ionic Xcode worskspace and scheme
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
@@ -88,9 +88,13 @@ workflows:
         - google_credentials # <-- (Includes GCLOUD_SERVICE_ACCOUNT_CREDENTIALS <-- Put CONTENTS of your Gloud crendentials file here)
         - aws_credentials # <-- (For aws credentials of token for npm install)
       vars:
-        PACKAGE_NAME: "com.e-labs.ai"
+        PACKAGE_NAME: "com.itclabs.ai"
         GOOGLE_PLAY_TRACK: alpha
+        AWS_ACCESS_KEY_ID_HOLDER: $AWS_ACCESS_KEY_ID
+        AWS_SECRET_ACCESS_KEY_HOLDER: $AWS_SECRET_ACCESS_KEY
+        AWS_DEFAULT_REGION_HOLDER: $AWS_DEFAULT_REGION
       node: v14.21.3
+      npm: 6.14.18
     triggering:
       events:
         - push
@@ -107,14 +111,24 @@ workflows:
           #aws codeartifact login --tool npm --repository ui-library --domain ui-libs --domain-owner 292474393014 --region ap-south-1
       - name: Install npm dependencies for Ionic Capacito project
         script: |
-          aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"  && aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY" && aws configure set region "$AWS_REGION"  && aws configure set output "json"
+          #echo $AWS_DEFAULT_REGION_HOLDER
+          #aws --version
+          #aws ls
+          ionic version
+          #echo "hello world"
+          #aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID_HOLDER"
+          #aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY_HOLDER"
+          #aws configure set region "$AWS_DEFAULT_REGION_HOLDER"
+          #aws configure set output "json"
           export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain ui-libs --domain-owner 292474393014 --query authorizationToken --output text`
           aws codeartifact login --tool npm --repository ui-library --domain ui-libs --domain-owner 292474393014 --region ap-south-1
-          echo kunal
-          echo $CODEARTIFACT_AUTH_TOKEN
+          #echo "kunal"
+          #echo $CODEARTIFACT_AUTH_TOKEN
           npm config set registry=https://ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/
           npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:_authToken=${CODEARTIFACT_AUTH_TOKEN}
-          npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:always-auth=true 
+          #npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:always-auth=true 
+          npm config get registry
+          
           npm install
       - name: Set Android SDK location
         script: |
@@ -122,6 +136,7 @@ workflows:
       - name: Update dependencies and copy web assets to native project
         script: |
           # npx cap copy # <- use this is you don't need to update native dependencies
+          ionic build
           npx cap sync # <- update native dependencies and copy web assets to native project
       - name: Build Android release
         script: |
