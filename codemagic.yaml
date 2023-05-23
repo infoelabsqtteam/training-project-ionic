@@ -90,6 +90,9 @@ workflows:
       vars:
         PACKAGE_NAME: "com.e-labs.ai"
         GOOGLE_PLAY_TRACK: alpha
+        AWS_ACCESS_KEY_ID_HOLDER: $AWS_ACCESS_KEY_ID
+        AWS_SECRET_ACCESS_KEY_HOLDER: $AWS_SECRET_ACCESS_KEY
+        AWS_DEFAULT_REGION_HOLDER: $AWS_DEFAULT_REGION
       node: v14.21.3
     triggering:
       events:
@@ -107,14 +110,14 @@ workflows:
           #aws codeartifact login --tool npm --repository ui-library --domain ui-libs --domain-owner 292474393014 --region ap-south-1
       - name: Install npm dependencies for Ionic Capacito project
         script: |
-          echo $AWS_ACCESS_KEY_ID
+          echo $AWS_DEFAULT_REGION_HOLDER
           aws --version
           aws ls
           
           echo "hello world"
-          aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
-          aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
-          aws configure set region "$AWS_REGION"
+          aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID_HOLDER"
+          aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY_HOLDER"
+          aws configure set region "$AWS_DEFAULT_REGION_HOLDER"
           aws configure set output "json"
           export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain ui-libs --domain-owner 292474393014 --query authorizationToken --output text`
           aws codeartifact login --tool npm --repository ui-library --domain ui-libs --domain-owner 292474393014 --region ap-south-1
