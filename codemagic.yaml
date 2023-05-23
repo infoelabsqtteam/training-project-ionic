@@ -113,9 +113,10 @@ workflows:
           #echo $AWS_DEFAULT_REGION_HOLDER
           #aws --version
           #aws ls
-          node --version
-          npm --version
-          
+          node -v
+          npm version
+          ionic version
+          ng version
           #echo "hello world"
           #aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID_HOLDER"
           #aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY_HOLDER"
