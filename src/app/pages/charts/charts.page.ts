@@ -1,5 +1,4 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { viewClassName } from '@angular/compiler';
 import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild } from '@angular/core';
 import { AuthService, EnvService, StorageService } from '@core/ionic-core';
 import { Legend } from 'chart.js';
