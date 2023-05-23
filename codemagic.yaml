@@ -113,6 +113,8 @@ workflows:
           #echo $AWS_DEFAULT_REGION_HOLDER
           #aws --version
           #aws ls
+          node --version
+          npm --version
           
           #echo "hello world"
           #aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID_HOLDER"
