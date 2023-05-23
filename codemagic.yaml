@@ -125,7 +125,9 @@ workflows:
           #echo $CODEARTIFACT_AUTH_TOKEN
           npm config set registry=https://ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/
           npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:_authToken=${CODEARTIFACT_AUTH_TOKEN}
-          npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:always-auth=true 
+          #npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:always-auth=true 
+          npm config get registry
+          
           npm install
       - name: Set Android SDK location
         script: |
