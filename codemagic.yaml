@@ -107,6 +107,9 @@ workflows:
           #aws codeartifact login --tool npm --repository ui-library --domain ui-libs --domain-owner 292474393014 --region ap-south-1
       - name: Install npm dependencies for Ionic Capacito project
         script: |
+          echo $AWS_ACCESS_KEY_ID
+          aws ls
+          echo "hello world"
           aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"  && aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY" && aws configure set region "$AWS_REGION"  && aws configure set output "json"
           export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain ui-libs --domain-owner 292474393014 --query authorizationToken --output text`
           aws codeartifact login --tool npm --repository ui-library --domain ui-libs --domain-owner 292474393014 --region ap-south-1
