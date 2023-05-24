@@ -13,7 +13,7 @@ def getMyVersionName = { ->
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.itclabs.ai"
+        applicationId "com.elabs.ai"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode getMyVersionCode()

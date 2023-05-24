@@ -1,4 +1,4 @@
-package com.itclabs.ai;
+package com.elabs.ai;
 
 import com.getcapacitor.BridgeActivity;
 

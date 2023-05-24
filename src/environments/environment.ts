@@ -10,7 +10,7 @@ export const environment = {
   // serverhost: "https://serveritclabs.itclabs.com/rest/",
   // serverhost: "https://prodserveritclabs.e-labs.ai/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
-  appId: "com.itclabs.ai",
+  appId: "com.elabs.ai",
   appName: "itc-labs",
   appPlatformName: "ITC Labs",
   web_site: "",
@@ -18,7 +18,7 @@ export const environment = {
   verify_type : "email",
   app_Version : "@2022 ITC Labs v0.0.1",
   privacy_policy: "",
-  app_share: "https://play.google.com/store/apps/details?id=com.itclabs.ai",
+  app_share: "https://play.google.com/store/apps/details?id=com.elabs.ai",
   appCardMasterDataSize: 200,
   appHomePageLayout:"layout1"
 };
