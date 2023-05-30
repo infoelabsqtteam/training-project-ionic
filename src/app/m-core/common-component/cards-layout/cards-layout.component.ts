@@ -453,7 +453,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       if(this.createFormgroup){
         let columnList:any =[];
         this.columnList.forEach(element => {
-          if(element.sort){
+          if(element.filter){
             columnList.push(element);
           }
         });
@@ -514,13 +514,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if(this.cardType == "trackOnMap"){
       if(this.platform.is("hybrid")){
         // let isGpsEnabled = await this.app_googleService.checkGPSPermission();
-        let isGpsEnabled = await this.requestAppPermission();
+        let isGpsEnabled = await this.app_googleService.checkGeolocationPermission();
         if(isGpsEnabled){
-          this.requestAppPermission();
+          this.requestLocationPermission();
         }else{
           this.gpsEnableAlert();
         }
-      }        
+      }else{
+        await this.getCurrentPosition();
+      }
       if(card && card.collection_name == "travel_tracking_master" && card.parent_id && card.parent_id !=''){
         const cr = "travelPlan._id;eq;" + card.parent_id + ";STATIC";
         customCriteria.push(cr);
@@ -1263,7 +1265,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           text: 'OK',
           role: 'confirmed',
           handler: () => {
-            this.requestAppPermission();
+            this.requestLocationPermission();
           },
         },
       ],
@@ -1272,14 +1274,16 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   await alert.present();
   }
   async enableGPSandgetCoordinates(){
-    const isGpsEnable:boolean = await this.app_googleService.checkGPSPermission();
-    if(isGpsEnable){
-      this.requestAppPermission();
+    if(isPlatform('hybrid')){
+        this.gpsEnableAlert();
     }else{
-      this.gpsEnableAlert();
+      const isGpsEnable:boolean = await this.app_googleService.checkGPSPermission();
+      if(isGpsEnable){
+        this.requestLocationPermission();
+      }
     }
   }
-  async requestAppPermission() {
+  async requestLocationPermission() {
     let isGpsEnable = false;
     if(isPlatform('hybrid')){
       const permResult = await this.permissionService.checkAppPermission("ACCESS_FINE_LOCATION");
@@ -1287,16 +1291,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         isGpsEnable = await this.app_googleService.askToTurnOnGPS();
         if(isGpsEnable){
           this.userLocation = await this.app_googleService.getUserLocation();
-          if(this.userLocation && this.userLocation.lat){
+          if(this.userLocation !=null && (this.userLocation.lat !=null || this.userLocation.latitude !=null)){
             this.currentLatLng ={
-              lat:this.userLocation.lat,
-              lng:this.userLocation.lng
-            }
-            return true;
-          }else if(this.userLocation && this.userLocation.latitude){
-            this.currentLatLng ={
-              lat:this.userLocation.latitude,
-              lng:this.userLocation.longitude
+              lat:this.userLocation.lat ? this.userLocation.lat : this.userLocation.latitude,
+              lng:this.userLocation.lng ? this.userLocation.lng : this.userLocation.longitude
             }
             return true;
           }
@@ -1306,28 +1304,44 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       }
     }else{      
-      if(navigator.geolocation){
-        const successCallback = (position) => {
-          console.log("Web current Location: ",position);
-          if(position && position.coords){
-            this.userLocation = position;
-            let pos = position.coords;
-            this.currentLatLng ={
-              lat:pos.latitude,
-              lng:pos.longitude
-            }
-            return true;
-          }
-        };      
-        const errorCallback = (error) => {
-          console.log(error);
-          this.currentLatLng = {}
-          return false;
-        };
-        navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-      }
+      // if(navigator.geolocation){
+        // const successCallback = (position) => {
+        //   console.log("Web current Location: ",position);
+        //   if(position && position.coords){
+        //     this.userLocation = position;
+        //     let pos = position.coords;
+        //     this.currentLatLng ={
+        //       lat:pos.latitude,
+        //       lng:pos.longitude
+        //     }
+        //     return true;
+        //   }
+        // };      
+        // const errorCallback = (error) => {
+        //   console.log(error);
+        //   this.currentLatLng = {}
+        //   return false;
+        // };
+        // navigator.geolocation.getCurrentPosition(successCallback, errorCallback);        
+      // }
+      await this.getCurrentPosition();
     }
     
+  }
+  async getCurrentPosition(){
+    if(navigator?.geolocation){
+      navigator.geolocation.getCurrentPosition((position) => {
+        this.userLocation = position;
+        this.currentLatLng = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        return true;
+      });
+    }else{
+      this.notificationService.presentToastOnBottom("Browser doesn't support Geolocation.");
+      this.currentLatLng = {};
+    }
   }
   async actionBtnClicked(index:number,btnStatus:any){
     this.updateMode=true;
@@ -1403,9 +1417,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           data['trackingStatus'] = "PROGRESS";
           data['trackStartDateTime'] = JSON.parse(JSON.stringify(newDate));
           data['trackStartTime'] = await this.dataShareServiceService.getCurrentTime(newDate);          
-          data['trackStartLocation'] = this.currentLatLng;
-          data['customerAddressLatLng'] = destination.geometry.location;
-          data['customerAddressPlaceId'] = destination.place_id;
+          data['trackStartLocation'] = {
+            'latitude': this.currentLatLng.lat,
+            'longitude': this.currentLatLng.lat
+          }
+          data['customerAddressDetail'] = {
+            'latitude': destination?.geometry?.location.lat,
+            'longitude': destination?.geometry?.location.lat,
+            'placeId': destination?.place_id
+          };
           let packagePayload = {
             "curTemp":this.collectionname,
             "data":data
@@ -1444,7 +1464,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         });
         return await modal.present();
       }else{
-        await this.requestAppPermission();
+        await this.requestLocationPermission();
         this.notificationService.presentToastOnBottom("Getting your location, please wait..");
         this.startTracking(data,index); 
       }

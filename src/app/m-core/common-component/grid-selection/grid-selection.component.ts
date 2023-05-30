@@ -281,11 +281,11 @@ export class GridSelectionComponent implements OnInit, OnChanges {
         .then((data) => {
           const object = data['data']; // Here's your selected user!
           if(object['data'] && object['remove'] == true){
-            this.toggle(object['data'],{'detail':{'checked':false}},0);
+            this.toggle(object['data'],{'detail':{'checked':false}},index);
           }else if(object['data'] && object['remove'] == false){
-            this.toggle(object['data'],{'detail':{'checked':true}},0);
+            this.toggle(object['data'],{'detail':{'checked':true}},index);
           }else if(object['data'] && object['remove'] == "onlyupdate"){
-            this.updateSelectedData(object['data']);
+            this.updateSelectedData(object['data'],index);
           }else{
             console.log("No action performed !");
           }              
@@ -354,6 +354,10 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     columns.forEach(element => {
       if(element.field_name == "plainCustomerName"){
         field_name = element.field_name;
+      }else if(element.field_name == "sealSerialNumber"){
+        field_name = element.field_name;
+      }else {
+        field_name = columns[0].field_name;
       }
     });
     if(field_name == ""){
@@ -386,13 +390,32 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
     return obj;
   }
-  updateSelectedData(data:any){
-    this.selectedData.forEach((element:any, i:number) => {
-      if(element._id == data._id) {
-        element = data;
+  updateSelectedData(data:any,index?:any){
+    if(this.selectedData && this.selectedData.length > 0){
+      if(data && data.id){
+        this.selectedData.forEach((element:any, i:number) => {
+          if(element._id == data._id) {
+            element = data;
+            let obj =this.getSendData()
+            this.gridSelectionResponce.emit(obj);
+          }
+        });
+      }else{
+        if(this.selectedData.length > index){          
+          this.selectedData[index] = data;
+        }else{
+          this.selectedData.push(data);
+        }
         let obj =this.getSendData()
         this.gridSelectionResponce.emit(obj);
       }
-    });
+    }else{
+        this.selectedData.push(data);
+      // if(this.gridData && this.gridData.length > 0){
+        // this.gridData[index] = data;
+        let obj =this.getSendData();
+        this.gridSelectionResponce.emit(obj);
+      // }
+    }
   }
 }

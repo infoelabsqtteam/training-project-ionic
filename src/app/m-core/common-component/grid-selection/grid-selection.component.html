@@ -1,7 +1,7 @@
 <div class="pages" *ngIf="samePageGridSelection && (this.selectedData && this.selectedData.length > 0) || (this.gridData && this.gridData.length > 0)">
     <ion-segment class="grid_selection_tab" ngDefaultControl [(ngModel)]="selectedTab" color="appcolor">
-        <ion-segment-button value="new"><ion-label>All</ion-label></ion-segment-button>
-        <ion-segment-button value="added"><ion-label>Selected</ion-label></ion-segment-button>
+        <ion-segment-button value="new" *ngIf="this.gridData && this.gridData.length"><ion-label>All</ion-label></ion-segment-button>
+        <ion-segment-button value="added" *ngIf="this.selectedData && this.selectedData.length > 0"><ion-label>Selected</ion-label></ion-segment-button>
     </ion-segment>
 
     <div *ngIf="selectedTab == 'new'">
@@ -16,7 +16,7 @@
                 </ion-item>
             </ion-item-sliding>
         </div>
-        <div *ngIf="this.gridData=='' && this.gridData.length == 0">
+        <div *ngIf="this.gridData && this.gridData.length == 0">
             <ion-card>
                 <ion-card-header>
                   <ion-card-title>No parameters available</ion-card-title>
@@ -51,7 +51,7 @@
                 </ion-item-options>
             </ion-item-sliding>
         </div> 
-        <div *ngIf="this.selectedData=='' && this.selectedData.length == 0">
+        <div *ngIf="this.selectedData && this.selectedData.length == 0">
             <ion-card>
                 <ion-card-header>
                   <ion-card-title>No parameters Selected</ion-card-title>

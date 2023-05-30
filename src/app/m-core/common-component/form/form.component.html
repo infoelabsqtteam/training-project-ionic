@@ -49,9 +49,8 @@
                     <ion-button expand="round" slot="end" size="small" fill="outline" *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length > 0" [innerHtml]="getNumberOfSelectedRecord(tableField)"></ion-button>
                   </ion-item>
                   <div class="ion-padding-vertical-0 ion-padding-horizontal-0" slot="content">
-                    <div class="ion-padding" *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length == 0">No data available</div>
+                    <!-- <div class="ion-padding" *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length == 0">No data available</div> -->
                     <app-grid-selection [Data]="samePageGridSelectionData" (gridSelectionResponce) = "gridSelectionResponce($event)"></app-grid-selection>
-                    <!-- <app-grid-selection-modal [Data]="samePageGridSelectionData" (gridSelectionResponce) = "gridSelectionResponce($event)"></app-grid-selection-modal> -->
                   </div>
                 </ion-accordion>
               </ion-accordion-group>

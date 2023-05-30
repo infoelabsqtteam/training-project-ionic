@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitte
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn, FormArray, FormControl } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { ApiService, App_googleService, CommonDataShareService, CoreUtilityService, DataShareService, EnvService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
+import { ApiService, App_googleService, Common, CommonDataShareService, CoreUtilityService, DataShareService, EnvService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
 import { AlertController, ItemReorderEventDetail, ModalController, ToastController, isPlatform  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
@@ -308,6 +308,7 @@ tinymceConfig = {}
     public obj: any = {};
     public uploadData: any = []
     public uploadFilesData: any = [];
+    getLocation:boolean = false;
   
     term:any={};
 
@@ -493,7 +494,6 @@ tinymceConfig = {}
 
   ionViewWillEnter() {
     this.onLoadVariable();
-    this.checkPermissionandRequest();
   }
   ionViewDidEnter(){
     // this.createMap();
@@ -797,6 +797,12 @@ tinymceConfig = {}
         this.bulkupdates = false;
       }
       this.formDetails.emit(this.form);
+    }
+    if(this.form && this.form.getLocation){
+      this.getLocation = this.form.getLocation;
+      this.requestLocationPermission();
+    }else{
+      this.getLocation = false;
     }
     if(this.form['tableFields'] && this.form['tableFields'] != undefined && this.form['tableFields'] != null){
       this.tableFields = JSON.parse(JSON.stringify(this.form['tableFields']));
@@ -1527,7 +1533,7 @@ tinymceConfig = {}
     })
   }
 
-  getFormValue(check){    
+   getFormValue(check){
     let formValue = this.templateForm.getRawValue();
     let selectedRow = { ...this.selectedRow };     
     let modifyFormValue = {};   
@@ -1859,7 +1865,15 @@ tinymceConfig = {}
       }
     }
     valueOfForm = this.updateMode || this.complete_object_payload_mode ? selectedRow : modifyFormValue;
-       
+    
+    if(this.getLocation){
+      if(this.center !=null && this.center.lat !=null){
+        valueOfForm['locationDetail'] = {
+          'latitude' : this.center.lat ? this.center.lat : this.latitude,
+          'longitude' : this.center.lng ? this.center.lng : this.longitude
+        }
+      }
+    }      
        
     return valueOfForm;
   }
@@ -2920,6 +2934,8 @@ tinymceConfig = {}
 
   setValue(parentfield:any,field:any, add?:any, event?:any) {
     let formValue = this.templateForm.getRawValue();
+    let formValueWithoutCustomData = this.getFormValue(false);
+    let formValueWithCustomData = this.getFormValue(true);
     this.curFormField = field;
     this.curParentFormField = parentfield;
     switch (field.type) {
@@ -3389,7 +3405,7 @@ tinymceConfig = {}
           "value":selectedData[0],
           "column":field.gridColumns,
           "alreadyAdded":alreadyAdded,
-          "parentObject": this.getFormValue(true)
+          "parentObject": formValueWithCustomData
         }
         this.openGridSelectionDetailModal(gridModalData);
         break;
@@ -3404,7 +3420,7 @@ tinymceConfig = {}
       // }else if(field.type != 'list_of_fields'){
         // let formValue = this.getFormValue(false);
         let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
-        let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(false));
+        let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,formValueWithoutCustomData);
         this.changeDropdown(field, formValue,field.onchange_data_template);
       // }
     }
@@ -6108,19 +6124,21 @@ tinymceConfig = {}
       return Number('12');
     }    
   }
-  async checkPermissionandRequest(){    
-    let permResult = await this.app_googleService.checkGPSPermission();
-    if (isPlatform('hybrid')) {
-      if(!permResult){
-        this.enableGPSandgetCoordinates();
-      }else{
-        this.setCurrentLocation();
-      }
+  async checkPermissionandRequest(){
+    let permResult = false;
+    if(isPlatform('hybrid')){
+      permResult = await this.app_googleService.checkGPSPermission();
+      this.requestLocationPermission();
     }else{
-      if (navigator?.geolocation) {
-        this.enableGPSandgetCoordinates();
-      } else { 
-        this.notificationService.presentToastOnBottom("Geolocation is not supported by this browser.", "danger");
+      permResult = await this.app_googleService.checkGPSPermission();
+    }   
+    if(!permResult){
+      this.gpsEnableAlert();
+    }else{
+      if(isPlatform('hybrid')){
+        this.setCurrentLocation();
+      }else{
+        this.getCoordinatesOnBrowser();
       }
     }
   }
@@ -6138,7 +6156,7 @@ tinymceConfig = {}
           text: 'OK',
           role: 'confirmed',
           handler: () => {
-            this.requestAppPermission();
+            this.requestLocationPermission();
           },
         },
       ],
@@ -6149,12 +6167,12 @@ tinymceConfig = {}
   async enableGPSandgetCoordinates(){
     const isGpsEnable:boolean = await this.app_googleService.checkGPSPermission();
     if(isGpsEnable){
-      this.requestAppPermission();
+      this.setCurrentLocation();
     }else{
-      this.gpsEnableAlert();
+      // this.gpsEnableAlert();
     }
   }
-  async requestAppPermission() {
+  async requestLocationPermission() {
     let isGpsEnable = false;
     if(isPlatform('hybrid')){
       const permResult = await this.permissionService.checkAppPermission("ACCESS_FINE_LOCATION");
@@ -6186,7 +6204,7 @@ tinymceConfig = {}
     };      
     const errorCallback = (error: any) => {
       console.log(error);
-      this.notificationService.presentToastOnBottom(error, "danger");
+      this.notificationService.presentToastOnBottom("Geolocation is not supported by this browser.", "danger");
     };
     navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
   }
@@ -6223,7 +6241,17 @@ tinymceConfig = {}
         this.searchElementRef.nativeElement.value  = inputData.target.value;
       }
     }
-    // if(Common.GOOGLE_MAP_IN_FORM == "true"){
+    let loadGoogleMap:boolean = false;
+    if(typeof Common.GOOGLE_MAP_IN_FORM == "string"){
+      if(Common.GOOGLE_MAP_IN_FORM == "true"){
+        loadGoogleMap = true;
+      }
+    }else{
+      if(Common.GOOGLE_MAP_IN_FORM){
+        loadGoogleMap = true;
+      }
+    }
+    if(loadGoogleMap){
       // if(this.apiLoaded){
         // this.geoCoder = new google.maps.Geocoder;
         if(this.longitude == 0 && this.latitude == 0){
@@ -6259,7 +6287,7 @@ tinymceConfig = {}
           });
         }
       // }
-    // }
+    }
   }
   async mapClick(event: google.maps.MapMouseEvent,field?:any) {
     this.zoom = 17;

@@ -368,8 +368,8 @@ export class GmapViewComponent implements OnInit {
       let currentposition:any = await this.app_googleService.getUserLocation();
       if(currentposition && currentposition.lat !=null && currentposition.lng !=null){
         let currentlatlng: any = {
-          'lat': currentposition.lat,
-          'lng': currentposition.lng,
+          'latitude': currentposition.lat,
+          'longitude': currentposition.lng,
         }
         if(buttonName == "reach"){
           this.selectedRowData['reachDateTime'] = JSON.parse(JSON.stringify(new Date()));

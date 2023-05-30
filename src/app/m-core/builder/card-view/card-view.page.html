@@ -3,7 +3,7 @@
     <ion-buttons slot="start" (click)="goBack()"><ion-button><ion-icon name="arrow-back"></ion-icon></ion-button></ion-buttons>
     <ion-title class="" *ngIf="columnList && columnList.length == 0 && headerTitle !=''">{{headerTitle}}</ion-title>
     <div class="cardsearch" *ngIf="columnList && columnList.length > 0">
-      <ion-select interface="popover" class="ion-padding-left-0" placeholder="Search Value" [(ngModel)]="searchcardfield" (ionChange)="selectedSearchValue(searchcardfield)">
+      <ion-select interface="popover" class="ion-padding-left-0" placeholder="Search By" [(ngModel)]="searchcardfield" (ionChange)="selectedSearchValue(searchcardfield)">
         <ion-select-option *ngFor="let columns of columnList; index as i" [value]="columns.field_name" [ngClass]="columns.filter?'ion-show':'ion-hide'">{{columns.field_label}}</ion-select-option>
       </ion-select>
       <div class="searchbox">

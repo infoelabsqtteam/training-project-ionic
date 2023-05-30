@@ -122,10 +122,5 @@
     "ts-node": "~8.3.0",
     "typescript": "~4.2.4"
   },
-  "description": "An Ionic project",
-  "cordova": {
-    "plugins": {
-      "cordova-open-native-settings": {}
-    }
-  }
+  "description": "An Ionic project"
 }
