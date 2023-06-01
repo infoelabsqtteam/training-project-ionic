@@ -5875,7 +5875,8 @@ tinymceConfig = {}
           }
       case "list_of_string":
       case "list_of_checkbox":
-        case "grid_selection":
+      case "grid_selection":
+      case "list_of_fields":
         if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
           return '<i class="fa fa-eye text-pointer"></i>';
         } else {
@@ -5918,6 +5919,8 @@ tinymceConfig = {}
       case "list_of_string":
       case "list_of_checkbox":
       case "grid_selection":
+      case "list_of_fields":
+      case "info":
         if(item["gridColumns"] && item["gridColumns"].length > 0){
           value['gridColumns']=item.gridColumns;
         }

@@ -58,21 +58,21 @@
     </ion-card-content>
   </ion-card>
 </ion-content>
-<ion-footer>  
-  <div class="button_position" *ngIf="!gridselectionverticalbutton">
-    <div class="flex_grid">
-    <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="select()" expand="full" >Add</ion-button>
-    <ion-button type="button" color="appcolor" [disabled]="checkValidator()" (click)="dismissModal()" expand="full" >Cancel</ion-button>
-    </div>
-  </div>
-  <div *ngIf="gridselectionverticalbutton" class="inlineFormGridSelectionButton">
-      <div class="" *ngIf="grid_row_selection">
-          <ion-button type="button" color="appcolor" [disabled]="readonly" (click)="remove()" expand="block" >Remove</ion-button>
-          <ion-button type="button" color="appcolor" [disabled]="readonly"  (click)="select()" expand="block" >Add / Select</ion-button>
-      </div>
-      <div *ngIf="!grid_row_selection">
+<ion-footer> 
+  <div  class="inlineFormGridSelectionButton">
+      <ion-row class="">
+        <ion-col>
+          <ion-button *ngIf="(gridselectionverticalbutton && grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="readonly"  (click)="select()" size="small" expand="block" >{{formInfo.updateMode == true ? 'Update' : 'Add'}}</ion-button>
+          <ion-button *ngIf="(gridselectionverticalbutton && !grid_row_selection)" type="button" [disabled]="checkValidator()" color="appcolor" outline="true" size="small" expand="block"  (click)="selectGridData()" >{{ fieldButtonLabel(field)}}</ion-button >
+        </ion-col>
+        <ion-col>
+          <ion-button *ngIf="(gridselectionverticalbutton && grid_row_selection)" type="button" color="appcolor" [disabled]="readonly" (click)="remove()" size="small" expand="block" >Remove</ion-button>
+          <ion-button *ngIf="(gridselectionverticalbutton && !grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="checkValidator()" (click)="closeModal()" size="small" expand="block" >Cancel</ion-button>
+        </ion-col>
+      </ion-row>
+      <!-- <div *ngIf="!grid_row_selection">
         <ion-button  type="button" [disabled]="checkValidator()" color="appcolor" outline="true" size="small" expand="block"  (click)="selectGridData()">{{ fieldButtonLabel(field)}}</ion-button >
         <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="closeModal()">Close</ion-button>
-      </div>
+      </div> -->
   </div>
 </ion-footer>
