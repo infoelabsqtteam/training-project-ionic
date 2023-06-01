@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
 import { AlertController, ModalController } from '@ionic/angular';
+import { Subscriber, Subscription } from 'rxjs';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 
 @Component({
@@ -36,10 +37,11 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   expandicon: any = "assets/itc-labs/icon/expand-icon.png";
 
   data :any = [];
-  formName:any= "default";
   readonly:boolean= false;
   updateMode:boolean= false;
   nogridDdata:boolean= false;
+  samePageGridSelection=false;
+  reloadBtn=false;
 
 
   constructor(    
@@ -55,16 +57,13 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   
 
   ngOnInit() {
-    if(this.Data && this.Data.formTypeName !=""){
-      // this.formName = this.Data.formTypeName; 
-      this.formName = "default";
-      if(this.Data.formTypeName === "UPDATE"){  
-        this.selectedTab = "added";
-      }
+    this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();    
+    if(this.Data?.updateMode && this.Data.updateMode){  
+      this.selectedTab = "added";
+      this.updateMode = this.Data.updateMode;
     }else{
-      this.formName = "default";
+      this.selectedTab = "new";
     }
-
   }
   ngOnChanges(changes: SimpleChanges) {
     if(this.Data){
@@ -74,7 +73,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   subscribe(){
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
-      if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field)  && data[this.field.ddn_field]){
+      if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field) && data[this.field.ddn_field]){
         this.responseData = data[this.field.ddn_field];
       }else{
         this.responseData = [];
@@ -83,13 +82,33 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       this.setStaticData(data);
     })
   }
+  reloadStaticData(){
+    this.reloadBtn = true;
+    let data:any = this.dataShareService.getStatiData();
+    this.copyStaticData = data;
+    if(this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null && data[this.field.ddn_field] != undefined){
+      if((Array.isArray(data[this.field.ddn_field]) && data[this.field.ddn_field].length > 0)){
+        this.setStaticData(data);
+      }else if(!Array.isArray(data[this.field.ddn_field])){
+        this.setStaticData(data);
+      }else{
+        this.resetReloadBtn();
+      }
+    }else{
+      this.resetReloadBtn();      
+    }
+  }
+  resetReloadBtn(){
+    setTimeout(() => {
+      this.reloadBtn = false;
+    }, 1000);
+  }
   ngOnDestroy(){
     if(this.staticDataSubscriber){
       this.staticDataSubscriber.unsubscribe();
     }
   }
   onload(){
-    this.selectedTab = "new";
     this.selecteData = [];  
     this.selecteData = JSON.parse(JSON.stringify(this.Data.selectedData)); 
     this.selectedData = JSON.parse(JSON.stringify(this.Data.selectedData));
@@ -181,7 +200,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     return this.coreFunctionService.getValueForGrid(field, object);
   }
   isDisable(field, object) {
-    this.updateMode = false;
+    const updateMode = false;
     let disabledrow = false;
     if (field.is_disabled) {
       return true;
@@ -194,7 +213,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       return true;
     }
     if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-      return this.coreFunctionService.isDisable(field.etc_fields, this.updateMode, object);
+      return this.coreFunctionService.isDisable(field.etc_fields, updateMode, object);
     }   
     return false;
   }
@@ -262,11 +281,11 @@ export class GridSelectionComponent implements OnInit, OnChanges {
         .then((data) => {
           const object = data['data']; // Here's your selected user!
           if(object['data'] && object['remove'] == true){
-            this.toggle(object['data'],{'detail':{'checked':false}},0);
+            this.toggle(object['data'],{'detail':{'checked':false}},index);
           }else if(object['data'] && object['remove'] == false){
-            this.toggle(object['data'],{'detail':{'checked':true}},0);
+            this.toggle(object['data'],{'detail':{'checked':true}},index);
           }else if(object['data'] && object['remove'] == "onlyupdate"){
-            this.updateSelectedData(object['data']);
+            this.updateSelectedData(object['data'],index);
           }else{
             console.log("No action performed !");
           }              
@@ -305,7 +324,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       }
     }
     this.getSelectedData();
-    let obj =this.getSendData()
+    let obj =this.getSendData();
     this.gridSelectionResponce.emit(obj);
   }  
   getSelectedData(){
@@ -335,6 +354,10 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     columns.forEach(element => {
       if(element.field_name == "plainCustomerName"){
         field_name = element.field_name;
+      }else if(element.field_name == "sealSerialNumber"){
+        field_name = element.field_name;
+      }else {
+        field_name = columns[0].field_name;
       }
     });
     if(field_name == ""){
@@ -367,13 +390,32 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
     return obj;
   }
-  updateSelectedData(data:any){
-    this.selectedData.forEach((element:any, i:number) => {
-      if(element._id == data._id) {
-        element = data;
+  updateSelectedData(data:any,index?:any){
+    if(this.selectedData && this.selectedData.length > 0){
+      if(data && data.id){
+        this.selectedData.forEach((element:any, i:number) => {
+          if(element._id == data._id) {
+            element = data;
+            let obj =this.getSendData()
+            this.gridSelectionResponce.emit(obj);
+          }
+        });
+      }else{
+        if(this.selectedData.length > index){          
+          this.selectedData[index] = data;
+        }else{
+          this.selectedData.push(data);
+        }
         let obj =this.getSendData()
         this.gridSelectionResponce.emit(obj);
       }
-    });
+    }else{
+        this.selectedData.push(data);
+      // if(this.gridData && this.gridData.length > 0){
+        // this.gridData[index] = data;
+        let obj =this.getSendData();
+        this.gridSelectionResponce.emit(obj);
+      // }
+    }
   }
 }

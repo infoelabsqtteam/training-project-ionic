@@ -40,7 +40,9 @@ export class ModalDetailCardComponent implements OnInit {
     private dataShareService: DataShareService
     ) {
       this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
-        if(data){
+        if(data && data.gridColumns){
+          this.childColumns = data.gridColumns;
+        }else{
           this.childgridIds.forEach((field,i) => {
             if(field['Id'] == data['_id']){
               this.childgridIds[i]['childgridfields'] = data.fields;
@@ -83,6 +85,8 @@ export class ModalDetailCardComponent implements OnInit {
       if(tabDetail && tabDetail.child_card){
         const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");
         child_card = moduleList[tabIndex]; 
+      }else if(tabDetail.child_card == null && tabDetail.grid){
+        child_card = tabDetail
       }
     }else{
       if(module && module.child_card){
@@ -105,12 +109,22 @@ export class ModalDetailCardComponent implements OnInit {
     if (card.card_type !== '') {
       this.cardType = card.card_type.name;
     }
-    this.childColumns = card.fields;
-    this.checkGridChild(this.childColumns);
+    if(card.grid == null && card.fields){
+      this.childColumns = card.fields;
+    }else if(card.grid && card.grid['_id']){
+      this.cardType = "detail1"
+      this.childColumns.forEach((element:any, i) => {
+        if(element.type){
+          element.type = element.type.toLowerCase();
+          this.childColumns[i]=element;
+        }
+      });
+    }
     if(card.tab_menu && card.tab_menu.length > 0){
       this.tabMenu = card.tab_menu;
       this.selectedIndex = 0;
     }
+    if(this.childColumns && this.childColumns.length > 0) this.checkGridChild(this.childColumns);
   }
   checkGridChild(childColumns){
     this.childgridIds=[];

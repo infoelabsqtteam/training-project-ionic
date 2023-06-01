@@ -58,7 +58,8 @@ export class HomePage implements OnInit, OnDestroy {
   cardMasterList:any;
   userAuthModules:any;
   cardListSubscription:any;
-  appCardMasterDataSize:number;
+  appCardMasterDataSize:number;  
+  ionEvent:any;
 
 
   constructor(
@@ -96,7 +97,7 @@ export class HomePage implements OnInit, OnDestroy {
         this.commonDataShareService.setModuleList(this.cardMasterList);
         this.cardList = this.coreUtilityService.getUserAutherisedCards(this.cardMasterList);
         if(this.cardList == null){        
-          this.notificationService.showAlert("You don't have permission or assign any module.","Permission error !",['Dismiss'])
+          this.notificationService.presentToastOnBottom("You don't have permission or assign any module.","danger")
         }
       }else{
         this.cardList = [];
@@ -241,6 +242,21 @@ export class HomePage implements OnInit, OnDestroy {
     this.notificationService.presentToastOnBottom('Comming Soon...','danger');
   }
 
+  // Pull from Top for Do refreshing or update card list 
+  doRefresh(event:any) {
+    // if(this.refreshlist){
+      this.ionEvent = event;
+      console.log('Begin doRefresh async operation');
+      // this.updateMode = false;  
+      setTimeout(() => {
+        event.target.complete();
+        this.getGridData();
+      }, 2000);
+
+    // }else{
+    //   console.log("Top refresh feature disable.");
+    // }
+  }
  
   
 }

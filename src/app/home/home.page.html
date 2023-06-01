@@ -60,7 +60,7 @@
                   <!-- <ion-card-subtitle>Card Subtitle</ion-card-subtitle> -->
                 </ion-card-header>              
                 <ion-card-content>
-                    Permission error, No Module Found !
+                    Permission error, No module found !
                 </ion-card-content>
                 <ion-button color="primary" fill="clear" size="small" (click)="getGridData()">Try again</ion-button>
             </ion-card>
@@ -76,6 +76,13 @@
                 </ion-card-content>
             </ion-card>
         </div>
-        
     </div>
+    <ion-refresher slot="fixed" pullFactor="0.5" pullMin="100" pullMax="200" (ionRefresh)="doRefresh($event)" >
+        <ion-refresher-content
+          pullingIcon="arrow-down-outline"
+          pullingText="Pull down to refresh"
+          refreshingSpinner="circles"
+          refreshingText="Refreshing...">
+        </ion-refresher-content>
+    </ion-refresher>
 </ion-content>

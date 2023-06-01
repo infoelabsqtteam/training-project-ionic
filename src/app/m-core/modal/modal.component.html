@@ -8,8 +8,8 @@
 <ion-content class="pages">
   <div class="">
     <ion-card>
-      <ion-card-header>
-        <ion-card-title>{{Data.field.field_label}}</ion-card-title>
+      <ion-card-header *ngIf="coloumName! && coloumName!=''">
+        <ion-card-title>{{coloumName}}</ion-card-title>
         <!-- <ion-card-subtitle>{{Data.field.field_label}}</ion-card-subtitle> -->
       </ion-card-header>
       <ion-card-content class="ion-table-responsive-x-axis ion-padding-horizontal-0 ion-padding-top-0">
@@ -84,8 +84,8 @@
           <thead>
             <tr>
               <th class="p-1">#</th>
-              <th class="p-1"><div class="heading"><span class="grid-heading-nowrap">{{ coloumName }}</span></div></th>
-              <th *ngIf="rateShow" class="p-1" width="20%">Rate</th>
+              <th class="p-1"><div class="heading ion-text-left"><span class="grid-heading-nowrap">{{ coloumName }}</span></div></th>
+              <th *ngIf="rateShow" class="p-1">Rate</th>
             </tr>
           </thead>
           <tbody [formGroup]="rateForm">

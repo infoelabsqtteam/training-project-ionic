@@ -4,7 +4,7 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
 // import { LocationAccuracy } from '@ionic-native/location-accuracy/ngx';
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { App_googleService, NotificationService } from '@core/ionic-core';
-import { AlertController } from '@ionic/angular';
+import { AlertController, Platform } from '@ionic/angular';
 import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
 
 @Injectable({
@@ -28,7 +28,8 @@ export class AndroidpermissionsService {
     private dataShareService: DataShareServiceService,
     private notificationService: NotificationService,
     public alertController: AlertController,
-    private nativeSettings: OpenNativeSettings
+    private nativeSettings: OpenNativeSettings,
+    private platform: Platform,
   ) { }
 
     // requestPermisiions() {
@@ -44,11 +45,17 @@ export class AndroidpermissionsService {
       const alert = await this.alertController.create({
         header: 'No Internet Connection',
         backdropDismiss: false,
-        message: 'Your Device Has No Internet Connection.',
+        message: 'You have lost internet connection',
         buttons: [{
           text: "OK",
           handler: () => {
-            navigator['app'].exitApp();
+            if(this.platform.is('hybrid')){
+              alert.dismiss();
+              // navigator['app'].exitApp(); //for exit the app on 'OK' click
+            }else{
+              console.log("Dissmiss No Internet Connection Alert");
+              alert.dismiss();
+            }
           }
         }]
       });

@@ -24,8 +24,22 @@
             span {position:absolute;left:0px;width:100%;bottom:-8px;}
             i {font-size:14px;color:#999;background:var(--ion-color-white);padding:0 5px;font-style:normal;}
         }
+        ion-input{max-width: 95%;
+            .native-input{padding: 10px 0 !important;}
+        }
 
-
+    }
+    .ion-vertical-flex-column{
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+    .login.signupform{position: inherit;
+        ion-input{
+            .native-input{padding: 7px 0 !important;}
+        }
+        .showpassword{right: 5px;top: 27px;font-size: 20px;}
+        .showicon {top:28px;font-size:18px;}
     }
     .mailicon {width:48px;height:48px;border-radius:100%;background:var(--ion-color-white);padding:10px;margin:25px auto 0;display:inline-block;box-shadow:0 0 39px #dedede;font-size:25px;line-height:35px;color:#ff7b7b;}
     p {margin:0;}

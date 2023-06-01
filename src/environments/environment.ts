@@ -5,8 +5,8 @@
 export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
-  serverhost: "http://localhost:8104/rest/",
-  // serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
+  // serverhost: "http://localhost:8104/rest/",
+  serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
   // serverhost: "https://serveritclabs.itclabs.com/rest/",
   // serverhost: "https://prodserveritclabs.e-labs.ai/rest/",
   mediceaHost: "http://pcp.medicea.in/rest/",
@@ -20,7 +20,9 @@ export const environment = {
   privacy_policy: "",
   app_share: "https://play.google.com/store/apps/details?id=com.itclabs.ai",
   appCardMasterDataSize: 200,
-  appHomePageLayout:"layout1"
+  appHomePageLayout:"layout1",
+  apiKey: "AIzaSyA--cLc1-rZJvuV18t0jxlzIbzxahuH-EQ",
+  googleMapsApiKey: "AIzaSyAlvBSDoXj5p3D1Qdnee_j_cF8jIGo5pz8"
 };
 
 /*

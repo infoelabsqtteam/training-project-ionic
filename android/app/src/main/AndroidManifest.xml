@@ -13,6 +13,7 @@
         android:theme="@style/AppTheme">
 
         <activity
+            android:exported="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
             android:name="com.itclabs.ai.MainActivity"
             android:label="@string/title_activity_main"
@@ -35,6 +36,9 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+        
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAlvBSDoXj5p3D1Qdnee_j_cF8jIGo5pz8"/>
+
     </application>
 
     <!-- Permissions -->

@@ -434,6 +434,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       // if(this.selectedData && this.selectedData.length > 0){
         this.field.mendetory_fields.forEach((mField:any) => {
           const fieldName = mField.field_name;
+          if(mField.display){
           // this.selectedData.forEach((row,i) => {
             let checkDisable = this.isDisable(mField,this.data);
             if(this.data && !checkDisable && (this.data[fieldName] == undefined || this.data[fieldName] == '' || this.data[fieldName] == null)){
@@ -445,6 +446,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
               check = 1;
             }
           // });
+          }
         });        
       // }
     }

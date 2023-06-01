@@ -1,13 +1,14 @@
 <ion-header #primaryheader>
   <ion-toolbar *ngIf="!this.popoverTabbing">
-    <ion-buttons slot="start" (click)="goBack()"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
-    <div class="cardsearch">
-      <ion-select interface="popover" class="ion-padding-left-0" placeholder="Search Value" [(ngModel)]="searchcardfield" (ionChange)="selectedSearchValue(searchcardfield)">
+    <ion-buttons slot="start" (click)="goBack()"><ion-button><ion-icon name="arrow-back"></ion-icon></ion-button></ion-buttons>
+    <ion-title class="" *ngIf="columnList && columnList.length == 0 && headerTitle !=''">{{headerTitle}}</ion-title>
+    <div class="cardsearch" *ngIf="columnList && columnList.length > 0">
+      <ion-select interface="popover" class="ion-padding-left-0" placeholder="Search By" [(ngModel)]="searchcardfield" (ionChange)="selectedSearchValue(searchcardfield)">
         <ion-select-option *ngFor="let columns of columnList; index as i" [value]="columns.field_name" [ngClass]="columns.filter?'ion-show':'ion-hide'">{{columns.field_label}}</ion-select-option>
       </ion-select>
       <div class="searchbox">
           <ion-title [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>
-          <ion-input enterkeyhint="search" inputmode="search" minlength="3" maxlength="30" placeholder="search" class="align-self: auto" (ionChange)="filterCardByDropdownValue()" [(ngModel)]="searchcardvalue" clearInput animated="true" [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
+          <ion-input [type]="selectedSearchCardField.type == 'date' || selectedSearchCardField.type == 'datetime' ? 'date' : 'text'" enterkeyhint="search" inputmode="" minlength="3" maxlength="30" placeholder="Enter value" (ionChange)="filterCardByDropdownValue()" [(ngModel)]="searchcardvalue" clearInput animated="true" [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
             <span (click)="togglesearch()"><ion-icon name="arrow-back" size="small" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon></span>
           </ion-input>
           <!-- <ion-buttons slot="end" (click)="togglesearch()">
@@ -66,5 +67,5 @@
 </div>
 
 <ion-content class="pages quotation" [scrollEvents]="true">
-  <app-cards-layout [card]="card" [data]="data" (columnListOutput)="columnListOutput($event)" (popoverTabbing)="popoverMenuItem($event)"></app-cards-layout>
+  <app-cards-layout [card]="card" [data]="data" (parentCardName)="parentCardName($event)" (columnListOutput)="columnListOutput($event)" (popoverTabbing)="popoverMenuItem($event)"></app-cards-layout>
 </ion-content>

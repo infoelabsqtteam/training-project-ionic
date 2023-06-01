@@ -31,13 +31,9 @@ export class GridSelectionModalComponent implements OnInit {
   selectedTab:string = "new";
   setGridData:boolean=false;
 
-  
-  // test array
   data :any = [];
-      // [
-      //     {"cardType":"demo","company_name":"abc pvt ltd","final_amount":0.00,"quotation_no":"B01-220405RQ00001","contact_person":"Aggregate Bedding Sand 2","mobile":"3887722","email":"jhduy@gmail.com","address1":"patel nagar/delhi","country":"india","state":"Delhi","department_name":"Other","class_name":"test","sample_name":"Urea","department_id":"5fdb24b60715230bd","net_amt":"₹ 7000"}
-      // ]
   expandicon: any = "assets/itc-labs/icon/expand-icon.png";
+  reloadBtn:boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -51,7 +47,13 @@ export class GridSelectionModalComponent implements OnInit {
   ngOnInit() {
     this.onload();
     this.subscribe();
-
+  }  
+  ionViewWillLeave(){
+    // this.unsubscribe();
+  }
+  ngOnDestroy() {
+    //Above ionViewwillLeave is working fine.
+    this.unsubscribe();
   }
   subscribe(){
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
@@ -66,8 +68,38 @@ export class GridSelectionModalComponent implements OnInit {
       }
     })
   }
+  reloadStaticData(){
+    this.reloadBtn = true;
+    let data:any = this.dataShareService.getStatiData();
+    this.copyStaticData = data;
+    if(this.setGridData && this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null && data[this.field.ddn_field] != undefined){
+      if((Array.isArray(data[this.field.ddn_field]) && data[this.field.ddn_field].length > 0)){
+        this.setStaticData(data);
+      }else if(!Array.isArray(data[this.field.ddn_field])){
+        this.setStaticData(data);
+      }else{
+        this.resetReloadBtn();
+      }
+    }else{
+      this.resetReloadBtn();      
+    }
+  }
+  resetReloadBtn(){
+    setTimeout(() => {
+      this.reloadBtn = false;
+    }, 1000);
+  }
+  unsubscribe(){
+    if(this.staticDataSubscriber){
+      this.staticDataSubscriber.unsubscribe();
+    }
+  }
   onload(){
-    this.selectedTab = "new";
+    if(this.Data?.updateMode && this.Data.updateMode){      
+      this.selectedTab = "added";
+    }else{
+      this.selectedTab = "new";
+    }
     this.selecteData = [];  
     this.selecteData = JSON.parse(JSON.stringify(this.Data.selectedData)); 
     this.selectedData = JSON.parse(JSON.stringify(this.Data.selectedData));
@@ -115,7 +147,7 @@ export class GridSelectionModalComponent implements OnInit {
     }
 
     //For dropdown data in grid selection
-    this.getStaticDataWithDependentData()
+    // this.getStaticDataWithDependentData();
   }
   getStaticDataWithDependentData(){
     const staticModal = []
@@ -182,7 +214,8 @@ export class GridSelectionModalComponent implements OnInit {
               }
             });
           });  
-          this.setGridData = false;        
+          this.setGridData = false; 
+          this.reloadBtn = false;       
         }
       }        
     }
@@ -215,7 +248,7 @@ export class GridSelectionModalComponent implements OnInit {
     const modal = await this.modalController.create({
       component: GridSelectionDetailModalComponent,
       componentProps: {
-        "Data": {"value":data,"column":this.field.gridColumns,"alreadyAdded": ""},
+        "Data": {"value":data,"column":this.field.gridColumns,"alreadyAdded": alreadyAdded,"field":this.field},
         "index": index,
         "childCardType" : "demo1",
         "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""} 
@@ -286,6 +319,7 @@ export class GridSelectionModalComponent implements OnInit {
     } else{
       this.gridData[index].selected=false;
     }
+    this.getSelectedData();
   }
   // exists(item) {
   //   return this.selectedData.indexOf(item) > -1;
@@ -349,16 +383,20 @@ export class GridSelectionModalComponent implements OnInit {
     this.selectedTab = ev.target.value;
   }
   getSelectedData(){
-    const selectedData = [];
+    this.selectedData = [];    
     if(this.gridData && this.gridData.length > 0){
       this.gridData.forEach(element => {
         if(element && element.selected){
-          selectedData.push(element);
+          this.selectedData.push(element);
         }
       });
-      return selectedData;
-    }else{
-      return selectedData;
+    }
+    if(this.selecteData && this.selecteData.length > 0 && this.field.add_new_enabled){
+      this.selecteData.forEach(element => {
+        if(element && element.customEntry){
+          this.selectedData.push(element);
+        }
+      });      
     }
   }
 
