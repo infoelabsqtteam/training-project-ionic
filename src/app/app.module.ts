@@ -13,7 +13,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { MediaCapture } from '@ionic-native/media-capture/ngx';
 import { Media } from '@ionic-native/media/ngx';
-import { File } from '@ionic-native/File/ngx';
+import { File } from '@ionic-native/file/ngx';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 // import { CallLog } from '@ionic-native/call-log/ngx';
  //import { DocumentViewer } from '@ionic-native/document-viewer/ngx';
@@ -38,40 +38,38 @@ import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
 
 
 @NgModule({
-  declarations: [AppComponent, FocusDirective],
-  entryComponents: [],
-  imports: [
-    BrowserModule, 
-    FormsModule, 
-    ReactiveFormsModule, 
-    HttpClientModule,
-    IonicModule.forRoot(),
-    IonicCoreModule.forRoot(environment),
-    AppRoutingModule,
-    ServiceWorkerModule.register('ngsw-worker.js', 
-    { enabled: environment.production }),
-    McoreModule
-  ],
-  providers: [
-    // DocumentViewer,
-    // FileTransfer,
-    StatusBar,
-    SplashScreen,
-    MediaCapture,
-    Media,
-    File,
-    CallNumber,
-    DatePipe,
-    CurrencyPipe,
-    FileOpener,
-    AndroidPermissions,
-    NativeGeocoder,
-    LocationAccuracy,
-    OpenNativeSettings,
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-    TitleCasePipe
-  ],
-  bootstrap: [AppComponent]
+    declarations: [AppComponent, FocusDirective],
+    imports: [
+        BrowserModule,
+        FormsModule,
+        ReactiveFormsModule,
+        HttpClientModule,
+        IonicModule.forRoot(),
+        IonicCoreModule.forRoot(environment),
+        AppRoutingModule,
+        ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
+        McoreModule
+    ],
+    providers: [
+        // DocumentViewer,
+        // FileTransfer,
+        StatusBar,
+        SplashScreen,
+        MediaCapture,
+        Media,
+        File,
+        CallNumber,
+        DatePipe,
+        CurrencyPipe,
+        FileOpener,
+        AndroidPermissions,
+        NativeGeocoder,
+        LocationAccuracy,
+        OpenNativeSettings,
+        { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+        TitleCasePipe
+    ],
+    bootstrap: [AppComponent]
 })
 export class AppModule { }

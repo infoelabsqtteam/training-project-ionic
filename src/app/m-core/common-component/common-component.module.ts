@@ -27,14 +27,13 @@ const components = [
 
 @NgModule({
     declarations: components,
-    exports:components,
-    entryComponents: [],
+    exports: components,
     imports: [
         CommonModule,
         IonicModule,
-        FormsModule, 
+        FormsModule,
         AngularEditorModule,
-        ReactiveFormsModule, 
+        ReactiveFormsModule,
         HttpClientModule,
         IonicModule.forRoot(),
         NgSelectModule,
