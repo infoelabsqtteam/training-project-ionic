@@ -79,7 +79,6 @@
     "ionic": "^5.4.16",
     "jetifier": "^2.0.0",
     "ng2-charts": "^3.0.6",
-    "ng2-google-charts": "^6.1.0",
     "plugin": "^0.3.3",
     "rxjs": "^7.1.0",
     "swiper": "^7.4.1",
