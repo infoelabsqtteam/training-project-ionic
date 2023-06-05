@@ -21,7 +21,6 @@ dependencies {
     implementation project(':capacitor-share')
     implementation project(':capacitor-splash-screen')
     implementation project(':capacitor-status-bar')
-    implementation "com.android.support:support-v4:27.+"
     implementation "com.google.android.gms:play-services-location:16.+"
 }
 

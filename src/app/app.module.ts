@@ -15,9 +15,6 @@ import { MediaCapture } from '@ionic-native/media-capture/ngx';
 import { Media } from '@ionic-native/media/ngx';
 import { File } from '@ionic-native/file/ngx';
 import { CallNumber } from '@ionic-native/call-number/ngx';
-// import { CallLog } from '@ionic-native/call-log/ngx';
- //import { DocumentViewer } from '@ionic-native/document-viewer/ngx';
- //import { FileTransfer } from '@ionic-native/file-transfer/ngx';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe, CurrencyPipe, TitleCasePipe} from '@angular/common';
 import { FileOpener } from '@ionic-native/file-opener/ngx';
@@ -51,8 +48,6 @@ import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
         McoreModule
     ],
     providers: [
-        // DocumentViewer,
-        // FileTransfer,
         StatusBar,
         SplashScreen,
         MediaCapture,
