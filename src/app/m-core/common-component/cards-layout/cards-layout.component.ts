@@ -764,11 +764,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         showBackdrop:true,
         backdropDismiss:false,
       });
+      modal.present();
       modal.componentProps.modal = modal;
       modal.onDidDismiss().then((result) => {
         this.getCardDataByCollection(this.selectedIndex);
       });
-      return await modal.present();
     } else {
       this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
     }

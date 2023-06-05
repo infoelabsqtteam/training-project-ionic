@@ -2027,8 +2027,15 @@ tinymceConfig = {}
       if(this.templateForm && this.templateForm.controls){
         this.templateForm.reset();
       }
-      this.modal.dismiss();
+      this.closeModal()
     }
+  }
+  async closeModal(){
+    this.modal?.offsetParent.dismiss(undefined,"confirmed",);
+    // const modal = await this.modalController.getTop();
+    // if(modal){
+    //   modal.dismiss(undefined,"confirmed")
+    // }
   }
   checkOnSuccessAction(){
     let actionValue = ''
