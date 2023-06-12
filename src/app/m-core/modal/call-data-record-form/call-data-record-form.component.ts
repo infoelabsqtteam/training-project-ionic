@@ -144,7 +144,7 @@ export class CallDataRecordFormComponent implements OnInit {
   }
 
   dismissModal(){
-    this.modal.dismiss({'dismissed': true});
+    this.modal?.offsetParent.dismiss({'dismissed': true},"backClicked");
   }
   
   async getDataDiff(endTimeMs:any) {    

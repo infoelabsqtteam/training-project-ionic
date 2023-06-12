@@ -415,9 +415,9 @@ export class GmapViewComponent implements OnInit {
   }
   dismissModal(data?:any,role?:any){
     if(data !=null){
-      this.modal.dismiss(data,role);      
+      this.modal?.offsetParent.dismiss(data,role);      
     }else{
-      this.modal.dismiss(this.selectedRowData,)
+      this.modal?.offsetParent.dismiss(this.selectedRowData,)
     }
   }
   async saveData(selectedRowData){    

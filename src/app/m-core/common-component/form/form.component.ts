@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitte
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn, FormArray, FormControl } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { ApiService, App_googleService, Common, CommonDataShareService, CoreUtilityService, DataShareService, EnvService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
+import { ApiService, App_googleService, Common, CommonDataShareService, CoreFunctionService, CoreUtilityService, DataShareService, EnvService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
 import { AlertController, ItemReorderEventDetail, ModalController, ToastController, isPlatform  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
@@ -342,7 +342,8 @@ tinymceConfig = {}
     private popoverModalService: PopoverModalService,
     private app_googleService: App_googleService,
     private alertController: AlertController,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private coreFunctionService: CoreFunctionService
     ) {
 
       // this.mapsApiLoaded();
@@ -731,7 +732,7 @@ tinymceConfig = {}
         // if(this.envService.getRequestType() == 'PUBLIC'){
         //   this.complete_object_payload_mode = false;
         //   let _id = this.saveResponceData["_id"];
-        //   if(this.commonFunctionService.isNotBlank(this.form["details"]) && this.commonFunctionService.isNotBlank(this.form["details"]["on_success_url_key"] != "")){
+        //   if(this.coreFunctionService.isNotBlank(this.form["details"]) && this.coreFunctionService.isNotBlank(this.form["details"]["on_success_url_key"] != "")){
         //     let public_key = this.form["details"]["on_success_url_key"]
         //     const data = {
         //       "obj":public_key,
@@ -1456,7 +1457,7 @@ tinymceConfig = {}
     this.checkForDownloadReport = true;
     let publicDownloadReportFromData = {};
     let payload = {};
-    if(this.commonFunctionService.isNotBlank(this.selectedRow["_id"]) && this.commonFunctionService.isNotBlank(this.selectedRow["value"])){
+    if(this.coreFunctionService.isNotBlank(this.selectedRow["_id"]) && this.coreFunctionService.isNotBlank(this.selectedRow["value"])){
       publicDownloadReportFromData["_id"] = this.selectedRow["_id"];
       publicDownloadReportFromData["value"] = this.selectedRow["value"];
       payload["_id"] = this.selectedRow["_id"];
@@ -3502,14 +3503,15 @@ tinymceConfig = {}
     // if(cpmonentName){
       const modal = await this.modalController.create({
         component: GridSelectionDetailModalComponent,
-        // cssClass: id+"-class",
+        cssClass: "gridSelectionDetailModal",
         componentProps: {
           'Data': data,
           "childCardType":cardtype
         },
+        id: data.id,
         animated: true,
-        // id:id
       });
+      modal.present();
       modal.onDidDismiss()
         .then((data) => {
           const object = data['data'];
@@ -3518,7 +3520,6 @@ tinymceConfig = {}
             this.gridSelectionResponce(obj);
           }        
       });
-      return await modal.present();
     // }
   }
 
@@ -3543,7 +3544,7 @@ tinymceConfig = {}
   modifiedGridColumns(gridColumns){
     if(gridColumns.length > 0){     
       gridColumns.forEach(field => {
-        if(this.commonFunctionService.isNotBlank(field.show_if)){
+        if(this.coreFunctionService.isNotBlank(field.show_if)){
           if(!this.showIf(field)){
             field['display'] = false;
           }else{
@@ -3573,7 +3574,7 @@ tinymceConfig = {}
       //targetFieldName = formData[field.field_name]
       updateMode = true;
     }
-    if(this.commonFunctionService.isNotBlank(field.add_new_target_field)){
+    if(this.coreFunctionService.isNotBlank(field.add_new_target_field)){
       targetFieldName['form'][field.add_new_target_field] = this.lastTypeaheadTypeValue
     }else if(field){
       switch (field.type) {
@@ -3604,7 +3605,7 @@ tinymceConfig = {}
       //   targetFieldName[element.field_name] = "";
       // }      
     } 
-    if(this.commonFunctionService.isNotBlank(field.moveFieldsToNewForm)){
+    if(this.coreFunctionService.isNotBlank(field.moveFieldsToNewForm)){
       if(field.moveFieldsToNewForm && field.moveFieldsToNewForm.length > 0){
         field.moveFieldsToNewForm.forEach(keyValue => {
           const sourceTarget = keyValue.split("#");
@@ -4630,6 +4631,7 @@ tinymceConfig = {}
           "Data": gridModalData,
         }
       });
+      modal.present();
       modal.componentProps.modal = modal;
       modal.onDidDismiss()
         .then((data) => {
@@ -4639,7 +4641,6 @@ tinymceConfig = {}
             this.gridSelectionResponce(obj);
           }        
       });
-      return await modal.present();
     }
   }
   getSendData(data){
@@ -5191,7 +5192,7 @@ tinymceConfig = {}
       this.nextFormUpdateMode = true;
     }
     let previousFormFocusFieldValue = '';
-    if(this.commonFunctionService.isNotBlank(this.previousFormFocusField.add_new_target_field)){
+    if(this.coreFunctionService.isNotBlank(this.previousFormFocusField.add_new_target_field)){
       previousFormFocusFieldValue = nextFormData[this.previousFormFocusField.add_new_target_field];
     }
     const parentfield = formCollecition['parent_field'];

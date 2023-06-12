@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
+import { ApiService, CoreFunctionService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 
 @Component({
@@ -43,12 +43,13 @@ export class GridSelectionDetailModalComponent implements OnInit {
 
   constructor(
     private modalController: ModalController,
-    private CommonFunctionService:CoreUtilityService,
+    private coreUtilityService: CoreUtilityService,
     private dataShareService: DataShareService,
-    private apiService:ApiService,
-    private restService:RestService,
+    private apiService: ApiService,
+    private restService: RestService,
     private storageService: StorageService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private coreFunctionService: CoreFunctionService
   ) { 
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
@@ -119,10 +120,10 @@ export class GridSelectionDetailModalComponent implements OnInit {
     //   this.gridData = [];
     // }
     if (this.field.gridColumns && this.field.gridColumns.length > 0) {
-      let gridColumns = this.CommonFunctionService.updateFieldInList('display',this.field.gridColumns);
+      let gridColumns = this.coreUtilityService.updateFieldInList('display',this.field.gridColumns);
       gridColumns.forEach(field => {
-        if (this.CommonFunctionService.isNotBlank(field.show_if)) {
-          if (!this.CommonFunctionService.showIf(field, parentObject)) {
+        if (this.coreFunctionService.isNotBlank(field.show_if)) {
+          if (!this.coreUtilityService.showIf(field, parentObject)) {
             field['display'] = false;
           } else {
             field['display'] = true;
@@ -183,7 +184,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   checkRowDisabledIf(field,data){
     const condition = field.disableRowIf;
     if(condition){
-      return !this.CommonFunctionService.checkDisableRowIf(condition,data);
+      return !this.coreUtilityService.checkDisableRowIf(condition,data);
     }
     return true;    
   }
@@ -200,7 +201,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
   }
   getValueForGrid(field, object) {
-    return this.CommonFunctionService.getValueForGrid(field, object);
+    return this.coreUtilityService.getValueForGrid(field, object);
   }
   closeModal(data?:any,remove?:any){
     this.data = '';
@@ -209,7 +210,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     this.dismissModal();
   }
   dismissModal(data?:any,remove?:any){
-    this.modal.dismiss({
+    this.modal?.offsetParent.dismiss({
       'data':data,
       'dismissed': true,
       'remove':remove
@@ -265,7 +266,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       return true;
     }
     if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-      return this.CommonFunctionService.isDisable(field.etc_fields, updateMode, object);
+      return this.coreUtilityService.isDisable(field.etc_fields, updateMode, object);
     }   
     return false;
   }
@@ -277,7 +278,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
         condition = this.field.disableRowIf;
       }
       if(condition != ''){
-        if(this.CommonFunctionService.checkDisableRowIf(condition,data)){
+        if(this.coreUtilityService.checkDisableRowIf(condition,data)){
           check = true;
         }else{
           check = false;
@@ -288,7 +289,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   calculateNetAmount(data, fieldName, index:number){
 
-    this.CommonFunctionService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
+    this.coreUtilityService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
   }
   doSomething(ev: any) {
     // this.selectedTab = ev.target.value;
@@ -314,7 +315,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       
   //   }else{
   //     const staticModal = []
-  //     const staticModalPayload = this.CommonFunctionService.(params, callback, criteria, object);
+  //     const staticModalPayload = this.coreUtilityService.(params, callback, criteria, object);
   //     // staticModalPayload['adkeys'] = {'index':i};
   //     staticModal.push(staticModalPayload)      
   //     if(params.indexOf("FORM_GROUP") >= 0){
@@ -327,7 +328,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   //  }
   // }
   getddnDisplayVal(val) {
-    return this.CommonFunctionService.getddnDisplayVal(val);
+    return this.coreUtilityService.getddnDisplayVal(val);
   }
   searchTypeaheadData(field, currentObject,chipsInputValue) {
     this.typeaheadObjectWithtext = currentObject;
@@ -359,7 +360,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     if(option != null && option != "" && option.key !=""){
       const alreadyAddedList = data[field.field_name];
       if ((option.keyCode == 13 || option.keyCode == 9) && option.target.value !="" && option.target.value != undefined){
-        if(this.CommonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option.target.value,alreadyAddedList)){
+        if(this.coreUtilityService.checkDataAlreadyAddedInListOrNot("_id",option.target.value,alreadyAddedList)){
           this.storageService.presentToast( option.target.value + ' Already Added');
         }else{
           if(data[field.field_name] == null) {
@@ -374,7 +375,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
         this.storageService.presentToast( "Please enter any " + field.label);
       }else{
         if(option !=""){
-          if(this.CommonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
+          if(this.coreUtilityService.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
             this.storageService.presentToast( option.name + ' Already Added');
           }else{
             if(data[field.field_name] == null) data[field.field_name] = [];

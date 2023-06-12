@@ -130,16 +130,16 @@ export class HomePage implements OnInit, OnDestroy {
 
     });
 
-    this.platform.backButton.subscribeWithPriority(5, () => {
-      console.log('Handler called to force close!');
-      this.alertController.getTop().then(r => {
-        if (r) {
-          navigator['app'].exitApp();
-        }
-      }).catch(e => {
-        console.log(e);
-      })
-    });
+    // this.platform.backButton.subscribeWithPriority(5, () => {
+    //   console.log('Handler called to force close!');
+    //   this.alertController.getTop().then(r => {
+    //     if (r) {
+    //       navigator['app'].exitApp();
+    //     }
+    //   }).catch(e => {
+    //     console.log(e);
+    //   })
+    // });
 
   }
 

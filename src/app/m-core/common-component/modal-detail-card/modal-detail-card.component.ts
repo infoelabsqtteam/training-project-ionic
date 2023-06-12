@@ -147,7 +147,7 @@ export class ModalDetailCardComponent implements OnInit {
   }
   
   dismissModal(){
-    this.modal.dismiss({'dismissed': true});
+    this.modal?.offsetParent.dismiss({'dismissed': true},"backClicked");
   }
 
   ngOnDestroy() {

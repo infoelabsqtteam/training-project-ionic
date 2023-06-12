@@ -16,7 +16,7 @@ export const environment = {
   web_site: "",
   razorpay_key : "rzp_test_P7SL8C2oelMvzE",
   verify_type : "email",
-  app_Version : "@2022 E-Labs",
+  app_Version : "@2023 E-Labs",
   privacy_policy: "",
   app_share: "https://play.google.com/store/apps/details?id=com.tech.elabs.ionic",
   appCardMasterDataSize: 200,

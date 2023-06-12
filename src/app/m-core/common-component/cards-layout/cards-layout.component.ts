@@ -562,13 +562,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             this.childCardType = element.card_type;
           }
         });
-      }    
-      //modalShowfunction
-      // if(this.getcardmasete.get("viewtype") ="cardtype") {
-
-      // } else (""){
-        
-      // }
+      }
       const modal = await this.modalController.create({
         component: ModalDetailCardComponent,
         componentProps: {
@@ -578,13 +572,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           "childCardType" : this.childCardType,
           "selected_tab_index": this.selectedIndex
         },
-        swipeToClose: true
+        id: data._id,
+        showBackdrop:true,
+        backdropDismiss:false,
       });
+      modal.present();
       modal.componentProps.modal = modal;
       modal.onDidDismiss().then((result) => {
         this.detailPage = false;
       });
-      return await modal.present();
     }else{
       return console.log("No detail card found.");
     }
@@ -788,14 +784,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         "selectedRowIndex": this.editedRowIndex,
         "startTime" : startTime,
       },
+      id: data._id,
       showBackdrop:true,
       backdropDismiss:false,
     });
+    modal.present();
     modal.componentProps.modal = modal;
     modal.onDidDismiss().then((result) => {
       this.getCardDataByCollection(this.selectedIndex);
     });
-    return await modal.present();
   }
   // Pull from bottom for loading more cards
   loadData(event:any) {
@@ -1445,9 +1442,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             "selectedRowIndex": index,
             "additionalData": additionalData,
           },
+          id: data._id,
           showBackdrop:true,
           backdropDismiss:false,
         });
+        modal.present();
         modal.componentProps.modal = modal;
         modal.onDidDismiss().then(async (result:any) => {
           console.log("Google map Modal Closed", result);
@@ -1462,7 +1461,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           this.carddata[index] = result.data;
           // this.getCardDataByCollection(this.selectedIndex);
         });
-        return await modal.present();
       }else{
         await this.requestLocationPermission();
         this.notificationService.presentToastOnBottom("Getting your location, please wait..");

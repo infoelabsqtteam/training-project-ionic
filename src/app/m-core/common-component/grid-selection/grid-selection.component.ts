@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { ApiService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
+import { ApiService, CoreFunctionService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { Subscriber, Subscription } from 'rxjs';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
@@ -46,13 +46,14 @@ export class GridSelectionComponent implements OnInit, OnChanges {
 
   constructor(    
     private modalController: ModalController,
-    private coreFunctionService: CoreUtilityService,
+    private coreUtilityService: CoreUtilityService,
     private restService:RestService,
     private apiService:ApiService,
     private notificationService:NotificationService,
     private dataShareService:DataShareService,
     private storageService: StorageService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private coreFunctionService: CoreFunctionService
   ) { }
   
 
@@ -154,7 +155,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
           if(this.field.onchange_function && this.field.onchange_function_param != ""){
             switch(this.field.onchange_function_param){
               case "calculateQquoteAmount":
-                this.gridData = this.coreFunctionService.calculateAutoEffRate(this.gridData);
+                this.gridData = this.coreUtilityService.calculateAutoEffRate(this.gridData);
                 break;
             }
           }
@@ -164,7 +165,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
               if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0){
                 var validity = true;
                 this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
-                  if(this.coreFunctionService.getObjectValue(matchcriteria,element) == this.coreFunctionService.getObjectValue(matchcriteria,row)){
+                  if(this.coreUtilityService.getObjectValue(matchcriteria,element) == this.coreUtilityService.getObjectValue(matchcriteria,row)){
                     validity = validity && true;
                   }
                   else{
@@ -179,7 +180,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
                 }
               }
               else{
-                 if(this.coreFunctionService.getObjectValue("_id",element) == this.coreFunctionService.getObjectValue('_id',row)){
+                 if(this.coreUtilityService.getObjectValue("_id",element) == this.coreUtilityService.getObjectValue('_id',row)){
                   this.gridData[i]= element
                   const grid_data = JSON.parse(JSON.stringify(this.gridData[i]))
                   grid_data.selected = true;
@@ -197,7 +198,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
 
   getValueForGrid(field, object) {
-    return this.coreFunctionService.getValueForGrid(field, object);
+    return this.coreUtilityService.getValueForGrid(field, object);
   }
   isDisable(field, object) {
     const updateMode = false;
@@ -213,7 +214,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       return true;
     }
     if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-      return this.coreFunctionService.isDisable(field.etc_fields, updateMode, object);
+      return this.coreUtilityService.isDisable(field.etc_fields, updateMode, object);
     }   
     return false;
   }
@@ -225,7 +226,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
         condition = this.field.disableRowIf;
       }
       if(condition != ''){
-        if(this.coreFunctionService.checkDisableRowIf(condition,data)){
+        if(this.coreUtilityService.checkDisableRowIf(condition,data)){
           check = true;
         }else{
           check = false;
@@ -238,13 +239,13 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     const data = this.selectedData[index];
     const condition = field.disableRowIf;
     if(condition){
-      return !this.coreFunctionService.checkDisableRowIf(condition,data);
+      return !this.coreUtilityService.checkDisableRowIf(condition,data);
     }
     return true;    
   }
   calculateNetAmount(data, fieldName, index){
 
-    this.coreFunctionService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
+    this.coreUtilityService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
   }
 
   async addremoveparticipant(data,index){
@@ -295,14 +296,14 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   toggle(data:any,event:any, indx:any) {
     let index:any = -1;
     if(data._id != undefined){
-      index = this.coreFunctionService.getIndexInArrayById(this.gridData,data._id);
+      index = this.coreUtilityService.getIndexInArrayById(this.gridData,data._id);
       this.gridData[index] = data;
     }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0 && data){
       for (let i = 0; i < this.gridData.length; i++) {
           const row = this.gridData[i]; 
           for (let j = 0; j < this.field.matching_fields_for_grid_selection.length; j++) {
             const matchcriteria = this.field.matching_fields_for_grid_selection[j];          
-            if(this.coreFunctionService.getObjectValue(matchcriteria,data) == this.coreFunctionService.getObjectValue(matchcriteria,row)){
+            if(this.coreUtilityService.getObjectValue(matchcriteria,data) == this.coreUtilityService.getObjectValue(matchcriteria,row)){
               index = i;
               this.gridData[index] = data;
               break;
@@ -345,7 +346,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
   }
   getFirstCharOfString(char:any){
-    return this.coreFunctionService.getFirstCharOfString(char);
+    return this.coreUtilityService.getFirstCharOfString(char);
   }
   
   getName(object:any){
@@ -363,7 +364,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     if(field_name == ""){
       field_name = columns[0].field_name;
     }
-    let value = this.coreFunctionService.getObjectValue(field_name,object);
+    let value = this.coreUtilityService.getObjectValue(field_name,object);
     return value;
   }
 
