@@ -18,14 +18,16 @@
   </ion-list>
   <form [formGroup]="cdrForm" (ngSubmit)="onSubmit()" *ngIf="!mobileList">
     <ion-row class="row">
-      <ion-col size="12">
+      <ion-col size="12" *ngIf="contactName !=''">
         <ion-item>
-          <ion-label slot="start" *ngIf="contactName !=''">Contact Name  </ion-label>
-          <ion-label slot="end" *ngIf="contactName !=''">{{contactName}}</ion-label>
+          <ion-label slot="start">Contact Name  </ion-label>
+          <ion-label slot="end">{{contactName}}</ion-label>
         </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="contactNumber !=''">
         <ion-item>
-          <ion-label slot="start" *ngIf="cardData.mobile !=''">Contact number </ion-label>
-          <ion-label slot="end" *ngIf="cardData.mobile !=''">{{cardData.mobile}}</ion-label>
+          <ion-label slot="start">Contact number </ion-label>
+          <ion-label slot="end">{{contactNumber}}</ion-label>
         </ion-item>
       </ion-col>
         <!-- <ion-col size="12">
@@ -96,23 +98,32 @@
           </ion-item>
       </ion-col> -->
       <ion-col size="12">
-          <ion-item>
-          <ion-label>Description</ion-label>
+        <ion-item>
+          <ion-label position="floating">Description</ion-label>
           <ion-input type="text" formControlName="description" value=""></ion-input>
         </ion-item>
       </ion-col>
-      <ion-col size="12">
+      <!-- <ion-col size="12">
+        <ion-list>
           <ion-item>
-          <ion-label>Lead Status</ion-label>
-          <ion-select formControlName="leadstatus" >
-            <ion-select-option *ngFor="let item of statusList" value="{{item.val}}">{{item.val}}</ion-select-option>
-          </ion-select>
-        </ion-item>
+            <ion-label>Lead Status</ion-label>
+            <ion-select placeholder="Lead Status" formControlName="leadstatus" >
+              <ion-select-option *ngFor="let item of statusList" value="{{item.val}}">{{item.val}}</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+      </ion-col> -->
+      <ion-col size="12">
+        <ng-select placeholder="Lead Status" [bindLabel]="'name'" formControlName="leadstatus" >
+          <ng-option *ngFor="let item of statusList" [value]="item.val">{{item.val}}</ng-option>
+        </ng-select>
       </ion-col>
       <ion-col size="12">
         <ion-item button="true">
           <ion-label>Next Follow-up Date</ion-label>
-          <ion-input slot="end" class="ion-text-end" value="{{this.cdrForm.get('followupdate').value | date: 'dd-MM-yyyy'}}" id="followup-date"></ion-input>
+          <ion-input class="ion-text-end" value="{{this.cdrForm.get('followupdate').value | date: 'dd-MM-yyyy'}}" id="followup-date">
+            <ion-icon name="calendar-outline" class="ion-padding-start ion-icon-large-font"></ion-icon>
+          </ion-input>
           <ion-popover trigger="followup-date" show-backdrop="false" side="end">
             <ng-template>
               <ion-datetime
@@ -126,7 +137,9 @@
       <ion-col size="12">
         <ion-item>
           <ion-label>Next Follow-up Time</ion-label>
-          <ion-input slot="end" class="ion-text-end" [value]="this.cdrForm.get('followuptime').value | date: 'hh:mm a'" id="followup-time"></ion-input>
+          <ion-input class="ion-text-end" [value]="this.cdrForm.get('followuptime').value | date: 'hh:mm a'" id="followup-time">
+            <ion-icon name="time-outline" class="ion-padding-start ion-icon-large-font"></ion-icon>
+          </ion-input>
           <ion-popover trigger="followup-time" show-backdrop="false" side="end">
             <ng-template>
               <ion-datetime

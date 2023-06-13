@@ -43,7 +43,7 @@ export class ModalComponent implements OnInit {
   }
 
   dismissModal(role:string){
-    this.modal.dismiss({'dismissed': true},role);
+    this.modal?.offsetParent.dismiss({'dismissed': true},role);
   }
   setGridDetails(alert){
     let typeofData:string = "";

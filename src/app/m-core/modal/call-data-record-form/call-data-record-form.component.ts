@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApiService, DataShareService, NotificationService } from '@core/ionic-core';
+import { ApiService, CoreFunctionService, DataShareService, NotificationService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { IonDatetime } from '@ionic/angular';
 import { format, parseISO, getDate, getMonth, getYear, getTime } from 'date-fns';
@@ -39,7 +39,6 @@ export class CallDataRecordFormComponent implements OnInit {
     { val: 'New'},
     { val: 'Not Answered'},
     { val: 'Busy'}
-
   ];
 
   constructor(    
@@ -49,6 +48,7 @@ export class CallDataRecordFormComponent implements OnInit {
     private dataShareService:DataShareService,
     private notificationService: NotificationService,
     private callNumber: CallNumber,
+    private coreFunctionService: CoreFunctionService
   ) {
     
     this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
@@ -80,20 +80,20 @@ export class CallDataRecordFormComponent implements OnInit {
   }
 
   setData(){
-    if(this.cardData && this.cardData.mobile != '' && this.cardData.mobile.length > 0){
+    if(this.coreFunctionService.isNotBlank(this.cardData?.mobile) && this.cardData?.mobile.length > 0){
       // this.mobileList= true
       this.contactNumber = this.cardData.mobile;
-    }else if(this.cardData && this.cardData.phone !='' && this.cardData.phone.length >=10){
+    }else if(this.coreFunctionService.isNotBlank(this.cardData?.phone) && this.cardData?.phone.length >=10){
       this.contactNumber = this.cardData.phone;
     }else{
       this.contactNumber = '';
     }
 
-    if(this.cardData && this.cardData.name != null){
+    if(this.coreFunctionService.isNotBlank(this.cardData?.name)){
       this.contactName = this.cardData.name;
-    }else if(this.cardData && this.cardData.first_name != null && this.cardData.last_name != null ){
+    }else if(this.coreFunctionService.isNotBlank(this.cardData?.first_name) && this.coreFunctionService.isNotBlank(this.cardData?.last_name)){
       this.contactName = this.cardData.first_name + " " + this.cardData.last_name;
-    }else if(this.cardData && this.cardData.first_name != null){
+    }else if(this.coreFunctionService.isNotBlank(this.cardData?.first_name)){
       this.contactName = this.cardData.first_name;
     }else{
       this.contactName = '';
@@ -111,7 +111,7 @@ export class CallDataRecordFormComponent implements OnInit {
     let cdr = this.cdrForm.value;
     const date:any = new Date(Date.now());
     let obj: any = {};
-    if(this.cardData && this.cardData.account_name && this.cardData.account_name !=''){
+    if(this.coreFunctionService.isNotBlank(this.cardData?.account_name)){
       obj.account_name= this.cardData.name;
     }else{
       obj.account_name= "";
@@ -119,7 +119,7 @@ export class CallDataRecordFormComponent implements OnInit {
     
     obj.contact_name= this.contactName;
     
-    if(this.cardData && this.cardData.contact_type !=''){
+    if(this.coreFunctionService.isNotBlank(this.cardData.contact_type)){
       obj.contact_type= this.cardData.contact_type;      
     }else{      
       obj.contact_type= "";
@@ -132,8 +132,7 @@ export class CallDataRecordFormComponent implements OnInit {
     obj.lead_status= cdr.leadstatus;
     obj.next_followup_date= cdr.followupdate;
     obj.next_followup_time= this.datePipe.transform(cdr.followuptime, 'hh:mm a');
-    
-    console.log("Object values" , obj);
+
     const saveFromData = {
       curTemp: 'call_data_record',
       data: obj
