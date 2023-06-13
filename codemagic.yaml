@@ -77,7 +77,7 @@ workflows:
         submit_to_app_store: false
 
   ionic-capacitor-Android-Alpha-workflow:
-    name: Ionic Capacitor Android Workflow
+    name: Android Alpha workflow
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
@@ -186,7 +186,7 @@ workflows:
         changes_not_sent_for_review: true
 
   ionic-capacitor-Android-Beta-workflow:
-    name: Ionic Capacitor Android Workflow
+    name: Android Beta workflow
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
@@ -295,7 +295,7 @@ workflows:
         changes_not_sent_for_review: true
 
   ionic-capacitor-Android-Prod-workflow:
-    name: Ionic Capacitor Android Workflow
+    name: Android Production workflow
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
@@ -404,7 +404,7 @@ workflows:
         changes_not_sent_for_review: true
 
   ionic-capacitor-Android-Internal-workflow:
-    name: Ionic Capacitor Android Workflow
+    name: Android Internal workflow
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
