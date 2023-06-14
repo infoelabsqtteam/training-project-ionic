@@ -84,6 +84,8 @@ workflows:
       groups:
         - google_credentials # <-- (Includes GCLOUD_SERVICE_ACCOUNT_CREDENTIALS <-- Put CONTENTS of your Gloud crendentials file here)
         - aws_credentials # <-- (For aws credentials of token for npm install)
+        - codemagic_elabs_keystore
+        - codemagic_app_signin
       android_signing:
         - codemagic_elabs_keystore
       vars:
