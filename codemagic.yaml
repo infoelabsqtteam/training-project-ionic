@@ -135,7 +135,7 @@ workflows:
       - name: Update dependencies and copy web assets to native project
         script: |
           # npx cap copy # <- use this is you don't need to update native dependencies
-          # ionic build --prod # <- For production environment
+          ionic build --prod # <- For production environment
           # ionic build # <- For Test environment
           npx cap sync # <- update native dependencies and copy web assets to native project
       - name: Build Android release
