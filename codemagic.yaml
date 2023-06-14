@@ -156,8 +156,10 @@ workflows:
             -PversionCode=$UPDATED_BUILD_NUMBER \
             -PversionName=1.0.$UPDATED_BUILD_NUMBER
     artifacts:
-      - android/app/build/outputs/**/*.apk
-      #- android/app/build/**/release/**/*.aab
+      - android/app/release/*.apk
+      - android/app/release/*.aab
+      - $CM_BUILD_DIR/android/app/release/*.apk
+      - $CM_BUILD_DIR/android/app/release/*.aab
     publishing:
       email:
         recipients:
