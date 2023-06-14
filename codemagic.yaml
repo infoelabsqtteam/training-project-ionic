@@ -468,25 +468,18 @@ workflows:
           ionic build --prod # <- For production environment
           # ionic build # <- For Test environment
           npx cap sync # <- update native dependencies and copy web assets to native project
-      - name: Build Android release
-        script: |
-          LATEST_GOOGLE_PLAY_BUILD_NUMBER=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME")
-          if [ -z LATEST_GOOGLE_PLAY_BUILD_NUMBER ]; then
-            # fallback in case no build number was found from Google Play.
-            # Alternatively, you can `exit 1` to fail the build
-            # BUILD_NUMBER is a Codemagic built-in variable tracking the number
-            # of times this workflow has been built
-            UPDATED_BUILD_NUMBER=$BUILD_NUMBER
-          else
-            UPDATED_BUILD_NUMBER=$(($LATEST_GOOGLE_PLAY_BUILD_NUMBER + 1))
-          fi
-          cd $CM_BUILD_DIR/android
-            chmod +x gradlew
-          ./gradlew bundleRelease \
-            -PversionCode=$UPDATED_BUILD_NUMBER \
-            -PversionName=1.0.$UPDATED_BUILD_NUMBER
+      - name: Sign APK
+      script: | 
+        APK_PATH=$(find android/app/release -name "*.aab" | head -1)
+        jarsigner \
+          -sigalg SHA1withRSA \
+          -digestalg SHA1 \
+          -keystore $CM_KEYSTORE_PATH \
+          -storepass $CM_KEYSTORE_PASSWORD \
+          -keypass $CM_KEY_PASSWORD \
+          $APK_PATH $CM_KEY_ALIAS
     artifacts:
-      - android/app/build/outputs/**/*.apk
+      #- android/app/build/outputs/**/*.apk
       - android/app/build/**/release/**/*.aab
     publishing:
       email:
