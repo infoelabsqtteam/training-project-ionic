@@ -153,9 +153,6 @@ workflows:
           ./gradlew bundleRelease \
             -PversionCode=$UPDATED_BUILD_NUMBER \
             -PversionName=1.0.$UPDATED_BUILD_NUMBER
-          ls -lrt android/app
-          ls -lrt android/app/build
-          ls -lrt android/app/release
       - name: Signing key.properties
         script: |
           cat >> "$CM_BUILD_DIR/android/key.properties" <<EOF
@@ -165,10 +162,9 @@ workflows:
           storeFile=$CM_KEYSTORE_PATH
           EOF
     artifacts:
-      #- android/app/release/*.apk
-      #- android/app/build/outputs/**/*.apk
-      - android/app/build/outputs/**/*.aab
       - android/app/release/*.aab
+      - android/app/build/outputs/**/*.aab
+      - android/app/release/*.apk
       - android/app/build/outputs/**/*.apk
     publishing:
       email:
