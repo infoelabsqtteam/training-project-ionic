@@ -469,9 +469,9 @@ workflows:
           # ionic build # <- For Test environment
           npx cap sync # <- update native dependencies and copy web assets to native project
       - name: Sign APK
-      script: | 
-        APK_PATH=$(find android/app/release -name "*.aab" | head -1)
-        jarsigner \
+        script: | 
+         APK_PATH=$(find android/app/release -name "*.aab" | head -1)
+         jarsigner \
           -sigalg SHA1withRSA \
           -digestalg SHA1 \
           -keystore $CM_KEYSTORE_PATH \
