@@ -148,7 +148,7 @@ workflows:
             echo $UPDATED_BUILD_NUMBER
             echo $BUILD_NUMBER
           else
-            UPDATED_BUILD_NUMBER=$(($LATEST_GOOGLE_PLAY_BUILD_NUMBER + 2))
+            UPDATED_BUILD_NUMBER=$(($LATEST_GOOGLE_PLAY_BUILD_NUMBER + 1))
             echo $UPDATED_BUILD_NUMBER
             echo $LATEST_GOOGLE_PLAY_BUILD_NUMBER
           fi
