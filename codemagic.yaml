@@ -145,8 +145,12 @@ workflows:
             # BUILD_NUMBER is a Codemagic built-in variable tracking the number
             # of times this workflow has been built
             UPDATED_BUILD_NUMBER=$BUILD_NUMBER
+            echo $UPDATED_BUILD_NUMBER
+            echo $BUILD_NUMBER
           else
             UPDATED_BUILD_NUMBER=$(($LATEST_GOOGLE_PLAY_BUILD_NUMBER + 1))
+            echo $UPDATED_BUILD_NUMBER
+            echo $LATEST_GOOGLE_PLAY_BUILD_NUMBER
           fi
           cd android
             chmod +x gradlew
