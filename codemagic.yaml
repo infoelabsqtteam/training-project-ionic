@@ -194,7 +194,7 @@ workflows:
 
         # Optional. Rollout fraction (set only if releasing to a fraction of users)
         # value between (0, 1)
-        rollout_fraction: 0.25
+        # rollout_fraction: 0.25
 
         # Optional boolean To be used ONLY if your app cannot be sent for review automatically *
         changes_not_sent_for_review: false
