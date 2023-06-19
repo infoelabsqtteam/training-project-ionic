@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
-import { AuthService, DataShareService, EnvService, StorageService } from '@core/ionic-core';
-import { AlertController, IonRouterOutlet, Platform } from '@ionic/angular';
+import { AuthService, DataShareService, EnvService, NotificationService, StorageService } from '@core/ionic-core';
+import { AlertController, IonInput, IonRouterOutlet, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-verify-company',
@@ -12,8 +13,11 @@ import { Location } from '@angular/common';
 })
 export class VerifyCompanyComponent implements OnInit {
 
+  @ViewChild('companyCode') companyCode: IonInput;
+
   cCodeForm: FormGroup;
   isValidCode = false;
+  isExitAlertOpen: boolean = false;
   
   constructor(    
     private formBuilder: FormBuilder,
@@ -25,26 +29,31 @@ export class VerifyCompanyComponent implements OnInit {
     private routerOutlet: IonRouterOutlet,
     private _location: Location,
     private platform: Platform,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private notificationService: NotificationService
   ) { }
 
   ionViewWillEnter(){
-    this.onload();
+    // this.onload();
+  }
+  ionViewDidEnter() {
+    this.companyCode.setFocus();
   }
   ngOnInit() {
-    this.exitTheApp();
     this.onload();
+    this.exitTheApp();
     this.initForm();
   }
   exitTheApp(){ 
     this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
       console.log('Back press handler!');
       if (this._location.isCurrentPathEqualTo('/auth/verifyCompany')) {
-
-        // Show Exit Alert!
-        console.log('Show Exit Alert!');
-        this.showExitConfirm();
-        processNextHandler();
+        if(this.isExitAlertOpen){
+          this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
+        }else{
+          this.showExitConfirm();
+          // processNextHandler();
+        }
       } else {
         // Navigate to back page
         console.log('Navigate to back page');
@@ -58,6 +67,7 @@ export class VerifyCompanyComponent implements OnInit {
     this.storageService.removeDataFormStorage();
   }
   showExitConfirm() {
+    this.isExitAlertOpen = true;
     this.alertController.create({
       header: 'App termination',
       message: 'Do you want to close the app?',
@@ -67,13 +77,15 @@ export class VerifyCompanyComponent implements OnInit {
         role: 'cancel',
         cssClass: 'primary',
         handler: () => {
+          this.isExitAlertOpen = false;
           console.log('Application exit prevented!');
         }
       }, {
         text: 'Exit',
         cssClass: 'danger',
         handler: () => {
-          navigator['app'].exitApp();
+          this.isExitAlertOpen = false;
+          App.exitApp();
         }
       }]
     })

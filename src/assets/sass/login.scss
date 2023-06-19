@@ -54,3 +54,12 @@
 }
 .login.forgotpwd {border-radius:24px 24px 0 0;padding:20px;background:var(--ion-color-white);position:absolute;width:100%;}
 .loginpage.forgotpwd {--background:var(--ion-color-white);}
+.companyCode {
+    .logintitle{padding-bottom: 80px;}
+    .companyCodeForm {
+        ion-button{
+            margin-top: 20px;min-height: 40px;--border-radius: 10px;
+        }
+    }
+
+}

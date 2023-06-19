@@ -3,21 +3,21 @@
     <ion-buttons slot="start"><ion-back-button class="ion-text-capitalize back-button-text" text=""></ion-back-button></ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content class="loginpage forgotpwd">
-<div>
-  <div class="loginlogo"><img  src="assets/img/icons/forget-password.svg"></div>
-  <div class="logintitle" >
-    <h4>Welcome to E-labs</h4>
-    <p>Please enter the Registered Company Code associated with your compay.</p>
+<ion-content class="loginpage companyCode forgotpwd">
+  <div>
+    <div class="loginlogo"><img  src="assets/img/icons/forget-password.svg"></div>
+    <div class="logintitle" >
+      <h4>Welcome to E-labs</h4>
+      <p>Please enter the Registered Company Code associated with your compay.</p>
+    </div>
   </div>
-</div>
-<!-- <div class="loginlogo"> <img src="../../../assets/medicea_img/signinlogo.jpeg"></div> -->
-<div class="companyCode ion-margin-horizontal">
+  <!-- <div class="loginlogo"> <img src="../../../assets/medicea_img/signinlogo.jpeg"></div> -->
+  <div class="companyCodeForm ion-margin-horizontal">
     <form [formGroup]="cCodeForm">
       <div class="formgroup">
         <ion-item fill="outline">
           <ion-label position="floating">Company code</ion-label>
-          <ion-input [clearInput]="true" autocapitalize="true" autofocus="true" type="text" formControlName="code" placeholder="Enter company code"></ion-input>
+          <ion-input [clearInput]="true" autocapitalize="characters" autofocus="true" autocomplete="name" enterkeyhint="next" type="text" formControlName="code" placeholder="Enter company code" #companyCode></ion-input>
           <ion-note slot="error" class="text-danger" *ngIf="cCodeForm?.controls?.code?.invalid && (cCodeForm?.controls?.code?.dirty || cCodeForm?.controls?.code?.touched) && cCodeForm?.controls?.code?.errors?.required">Company Code is required</ion-note>
           <ion-note slot="error" class="text-danger" *ngIf="cCodeForm?.controls?.code?.invalid && (cCodeForm?.controls?.code?.dirty || cCodeForm?.controls?.code?.touched) && cCodeForm?.controls?.code?.errors?.invalid">Invalid Code</ion-note>
         </ion-item>
@@ -26,5 +26,5 @@
         <ion-button type="submit" expand="block" [disabled]="" (click)="verifyCompanyCode()">Submit</ion-button>
       </div>
     </form>
-</div>
+  </div>
 </ion-content>

@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { LoadingController, AlertController, Platform, IonRouterOutlet } from '@ionic/angular';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { AuthService, StorageService,LoaderService, CoreUtilityService, NotificationService, EnvService } from '@core/ionic-core';
+import { AlertController, Platform, IonRouterOutlet } from '@ionic/angular';
+import { AuthService, StorageService, NotificationService, EnvService, CoreFunctionService, StorageTokenStatus } from '@core/ionic-core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
 import { App } from '@capacitor/app';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'lib-signine',
@@ -20,20 +20,21 @@ export class SignineComponent implements OnInit {
   showpassword = false;
   VerifyType : boolean = false;
   // showicon = false;
+  isExitAlertOpen:boolean = false;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private formBuilder: FormBuilder,
-    private alertCtrl: AlertController,
-    private http: HttpClient,
+    private alertController: AlertController,
     private storageService: StorageService,
-    private coreUtilService: CoreUtilityService,
+    private coreFunctionService: CoreFunctionService,
     private notificationService:NotificationService,
     private platform: Platform,
     private ionLoaderService: IonLoaderService,
     private envService: EnvService,
-    private routerOutlet: IonRouterOutlet
+    private routerOutlet: IonRouterOutlet,
+    private _location: Location,
   ) { 
     this.initializeApp();
     if(this.envService.getVerifyType() == "mobile"){
@@ -45,23 +46,65 @@ export class SignineComponent implements OnInit {
 
   initializeApp() {
     this.platform.ready().then(() => {});
-
-    this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
-      console.log('Press Back Button!');
-      this.notificationService.presentToastOnBottom("Press again to exit the app");
-      processNextHandler();
-
-    });
-    this.platform.backButton.subscribeWithPriority(5, () => {
-      console.log('Press Again Back Button!');
-      if (!this.routerOutlet.canGoBack()) {
-        App.exitApp();
-      }
-
-    });
+    let isClientCodeExist:any = this.storageService.getClientCode();
+    let isHostNameExist:any = this.storageService.getHostNameDinamically();
+    if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.checkIdTokenStatus()){   
+      this.authService.getUserPermission(false,'/home');
+      // this.router.navigateByUrl('/home');
+    }else if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
+      this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+        if(this.isExitAlertOpen){
+          this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
+        }else{
+          this.showExitConfirm();
+          // processNextHandler();
+        }  
+      });
+    }else{
+      this.router.navigateByUrl('/auth/verifyCompany');
+    }
 
   }
-
+  showExitConfirm() {
+    this.isExitAlertOpen = true;
+    this.alertController.create({
+      header: 'App termination',
+      message: 'Do you want to close the app?',
+      backdropDismiss: false,
+      buttons: [{
+        text: 'Stay',
+        role: 'cancel',
+        cssClass: 'primary',
+        handler: () => {
+          this.isExitAlertOpen = false;
+          console.log('Application exit prevented!');
+        }
+      }, {
+        text: 'Exit',
+        cssClass: 'danger',
+        handler: () => {
+          this.isExitAlertOpen = false;
+          App.exitApp();
+        }
+      }]
+    })
+      .then(alert => {
+        alert.present();
+      });
+  }
+  checkIdTokenStatus(){
+    let tokenStatus = false;
+    if (this.storageService != null && this.storageService.GetIdToken() != null) {      
+      if(this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE){
+        tokenStatus = true;           
+      }else{
+        tokenStatus = false; 
+      }
+    }else{
+      tokenStatus = false; 
+    }
+    return tokenStatus;
+  }
   ngOnInit() {
     this.initForm();
   }
