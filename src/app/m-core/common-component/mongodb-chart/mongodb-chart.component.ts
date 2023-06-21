@@ -19,7 +19,7 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
   @Input() showMongoChart:boolean;
   pageNumber:any=1;
   itemNumOfGrid: any = 12;
-  gridDataSubscription:Subscription;
+  gridDataSubscription:any;
   darkTheme:any={};
   headertitle:string='Charts';
   noOfItems:any = [6,9,12,15,18,21,24];  
