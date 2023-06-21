@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { ApiService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService } from '@core/ionic-core';
+import { ApiService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService, ChartService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
 import { Platform } from '@ionic/angular';
@@ -12,7 +12,7 @@ import { DatePipe } from '@angular/common';
 import { zonedTimeToUtc, utcToZonedTime, format} from 'date-fns-tz';
 import { parseISO } from 'date-fns';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
-import { ChartService } from '@core/web-core';
+// import { ChartService } from '@core/web-core';
 
 export const MY_DATE_FORMATS = {
   parse: {

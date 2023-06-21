@@ -1,8 +1,8 @@
 import { Component, OnInit, AfterViewInit, Input, SimpleChanges } from '@angular/core';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
 import { Subscription } from 'rxjs';
-import { ChartService, ApiService, DataShareService, CommonFunctionService } from '@core/web-core';
-import { RestService, StorageService  } from '@core/ionic-core';
+// import { ChartService, ApiService, DataShareService, CommonFunctionService } from '@core/web-core';
+import { RestService, StorageService, ChartService, DataShareService, ApiService } from '@core/ionic-core';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
 import { ModalController } from '@ionic/angular';
 
@@ -90,7 +90,7 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
         data: data,
         path: null
       }
-      this.apiService.getMongoDashletMster(getFilterData);
+      this.apiService.getMongoDashletMaster(getFilterData);
   }
   populateMongodbChart(){
     if(this.accessToken != "" && this.accessToken != null){      
