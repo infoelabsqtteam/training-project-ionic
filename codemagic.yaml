@@ -119,12 +119,12 @@ workflows:
           aws codeartifact login --tool npm --repository ui-library --domain ui-libs --domain-owner 292474393014 --region ap-south-1
           #echo "kunal"
           # echo $CODEARTIFACT_AUTH_TOKEN
-          npm config set registry=https://ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/
-          npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:_authToken=${CODEARTIFACT_AUTH_TOKEN}
+          # npm config set registry=https://ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/
+          # npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:_authToken=${CODEARTIFACT_AUTH_TOKEN}
           #npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:always-auth=true 
-          npm config set registry=https://ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-core/
-          npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-core/:_authToken=${CODEARTIFACT_AUTH_TOKEN}
-          npm config get registry
+          # npm config set registry=https://ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-core/
+          # npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-core/:_authToken=${CODEARTIFACT_AUTH_TOKEN}
+          # npm config get registry
       - name: Check Versions
         script: |        
           node -v
