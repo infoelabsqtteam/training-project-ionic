@@ -110,7 +110,6 @@ workflows:
           #echo $AWS_DEFAULT_REGION_HOLDER
           #aws --version
           #aws ls
-          ionic version
           #echo "hello world"
           #aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID_HOLDER"
           #aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY_HOLDER"
@@ -124,9 +123,17 @@ workflows:
           npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:_authToken=${CODEARTIFACT_AUTH_TOKEN}
           #npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:always-auth=true 
           npm config get registry
+      - name: Check Versions
+        script: |        
+          node -v
+          npm --version
+          ionic version
+          ng version
       - name: Install npm dependencies
         script: |          
-          npm install
+          # npm install
+          npm cache clean -f
+          npm ci
       - name: Set Android SDK location
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
