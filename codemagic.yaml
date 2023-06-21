@@ -128,7 +128,6 @@ workflows:
           node -v
           npm --version
           ionic version
-          ng version
       - name: Install npm dependencies
         script: |          
           # npm install
