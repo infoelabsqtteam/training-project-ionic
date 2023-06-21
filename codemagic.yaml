@@ -115,10 +115,10 @@ workflows:
           #aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY_HOLDER"
           #aws configure set region "$AWS_DEFAULT_REGION_HOLDER"
           #aws configure set output "json"
-          export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain ui-libs --domain-owner 292474393014 --query authorizationToken --output text`
+          export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain ui-libs --domain-owner 292474393014 --region ap-south-1 --query authorizationToken --output text`
           aws codeartifact login --tool npm --repository ui-library --domain ui-libs --domain-owner 292474393014 --region ap-south-1
           #echo "kunal"
-          #echo $CODEARTIFACT_AUTH_TOKEN
+          echo $CODEARTIFACT_AUTH_TOKEN
           npm config set registry=https://ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/
           npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:_authToken=${CODEARTIFACT_AUTH_TOKEN}
           #npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:always-auth=true 
@@ -128,11 +128,10 @@ workflows:
           node -v
           npm --version
           ionic version
-          ng version
       - name: Install npm dependencies
         script: |          
           # npm install
-          npm cache clean -f
+          # npm cache clean -f
           npm ci
       - name: Set Android SDK location
         script: |
@@ -256,7 +255,7 @@ workflows:
           export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain ui-libs --domain-owner 292474393014 --query authorizationToken --output text`
           aws codeartifact login --tool npm --repository ui-library --domain ui-libs --domain-owner 292474393014 --region ap-south-1
           #echo "kunal"
-          #echo $CODEARTIFACT_AUTH_TOKEN
+          echo $CODEARTIFACT_AUTH_TOKEN
           npm config set registry=https://ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/
           npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:_authToken=${CODEARTIFACT_AUTH_TOKEN}
           #npm config set //ui-libs-292474393014.d.codeartifact.ap-south-1.amazonaws.com/npm/ui-library/:always-auth=true 
