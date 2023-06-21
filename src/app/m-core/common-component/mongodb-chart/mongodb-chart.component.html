@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="ion-no-padding ion-text-uppercase">{{headertitle}} </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="mongochartfilter">
+    <ion-list class="ion-padding-horizontal">
+      <ion-item fill="outline">
+        <ion-label>No. of Charts</ion-label>
+        <ion-select [(ngModel)]="itemNumOfGrid" (ionChange)="selectNoOfItem()" placeholder="No. of Charts">
+          <ion-select-option *ngFor="let numverOfItem of noOfItems" [value]="numverOfItem">{{numverOfItem}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
+  </div>
+  <div class="row m-0 w-100 py-2" *ngIf="chartIdList && chartIdList.length > 0">
+    <div class="" *ngFor="let chart of chartIdList;let i = index">
+      <ion-card class="card mongodbChart">
+        <ion-card-header class="charthead ion-padding-vertical-0 ion-padding-horizontal-0" color="medium" *ngIf="chart.name">
+          <ion-item>
+            <ion-card-subtitle class="charttitle">{{chart.name}}</ion-card-subtitle>
+            <ion-toggle slot="end" color="primary" [(ngModel)]="darkTheme[i]" (ionChange)="changeTheme(chart,darkTheme[i])"></ion-toggle>
+            <ion-icon slot="end" (click)="download(chart)" name="download-outline"></ion-icon>
+            <ion-icon slot="end" (click)="filterModel(chart,false,i)" name="expand-outline"></ion-icon>
+            <ion-icon slot="end" *ngIf="chart && chart.fields && chart.fields.length > 0" (click)="filterModel(chart,true,i)" name="funnel-outline"></ion-icon>
+          </ion-item>
+        </ion-card-header>
+        <ion-card-content class="chartbody ion-padding-vertical-0 ion-padding-horizontal-0">
+          <ng-container>
+            <div [id]="chart.chartId"></div>
+          </ng-container>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+  <div *ngIf="chartIdList.length == 0">
+    <ion-card class="">
+      <ion-card-header>
+        <ion-card-subtitle>Dashlet Master not available in this application.</ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+  </div>
+</ion-content>
+
+

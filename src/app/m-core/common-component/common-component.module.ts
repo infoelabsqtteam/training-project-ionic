@@ -15,6 +15,7 @@ import { PopoverComponent } from './popover/popover.component';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { GmapViewComponent } from './gmap-view/gmap-view.component';
 import { GoogleMapsModule } from '@angular/google-maps';
+import { MongodbChartComponent } from './mongodb-chart/mongodb-chart.component';
 const components = [
     FormComponent,
     CardsLayoutComponent,
@@ -22,7 +23,8 @@ const components = [
     ChartComponent,
     GridSelectionComponent,
     PopoverComponent,
-    GmapViewComponent
+    GmapViewComponent,
+    MongodbChartComponent
   ];
 
 @NgModule({

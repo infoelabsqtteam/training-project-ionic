@@ -117,7 +117,18 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.collectionName = cardWithTab.card.collection_name;
       if(cardWithTab && cardWithTab.card){
         if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
-          this.router.navigateByUrl('chart');
+          let navigation = '';
+          if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'chartview'){
+            navigation = 'chart';
+          }else if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'mongochart'){
+            navigation = 'mongochart';
+          }else{
+            navigation = cardWithTab.card.card_type.name;
+          }
+          if(navigation == null || navigation == undefined){
+            navigation = 'home';
+          }
+          this.router.navigateByUrl(navigation);
         }else{
           if(cardWithTab.card && cardWithTab.card.name){
             this.headerTitle = cardWithTab.card.name;
