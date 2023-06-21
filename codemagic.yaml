@@ -201,7 +201,7 @@ workflows:
 
         # Optional boolean. Publish artifacts under a draft release.
         # Can not be used together with rollout_fraction. Defaults to false
-        submit_as_draft: false
+        submit_as_draft: true
 
   ionic-capacitor-Android-Internal-workflow:
     name: Android Internal workflow
