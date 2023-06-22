@@ -130,7 +130,7 @@ export class ChartComponent implements OnInit{
         if(this.dashletData[key]['title']){
           this.chartTitle[key]=JSON.parse(JSON.stringify(this.dashletData[key]['title']));
         }        
-      })
+      });
     }
   }
 
@@ -198,7 +198,7 @@ export class ChartComponent implements OnInit{
       data: data,
       path: null
     }
-    this.apiService.getDashletMaster(getFilterData)
+    this.apiService.getDashletMaster(getFilterData);
   }
   getPage(page: number,criteria?:any) {
     let Criteria:any = [];
