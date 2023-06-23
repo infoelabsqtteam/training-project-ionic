@@ -194,7 +194,7 @@ workflows:
         
         # Name of the track internal, alpha, beta, production, internal app sharing,
         # or your custom track name
-        track: alpha
+        track: beta
         
         # Optional Priority of the release (only set if in-app updates are supported)
         # integer in range [0, 5]

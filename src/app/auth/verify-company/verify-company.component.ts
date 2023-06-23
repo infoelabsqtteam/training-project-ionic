@@ -113,5 +113,22 @@ export class VerifyCompanyComponent implements OnInit {
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
     }
   }
+  infoAlert(){
+    this.alertController.create({
+      header: 'Code ?',
+      message: 'It is a code shared by your admin. Normally it is for example - <br /><strong>ApplicationId-ReferenceCode</strong>',
+      backdropDismiss: false,
+      buttons: [{
+        text: 'Done',
+        role: 'cancel',
+        cssClass: 'primary',
+        handler: () => {
+        }
+      }]
+    })
+      .then(alert => {
+        alert.present();
+      });
+  }
 
 }
