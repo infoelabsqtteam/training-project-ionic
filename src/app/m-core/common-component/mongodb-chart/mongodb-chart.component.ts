@@ -199,6 +199,14 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     this.getMongoChartList(Criteria);
     // this.checkGetDashletData = true;
   }
+  // Pull from Top for Do refreshing or update card list 
+  doRefresh(event:any) {
+      console.log('Begin doRefresh async operation');
+      setTimeout(() => {
+        event.target.complete();
+        this.getMongoChartList([]);
+      }, 3000);
+  }
 
 }
 

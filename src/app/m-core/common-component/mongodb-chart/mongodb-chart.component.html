@@ -44,6 +44,14 @@
       </ion-card-header>
     </ion-card>
   </div>
+  <ion-refresher slot="fixed" pullFactor="0.5" pullMin="100" pullMax="200" (ionRefresh)="doRefresh($event)" >
+    <ion-refresher-content
+      pullingIcon="arrow-down-outline"
+      pullingText="Pull down to refresh"
+      refreshingSpinner="circles"
+      refreshingText="Refreshing...">
+    </ion-refresher-content>
+</ion-refresher>
 </ion-content>
 
 

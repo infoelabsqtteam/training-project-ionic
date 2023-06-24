@@ -1873,6 +1873,8 @@ tinymceConfig = {}
           'latitude' : this.center.lat ? this.center.lat : this.latitude,
           'longitude' : this.center.lng ? this.center.lng : this.longitude
         }
+      }else{
+        this.requestLocationPermission();
       }
     }      
        
@@ -6191,8 +6193,7 @@ tinymceConfig = {}
         isGpsEnable = await this.app_googleService.askToTurnOnGPS();
         if(isGpsEnable){
           this.setCurrentLocation();
-        }
-        else{
+        }else{
           this.enableGPSandgetCoordinates();
         }
       }

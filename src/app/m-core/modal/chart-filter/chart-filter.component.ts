@@ -600,7 +600,12 @@ export class ChartFilterComponent implements OnInit {
       if(chart && chart.chartId){        
         const id = "filter_"+chart.chartId;
         const idRef = document.getElementById(id);
-        let height = "50vh";
+        let height = "50vh"
+        if(this.filter){
+          height = "50vh";
+        }else{
+          height = "90vh";
+        }
         if(idRef){
           let cretedChart = sdk.createChart({
             chartId: chart.chartId, // Optional: ~REPLACE~ with the Chart ID from your Embed Chart dialog
