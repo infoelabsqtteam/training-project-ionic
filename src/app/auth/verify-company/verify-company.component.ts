@@ -38,10 +38,11 @@ export class VerifyCompanyComponent implements OnInit {
   }
   ionViewDidEnter() {
     this.companyCode.setFocus();
+    this.exitTheApp();
+    this.initForm();
   }
   ngOnInit() {
     this.onload();
-    this.exitTheApp();
     this.initForm();
   }
   exitTheApp(){ 
