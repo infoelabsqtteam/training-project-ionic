@@ -161,6 +161,13 @@ htmlViewConfig:AngularEditorConfig = {
 }
 tinymceConfig = {}
 
+  //ion-select changes 
+  customAlertOptions:object = {
+    backdropDismiss: false,
+    translucent: true
+  };
+  ionSelectInterface:string = 'alert';
+
 
   @Output() filledFormData = new EventEmitter();
   @Output() addAndUpdateResponce = new EventEmitter();
@@ -2596,20 +2603,22 @@ tinymceConfig = {}
         this.formFieldButtons.forEach(element => {
           let fieldName = element.field_name;
           let object = this.selectedRow[fieldName];
-          if(element.field_name && element.field_name != ''){              
-            switch (element.type) {
-              case "dropdown":
-                let dropdownValue = object == null ? null : object;
-                this.templateForm.controls[element.field_name].setValue(dropdownValue);
-                break;
-              default:
-                break;
+          if(formValue[fieldName] != null && formValue[fieldName] != undefined){
+            if(element.field_name && element.field_name != ''){              
+              switch (element.type) {
+                case "dropdown":
+                  let dropdownValue = object == null ? null : object;
+                  this.templateForm.controls[element.field_name].setValue(dropdownValue);
+                  break;
+                default:
+                  break;
+              }
             }
           }
         });
       }
     }
-  }  
+  }
   
   checkValidator(action_button){
     if(action_button.field_name){
@@ -5694,79 +5703,92 @@ tinymceConfig = {}
       return data;
     }
   }
-  editListOfFiedls(object:any,index:number){
+  editListOfFiedls(field:any,index:number){
+    let parentList = this.custmizedFormValue[field.field_name];
+    let object = parentList[index];
     this.listOfFieldUpdateMode = true;
     this.listOfFieldsUpdateIndex = index;
-    
-    this.tableFields.forEach(element => {
-      switch (element.type) {        
-        case "list_of_fields":
-          this.templateForm.get(element.field_name).reset(); 
-          if (element.list_of_fields.length > 0) {
-            element.list_of_fields.forEach((data) => {
-              switch (data.type) {                
-                case "list_of_string":
-                  const custmisedKey = this.commonFunctionService.custmizedKey(element);
-                  if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
-                  this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];
-                  break;
-                case "typeahead":
-                  if (data.datatype == 'list_of_object') {
-                    const custmisedKey = this.commonFunctionService.custmizedKey(element);
-                    if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
-                    this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];    
-                  } else {
-                    this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
-                    //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(object[data.field_name]);
-                  }
-                  break;
-                case "list_of_checkbox":
-                  let checkboxListValue = [];
-                  if(this.staticData && this.staticData[data.ddn_field] && this.staticData[data.ddn_field].length > 0){
-                    this.staticData[data.ddn_field].forEach((value, i) => {                      
-                      let arrayData = object[data.field_name];                        
-                      let selected = false;
-                      if (arrayData != undefined && arrayData != null) {
-                        for (let index = 0; index < arrayData.length; index++) {
-                          if (this.checkObjecOrString(value) == this.checkObjecOrString(arrayData[index])) {
-                            selected = true;
-                            break;
-                          }
-                        }
-                      }
-                      if (selected) {
-                        checkboxListValue.push(true);
+    if(this.tableFields && this.tableFields.length > 0){
+      this.tableFields.forEach(element => {
+        switch (element.type) {
+          case "list_of_fields":
+            if(element.field_name == field.field_name){
+              this.templateForm.get(element.field_name).reset();
+              if (element.list_of_fields.length > 0) {
+                element.list_of_fields.forEach((data) => {
+                  switch (data.type) {
+                    case "list_of_string":
+                      const custmisedKey = this.commonFunctionService.custmizedKey(element);
+                      if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
+                      this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];
+                      break;
+                    case "typeahead":
+                      if (data.datatype == 'list_of_object') {
+                        const custmisedKey = this.commonFunctionService.custmizedKey(element);
+                        if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
+                        this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];    
                       } else {
-                        checkboxListValue.push(false);
-                      }               
-                    });
-                  }
-                  this.templateForm.get(element.field_name).get(data.field_name).setValue(checkboxListValue);
-                  //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(checkboxListValue);
-                  break; 
-                case "file":
-                case "input_with_uploadfile":
-                  if(object[data.field_name] != null && object[data.field_name] != undefined){
-                    let custmizedKey = this.commonFunctionService.custmizedKey(element);
-                    if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
-                    if (!this.dataListForUpload[custmizedKey][data.field_name]) this.dataListForUpload[custmizedKey][data.field_name] = [];
-                    this.dataListForUpload[custmizedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
-                    const value = this.modifyFileSetValue(object[data.field_name]);
-                    this.templateForm.get(element.field_name).get(data.field_name).setValue(value);
-                  }
-                  break;               
-                default:
-                  this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
-                  //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(object[data.field_name]);
-                  break;
-              }              
-            })
-          }
-          break;
-        default:          
-          break;
-      }
-    });
+                        this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
+                      }
+                      break;
+                    case "list_of_checkbox":
+                      let checkboxListValue = [];
+                      if(this.staticData && this.staticData[data.ddn_field] && this.staticData[data.ddn_field].length > 0){
+                        this.staticData[data.ddn_field].forEach((value, i) => {                      
+                          let arrayData = object[data.field_name];                        
+                          let selected = false;
+                          if (arrayData != undefined && arrayData != null) {
+                            for (let index = 0; index < arrayData.length; index++) {
+                              if (this.checkObjecOrString(value) == this.checkObjecOrString(arrayData[index])) {
+                                selected = true;
+                                break;
+                              }
+                            }
+                          }
+                          if (selected) {
+                            checkboxListValue.push(true);
+                          } else {
+                            checkboxListValue.push(false);
+                          }               
+                        });
+                      }
+                      this.templateForm.get(element.field_name).get(data.field_name).setValue(checkboxListValue);
+                      break; 
+                    case "file":
+                    case "input_with_uploadfile":
+                      if(object[data.field_name] != null && object[data.field_name] != undefined){
+                        let custmizedKey = this.commonFunctionService.custmizedKey(element);
+                        if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
+                        if (!this.dataListForUpload[custmizedKey][data.field_name]) this.dataListForUpload[custmizedKey][data.field_name] = [];
+                        this.dataListForUpload[custmizedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
+                        const value = this.modifyFileSetValue(object[data.field_name]);
+                        this.templateForm.get(element.field_name).get(data.field_name).setValue(value);
+                      }
+                      break;
+                    // case "date":
+                    //   let transformzonedTime:any = '';
+                    //   let zonedTime:any = ''
+                    //   if(object[data.field_name] != null && object[data.field_name] != undefined){
+                    //     zonedTime = utcToZonedTime(object[data.field_name], this.userTimeZone);
+                    //     transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'", this.userTimeZone);  
+                    //   }else{
+                    //     transformzonedTime='';
+                    //   }
+                    //   this.templateForm.get(element.field_name).get(data.field_name).setValue(transformzonedTime);
+                    //   break;
+                    default:
+                      this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
+                      break;
+                  }              
+                })
+              }
+            }
+            break;
+          default:          
+            break;
+        }
+      });
+    }
   }
   // go to new page 2nd method
   async detailCardButton(data:any,index:number){
@@ -6333,6 +6355,24 @@ tinymceConfig = {}
     }else if(this.templateForm?.get('address')){
       this.templateForm.get('address').setValue(this.address);
     }
+  }
+  selectionFocus(tableField:any){
+    let selectionmsg:string = '';
+    let backdropdismiss:boolean = false;
+    if(tableField?.interface && tableField?.interface != 'alert' && !tableField?.multi_select){
+      this.ionSelectInterface = tableField.interface;
+      backdropdismiss = true;
+    }
+    if(tableField?.datatype == 'text'){
+      selectionmsg = 'Choose only one';
+    } else{
+      selectionmsg = 'Choose multiple';
+    }
+    this.customAlertOptions = {
+      message: selectionmsg,
+      backdropDismiss: backdropdismiss,
+      translucent: true,
+    };
   }
   // create Capacitor  map and add markers
   // async createMap(latlng?,field?) {

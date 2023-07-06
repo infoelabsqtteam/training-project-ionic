@@ -93,7 +93,7 @@
           <div *ngIf="tableField.type == 'dropdown'">
             <ion-item *ngIf="tableField.datatype != 'object'">
               <ion-label position="floating">{{ tableField.label }} <ion-text *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
-              <ion-select [selectedText]="templateForm.get(tableField.field_name).value" [formControlName]="tableField.field_name" (ionChange)="setValue('',tableField,false)" (ionCancel)="clearDropdownField($event, tableField)" cancel-text="Clear" [required]="tableField.is_mandatory" [id]="tableField._id+'_'+tableField.field_name">
+              <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [formControlName]="tableField.field_name" (ionChange)="setValue('',tableField,false)" (ionFocus)="selectionFocus($event, tableField)" (ionCancel)="clearDropdownField($event, tableField)" cancel-text="Clear" [required]="tableField.is_mandatory" [id]="tableField._id+'_'+tableField.field_name" (ionDismiss)="$event.stopPropagation()">
                 <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
                 <ion-select-option *ngIf="tableField.add_new_enabled" [value]="{'_id':'tests','value':'add_new'}">+ Add New</ion-select-option>
               </ion-select>
@@ -103,7 +103,7 @@
             </ion-item>
             <!-- <ion-item *ngIf="tableField.datatype == 'object'">
               <ion-label position="floating">{{ tableField.label }} <ion-text *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
-              <ion-select [selectedText]="getddnDisplayVal(templateForm.get(tableField.field_name).value)" [formControlName]="tableField.field_name" [compareWith]="compareFn" (ionChange)="setValue('',tableField)" (ionCancel)="clearDropdownField($event, tableField)" cancel-text="Clear">
+              <ion-select [selectedText]="getddnDisplayVal(templateForm.get(tableField.field_name)?.value)" [formControlName]="tableField.field_name" [compareWith]="compareFn" (ionChange)="setValue('',tableField)" (ionCancel)="clearDropdownField($event, tableField)" cancel-text="Clear">
                 <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
                 <ion-select-option *ngIf="tableField.add_new_enabled" [value]="{'_id':'tests','value':'add_new'}">+ Add New</ion-select-option>
               </ion-select>
@@ -258,28 +258,28 @@
               </ion-input>
               <ion-note slot="error" class="text-danger" [ngClass]="templateFormControl[tableField.field_name].errors ? 'ion-show':'ion-hide'" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
               <ion-note slot="error" class="text-danger" [ngClass]="templateFormControl[tableField.field_name].errors ? 'ion-show':'ion-hide'" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.notValid">Your {{ tableField.label | titlecase}} is before <strong>Departure Date</strong></ion-note>
-
-              <ion-popover trigger="{{tableField._id + '_' + tableField.field_name}}" >
-                <ng-template>
-                  <ion-datetime
-                    [id]="tableField.field_name + '_' + tableField._id"
-                    size="cover"
-                    presentation="date"
-                    [formControlName]="tableField.field_name"
-                    locale="en-US"
-                    [min]="tableField.minDate"
-                    [max]="tableField.maxDate"
-                    show-clear-button="true"
-                    [showDefaultButtons]="true"
-                    [firstDayOfWeek]="1"
-                    cancelText="Cancel"
-                    doneText="Done"
-                  >
-                  <slot ></slot>
-                  </ion-datetime>
-                </ng-template>
-              </ion-popover>
             </ion-item>
+
+            <ion-popover [keepContentsMounted]="true" trigger="{{tableField._id + '_' + tableField.field_name}}" >
+              <ng-template>
+                <ion-datetime
+                  id="{{tableField.field_name + '_' + tableField._id}}"
+                  size="cover"
+                  presentation="date"
+                  [formControlName]="tableField.field_name"
+                  locale="en-US"
+                  [min]="tableField.minDate"
+                  [max]="tableField.maxDate"
+                  show-clear-button="true"
+                  [showDefaultButtons]="true"
+                  [firstDayOfWeek]="1"
+                  cancelText="Cancel"
+                  doneText="Done"
+                >
+                <slot ></slot>
+                </ion-datetime>
+              </ng-template>
+            </ion-popover>
           </div>
           <div *ngIf="tableField.type == 'time'">
               <ion-item appearance="outline" class="example-full-width w-100">
@@ -441,7 +441,7 @@
                         </ion-item>
                       </div>
                       <div *ngIf="fields.type == 'date'">
-                          <ion-item>
+                          <!-- <ion-item>
                               <ion-label>{{ fields.label | titlecase}}<ion-text *ngIf="fields.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label>
                               <ion-input type="date"
                                 [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"
@@ -454,7 +454,42 @@
                                 pattern="\d{4}-\d{2}-\d{2}"
                               >
                               </ion-input>
+                          </ion-item> -->
+                          <ion-item>
+                            <ion-label>{{ fields.label | titlecase}} <ion-text *ngIf="fields.is_mandatory" class=""> *</ion-text></ion-label>
+                            <ion-input
+                              value="{{ templateForm.get(tableField.field_name).get(fields.field_name).value | date: 'dd.MM.yyyy' }}"
+                              id="{{fields._id+'_'+fields.field_name+'_'+tableField.field_name}}"
+                              class="ion-text-end  ion-flex-direction-row-reverse"
+                              [required]="fields.is_mandatory" (ionChange)="inputOnChangeFunc('',fields)"
+                              [disabled]="fields.is_disabled"
+                            >
+                              <ion-icon name="calendar-outline" class="ion-padding-start ion-icon-large-font"></ion-icon>
+                            </ion-input>
+                            <!-- <ion-note slot="error" class="text-danger" [ngClass]="templateFormControl[tableField.field_name].errors ? 'ion-show':'ion-hide'" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
+                            <ion-note slot="error" class="text-danger" [ngClass]="templateFormControl[tableField.field_name].errors ? 'ion-show':'ion-hide'" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.notValid">Your {{ tableField.label | titlecase}} is before <strong>Departure Date</strong></ion-note> -->
                           </ion-item>
+              
+                          <ion-popover [keepContentsMounted]="true" trigger="{{fields._id+'_'+fields.field_name+'_'+tableField.field_name}}" >
+                            <ng-template>
+                              <ion-datetime
+                                id="{{fields.field_name + '_' + fields._id + '_' + tableField._id}}"
+                                size="cover"
+                                presentation="date"
+                                [formControlName]="fields.field_name"
+                                locale="en-US"
+                                [min]="fields.minDate"
+                                [max]="fields.maxDate"
+                                show-clear-button="true"
+                                [showDefaultButtons]="true"
+                                [firstDayOfWeek]="1"
+                                cancelText="Cancel"
+                                doneText="Done"
+                              >
+                              <slot ></slot>
+                              </ion-datetime>
+                            </ng-template>
+                          </ion-popover>
                       </div>
                       <div *ngIf="fields.type == 'number'">
                         <ion-item>
@@ -477,7 +512,7 @@
                         </div>
                         <ion-item *ngIf="fields.datatype != 'object' && fields.datatype != 'key_value'">
                           <ion-label position="floating">{{ fields.label }} <ion-text *ngIf="fields.is_mandatory"> *</ion-text></ion-label>
-                          <ion-select [selectedText]="templateForm.get(fields.field_name).value" [formControlName]="fields.field_name" (ionChange)="setValue(tableField,fields,false)" (ionCancel)="clearDropdownField($event, fields)" cancel-text="Clear" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name">
+                          <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [formControlName]="fields.field_name" (ionChange)="setValue(tableField,fields,false)" (ionFocus)="selectionFocus($event, fields)" (ionCancel)="clearDropdownField($event, fields)" cancel-text="Clear" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name" (ionDismiss)="$event.stopPropagation()">
                             <!-- <div class="p-1 searchdropdown bg-white"><input type="search" class="form-control-sm w-100 border" [(ngModel)]="term[tableField.field_name+'_'+fields.field_name]" [ngModelOptions]="{standalone: true}"></div> -->
                             <ion-select-option *ngFor="let staticValue of staticData[fields.ddn_field]" [value]="staticValue">{{getddnDisplayVal(staticValue)}}</ion-select-option>
                             <ion-select-option *ngIf="fields.add_new_enabled" [value]="'add_new'">+ Add New</ion-select-option>
@@ -488,7 +523,7 @@
                         </ion-item>
                         <ion-item *ngIf="fields.datatype == 'key_value'">
                           <ion-label position="floating">{{ fields.label | titlecase}}<span *ngIf="fields.is_mandatory" class=""> *</span></ion-label>
-                          <ion-select [formControlName]="fields.field_name" (ionChange)="setValue(tableField,fields,false)"  [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name">
+                          <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [formControlName]="fields.field_name" (ionChange)="setValue(tableField,fields,false)" (ionFocus)="selectionFocus($event, fields)" (ionCancel)="clearDropdownField($event, fields)" cancel-text="Clear" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name" (ionDismiss)="$event.stopPropagation()">
                               <!-- <div class="p-1 searchdropdown bg-white"><input type="search" class="form-control-sm w-100 border" [(ngModel)]="term[tableField.field_name+'_'+fields.field_name]" [ngModelOptions]="{standalone: true}"></div> -->
                               <!-- <ion-select-option></ion-select-option> -->
                               <ion-select-option *ngFor="let staticValue of staticData[fields.ddn_field]" [value]="staticValue">
@@ -702,7 +737,7 @@
                                     <td class="px-1" style="text-align: center" *ngIf="!tableField.add_list_field && tableField.add_list_field != 'add'">
                                         <a  floating="true" size="small" *ngIf="tableField.datatype == 'list_of_object_with_popup' && checkRowDisabledIf(tableField,i)" (click)="updateListofFields(tableField,i)" class="grid-button"><span class="material-symbols-outlined" >edit</span></a>
         
-                                        <a floating="true" size="small" *ngIf="tableField.datatype != 'list_of_object_with_popup' && checkRowDisabledIf(tableField,i)" (click)="editListOfFiedls(listOfField,i)" class="grid-button"><span class="material-symbols-outlined" >edit</span></a>
+                                        <a floating="true" size="small" *ngIf="tableField.datatype != 'list_of_object_with_popup' && checkRowDisabledIf(tableField,i)" (click)="editListOfFiedls(tableField,i)" class="grid-button"><span class="material-symbols-outlined" >edit</span></a>
                                         
                                         <a *ngIf="checkRowDisabledIf(tableField,i)" floating="true" size="small" (click)="openModal('confirm-modal',i,'',tableField,listOfField,'delete')" class="grid-button removebtn"><span class="material-symbols-outlined">close</span></a>                        
                                     </td>

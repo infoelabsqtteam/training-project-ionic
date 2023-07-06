@@ -145,5 +145,9 @@ export class SignineComponent implements OnInit {
   comingSoon() {
     this.storageService.presentToast('Comming Soon...');
   }
+  changeCode(){
+    this.storageService.removeDataFormStorage();
+    this.authService.navigateByUrl('/auth/verifyCompany');
+  }
 
 }

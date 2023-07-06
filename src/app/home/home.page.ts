@@ -58,6 +58,8 @@ export class HomePage implements OnInit, OnDestroy {
   appCardMasterDataSize:number;  
   ionEvent:any;
   isExitAlertOpen:boolean = false;
+  errorTitle:string= "Please Wait !";
+  errorMessage:string= "We are getting modules.";
 
 
   constructor(
@@ -92,11 +94,20 @@ export class HomePage implements OnInit, OnDestroy {
         this.cardMasterList = data.data;
         this.commonDataShareService.setModuleList(this.cardMasterList);
         this.cardList = this.coreUtilityService.getUserAutherisedCards(this.cardMasterList);
-        if(this.cardList == null){        
+        if(this.cardList == null){
+          this.errorTitle = "No module assign";
+          this.errorMessage = "Permission error, No module found!";
           this.notificationService.presentToastOnBottom("You don't have permission or assign any module.","danger")
         }
       }else{
-        this.cardList = [];
+        if(this.myInput && this.myInput.length > 0 ){
+          this.errorTitle = "No matching element found";
+          this.errorMessage = "Try again by adjusting your search value!";
+          this.cardList = [];
+        }else{
+          this.errorTitle = "No module assign";
+          this.errorMessage = "Permission error, No module found!";
+        }
       }
     });
     this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{

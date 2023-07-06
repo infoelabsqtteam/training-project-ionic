@@ -10,23 +10,14 @@
 
 
 <ion-content class="pages">
-    <!-- <div class="banner">
-        <swiper [slidesPerView]="1" [pagination]="true" [spaceBetween]="0" [autoplay]="true" [loop]="true" [centeredSlides]="true" class="mySwiper">
-            <ng-template swiperSlide *ngFor="let banner of banner_img"><img  [src]="banner"></ng-template>
-        </swiper>
-    </div> -->
 
     <div class="banner">
         <ion-slides>
             <ion-slide swiperSlide *ngFor="let banner of banner_img">
                 <div class="slideshow"><img [src]="banner"></div>
-                <!-- <ng-template swiperSlide *ngFor="let banner of banner_img">
-                    <div class="slideshow"><img [src]="banner"></div>
-                </ng-template> -->
             </ion-slide>
         </ion-slides>
     </div>
-
 
     <div class="catlist">
 
@@ -52,28 +43,22 @@
             </li>
         </ul>
 
-        <div *ngIf="cardList == null" class="">
-            <ion-card>
+        <div>
+            <ion-card *ngIf="cardList == null" class="">
                 <!-- <div class="ion-text-center"><img alt="No Modules Assign" *ngIf="nodatafoundImg" [src]="nodatafoundImg" /> </div>-->
                 <ion-card-header>
-                  <ion-card-title>No module assign</ion-card-title>
+                  <ion-card-title>{{errorTitle}}</ion-card-title>
                   <!-- <ion-card-subtitle>Card Subtitle</ion-card-subtitle> -->
                 </ion-card-header>              
-                <ion-card-content>
-                    Permission error, No module found !
-                </ion-card-content>
+                <ion-card-content>{{errorMessage}}</ion-card-content>
                 <ion-button color="primary" fill="clear" size="small" (click)="getGridData()">Try again</ion-button>
             </ion-card>
-        </div>
-        <div *ngIf="cardList != null && cardList && cardList.length == 0" class="">
-            <ion-card>
+            <ion-card *ngIf="cardList != null && cardList && cardList.length == 0" class="">
                 <ion-card-header>
-                  <ion-card-title>No matching element found</ion-card-title>
+                  <ion-card-title>{{errorTitle}}</ion-card-title>
                   <!-- <ion-card-subtitle>Card Subtitle</ion-card-subtitle> -->
                 </ion-card-header>              
-                <ion-card-content>
-                    Try again by adjusting your search value!
-                </ion-card-content>
+                <ion-card-content>{{errorMessage}}</ion-card-content>
             </ion-card>
         </div>
     </div>
