@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
-import { AuthService, DataShareService, EnvService, NotificationService, StorageService } from '@core/ionic-core';
+import { AuthService, DataShareService, EnvService, LoaderService, NotificationService, StorageService } from '@core/ionic-core';
 import { AlertController, IonInput, IonRouterOutlet, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
@@ -30,7 +30,8 @@ export class VerifyCompanyComponent implements OnInit {
     private _location: Location,
     private platform: Platform,
     private alertController: AlertController,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private loaderService: LoaderService
   ) { }
 
   ionViewWillEnter(){
@@ -49,6 +50,10 @@ export class VerifyCompanyComponent implements OnInit {
     this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
       console.log('Back press handler!');
       if (this._location.isCurrentPathEqualTo('/auth/verifyCompany')) {
+        let isloaderOpen:any = this.loaderService.loadingCtrl.getTop();
+        if(isloaderOpen){
+          this.loaderService.hideLoader();
+        }
         if(this.isExitAlertOpen){
           this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
         }else{
@@ -109,7 +114,8 @@ export class VerifyCompanyComponent implements OnInit {
     let isClientExist = this.envService.checkClientExistOrNot(clintCode);
     if(isClientExist){
       this.dataShareService.subscribeClientName(clintCode);
-      this.authService.navigateByUrl('auth/signine');
+      this.loaderService.showLoader("Please wait while we are setting up the App for you.")
+      // this.authService.navigateByUrl('auth/signine');
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
     }

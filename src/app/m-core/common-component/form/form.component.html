@@ -93,7 +93,7 @@
           <div *ngIf="tableField.type == 'dropdown'">
             <ion-item *ngIf="tableField.datatype != 'object'">
               <ion-label position="floating">{{ tableField.label }} <ion-text *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
-              <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [formControlName]="tableField.field_name" (ionChange)="setValue('',tableField,false)" (ionFocus)="selectionFocus($event, tableField)" (ionCancel)="clearDropdownField($event, tableField)" cancel-text="Clear" [required]="tableField.is_mandatory" [id]="tableField._id+'_'+tableField.field_name" (ionDismiss)="$event.stopPropagation()">
+              <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [formControlName]="tableField.field_name" (ionChange)="setValue('',tableField,false)" (ionFocus)="selectionFocus(tableField)" (ionCancel)="clearDropdownField($event, tableField)" cancel-text="Clear" [required]="tableField.is_mandatory" [id]="tableField._id+'_'+tableField.field_name" (ionDismiss)="$event.stopPropagation()">
                 <ion-select-option *ngFor="let staticValue of staticData[tableField.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
                 <ion-select-option *ngIf="tableField.add_new_enabled" [value]="{'_id':'tests','value':'add_new'}">+ Add New</ion-select-option>
               </ion-select>
@@ -512,7 +512,7 @@
                         </div>
                         <ion-item *ngIf="fields.datatype != 'object' && fields.datatype != 'key_value'">
                           <ion-label position="floating">{{ fields.label }} <ion-text *ngIf="fields.is_mandatory"> *</ion-text></ion-label>
-                          <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [formControlName]="fields.field_name" (ionChange)="setValue(tableField,fields,false)" (ionFocus)="selectionFocus($event, fields)" (ionCancel)="clearDropdownField($event, fields)" cancel-text="Clear" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name" (ionDismiss)="$event.stopPropagation()">
+                          <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [formControlName]="fields.field_name" (ionChange)="setValue(tableField,fields,false)" (ionFocus)="selectionFocus(fields)" (ionCancel)="clearDropdownField($event, fields)" cancel-text="Clear" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name" (ionDismiss)="$event.stopPropagation()">
                             <!-- <div class="p-1 searchdropdown bg-white"><input type="search" class="form-control-sm w-100 border" [(ngModel)]="term[tableField.field_name+'_'+fields.field_name]" [ngModelOptions]="{standalone: true}"></div> -->
                             <ion-select-option *ngFor="let staticValue of staticData[fields.ddn_field]" [value]="staticValue">{{getddnDisplayVal(staticValue)}}</ion-select-option>
                             <ion-select-option *ngIf="fields.add_new_enabled" [value]="'add_new'">+ Add New</ion-select-option>
@@ -523,7 +523,7 @@
                         </ion-item>
                         <ion-item *ngIf="fields.datatype == 'key_value'">
                           <ion-label position="floating">{{ fields.label | titlecase}}<span *ngIf="fields.is_mandatory" class=""> *</span></ion-label>
-                          <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [formControlName]="fields.field_name" (ionChange)="setValue(tableField,fields,false)" (ionFocus)="selectionFocus($event, fields)" (ionCancel)="clearDropdownField($event, fields)" cancel-text="Clear" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name" (ionDismiss)="$event.stopPropagation()">
+                          <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [formControlName]="fields.field_name" (ionChange)="setValue(tableField,fields,false)" (ionFocus)="selectionFocus(fields)" (ionCancel)="clearDropdownField($event, fields)" cancel-text="Clear" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name" (ionDismiss)="$event.stopPropagation()">
                               <!-- <div class="p-1 searchdropdown bg-white"><input type="search" class="form-control-sm w-100 border" [(ngModel)]="term[tableField.field_name+'_'+fields.field_name]" [ngModelOptions]="{standalone: true}"></div> -->
                               <!-- <ion-select-option></ion-select-option> -->
                               <ion-select-option *ngFor="let staticValue of staticData[fields.ddn_field]" [value]="staticValue">

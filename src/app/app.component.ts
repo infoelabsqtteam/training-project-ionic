@@ -85,8 +85,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.clinetNameSubscription = this.dataShareService.setClientName.subscribe(
         data =>{
-          this.restService.getApplicationAllSettings();
-          this.themeandApplicationSetting();
+          if(data){
+            this.appSettings();
+          }
         });
     // this.web_site = appConstants.siteName;
     this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
@@ -199,7 +200,11 @@ export class AppComponent implements OnInit, OnDestroy {
         this.authService.navigateByUrl("auth/verifyCompany");
       }
   }
-  themeandApplicationSetting(){
+  async appSettings(){
+     this.restService.getApplicationAllSettings();
+     await this.themeandApplicationSetting();
+  }
+  async themeandApplicationSetting(){
     if(this.dataShareService.themeSetting != undefined){
       this.themeSettingSubscription = this.dataShareService.themeSetting.subscribe(
         data =>{
@@ -237,8 +242,10 @@ export class AppComponent implements OnInit, OnDestroy {
     if(this.coreFunctionService.isNotBlank(checkComapanyCode)){
       if(!this.checkApplicationSetting()){
         this.restService.getApplicationAllSettings();
+      }else{
+        this.loadPage();
       }
-      if(this.checkIdTokenStatus()){      
+      if(this.checkIdTokenStatus()){
         this.authService.getUserPermission(false,'/home');
         this.router.navigateByUrl('/home');  
         // this.authApiService.redirectionWithMenuType();
@@ -358,6 +365,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.favIcon.href = this.storageService.getLogoPath() + "favicon.ico";
     this.titleService.setTitle(this.storageService.getPageTitle());
     this.themeName = this.storageService.getPageThmem();
+    this.authService.navigateByUrl('auth/signine');
   }
 
 }

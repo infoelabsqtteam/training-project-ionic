@@ -21,6 +21,9 @@ export class SignineComponent implements OnInit {
   VerifyType : boolean = false;
   // showicon = false;
   isExitAlertOpen:boolean = false;
+  logoPath:string = '';
+  imageTitle:string = '';
+  appTitle:string = '';
 
   constructor(
     private authService: AuthService,
@@ -53,6 +56,10 @@ export class SignineComponent implements OnInit {
       // this.router.navigateByUrl('/home');
     }else if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
       this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+        let isloaderOpen:any = this.ionLoaderService.loadingController.getTop();
+        if(isloaderOpen){
+          this.ionLoaderService.hideLoader();
+        }
         if(this.isExitAlertOpen){
           this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
         }else{
@@ -107,6 +114,7 @@ export class SignineComponent implements OnInit {
   }
   ngOnInit() {
     this.initForm();
+    this.getLogoPath();
   }
   initForm(){
     this.loginForm = this.formBuilder.group({
@@ -133,21 +141,35 @@ export class SignineComponent implements OnInit {
     let loginObj = this.loginForm.value; 
     this.authService.login(loginObj.userId, loginObj.password,'/home');
     this.loginForm.reset();
-    this.ionLoaderService.hideLoader();
   }
-
   showtxtpass() {
     this.showpassword = !this.showpassword;
   }
-  // showEmailIcon() {
-  //   this.showicon = !this.loginForm.value.userId;
-  // }
   comingSoon() {
-    this.storageService.presentToast('Comming Soon...');
+    this.notificationService.presentToastOnBottom('Comming Soon...');
   }
   changeCode(){
     this.storageService.removeDataFormStorage();
     this.authService.navigateByUrl('/auth/verifyCompany');
+    this.resetVariables();
+  }
+  resetVariables(){
+    this.logoPath = '';
+    this.imageTitle = '';
+    this.appTitle = '';
+  }
+  getLogoPath(){
+    if(this.coreFunctionService.isNotBlank(this.storageService.getApplicationSetting())){
+      this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
+      this.imageTitle = this.storageService.getPageTitle();
+      this.appTitle = this.storageService.getPageTitle();
+      let loader:any = this.ionLoaderService.loadingController.getTop();
+      if(loader){
+        this.ionLoaderService.hideLoader();
+      }
+    }else{
+      this.getLogoPath();
+    }
   }
 
 }
