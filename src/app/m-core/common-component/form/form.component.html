@@ -8,7 +8,7 @@
 <ion-content>
   <ion-grid [formGroup]="templateForm" *ngIf="tableFields.length > 0" novalidate>
     <ion-row *ngIf="handleDisabeIf()">
-      <ion-col *ngFor="let tableField of tableFields; let i = index" [ngClass]="getDivClass(tableField)" [id]="tableField._id" [size]="getColSize(tableField)" [size-sm]="" [size-md]="" [size-lg]="" [size-xl]="" >
+      <ion-col *ngFor="let tableField of tableFields; let i = index" [ngClass]="getDivClass(tableField)" [id]="tableField._id" [size]="tableField?.fieldSizeHalfOnApp ? '6' : '12'" >
         <div *ngIf="!tableField.hideOnMobile">
           <div *ngIf="tableField.type == 'text'">
             <ion-item>

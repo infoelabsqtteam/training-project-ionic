@@ -262,6 +262,7 @@ export class HomePage implements OnInit, OnDestroy {
       setTimeout(() => {
         event.target.complete();
         this.getGridData();
+        (event.target as HTMLIonRefresherElement).complete();
       }, 2000);
 
     // }else{

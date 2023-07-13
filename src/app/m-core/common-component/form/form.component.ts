@@ -5090,48 +5090,33 @@ tinymceConfig = {}
         return returnClass
       }
   }
-  getColSize(field){
-    let size:any = 12;
-    if(field.type != 'typeahead' && field.type != 'dropdown'){
-      if(field.field_class && field.field_class != ''){
-        const fieldsLength = this.tableFields.length;
-        const returnClass = this.commonFunctionService.getDivClass(field,fieldsLength);
-        const classes = returnClass.split('-');
-        const lastIndex = classes.length-1;
-        const deviceIndex = classes.length-2;
-        const deviceName = classes[deviceIndex];
-        let deviceValue = classes[lastIndex];
-        if(this.plt.is('hybrid')){
-          if(deviceName == "xl" || deviceName == "lg" || deviceName == "md" || deviceName == "sm" || deviceName == "xs"){
-            if(deviceValue < 6){
-              size = '6';
-            }else{          
-              size = '12';
-            }
-          }
-        }else{
-          return size;
-        }
-      }
-    }
-    return size;
+  // getColSize(field){
+  //   let size:any = 12;
+  //   if(field.type != 'typeahead' && field.type != 'dropdown'){
+  //     if(field.field_class && field.field_class != ''){
+  //       const fieldsLength = this.tableFields.length;
+  //       const returnClass = this.commonFunctionService.getDivClass(field,fieldsLength);
+  //       const classes = returnClass.split('-');
+  //       const lastIndex = classes.length-1;
+  //       const deviceIndex = classes.length-2;
+  //       const deviceName = classes[deviceIndex];
+  //       let deviceValue = classes[lastIndex];
+  //       if(this.plt.is('hybrid')){
+  //         if(deviceName == "xl" || deviceName == "lg" || deviceName == "md" || deviceName == "sm" || deviceName == "xs"){
+  //           if(deviceValue < 6){
+  //             size = '6';
+  //           }else{          
+  //             size = '12';
+  //           }
+  //         }
+  //       }else{
+  //         return size;
+  //       }
+  //     }
+  //   }
+  //   return size;
 
-  }
-  getDivClassXl(deviceValue?:number){
-    return deviceValue;
-  };
-  getDivClassLg(deviceValue){
-    return deviceValue
-  };
-  getDivClassMd(deviceValue?:number){
-    return deviceValue;
-  };
-  getDivClassSm(deviceValue?:number){
-    return deviceValue;
-  };
-  getDivClassXs(deviceValue?:number){
-    return deviceValue;
-  };
+  // }
   // open same form on form component
   addListOfFields(field){
     this.storeFormDetails("",field);

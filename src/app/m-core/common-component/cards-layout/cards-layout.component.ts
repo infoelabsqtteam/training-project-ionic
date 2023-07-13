@@ -726,8 +726,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.dataShareServiceService.setcardData(card);
   }
   // add new card or record in cardlist 
-  async addNewForm(formName?:any){
-    if (this.permissionService.checkPermission(this.currentMenu.name, 'add')) {
+  async addNewForm(formName?:any,permissionName?:string){
+    if (this.permissionService.checkPermission(this.currentMenu.name, 'add') || this.permissionService.checkPermission(this.currentMenu.name, 'edit') || this.permissionService.checkPermission(this.currentMenu.name, permissionName)) {
       if(formName){
         this.formTypeName = formName;
       }else{
@@ -955,9 +955,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         // }else{
         //   return;
         // }  
-        this.addNewForm(formName);      
+        this.addNewForm(formName, 'edit');      
       }else{
-        this.addNewForm(formName);
+        this.addNewForm(formName, 'edit');
       }  
       this.selectedIndex = index;    
     } else {

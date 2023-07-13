@@ -123,10 +123,10 @@ export class CardViewPage implements OnInit, OnDestroy {
           }else if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'mongochart'){
             navigation = 'mongochart';
           }else{
-            navigation = cardWithTab.card.card_type.name;
-          }
-          if(navigation == null || navigation == undefined){
             navigation = 'home';
+          }
+          if(navigation == 'home'){
+            this.storageService.presentToast("Path Changed, please connect to admin.");
           }
           this.router.navigateByUrl(navigation);
         }else{
@@ -136,11 +136,8 @@ export class CardViewPage implements OnInit, OnDestroy {
         this.card = cardWithTab;
         }
       }
-      if(cardWithTab && cardWithTab.popoverTabbing) {
-        this.popoverTabbing = cardWithTab.popoverTabbing;
-      }else{
-        this.popoverTabbing = cardWithTab.popoverTabbing;
-      }
+      this.popoverTabbing = cardWithTab?.popoverTabbing;
+      this.selectedIndex = cardWithTab?.selectedTabIndex;
     }
     
     comingSoon() {

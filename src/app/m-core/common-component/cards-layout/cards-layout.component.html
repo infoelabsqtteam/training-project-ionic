@@ -28,7 +28,7 @@
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
-              <div class="ion-text-end status_button" *ngIf="column.type == 'button'">
+              <div class="ion-text-end status_button" *ngIf="column.type == 'button' && getValueForGrid(column,card)">
                 <div *ngIf="card.quotation_status">
                   <ion-button [ngClass]="card.quotation_status ? 'status_' + card.quotation_status : 'default-status'" *ngIf="column.type == 'button' && card.quotation_status" [innerHTML]="getValueForGrid(column,card)">
                   </ion-button>
@@ -131,7 +131,7 @@
                   <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
                   <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
                   <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
-                  <div class="ion-text-end status_button" *ngIf="column.type == 'button'">
+                  <div class="ion-text-end status_button" *ngIf="column.type == 'button' && getValueForGrid(column,card)">
                     <div *ngIf="card.quotation_status">
                       <ion-button [ngClass]="card.quotation_status ? 'status_' + card.quotation_status : 'default-status'" *ngIf="column.type == 'button' && card.quotation_status" [innerHTML]="getValueForGrid(column,card)">
                       </ion-button>
