@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { ApiService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService } from '@core/ionic-core';
+import { ApiService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService, ChartService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
 import { Platform } from '@ionic/angular';
@@ -11,6 +11,8 @@ import { Platform } from '@ionic/angular';
 import { DatePipe } from '@angular/common';
 import { zonedTimeToUtc, utcToZonedTime, format} from 'date-fns-tz';
 import { parseISO } from 'date-fns';
+import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
+// import { ChartService } from '@core/web-core';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -40,6 +42,7 @@ export class ChartFilterComponent implements OnInit {
   @Input() staticData;
   @ViewChild('startDate', { static: false }) startDateSelected:ElementRef<any>;  
   @ViewChild('endDate', { static: false }) endDateSelected:ElementRef<any>;
+  // @ViewChild('chartFilterModal') public chartFilterModal: ModalDirective;  
 
   // dashboardItem :any = {};
   //dashletData:any = {};
@@ -61,8 +64,6 @@ export class ChartFilterComponent implements OnInit {
   showFilter:boolean=false;
   dashlet_call_back: any;
   // staticDataSubscription;
-  // dashletDataSubscription;
-  // typeaheadDataSubscription;
   typeaheadDataSubscription;
   dashletDataSubscription;
 
@@ -79,6 +80,9 @@ export class ChartFilterComponent implements OnInit {
   selectedStartDateasMindate;
   selectedEndDate:any;
   CheckStartDate:boolean=false;
+  accessToken:string='';
+  createdChartList:any=[];
+  staticDataSubscription:any;
 
   constructor(
     private platform: Platform,
@@ -92,7 +96,14 @@ export class ChartFilterComponent implements OnInit {
     private permissionService: PermissionService,
     private datePipe: DatePipe,
     private notificationService:NotificationService,
+    private chartService:ChartService,
   ) {
+    this.accessToken = this.storageService.GetIdToken();
+    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
+      if(data && data !=''){
+        this.setStaticData(data);
+      }
+    })
     this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data =>{
       this.setTypeaheadData(data);
     })
@@ -108,26 +119,21 @@ export class ChartFilterComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.dashlet_call_back = this.dashboardItem.call_back_field;
-    this.setDashLetData(this.dashletData);
     this.showModal(this.dashboardItem);
-    this.dashboardFilter.reset();
   }
-
 
   ngOnDestroy(){
     this.checkGetDashletData = false;
     // if(this.staticDataSubscription){
     //   this.staticDataSubscription.unsubscribe();
     // }
-    // if(this.dashletDataSubscription){
-    //   this.dashletDataSubscription.unsubscribe();
-    // }
+    if(this.dashletDataSubscription){
+      this.dashletDataSubscription.unsubscribe();
+    }
     if(this.typeaheadDataSubscription){
       this.typeaheadDataSubscription.unsubscribe();
     }
   }
-
 
   setDashLetData(dashletData:any){
     if (dashletData) {
@@ -171,10 +177,9 @@ export class ChartFilterComponent implements OnInit {
       elements.forEach(element => {
         const fields = element.fields;        
         //const filterData = this.getSingleCardFilterValue(element,value);
-        const filterData = 
-        {
+        const filterData = {
           'value':value
-       };
+        };
         let crList = [];
         if(fields && fields.length > 0){
           crList = this.restService.getfilterCrlist(fields,filterData);
@@ -242,7 +247,77 @@ export class ChartFilterComponent implements OnInit {
   }
 
   dashletFilter(item:any){
-    this.getDashletData([item]);
+    if(item.package_name == "mongodb_chart"){
+      this.setFilterInMongodbChart(item);
+    }else{
+      this.getDashletData([item]);
+    }
+  }
+  getMongodbFilterObject(data){
+    let object = {};
+    if(Object.keys(data).length > 0){
+      Object.keys(data).forEach(key => {
+        if(data[key] && data[key] != ''){
+          object[key] = data[key];
+        }
+      });
+    }
+    return object;
+  }
+  setFilterInMongodbChart(chart){
+    let id = "filter_"+chart.chartId;
+    let chartObject = this.createdChartList[id];
+    let fields = chart.fields && chart.fields.length > 0 ? chart.fields : [];
+    let formValue = this.dashboardFilter.getRawValue();
+    let filterValue = this.getMongochartFilterValue(fields,formValue);
+    let filterData = this.getMongodbFilterObject(filterValue);
+    chartObject.setFilter(filterData);
+  }
+  getMongochartFilterValue(fields,object){
+    let modifyObject = {};
+    let objectCopy = JSON.parse(JSON.stringify(object));
+    if(fields && fields.length > 0 && Object.keys(objectCopy).length > 0){
+      fields.forEach(field => {
+        let key = field.field_name;
+        if(object && object[key] && object[key] != ''){
+          let newDateObjec = {};
+          let date = new Date();
+          switch (field.type) {
+            case 'typeahead':            
+              if(objectCopy[key] && typeof objectCopy[key] == 'object'){
+                modifyObject[key+'._id'] = objectCopy[key]._id;
+              }            
+              break;
+            case 'date':
+              let formateDate = this.datePipe.transform(objectCopy[key], 'yyyy-MM-dd');
+              let selectedDate = new Date(formateDate);
+              selectedDate.setTime(selectedDate.getTime()+(24*3600000));
+              newDateObjec = {};
+              date = new Date(formateDate);
+              newDateObjec['$gt'] = date;
+              newDateObjec['$lte'] = selectedDate;
+              modifyObject[key] =  newDateObjec;
+              break;
+            case 'daterange':
+              if(object[key].start && object[key].end && object[key].start != '' && object[key].end != ''){
+                let startDate = this.datePipe.transform(object[key].start,'yyyy-MM-dd');
+                let endDate = this.datePipe.transform(object[key].end,'yyyy-MM-dd');
+                let modifyEndDate = new Date(endDate);
+                modifyEndDate.setTime(modifyEndDate.getTime()+(24*3600000));
+                newDateObjec = {};
+                newDateObjec['$gt'] = new Date(startDate);
+                newDateObjec['$lte'] = new Date(modifyEndDate);
+                modifyObject[key] =  newDateObjec;
+              }
+              break;
+            default:
+              modifyObject[key] = objectCopy[key];
+              break;
+          }
+        }
+      });
+    }
+    return modifyObject;
   }
 
   setFilterForm(dashlet:any){    
@@ -291,7 +366,6 @@ export class ChartFilterComponent implements OnInit {
     } 
   }
 
-
   setTypeaheadData(typeAheadData:any){
     if (typeAheadData.length > 0) {
       this.typeAheadData = typeAheadData;
@@ -300,11 +374,9 @@ export class ChartFilterComponent implements OnInit {
     }
   }
 
-
-
   dismissModal(item:any){
     this.close(item);
-    this.modal.dismiss({'dismissed': true});
+    this.modal?.offsetParent.dismiss({'dismissed': true},'closed');
   }
 
   exportexcel():void {
@@ -491,37 +563,86 @@ export class ChartFilterComponent implements OnInit {
     }
   }
 
-
-
-
-
   showModal(object:any){
     if(this.dashboardItem){
-      this.dashboardItem = this.dashboardItem;
-      this.dashletData = this.dashletData;
-      this.checkGetDashletData = true;   
+      // this.dashboardItem = object.dashboardItem;
+      // this.dashletData = object.dashletData;
+      this.checkGetDashletData = true; 
+      if(this.dashboardItem.call_back_field){
+        this.dashlet_call_back = this.dashboardItem.call_back_field;
+      } 
       if(this.filter){
         this.showFilter = true;
         this.setFilterForm(this.dashboardItem);
       }else{
         this.showFilter = false;
-      }      
-      this.setDashLetData(this.dashletData);
-      //this.chartFilterModal.show();
-      this.dashboardFilter.reset();
-    }    
-    
+      }   
+      if(this.dashletData && this.dashletData != ''){
+        this.setDashLetData(this.dashletData);
+      }
+      // this.chartFilterModal.show();
+      if(this.filter){
+        this.dashboardFilter.reset();
+      }
+      if(this.dashboardItem.package_name == "mongodb_chart"){
+        setTimeout(() => {
+          this.populateMongodbChart(this.dashboardItem);
+        }, 100);
+      }
+    } 
   }
+  populateMongodbChart(chart){
+    if(this.accessToken != "" && this.accessToken != null){
+      const sdk = new ChartsEmbedSDK({
+        baseUrl: chart.chartUrl, // Optional: ~REPLACE~ with the Base URL from your Embed Chart dialog
+        getUserToken: () => this.accessToken
+      });
+      if(chart && chart.chartId){        
+        const id = "filter_"+chart.chartId;
+        const idRef = document.getElementById(id);
+        let height = "50vh"
+        if(this.filter){
+          height = "50vh";
+        }else{
+          height = "90vh";
+        }
+        if(idRef){
+          let cretedChart = sdk.createChart({
+            chartId: chart.chartId, // Optional: ~REPLACE~ with the Chart ID from your Embed Chart dialog
+            height: height
+          });
+          this.createdChartList[id] = cretedChart;
+          cretedChart
+          .render(idRef)
+          .catch(() => 
+          console.log('Chart failed to initialise')
+          //window.alert('Chart failed to initialise')
+          );
+        }        
+      }
+    }
+  }
+  download(object){
+    let chartId = "filter_"+object.chartId;
+    let chart = this.createdChartList[chartId];    
+    this.chartService.getDownloadData(chart,object);
+  } 
   close(item:any){
     this.checkGetDashletData = false;
     this.reset(item);
-   // this.chartFilterModal.hide();
+  //  this.chartFilterModal.hide();
   }
 
   reset(item:any){
-    if(this.showFilter){
+    if(this.dashboardFilter){
       this.dashboardFilter.reset();
-      this.getDashletData([item]);
+    }    
+    if(this.showFilter){      
+      if(this.dashboardItem.package_name == "mongodb_chart"){
+        this.setFilterInMongodbChart(item);
+      }else{
+        this.getDashletData([item]);
+      }
     }    
   }
 
@@ -572,7 +693,14 @@ export class ChartFilterComponent implements OnInit {
       this.notificationService.presentToastOnBottom("Please First select Start Date","danger")
     }
   }
-
+  setStaticData(staticData?:any){
+    if (staticData) {
+      this.staticData = staticData;
+      Object.keys(this.staticData).forEach(key => {        
+        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+      }) 
+    }
+  }
 
 
 

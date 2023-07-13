@@ -22,10 +22,6 @@ export class ForgetPasswordComponent implements OnInit {
   passwordNotMatch: boolean;
 
   VerifyType : boolean = false;
-  // password = false;
-  // confirmpassword = false;
-  // newpwd: any;
-  // payload: any;
 
   constructor(
     private authService: AuthService,
@@ -121,12 +117,17 @@ export class ForgetPasswordComponent implements OnInit {
   }
 
   passwordmismatch(){
-    if(this.vForm.value.password !== this.vForm.value.confpwd && this.vForm.value.confpwd != '')
-    { 
-      this.passwordNotMatch = true;
-    }else{
+    if((this.vForm.value.password === this.vForm.value.confpwd)){
+      this.vForm.controls['confpwd'].setErrors(null);;
       this.passwordNotMatch = false;
+    }else{
+      this.vForm.controls['confpwd'].setErrors({'invalid': true});
+      this.passwordNotMatch = true;
     }
+  }
+  gobackandreset(){
+    this.resetPwd=!this.resetPwd;
+    this.vForm.reset();
   }
     
 }

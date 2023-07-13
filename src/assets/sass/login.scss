@@ -1,5 +1,5 @@
 .loginpage {--background:#EFF1F3;font-family:roboto,medium;;
-    .logintitle { padding:16px;padding-bottom:120px;
+    .logintitle { padding:16px;
         h4 {font-size:22px;font-weight:bold;color:var(--ion-color-appcolor);margin-bottom:0;}
         p {color:#2D2D2D;font-size:16px;margin:8px 0;}
     }
@@ -24,14 +24,28 @@
             span {position:absolute;left:0px;width:100%;bottom:-8px;}
             i {font-size:14px;color:#999;background:var(--ion-color-white);padding:0 5px;font-style:normal;}
         }
+        ion-input{max-width: 95%;
+            .native-input{padding: 10px 0 !important;}
+        }
 
-
+    }
+    .ion-vertical-flex-column{
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+    .login.signupform{position: inherit;
+        ion-input{
+            .native-input{padding: 7px 0 !important;}
+        }
+        .showpassword{right: 5px;top: 27px;font-size: 20px;}
+        .showicon {top:28px;font-size:18px;}
     }
     .mailicon {width:48px;height:48px;border-radius:100%;background:var(--ion-color-white);padding:10px;margin:25px auto 0;display:inline-block;box-shadow:0 0 39px #dedede;font-size:25px;line-height:35px;color:#ff7b7b;}
     p {margin:0;}
 }
 .mail-icon{width: 48px;height: 48px;border-radius: 100%;box-shadow: 0 0 15px #00000029; padding: 9px; margin: 20px auto 0 !important;}
-.loginlogo{text-align: center;max-width: 149px;margin: 0 auto;margin-top: 53px;max-height: 127px;
+.loginlogo{text-align: center;max-width: 50%;margin: 0 auto;margin-top: 22%;max-height: 127px;
     .logintitle { padding:20px;padding-bottom:120px;padding-top: 53px;
         h4 {font-size:24px;font-weight:bold;color:var(--ion-color-appcolor);margin-bottom:0;}
         p {color:#2D2D2D;font-size:22px;margin:22px 0;}
@@ -40,3 +54,12 @@
 }
 .login.forgotpwd {border-radius:24px 24px 0 0;padding:20px;background:var(--ion-color-white);position:absolute;width:100%;}
 .loginpage.forgotpwd {--background:var(--ion-color-white);}
+.companyCode {
+    .logintitle{padding-bottom: 80px;}
+    .companyCodeForm {
+        ion-button{
+            margin-top: 20px;min-height: 40px;--border-radius: 10px;
+        }
+    }
+
+}

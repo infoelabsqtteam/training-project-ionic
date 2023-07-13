@@ -15,7 +15,7 @@ export class SignupeComponent implements OnInit {
 
   signUpForm: FormGroup;
   showpassword = false;
-  passwordNotMatch:boolean;
+  passwordNotMatch:boolean=false;
   confirmpassword = false;
 
   constructor(
@@ -61,9 +61,10 @@ export class SignupeComponent implements OnInit {
     }
     
     const data = {email: email, password: password, name: name, mobileNumber: mobile, domain:"", userId: userId}
-    const payload = { data:data, redirection:'/auth/verifyotp'};
+    //note: if autologin =true then set redirection= '/home', And if autologin =false then set redirection= '/auth/signine'
+    const payload = { data:data, redirection:'/home',"autologin":true};
     this.authService.signup(payload);
-    // this.signUpForm.reset();
+    this.signUpForm.reset();
     //this.router.navigate(['/auth/signine']);
   }
 
@@ -74,11 +75,12 @@ export class SignupeComponent implements OnInit {
     this.confirmpassword = !this.confirmpassword;
   }
   passwordmismatch(){
-    if(this.signUpForm.value.password !== this.signUpForm.value.confpwd && this.signUpForm.value.confpwd != '')
-    { 
-      this.passwordNotMatch = true;
-    }else{
+    if((this.signUpForm.value.password === this.signUpForm.value.confpwd)){
+      this.signUpForm.controls['confpwd'].setErrors(null);;
       this.passwordNotMatch = false;
+    }else{
+      this.signUpForm.controls['confpwd'].setErrors({'invalid': true});
+      this.passwordNotMatch = true;
     }
   }
 

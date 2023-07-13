@@ -13,31 +13,35 @@ import { GoogleChartsModule } from 'angular-google-charts';
 import { GridSelectionComponent } from './grid-selection/grid-selection.component';
 import { PopoverComponent } from './popover/popover.component';
 import { AngularEditorModule } from '@kolkov/angular-editor';
+import { GmapViewComponent } from './gmap-view/gmap-view.component';
+import { GoogleMapsModule } from '@angular/google-maps';
+import { MongodbChartComponent } from './mongodb-chart/mongodb-chart.component';
 const components = [
     FormComponent,
     CardsLayoutComponent,
     ModalDetailCardComponent,
     ChartComponent,
     GridSelectionComponent,
-    PopoverComponent
+    PopoverComponent,
+    GmapViewComponent,
+    MongodbChartComponent
   ];
 
 @NgModule({
     declarations: components,
-    exports:components,
-    entryComponents: [],
+    exports: components,
     imports: [
         CommonModule,
         IonicModule,
-        FormsModule, 
+        FormsModule,
         AngularEditorModule,
-        ReactiveFormsModule, 
+        ReactiveFormsModule,
         HttpClientModule,
         IonicModule.forRoot(),
         NgSelectModule,
         NgChartsModule,
-        GoogleChartsModule
-        
+        GoogleChartsModule,
+        GoogleMapsModule
     ],
     providers: [],
     schemas: [

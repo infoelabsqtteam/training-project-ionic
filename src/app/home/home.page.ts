@@ -1,20 +1,17 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, NotificationService, RestService, StorageService, StorageTokenStatus, CoreUtilityService } from '@core/ionic-core';
+import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, NotificationService, RestService, StorageService, StorageTokenStatus, CoreUtilityService, CoreFunctionService } from '@core/ionic-core';
 import { Platform, AlertController } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { DataShareServiceService } from '../service/data-share-service.service';
 import { Subscription } from 'rxjs';
+import { App } from '@capacitor/app';
 
-import { DocumentViewer, DocumentViewerOptions } from '@ionic-native/document-viewer/ngx';
-//import { File } from '@ionic-native/file/ngx';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  providers: [DocumentViewer],
+  providers: [],
 })
 export class HomePage implements OnInit, OnDestroy {
   modal: any;
@@ -58,7 +55,11 @@ export class HomePage implements OnInit, OnDestroy {
   cardMasterList:any;
   userAuthModules:any;
   cardListSubscription:any;
-  appCardMasterDataSize:number;
+  appCardMasterDataSize:number;  
+  ionEvent:any;
+  isExitAlertOpen:boolean = false;
+  errorTitle:string= "Please Wait !";
+  errorMessage:string= "We are getting modules.";
 
 
   constructor(
@@ -68,16 +69,14 @@ export class HomePage implements OnInit, OnDestroy {
     private router: Router,
     private _location: Location,
     public alertController: AlertController,
-    private http: HttpClient,
     private envService: EnvService,
-    private dataShareServiceService: DataShareServiceService,
     private dataShareService:DataShareService,
     private apiService:ApiService,
     private restService:RestService,
     private commonDataShareService:CommonDataShareService,
     private notificationService: NotificationService,
-    private coreUtilityService: CoreUtilityService
-
+    private coreUtilityService: CoreUtilityService,
+    private coreFunctionService: CoreFunctionService
   ) 
   {
     this.initializeApp();
@@ -95,11 +94,20 @@ export class HomePage implements OnInit, OnDestroy {
         this.cardMasterList = data.data;
         this.commonDataShareService.setModuleList(this.cardMasterList);
         this.cardList = this.coreUtilityService.getUserAutherisedCards(this.cardMasterList);
-        if(this.cardList == null){        
-          this.notificationService.showAlert("You don't have permission or assign any module.","Permission error !",['Dismiss'])
+        if(this.cardList == null){
+          this.errorTitle = "No module assign";
+          this.errorMessage = "Permission error, No module found!";
+          this.notificationService.presentToastOnBottom("You don't have permission or assign any module.","danger")
         }
       }else{
-        this.cardList = [];
+        if(this.myInput && this.myInput.length > 0 ){
+          this.errorTitle = "No matching element found";
+          this.errorMessage = "Try again by adjusting your search value!";
+          this.cardList = [];
+        }else{
+          this.errorTitle = "No module assign";
+          this.errorMessage = "Permission error, No module found!";
+        }
       }
     });
     this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{
@@ -117,30 +125,26 @@ export class HomePage implements OnInit, OnDestroy {
 
     this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
       console.log('Back press handler!');
-      if (this._location.isCurrentPathEqualTo('/home')) {
-
-        // Show Exit Alert!
-        console.log('Show Exit Alert!');
-        this.showExitConfirm();
-        processNextHandler();
-      } else {
-        // Navigate to back page
-        console.log('Navigate to back page');
-        this._location.back();
-      }
-
-    });
-
-    this.platform.backButton.subscribeWithPriority(5, () => {
-      console.log('Handler called to force close!');
-      this.alertController.getTop().then(r => {
-        if (r) {
-          navigator['app'].exitApp();
+      if(this.isExitAlertOpen){
+        this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
+      }else{
+        if(this._location.isCurrentPathEqualTo('/home')){
+          this.showExitConfirm();
+          // processNextHandler();
         }
-      }).catch(e => {
-        console.log(e);
-      })
+      }
     });
+
+    // this.platform.backButton.subscribeWithPriority(5, () => {
+    //   console.log('Handler called to force close!');
+    //   this.alertController.getTop().then(r => {
+    //     if (r) {
+    //       navigator['app'].exitApp();
+    //     }
+    //   }).catch(e => {
+    //     console.log(e);
+    //   })
+    // });
 
   }
 
@@ -159,17 +163,22 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-      this.router.navigateByUrl('/home');
-      this.getGridData();
-    }else {
-      this.router.navigateByUrl('auth/signine');      
+    if(this.coreFunctionService.isNotBlank(this.storageService.getClientCode())){
+      if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
+        this.authService.getUserPermission(false,'/home');
+        // this.router.navigateByUrl('/home');
+        this.getGridData();
+      }else {
+        this.router.navigateByUrl('auth/signine');
+      }
+      // this.authService._user_info.subscribe(resp => {
+      //   this.userInfo = resp;
+        
+      // })
+    }else{
+      this.storageService.removeDataFormStorage();
+      this.router.navigateByUrl('/auth/verifyCompany');
     }
-    this.authService.getUserPermission(false,'/home');
-    // this.authService._user_info.subscribe(resp => {
-    //   this.userInfo = resp;
-      
-    // })
   }
   resetVariables(){
     this.cardList = [];
@@ -202,6 +211,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   showExitConfirm() {
+    this.isExitAlertOpen = true;
     this.alertController.create({
       header: 'App termination',
       message: 'Do you want to close the app?',
@@ -211,13 +221,15 @@ export class HomePage implements OnInit, OnDestroy {
         role: 'cancel',
         cssClass: 'primary',
         handler: () => {
+          this.isExitAlertOpen = false;
           console.log('Application exit prevented!');
         }
       }, {
         text: 'Exit',
         cssClass: 'danger',
         handler: () => {
-          navigator['app'].exitApp();
+          this.isExitAlertOpen = false;
+          App.exitApp();
         }
       }]
     })
@@ -241,6 +253,22 @@ export class HomePage implements OnInit, OnDestroy {
     this.notificationService.presentToastOnBottom('Comming Soon...','danger');
   }
 
+  // Pull from Top for Do refreshing or update card list 
+  doRefresh(event:any) {
+    // if(this.refreshlist){
+      this.ionEvent = event;
+      console.log('Begin doRefresh async operation');
+      // this.updateMode = false;  
+      setTimeout(() => {
+        event.target.complete();
+        this.getGridData();
+        (event.target as HTMLIonRefresherElement).complete();
+      }, 2000);
+
+    // }else{
+    //   console.log("Top refresh feature disable.");
+    // }
+  }
  
   
 }

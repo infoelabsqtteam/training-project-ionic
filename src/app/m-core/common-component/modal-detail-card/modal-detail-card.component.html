@@ -10,32 +10,17 @@
   <div class="contactdetails" *ngIf="cardType == 'detail1'">
    
     <p class="enquerylist" *ngFor="let column of childColumns; index as j">
-      <span [ngClass]="column.class_name ? column.class_name  : ''">{{column.field_label}}</span>
-
+      <span [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.field_label">{{column.field_label}}</span>
+      <span [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.label">{{column.label}}</span>
       <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime' || column.type == 'info'" (click)="clickOnGridElement(column,childDataValue,j)" [innerHTML]="getValueForGrid(column,childDataValue)"></strong>
 
       <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,childDataValue)"></ion-button>
     </p>
   </div>
 
-
-  <!-- <ion-row *ngIf="cardType == 'detail1'" >
-    <ion-col size="12">
-      <ion-card class="ion-padding">
-        <table>
-          <tr *ngFor="let column of childColumns; index as j">
-            <td class="colwidth_border">
-              <ion-label [ngClass]="column.class_name ? column.class_name  : ''">{{column.field_label}}</ion-label>
-            </td>
-            <td>
-              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,childData)"></p>
-              <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,childData)"></ion-button>
-            </td>
-          </tr>
-        </table>
-
-      </ion-card>
-    </ion-col>
-  </ion-row>  -->
-
 </ion-content>
+<ion-footer>
+  <ion-item>
+    <ion-button type="button" mdbBtn color="primary" outline="true" slot="end" size="small" class="waves-light" mdbWavesEffect data-dismiss="modal" (click)="dismissModal()">Close</ion-button>
+  </ion-item>
+</ion-footer>

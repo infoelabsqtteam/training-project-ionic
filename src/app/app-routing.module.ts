@@ -48,7 +48,8 @@ const routes: Routes = [
   { path: 'crm/quotation', loadChildren: () => import('./crm/quotation/quotation.module').then( m => m.QuotationPageModule) },
   { path: 'crm/addquotation', loadChildren: () => import('./crm/addquotation/addquotation.module').then( m => m.AddquotationPageModule) },
   { path: 'crm/quotation-details', loadChildren: () => import('./crm/quotation-details/quotation-details.module').then( m => m.QuotationDetailsPageModule) },
-  { path: 'crm/whatsapp-chat', loadChildren: () => import('./crm/whatsapp-chat/whatsapp-chat.module').then( m => m.WhatsappChatPageModule) },  {
+  { path: 'crm/whatsapp-chat', loadChildren: () => import('./crm/whatsapp-chat/whatsapp-chat.module').then( m => m.WhatsappChatPageModule) },
+  {
     path: 'image-upload',
     loadChildren: () => import('./pages/image-upload/image-upload.module').then( m => m.ImageUploadPageModule)
   },

@@ -1,6 +1,6 @@
 {
-	"appId": "com.itclabs.ai",
-	"appName": "ITC Labs",
+	"appId": "com.tech.elabs.ionic",
+	"appName": "E-Labs",
 	"webDir": "www",
 	"bundledWebRuntime": false
 }

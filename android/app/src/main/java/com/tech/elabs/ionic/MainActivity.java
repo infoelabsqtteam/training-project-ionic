@@ -1,4 +1,4 @@
-package com.itclabs.ai;
+package com.tech.elabs.ionic;
 
 import com.getcapacitor.BridgeActivity;
 

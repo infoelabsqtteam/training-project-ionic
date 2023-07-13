@@ -57,7 +57,9 @@ export class CameraService {
       directory: Directory.Data,
     }).then(result => {
       console.log('Result Derectory : ' , result );
-      this.loadFileData(result.files);
+      let files:any = [];
+      files=result.files
+      this.loadFileData(files);
     },
       async (err) => {
         // Folder does not yet exists!

@@ -14,6 +14,7 @@ import { SignupeComponent } from './signupe/signupe.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { ChangepwdComponent } from './changepwd/changepwd.component';
 import { VerifyOtpComponent } from './verify-otp/verify-otp.component';
+import { VerifyCompanyComponent } from './verify-company/verify-company.component';
 
 const routes: Routes = [
   {
@@ -26,7 +27,8 @@ const routes: Routes = [
       { path: 'signupe', component: SignupeComponent },
       { path: 'forgetpassword', component: ForgetPasswordComponent },
       { path: 'changepwd', component: ChangepwdComponent },
-      { path: 'verifyotp/:username', component: VerifyOtpComponent }
+      { path: 'verifyotp/:username', component: VerifyOtpComponent },
+      { path: 'verifyCompany', component: VerifyCompanyComponent }
     ]
 
   }
@@ -49,6 +51,7 @@ const routes: Routes = [
     ForgetPasswordComponent,
     ChangepwdComponent,
     VerifyOtpComponent,
+    VerifyCompanyComponent
   ]
 })
 export class AuthPageModule { }
