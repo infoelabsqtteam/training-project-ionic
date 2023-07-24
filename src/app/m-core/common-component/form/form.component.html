@@ -23,7 +23,7 @@
           <div *ngIf="tableField.type == 'grid_selection'">
             <div>
               <ion-item *ngIf="tableField.add_list_field != 'add'">
-                <ion-button expand="" size="small" fill="outline">{{ tableField.label}}
+                <ion-button expand="" size="small" fill="outline">{{ tableField.label | titlecase}}
                   <ion-text *ngIf="tableField.is_mandatory" class="mandatory"> * </ion-text> 
                   <span *ngIf="tableField.add_list_field != 'add' " (click)="setValue('',tableField,false)" class="click_button_mask"></span> 
                   <span *ngIf="tableField.add_list_field != 'add' " [innerHtml]="getNumberOfSelectedRecord(tableField)"></span>
@@ -141,7 +141,7 @@
               <ion-label position="floating">{{ tableField.label }} <ion-text *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
               <ion-input type="number" inputmode="numeric" [required]="tableField.is_mandatory" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc('',tableField)" [id]="tableField._id+'_'+tableField.field_name" *ngIf="tableField.datatype != 'numberOnly' && tableField.datatype != 'mask'"></ion-input>
               <ion-input type="number" inputmode="numeric" [required]="tableField.is_mandatory" [formControlName]="tableField.field_name" [placeholder]="tableField.placeholder" (ionChange)="inputOnChangeFunc('',tableField)" [id]="tableField._id+'_'+tableField.field_name" *ngIf="tableField.datatype == 'numberOnly'" [minlength]="tableField.min_length == 0 ? null : tableField.min_length" [maxlength]="tableField.max_length == 0 ? null : tableField.max_length"></ion-input>
-              <ion-input type="tel" inputmode="numeric" [placeholder]="getTitlecase(tableField.placeholder)" [required]="tableField.is_mandatory" [formControlName]="tableField.field_name" *ngIf="tableField.datatype == 'mask'" [id]="tableField._id+'_'+tableField.field_name" autocomplete="off"></ion-input>
+              <ion-input type="tel" inputmode="numeric" [placeholder]="tableField.placeholder | titlecase" [required]="tableField.is_mandatory" [formControlName]="tableField.field_name" *ngIf="tableField.datatype == 'mask'" [id]="tableField._id+'_'+tableField.field_name" autocomplete="off"></ion-input>
               <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
               <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('maxlength')">Enter valid {{ tableField.label}} of {{ tableField.min_length }} characters</ion-note>
               <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('minlength')">{{tableField.label}} should be {{ tableField.min_length }} characters</ion-note>
@@ -150,7 +150,7 @@
           <div *ngIf="tableField.type == 'mobile'">
             <ion-item>
                 <ion-label>{{ tableField.label | titlecase}} <ion-text *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
-                <ion-input type="tel" inputmode="numeric" [placeholder]="getTitlecase(tableField.placeholder)" [required]="tableField.is_mandatory" [formControlName]="tableField.field_name" [minlength]="tableField.min_length == 0 ? null : tableField.min_length" [maxlength]="tableField.max_length == 0 ? null : tableField.max_length" OnlyNumber="true" [id]="tableField._id+'_'+tableField.field_name" autocomplete="off"></ion-input>
+                <ion-input type="tel" inputmode="numeric" [placeholder]="tableField.placeholder | titlecase" [required]="tableField.is_mandatory" [formControlName]="tableField.field_name" [minlength]="tableField.min_length == 0 ? null : tableField.min_length" [maxlength]="tableField.max_length == 0 ? null : tableField.max_length" OnlyNumber="true" [id]="tableField._id+'_'+tableField.field_name" autocomplete="off"></ion-input>
                 <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
                 <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('maxlength')">Enter valid {{ tableField.label}} of {{ tableField.min_length }} characters</ion-note>
                 <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('minlength')">{{tableField.label}} should be {{ tableField.min_length }} characters</ion-note>
@@ -330,8 +330,8 @@
             </ion-item>
             <ion-item *ngIf="tableField.datatype != 'chips' && tableField.datatype != 'chips_with_mask'">
               <ion-label position="stacked">{{ tableField.label | titlecase }} <span *ngIf="tableField.is_mandatory" class=""> *</span></ion-label>
-              <ion-input type="text" [placeholder]="getTitlecase(tableField.label)" [formControlName]="tableField.field_name" (keyup)="setValue('',tableField,false)" *ngIf="tableField.datatype != 'mask'" [id]="tableField._id+'_'+tableField.field_name"></ion-input>
-              <ion-input type="tel" [placeholder]="getTitlecase(tableField.label)"  [formControlName]="tableField.field_name" inputmode="numeric" *ngIf="tableField.datatype == 'mask'" (keyup)="setValue('',tableField,false)" [id]="tableField._id+'_'+tableField.field_name"></ion-input>
+              <ion-input type="text" [placeholder]="tableField.label | titlecase" [formControlName]="tableField.field_name" (keyup)="setValue('',tableField,false)" *ngIf="tableField.datatype != 'mask'" [id]="tableField._id+'_'+tableField.field_name"></ion-input>
+              <ion-input type="tel" [placeholder]="tableField.label | titlecase"  [formControlName]="tableField.field_name" inputmode="numeric" *ngIf="tableField.datatype == 'mask'" (keyup)="setValue('',tableField,false)" [id]="tableField._id+'_'+tableField.field_name"></ion-input>
               <ion-note class="text-danger error ion-padding-horizontal" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">
                 {{ tableField.label | titlecase}} is <strong>required</strong>
               </ion-note>
@@ -409,14 +409,14 @@
                       <div *ngIf="fields.type == 'text'">
                           <ion-item>
                             <ion-label position="floating">{{ fields.label | titlecase }} <ion-text *ngIf="fields.is_mandatory" class=""> *</ion-text></ion-label>
-                            <ion-input type="text" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" *ngIf="fields.datatype != 'first_cap'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
-                            <ion-input type="text" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" *ngIf="fields.datatype == 'first_cap'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
+                            <ion-input type="text" [placeholder]="fields.placeholder | titlecase"  [formControlName]="fields.field_name" *ngIf="fields.datatype != 'first_cap'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
+                            <ion-input type="text" [placeholder]="fields.placeholder | titlecase"  [formControlName]="fields.field_name" *ngIf="fields.datatype == 'first_cap'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
                           </ion-item>
                       </div>
                       <div *ngIf="fields.type == 'password'">
                           <ion-item class="w-100">
                               <ion-label  position="floating">{{ fields.label | titlecase}}<ion-text *ngIf="fields.is_mandatory" class=""> *</ion-text></ion-label>
-                              <input [type]="hide ? 'password' : 'text'" [placeholder]="getTitlecase(fields.placeholder)"   [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name">
+                              <input [type]="hide ? 'password' : 'text'" [placeholder]="fields.placeholder | titlecase"   [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name">
                               <ion-button (click)="hide = !hide">
                                 <ion-icon slot="end" [name]="hide ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
                               </ion-button>
@@ -425,13 +425,13 @@
                       <div *ngIf="fields.type == 'email'">
                           <ion-item class="w-100">
                               <ion-label position="floating">{{ fields.label | titlecase}} <ion-text *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
-                              <ion-input type="email" [placeholder]="getTitlecase(fields.placeholder)" [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
+                              <ion-input type="email" [placeholder]="fields.placeholder | titlecase" [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
                           </ion-item>                            
                       </div>
                       <div *ngIf="fields.type == 'gst_number'">
                         <ion-item class="">
                             <ion-label>{{ fields.label | titlecase}} <ion-text *ngIf="fields.is_mandatory" class=""> *</ion-text></ion-label>
-                            <input type="text" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"> 
+                            <input type="text" [placeholder]="fields.placeholder | titlecase"  [formControlName]="fields.field_name" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"> 
                             <ion-note slot="error" class="text-danger" *ngIf="templateForm.get(tableField.field_name)['controls'][fields.field_name].touched && templateForm.get(tableField.field_name)['controls'][fields.field_name].errors?.required">
                                 {{ fields.label | titlecase}} is <strong>required</strong>
                             </ion-note>
@@ -494,9 +494,9 @@
                       <div *ngIf="fields.type == 'number'">
                         <ion-item>
                           <ion-label position="floating">{{ fields.label | titlecase}} <ion-text *ngIf="fields.is_mandatory" class=""> *</ion-text></ion-label>
-                          <ion-input type="number" inputmode="numeric" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" (ionChange)="inputOnChangeFunc(tableField,fields)" *ngIf="fields.datatype != 'text' && fields.datatype != 'numberOnly'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
-                          <ion-input type="number" inputmode="numeric" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" [minlength]="fields.min_length == 0 ? null : fields.min_length" [maxlength]="fields.max_length == 0 ? null : fields.max_length" *ngIf="fields.datatype == 'text'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
-                          <ion-input type="tel" inputmode="numeric" [placeholder]="getTitlecase(fields.placeholder)"  [formControlName]="fields.field_name" NumberOnly="true" (ionChange)="inputOnChangeFunc(tableField,fields)" [minlength]="fields.min_length == 0 ? null : fields.min_length" [maxlength]="fields.max_length == 0 ? null : fields.max_length" *ngIf="fields.datatype == 'numberOnly'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
+                          <ion-input type="number" inputmode="numeric" [placeholder]="fields.placeholder | titlecase"  [formControlName]="fields.field_name" (ionChange)="inputOnChangeFunc(tableField,fields)" *ngIf="fields.datatype != 'text' && fields.datatype != 'numberOnly'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
+                          <ion-input type="number" inputmode="numeric" [placeholder]="fields.placeholder | titlecase"  [formControlName]="fields.field_name" [minlength]="fields.min_length == 0 ? null : fields.min_length" [maxlength]="fields.max_length == 0 ? null : fields.max_length" *ngIf="fields.datatype == 'text'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
+                          <ion-input type="tel" inputmode="numeric" [placeholder]="fields.placeholder | titlecase"  [formControlName]="fields.field_name" NumberOnly="true" (ionChange)="inputOnChangeFunc(tableField,fields)" [minlength]="fields.min_length == 0 ? null : fields.min_length" [maxlength]="fields.max_length == 0 ? null : fields.max_length" *ngIf="fields.datatype == 'numberOnly'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
                         </ion-item>
                       </div>
                       <div *ngIf="fields.type == 'dropdown'">
@@ -624,8 +624,8 @@
                         </ion-item>
                         <ion-item *ngIf="fields.datatype != 'chips' && fields.datatype != 'chips_with_mask'">
                           <ion-label position="stacked">{{ fields.label | titlecase }} <span *ngIf="fields.is_mandatory" class=""> *</span></ion-label>
-                          <ion-input type="text" [placeholder]="getTitlecase(fields.label)" [formControlName]="fields.field_name" (keyup.enter)="setValue(tableField,fields,false)" *ngIf="tableField.datatype != 'mask'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
-                          <ion-input type="tel" [placeholder]="getTitlecase(fields.label)" [formControlName]="fields.field_name" inputmode="numeric" *ngIf="tableField.datatype == 'mask'" (keyup.enter)="setValue(tableField,fields,false)" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
+                          <ion-input type="text" [placeholder]="fields.label | titlecase" [formControlName]="fields.field_name" (keyup.enter)="setValue(tableField,fields,false)" *ngIf="tableField.datatype != 'mask'" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
+                          <ion-input type="tel" [placeholder]="fields.label | titlecase" [formControlName]="fields.field_name" inputmode="numeric" *ngIf="tableField.datatype == 'mask'" (keyup.enter)="setValue(tableField,fields,false)" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-input>
                           <ion-note class="text-danger error ion-padding-horizontal" *ngIf="templateForm.get(tableField.field_name)['controls'][fields.field_name].touched && templateForm.get(tableField.field_name)['controls'][fields.field_name].errors?.required">
                             {{ fields.label | titlecase}} is <strong>required</strong>
                           </ion-note>
@@ -677,7 +677,7 @@
                       <div *ngIf="fields.type == 'textarea'">
                         <ion-item class="w-100">
                             <ion-label position="floating">{{ fields.label | titlecase}} <ion-text *ngIf="tableField.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label>
-                            <ion-textarea [placeholder]="getTitlecase(fields.placeholder)" [formControlName]="fields.field_name" rows="3" cols="" auto-grow="true" enterkeyhint="enter" inputmode="text" spellcheck="true" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-textarea>
+                            <ion-textarea [placeholder]="fields.placeholder | titlecase" [formControlName]="fields.field_name" rows="3" cols="" auto-grow="true" enterkeyhint="enter" inputmode="text" spellcheck="true" [id]="fields._id+'_'+fields.field_name+'_'+tableField.field_name"></ion-textarea>
                         </ion-item>
                       </div>
                       <div *ngIf="fields.type == 'radio'">

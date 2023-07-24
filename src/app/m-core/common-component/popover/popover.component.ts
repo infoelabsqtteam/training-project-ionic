@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { ApiService, CommonDataShareService, CoreUtilityService, RestService } from '@core/ionic-core';
+import { CommonDataShareService, CoreUtilityService, RestService } from '@core/ionic-core';
+import { ApiService, CommonFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-popover',
@@ -36,7 +37,8 @@ export class PopoverComponent implements OnInit {
     private coreUtilityService :CoreUtilityService,
     private apiService:ApiService,
     private restService:RestService,
-    private commonDataShareService:CommonDataShareService
+    private commonDataShareService:CommonDataShareService,
+    private commonFunctionService: CommonFunctionService
     ) {
 
   }
@@ -63,7 +65,7 @@ export class PopoverComponent implements OnInit {
     this.createFormgroup = true;
     const tab = this.tabMenu[index];
     const moduleList = this.commonDataShareService.getModuleList();
-    const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id"); 
+    const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
     const card = moduleList[tabIndex];
     this.card['card'] = card;
     this.card.selectedTabIndex = index;

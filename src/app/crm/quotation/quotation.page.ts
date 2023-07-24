@@ -1,11 +1,11 @@
 import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
-import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
+import { EnvService, StorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService, CommonDataShareService } from '@core/ionic-core';
 import { Platform, ModalController, IonRouterOutlet} from '@ionic/angular';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup} from '@angular/forms';
 import { CallNumber } from '@ionic-native/call-number/ngx';
+import { MenuOrModuleCommonService } from '@core/web-core';
 
 @Component({
   selector: 'app-quotation',
@@ -42,15 +42,15 @@ export class QuotationPage implements OnInit, OnDestroy {
     private envService: EnvService,
     private storageService: StorageService,
     private router: Router,
-    private dataShareServiceService:DataShareServiceService,
     private formBuilder: FormBuilder,
     private callNumber: CallNumber,
-    private apiService:ApiService,
+    private apiService:AppApiService,
     private restService:RestService,
     private coreUtilityService :CoreUtilityService,
-    private dataShareService: DataShareService,
+    private dataShareService: AppDataShareService,
     private commonDataShareService:CommonDataShareService,
     public modalController: ModalController,
+    private menuOrModuleCommonService: MenuOrModuleCommonService,
     @Optional() private readonly routerOutlet?: IonRouterOutlet,
   ) 
   {
@@ -91,7 +91,7 @@ export class QuotationPage implements OnInit, OnDestroy {
   }
 
   private getCardDataByCollection(i) {
-    const cardWithTab = this.coreUtilityService.getCard(i); 
+    const cardWithTab = this.menuOrModuleCommonService.getCard(i); 
     if(cardWithTab && cardWithTab.card){
       this.card = cardWithTab
       ;

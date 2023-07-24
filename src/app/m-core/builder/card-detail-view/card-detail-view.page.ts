@@ -1,5 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonDataShareService, CoreUtilityService, StorageService,} from '@core/ionic-core';
+import { MenuOrModuleCommonService } from '@core/web-core';
+import { CommonFunctionService } from '@core/web-core/lib/services/common-utils/common-function.service';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
@@ -28,7 +30,9 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
     private coreUtilityService :CoreUtilityService,
     private commonDataShareService:CommonDataShareService,
     private callNumber: CallNumber,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private commonFunctionService: CommonFunctionService,
+    private menuOrModuleCommonService: MenuOrModuleCommonService
   ) { 
     
   }
@@ -50,7 +54,7 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
   }
 
   getChildData(){
-    let module = this.coreUtilityService.getModuleBySelectedIndex();
+    let module = this.menuOrModuleCommonService.getModuleBySelectedIndex();
     let tabDetail:any = '';
     this.childData = this.dataShareServiceService.getchildCardData();
     let index:any = this.childData.selected_tab_index;
@@ -58,18 +62,18 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
     if(index != -1){      
       let tabs:any = module.tab_menu;
       let tab:any = tabs[index];
-      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id");
+      const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id");
       tabDetail = moduleList[tabIndex];
     }
     let child_card = {};
     if(tabDetail != ''){
       if(tabDetail && tabDetail.child_card){
-        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");        
+        const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");        
         child_card = moduleList[tabIndex]; 
       }
     }else{
       if(module && module.child_card){
-        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,module.child_card._id,"_id");        
+        const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,module.child_card._id,"_id");        
         child_card = moduleList[tabIndex]; 
       }else{
         child_card = module;
@@ -88,7 +92,7 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
     if(card.tab_menu && card.tab_menu.length > 0){
       this.tabMenu = card.tab_menu;
       const moduleList = this.commonDataShareService.getModuleList();
-      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,this.tabMenu[0]._id,"_id");        
+      const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,this.tabMenu[0]._id,"_id");        
       const cardChild = moduleList[tabIndex]; 
       this.card = {
         "tabs":this.tabMenu,
@@ -109,7 +113,7 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
   }
 
   getValueForGrid(field,object){
-    return this.coreUtilityService.getValueForGrid(field,object);
+    return this.commonFunctionService.getValueForGrid(field,object);
   }
 
   // extra code added below for error ressolve
@@ -150,7 +154,7 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
   }
 
   private getCardDataByCollection(i) {
-    const cardWithTab = this.coreUtilityService.getCard(i); 
+    const cardWithTab = this.menuOrModuleCommonService.getCard(i); 
     if(cardWithTab && cardWithTab.card){
       this.card = cardWithTab
       ;

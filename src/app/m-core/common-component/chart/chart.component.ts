@@ -1,7 +1,8 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { ApiService, DataShareService, RestService } from '@core/ionic-core';
+import { AppApiService, AppDataShareService, CoreUtilityService, RestService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
+import { ApiService, CommonFunctionService, DataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-chart',
@@ -44,7 +45,11 @@ export class ChartComponent implements OnInit{
     private restService: RestService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private appDataShareService: AppDataShareService,
+    private coreUtilityService: CoreUtilityService,
+    private appApiService: AppApiService,
+    private commonFunctionService: CommonFunctionService
 
   ) {
     this.headertitle = "Charts";
@@ -53,7 +58,7 @@ export class ChartComponent implements OnInit{
         this.setGridData(data);
       }
     })
-    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
+    this.staticDataSubscription = this.appDataShareService.staticData.subscribe(data =>{
       if(data && data !=''){
         this.setStaticData(data);
       }
@@ -191,14 +196,14 @@ export class ChartComponent implements OnInit{
   }
 
   getDataForGrid(Criteria?:any){    
-    const data = this.restService.getPaylodWithCriteria('dashlet_master','',Criteria,'');
+    const data = this.commonFunctionService.getPaylodWithCriteria('dashlet_master','',Criteria,'');
     data['pageNo'] = this.pageNumber - 1;
     data['pageSize'] = this.itemNumOfGrid; 
     const getFilterData = {
       data: data,
       path: null
     }
-    this.apiService.getDashletMaster(getFilterData);
+    this.apiService.getDashletMster(getFilterData);
   }
   getPage(page: number,criteria?:any) {
     let Criteria:any = [];
@@ -210,8 +215,8 @@ export class ChartComponent implements OnInit{
     this.checkGetDashletData = true;
   }
   getChartList(){
-    const payload = this.restService.getPaylodWithCriteria('dashlet_master','chart_list',[],'');
-    this.apiService.getStatiData([payload]);
+    const payload = this.commonFunctionService.getPaylodWithCriteria('dashlet_master','chart_list',[],'');
+    this.appApiService.getStatiData([payload]);
   }
 
   filterchart() {    

@@ -1,8 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ApiService, CoreFunctionService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
+import { CoreFunctionService, CoreUtilityService, AppDataShareService, NotificationService, RestService, StorageService, AppApiService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { GridSelectionDetailModalComponent } from '../grid-selection-detail-modal/grid-selection-detail-modal.component';
 //import { MatCheckboxChange } from '@angular/material/checkbox';
+import { ApiService, CommonFunctionService, LimsCalculationsService } from '@core/web-core';
+
 
 @Component({
   selector: 'app-grid-selection-modal',
@@ -48,9 +50,12 @@ export class GridSelectionModalComponent implements OnInit {
     private restService:RestService,
     private apiService:ApiService,
     private notificationService:NotificationService,
-    private dataShareService:DataShareService,
     private storageService: StorageService,
-    private coreFunctionService: CoreFunctionService
+    private coreFunctionService: CoreFunctionService,
+    private commonFunctionService: CommonFunctionService,
+    private limsCalculationService: LimsCalculationsService,
+    private appDataShareService: AppDataShareService,
+    private appApiService: AppApiService
   ) { }
 
   ngOnInit() {
@@ -65,7 +70,7 @@ export class GridSelectionModalComponent implements OnInit {
     this.unsubscribe();
   }
   subscribe(){
-    this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
+    this.staticDataSubscriber = this.appDataShareService.staticData.subscribe(data =>{
       if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field)  && data[this.field.ddn_field]){
         this.responseData = data[this.field.ddn_field];
       }else{
@@ -100,7 +105,7 @@ export class GridSelectionModalComponent implements OnInit {
   }
   reloadStaticData(){
     this.reloadBtn = true;
-    let data:any = this.dataShareService.getStatiData();
+    let data:any = this.appDataShareService.getStatiData();
     this.copyStaticData = data;
     if(this.setGridData && this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null && data[this.field.ddn_field] != undefined){
       if((Array.isArray(data[this.field.ddn_field]) && data[this.field.ddn_field].length > 0)){
@@ -164,7 +169,7 @@ export class GridSelectionModalComponent implements OnInit {
       let index = 0;
       this.field.gridColumns.forEach(field => {
         if(this.coreFunctionService.isNotBlank(field.show_if)){
-          if(!this.coreUtilityService.showIf(field,this.parentObject)){
+          if(!this.commonFunctionService.showIf(field,this.parentObject)){
             field['display'] = false;
           }else{
             field['display'] = true;
@@ -197,14 +202,14 @@ export class GridSelectionModalComponent implements OnInit {
   }
   getStaticDataWithDependentData(){
     const staticModal = []
-    let staticModalGroup = this.restService.commanApiPayload([],this.listOfGridFieldName,[],{});
+    let staticModalGroup = this.commonFunctionService.commanApiPayload([],this.listOfGridFieldName,[],{});
     if(staticModalGroup.length > 0){
       staticModalGroup.forEach(element => {
         staticModal.push(element);
       });
     } 
     if(staticModal.length > 0){    
-      this.apiService.getStatiData(staticModal);
+      this.appApiService.getStatiData(staticModal);
     }
   }
   setStaticData(staticData){
@@ -226,7 +231,7 @@ export class GridSelectionModalComponent implements OnInit {
           if(this.field.onchange_function && this.field.onchange_function_param != ""){
             switch(this.field.onchange_function_param){
               case "calculateQquoteAmount":
-                this.gridData = this.coreUtilityService.calculateAutoEffRate(this.gridData);
+                this.gridData = this.limsCalculationService.calculateAutoEffRate(this.gridData);
                 break;
             }
           }
@@ -287,7 +292,7 @@ export class GridSelectionModalComponent implements OnInit {
             var validity = true;
             for (let index = 0; index < this.field.matching_fields_for_grid_selection.length; index++) {
               const matchcriteria = this.field.matching_fields_for_grid_selection[index];
-              if (this.coreUtilityService.getObjectValue(matchcriteria, element) == this.coreUtilityService.getObjectValue(matchcriteria, row)) {
+              if (this.commonFunctionService.getObjectValue(matchcriteria, element) == this.commonFunctionService.getObjectValue(matchcriteria, row)) {
                 validity = validity && true;
               }
               else {
@@ -301,7 +306,7 @@ export class GridSelectionModalComponent implements OnInit {
             }
           }
           else {
-            if (this.coreUtilityService.getObjectValue("_id", element) == this.coreUtilityService.getObjectValue('_id', row)) {
+            if (this.commonFunctionService.getObjectValue("_id", element) == this.commonFunctionService.getObjectValue('_id', row)) {
               this.updateRowData(element,i);
               break;
             }
@@ -326,20 +331,20 @@ export class GridSelectionModalComponent implements OnInit {
   }
 
   getValueForGrid(field, object) {
-    return this.coreUtilityService.getValueForGrid(field, object);
+    return this.commonFunctionService.getValueForGrid(field, object);
   }
   isDisable(field,object){
     const updateMode = false;
     if(field.is_disabled){
       return true;
     }else if(field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != ''){
-      return this.coreUtilityService.isDisable(field.etc_fields,updateMode,object);
+      return this.commonFunctionService.isDisable(field.etc_fields,updateMode,object);
     }
     return false;
   }
   calculateNetAmount(data, fieldName, index){
 
-    this.coreUtilityService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
+    this.limsCalculationService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
   }
 
   async addremoveparticipant(data,index){
@@ -355,7 +360,7 @@ export class GridSelectionModalComponent implements OnInit {
         "Data": {"value":data,"column":this.field.gridColumns,"alreadyAdded": alreadyAdded,"field":this.field},
         "index": index,
         "childCardType" : "demo1",
-        "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"updateMode":this.Data?.updateMode} 
+        "formInfo" : {"InlineformGridSelection" : this.appDataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"updateMode":this.Data?.updateMode} 
       },
       swipeToClose: false
     });
@@ -433,12 +438,12 @@ export class GridSelectionModalComponent implements OnInit {
   toggle(data:any,event:any, indx:any) {
     let index:any;
     if(data._id != undefined){
-      index = this.coreUtilityService.getIndexInArrayById(this.gridData,data._id);
+      index = this.commonFunctionService.getIndexInArrayById(this.gridData,data._id);
     }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0){
       this.gridData.forEach((row:any, i:any) => {        
           var validity = true;
           this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
-            if(this.coreUtilityService.getObjectValue(matchcriteria,data) == this.coreUtilityService.getObjectValue(matchcriteria,row)){
+            if(this.commonFunctionService.getObjectValue(matchcriteria,data) == this.commonFunctionService.getObjectValue(matchcriteria,row)){
               validity = validity && true;
             }
             else{
@@ -559,7 +564,7 @@ export class GridSelectionModalComponent implements OnInit {
       if (Array.isArray(this.responseData)) {
         this.responseData.forEach(element => {
           this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
-            if (this.coreUtilityService.getObjectValue(matchcriteria, rowData) == this.coreUtilityService.getObjectValue(matchcriteria, element)) {
+            if (this.commonFunctionService.getObjectValue(matchcriteria, rowData) == this.commonFunctionService.getObjectValue(matchcriteria, element)) {
               validity = validity && true;
             }
             else {
@@ -655,9 +660,8 @@ export class GridSelectionModalComponent implements OnInit {
     for (let j = 0; j < gridColumns.length; j++) {
       const column = gridColumns[j];  
       if(!column.editable || editableGridColumns.length == 0){        
-        modifyRow[column.field_name] = this.coreUtilityService.getValueForGrid(column,row);
+        modifyRow[column.field_name] = this.commonFunctionService.getValueForGrid(column,row);
       }          
-      // modifyRow[column.field_name+"_tooltip"] = this.coreUtilityService.getValueForGridTooltip(column,row);          
       if(column.editable){
         modifyRow[column.field_name+"_disabled"] = this.isDisable(column,row);            
       }
@@ -683,7 +687,7 @@ export class GridSelectionModalComponent implements OnInit {
         condition = field.disableRowIf;
       }
       if(condition != ''){
-        if(this.coreUtilityService.checkDisableRowIf(condition,data)){
+        if(this.commonFunctionService.checkDisableRowIf(condition,data)){
           check = true;
         }else{
           check = false;
@@ -699,7 +703,7 @@ export class GridSelectionModalComponent implements OnInit {
         if(field.disableRowIfOnlySelection){
           return true;
         }else{
-          return !this.coreUtilityService.checkDisableRowIf(condition,data);
+          return !this.commonFunctionService.checkDisableRowIf(condition,data);
         }      
       }
     }

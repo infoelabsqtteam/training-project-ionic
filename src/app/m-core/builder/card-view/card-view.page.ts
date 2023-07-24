@@ -1,11 +1,12 @@
 import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2} from '@angular/core';
-import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
+import { EnvService, StorageService, RestService, CoreUtilityService, CommonDataShareService } from '@core/ionic-core';
 import { Platform, ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup} from '@angular/forms';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Router } from '@angular/router';
 import { PopoverComponent } from '../../common-component/popover/popover.component';
+import { ApiService, CommonFunctionService, MenuOrModuleCommonService } from '@core/web-core';
 
 @Component({
   selector: 'app-card-view',
@@ -64,6 +65,8 @@ export class CardViewPage implements OnInit, OnDestroy {
       private router:Router,
       public popoverController: PopoverController,
       public renderer: Renderer2,
+      private commonFunctionService: CommonFunctionService,
+      private menuOrModuleCommonService: MenuOrModuleCommonService,
       @Optional() private readonly routerOutlet?: IonRouterOutlet,
     ){}
   
@@ -113,7 +116,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
   
     private getCardDataByCollection(i:number) {
-      const cardWithTab = this.coreUtilityService.getCard(i);
+      const cardWithTab = this.menuOrModuleCommonService.getCard(i);
       this.collectionName = cardWithTab.card.collection_name;
       if(cardWithTab && cardWithTab.card){
         if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
@@ -222,7 +225,7 @@ export class CardViewPage implements OnInit, OnDestroy {
             case "abcd":
               break;
             default:
-              this.coreUtilityService.createFormControl(forControl, element, '', "text");
+              this.commonFunctionService.createFormControl(forControl, element, '', "text");
               break;
           }
         });
@@ -305,7 +308,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.createFormgroup = true;
       const tab = this.popoverItems[index];
       const moduleList = this.commonDataShareService.getModuleList();
-      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id"); 
+      const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
       const card = moduleList[tabIndex];
       this.card['card'] = card;
       this.card.selectedTabIndex = index;

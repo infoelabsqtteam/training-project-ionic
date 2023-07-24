@@ -49,11 +49,10 @@ export class SignineComponent implements OnInit {
 
   initializeApp() {
     this.platform.ready().then(() => {});
-    let isClientCodeExist:any = this.storageService.getClientCode();
+    let isClientCodeExist:any = this.storageService.getClientName();
     let isHostNameExist:any = this.storageService.getHostNameDinamically();
     if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.checkIdTokenStatus()){   
       this.authService.getUserPermission(false,'/home');
-      // this.router.navigateByUrl('/home');
     }else if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
       this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
         let isloaderOpen:any = this.ionLoaderService.loadingController.getTop();
@@ -112,6 +111,9 @@ export class SignineComponent implements OnInit {
     }
     return tokenStatus;
   }
+  ionViewDidEnter(){
+    this.getLogoPath();
+  }
   ngOnInit() {
     this.initForm();
     this.getLogoPath();
@@ -158,17 +160,15 @@ export class SignineComponent implements OnInit {
     this.imageTitle = '';
     this.appTitle = '';
   }
-  getLogoPath(){
+  async getLogoPath(){
     if(this.coreFunctionService.isNotBlank(this.storageService.getApplicationSetting())){
       this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
       this.imageTitle = this.storageService.getPageTitle();
       this.appTitle = this.storageService.getPageTitle();
-      let loader:any = this.ionLoaderService.loadingController.getTop();
+      let loader:any = await this.ionLoaderService.loadingController.getTop();
       if(loader){
         this.ionLoaderService.hideLoader();
       }
-    }else{
-      this.getLogoPath();
     }
   }
 

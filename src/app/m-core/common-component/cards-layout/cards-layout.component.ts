@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService, NotificationService, PermissionService, App_googleService } from '@core/ionic-core';
+import { EnvService, StorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService, CommonDataShareService, NotificationService, PermissionService, App_googleService } from '@core/ionic-core';
 import { filter } from 'rxjs';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Platform, ModalController, AlertController, PopoverController, isPlatform } from '@ionic/angular';
@@ -18,6 +18,7 @@ import { AndroidpermissionsService } from '../../../service/androidpermissions.s
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { Geolocation } from '@capacitor/geolocation';
 import { zonedTimeToUtc } from 'date-fns-tz';
+import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService } from '@core/web-core';
 
 @Component({
   selector: 'app-cards-layout',
@@ -139,9 +140,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private formBuilder: FormBuilder,
     private callNumber: CallNumber,
     private apiService:ApiService,
+    private appApiService:AppApiService,
     private restService:RestService,
     private coreUtilityService :CoreUtilityService,
     private dataShareService: DataShareService,
+    private appDataShareService: AppDataShareService,
     private commonDataShareService:CommonDataShareService,
     private modalController: ModalController,
     private alertController: AlertController,
@@ -153,7 +156,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private file: File,
     private apppermissionsService: AndroidpermissionsService,
     public renderer: Renderer2,
-    private app_googleService: App_googleService
+    private app_googleService: App_googleService,
+    private commonFunctionService: CommonFunctionService,
+    private menuOrModuleCommonService: MenuOrModuleCommonService
   ) 
   {
     
@@ -162,7 +167,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     // below code is for slider and title name
     this.initializeApp();
     this.web_site_name = this.envService.getWebSiteName();
-    this.gridDataSubscription = this.dataShareService.collectiondata.subscribe(data =>{
+    this.gridDataSubscription = this.appDataShareService.collectiondata.subscribe(data =>{
       let res:any;
       if(data && data.data && data.data_size && data.data.length > 0){
         res = data.data;
@@ -185,7 +190,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.pdfFileSubscription = this.dataShareService.downloadPdfData.subscribe(data =>{
       this.setDownloadPdfData(data);
     })
-    this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
+    this.childgridsubscription = this.appDataShareService.childGrid.subscribe(data =>{
       if(data && data.gridColumns){
         this.childColumns = data.gridColumns;
       }
@@ -211,7 +216,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.updateMode = false;
         let index = -1;
         if(this.selectedgriddataId && this.selectedgriddataId != ''){
-          index = this.coreUtilityService.getIndexInArrayById(this.carddata,this.selectedgriddataId);
+          index = this.commonFunctionService.getIndexInArrayById(this.carddata,this.selectedgriddataId);
         }
         if(data && data.length > 0){  
             if(index != -1){
@@ -332,7 +337,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.setCardAndTab(this.card);
       }
       if(this.card && this.card.card && this.card.card.grid_selection_inform != null){
-        this.dataShareService.setGridSelectionCheck(this.card.card.grid_selection_inform)
+        this.appDataShareService.setGridSelectionCheck(this.card.card.grid_selection_inform)
       }
     }
   }
@@ -382,7 +387,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   getCardDataByCollection(i: number,parentId?:string) {
     this.resetVariabls();
-    const cardWithTab = this.coreUtilityService.getCard(i);
+    const cardWithTab = this.menuOrModuleCommonService.getCard(i);
     if(parentId !=null && parentId !=undefined){
       cardWithTab.card['parent_id'] = parentId;
       this.card = cardWithTab;
@@ -656,7 +661,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     return listCiteria;
   }
   async getGridData(collectionName,criteria?,parentCard?){
-    const crList = this.restService.getfilterCrlist(this.columnList, this.filterForm)
+    const crList = this.commonFunctionService.getfilterCrlist(this.columnList, this.filterForm.value);
     const params = collectionName;
     let cardCriteria = [];
     let object = {};
@@ -676,7 +681,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     
     let user = this.storageService.getUserInfo();
     object["user"]=user;
-    let data = this.restService.getPaylodWithCriteria(params,'',cardCriteria,object);
+    let data = this.commonFunctionService.getPaylodWithCriteria(params,'',cardCriteria,object);
     this.currentPage = this.currentPageCount - 1;
     data['pageNo'] = this.currentPage;
     data['pageSize'] = this.dataPerPageCount;
@@ -700,11 +705,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       'data':data,
       'path':null
     }
-    this.apiService.getDatabyCollectionName(payload);
+    this.appApiService.getDatabyCollectionName(payload);
   }
 
   getValueForGrid(field,object){
-    return this.coreUtilityService.getValueForGrid(field,object);
+    return this.commonFunctionService.getValueForGrid(field,object);
   } 
 
   tabmenuClick(index:number){
@@ -713,7 +718,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.createFormgroup = true;
     const tab = this.tabMenu[index];
     const moduleList = this.commonDataShareService.getModuleList();
-    const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id"); 
+    const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
     const card = moduleList[tabIndex];
     this.card['card'] = card;
     this.card.selectedTabIndex = index;
@@ -738,7 +743,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       let form:any = {};
       let id = '5f6d95da9feaa2409c3765cd';
       if(card && card.card && card.card.form){
-        form = this.coreUtilityService.getForm(card.card.form,formName);
+        form = this.commonFunctionService.getForm(card.card.form,formName,this.gridButtons);
         if(form && form._id && form._id != ''){
           id = form._id;
         }else if(card.card.form && card.card.form._id){
@@ -772,7 +777,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
 
   getFirstCharOfString(char:any){
-    return this.coreUtilityService.getFirstCharOfString(char);
+    return this.commonFunctionService.getFirstCharOfString(char);
   }
   // for entering call record after call cut with customer
   async callDetailRecord(data:any, startTime:any){
@@ -855,7 +860,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       switch (button.onclick.action_name.toUpperCase()) {
         case "PREVIEW":
           this.checkPreviewData = true;
-          this.restService.preview(gridData,this.currentMenu,'grid-preview-modal');
+          this.commonFunctionService.preview(gridData,this.currentMenu,'grid-preview-modal');
           break;
         case "TEMPLATE": 
           let object =JSON.parse(JSON.stringify(gridData))    
@@ -870,14 +875,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
             currentMenu = this.currentMenu.name
           }
-          this.downloadPdfCheck = this.restService.downloadPdf(gridData,currentMenu);         
+          this.downloadPdfCheck = this.commonFunctionService.downloadPdf(gridData,currentMenu);         
           break;
           case 'GETFILE':
             let currentsMenu = '';
           if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
             currentsMenu = this.currentMenu.name
           }
-          this.downloadPdfCheck = this.restService.getPdf(gridData,currentsMenu);         
+          this.downloadPdfCheck = this.commonFunctionService.getPdf(gridData,currentsMenu);         
           break;
           case 'TDS':
             let currentMenuForTds = '';
@@ -886,7 +891,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
             currentMenuForTds = this.currentMenu.name
           }
-          const getFormData:any = this.restService.getFormForTds(gridData,currentMenuForTds,this.carddata[index]);        
+          const getFormData:any = this.commonFunctionService.getFormForTds(gridData,currentMenuForTds,this.carddata[index]);        
           if(getFormData._id && getFormData._id != undefined && getFormData._id != null && getFormData._id != ''){
             getFormData.data['data']=gridData;
             this.apiService.GetForm(getFormData);
@@ -905,7 +910,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           // this.commonFunctionService.openModal('communication-modal',gridData);
           break;
         case 'DOWNLOAD_QR':
-          this.downloadQRCode = this.restService.getQRCode(gridData,this.carddata[index]);
+          this.downloadQRCode = this.commonFunctionService.getQRCode(gridData);
           this.checkForDownloadReport = true;
           break;
         case 'DELETE_ROW':
@@ -1010,7 +1015,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
         this.commonDataShareService.setNestedCardId(id);
         const moduleList = this.commonDataShareService.getModuleList();
-        const nxtCardindex = this.coreUtilityService.getIndexInArrayById(moduleList,nestedCard._id,"_id");
+        const nxtCardindex = this.commonFunctionService.getIndexInArrayById(moduleList,nestedCard._id,"_id");
         this.commonDataShareService.setModuleIndex(nxtCardindex);
         this.getCardDataByCollection(index, gridData._id); 
         // this.commonDataShareService.setNestedCard(nestedCard);
@@ -1046,7 +1051,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   checkUpdatePermission(rowdata){
     if(this.details && this.details.permission_key && this.details.permission_key != '' && this.details.permission_value && this.details.permission_value != ''){ 
-      const value = this.coreUtilityService.getObjectValue(this.details.permission_key,rowdata) 
+      const value = this.commonFunctionService.getObjectValue(this.details.permission_key,rowdata) 
       if(value == this.details.permission_value){
         this.notificationService.showAlert("Can't be update!!!","NO permission",['Dismiss'])
         return true;
@@ -1057,7 +1062,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
   checkFieldsAvailability(formName){
     if(this.card && this.card.card && this.card.card.forms){
-      let form = this.coreUtilityService.getForm(this.card.card.forms,formName);        
+      let form = this.commonFunctionService.getForm(this.card.card.forms,formName,this.gridButtons);        
       if(form['tableFields'] && form['tableFields'] != undefined && form['tableFields'] != null){
         return true;
       }else{
@@ -1070,8 +1075,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   getChildGridFieldsbyId(childrGridId:string){
       const params = "grid";
       const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
-      const payload = this.restService.getPaylodWithCriteria(params, '', criteria, {});
-      this.apiService.GetChildGrid(payload);
+      const payload = this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, {});
+      this.appApiService.GetChildGrid(payload);
   }
   // myFiles:any;
   setDownloadPdfData(downloadPdfData){

@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController, AlertController } from '@ionic/angular';
 import { AuthService, EnvService, StorageService } from '@core/ionic-core';
+import { CustomvalidationService } from '@core/web-core';
 
 @Component({
   selector: 'lib-signupe',
@@ -26,7 +27,8 @@ export class SignupeComponent implements OnInit {
     private alertCtrl: AlertController,
     private http: HttpClient,
     private storageService: StorageService,
-    private envService:EnvService
+    private envService:EnvService,
+    private customValidationService: CustomvalidationService
   ) { }
 
   ngOnInit() {
@@ -38,9 +40,10 @@ export class SignupeComponent implements OnInit {
       name: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       mobileNo: ['', [Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]],
-      password: ['', [Validators.required]],
+      password: ['', [Validators.required], Validators.minLength(6)],
       confpwd: ['', [Validators.required]],
-    });
+    },{ validators: this.customValidationService.MatchPassword('password','confirmPassword') }
+    );
   }
 
   get f() { return this.signUpForm.controls; }

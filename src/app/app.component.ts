@@ -1,15 +1,16 @@
 import { Component, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { AlertController, Platform } from '@ionic/angular';
+import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
-import { AuthService, StorageService, StorageTokenStatus,App_googleService, RestService, ApiService, DataShareService, EnvService, NotificationService, CommonDataShareService, CoreUtilityService, CoreFunctionService } from '@core/ionic-core';
+import { AuthService, StorageTokenStatus,App_googleService, RestService, EnvService, NotificationService, CommonDataShareService, CoreUtilityService, CoreFunctionService, AppDataShareService, AppApiService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
 import { AndroidpermissionsService } from './service/androidpermissions.service';
 import { Title } from '@angular/platform-browser';
+import { ApiService, CommonFunctionService, DataShareService, StorageService } from '@core/web-core';
 
  
 @Component({ 
@@ -18,7 +19,6 @@ import { Title } from '@angular/platform-browser';
 })
 export class AppComponent implements OnInit, OnDestroy {
   private authSub: Subscription;
-  cardListSubscription:any;
   userData: any;
   userInfo: any={};
   web_site:string='';
@@ -46,17 +46,18 @@ export class AppComponent implements OnInit, OnDestroy {
   disconnectSubscription: any;
   connectSubscription: any;
   networkAlert:any;
-  gridDataSubscription:any;
+  gridDataSubscription: Subscription;
   appCardMasterDataSize:number;
 
   @Output() collection_name = new EventEmitter<string>();
 
   selectedIndex= -1;
-  themeSettingSubscription:any;
-  applicationSettingSubscription:any;
+  themeSettingSubscription: Subscription;
+  applicationSettingSubscription: Subscription;
   favIcon: HTMLLinkElement = document.querySelector('#favIcon');
   themeName:any = '';
-  clinetNameSubscription:any;
+  clinetNameSubscription: Subscription;
+  loginAndLogoutResponce: any;
 
   constructor(
     private platform: Platform,
@@ -68,7 +69,6 @@ export class AppComponent implements OnInit, OnDestroy {
     private app_googleService: App_googleService,
     private nativeGeocoder:NativeGeocoder,
     private androidpermissionsService: AndroidpermissionsService,
-    private alertController: AlertController,
     private restService: RestService,
     private apiService: ApiService,
     private dataShareService: DataShareService,
@@ -77,22 +77,27 @@ export class AppComponent implements OnInit, OnDestroy {
     private commonDataShareService: CommonDataShareService,
     private coreUtilityService: CoreUtilityService,
     private titleService:Title,
-    private coreFunctionService: CoreFunctionService
+    private coreFunctionService: CoreFunctionService,
+    private commonFunctionService: CommonFunctionService,
+    private appDataShareService: AppDataShareService,
+    private appApiService: AppApiService
 
   ) {
+    
+    this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
     
     this.initializeApp();
 
     this.clinetNameSubscription = this.dataShareService.setClientName.subscribe(
         data =>{
           if(data){
-            this.appSettings();
+            // this.appSettings();
+            this.commonFunctionService.getApplicationAllSettings();
           }
         });
     // this.web_site = appConstants.siteName;
-    this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
     this.app_Version  = this.envService.getAppVersion();
-    this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
+    this.gridDataSubscription = this.appDataShareService.gridData.subscribe(data =>{
       if(data && data.data && data.data.length > 0){
         // this.cardList = data.data;
         this.cardList = this.coreUtilityService.getUserAutherisedCards(data.data);
@@ -100,10 +105,36 @@ export class AppComponent implements OnInit, OnDestroy {
         console.log("Somethisng went wrong, please try again later");
       }
     });
+    if(this.dataShareService.themeSetting != undefined){
+      this.themeSettingSubscription = this.dataShareService.themeSetting.subscribe(
+        data =>{
+          const themeSetting = data;
+          if(themeSetting && themeSetting.length > 0) {
+            const settingObj = themeSetting[0];
+            this.storageService.setThemeSetting(settingObj);
+            this.envService.setThemeSetting(settingObj);
+            this.dataShareService.resetThemeSetting([]);            
+          }
+        })
+    }
+    if(this.dataShareService.applicationSetting != undefined){
+      this.applicationSettingSubscription = this.dataShareService.applicationSetting.subscribe(
+        data =>{
+          const applicationSetting = data;
+          if(applicationSetting && applicationSetting.length > 0) {
+            const settingObj = applicationSetting[0];
+            this.storageService.setApplicationSetting(settingObj);
+            this.envService.setApplicationSetting();
+            this.loadPage();
+            this.dataShareService.subscribeTemeSetting("setting");
+            this.dataShareService.resetApplicationSetting([]);
+          }
+        })
+    } 
     
-    this.cardListSubscription = this.dataShareService.settingData.subscribe(data =>{      
+    this.loginAndLogoutResponce = this.appDataShareService.settingData.subscribe(data =>{      
       if(data == "logged_in"){
-        this.userInfo = this.storageService.getUserInfo();
+        this.userInfo = this.storageService.GetUserInfo();
         this.showSidebarMenu = true;
       }else if(data == "logged_out"){
         this.isClientCodeExist();
@@ -148,8 +179,8 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
-    if (this.cardListSubscription) {
-      this.cardListSubscription.unsubscribe();
+    if (this.loginAndLogoutResponce) {
+      this.loginAndLogoutResponce.unsubscribe();
     }
   }
 
@@ -192,17 +223,17 @@ export class AppComponent implements OnInit, OnDestroy {
     //   }
     // })
   }
-  async isClientCodeExist(){
-      const clientCode = await this.storageService.getClientCode();
+  isClientCodeExist(){
+      const clientCode = this.storageService.getClientName();
       if(this.coreFunctionService.isNotBlank(clientCode)){
-        this.authService.gotToSigninPage();
+        this.authService.redirectToSignInPage();
       }else{            
         this.authService.navigateByUrl("auth/verifyCompany");
       }
   }
   async appSettings(){
-     this.restService.getApplicationAllSettings();
-     await this.themeandApplicationSetting();
+    //  this.commonFunctionService.getApplicationAllSettings();
+    //  await this.themeandApplicationSetting();
   }
   async themeandApplicationSetting(){
     if(this.dataShareService.themeSetting != undefined){
@@ -230,30 +261,30 @@ export class AppComponent implements OnInit, OnDestroy {
             this.dataShareService.resetApplicationSetting([]);
           }
         })
-    }
+    } 
   }
   redirectToHomePage(){
     //this.storageService.removeDataFormStorage();
     this.redirectToHomePageWithStorage();
   }
-  async redirectToHomePageWithStorage(){
-    // let checkComapanyCode:any = this.storageService.getClientCode();
-    let checkComapanyCode:any = await this.storageService.getObject("CLIENT_NAME");
+  redirectToHomePageWithStorage(){
+    // let checkComapanyCode:any = this.storageService.getClientName();
+    let checkComapanyCode:any = this.storageService.getClientName();
     if(this.coreFunctionService.isNotBlank(checkComapanyCode)){
       if(!this.checkApplicationSetting()){
-        this.restService.getApplicationAllSettings();
+        this.commonFunctionService.getApplicationAllSettings();
       }else{
         this.loadPage();
       }
       if(this.checkIdTokenStatus()){
+        this.showSidebarMenu = true;
+        this.userInfo = this.storageService.GetUserInfo(); 
         this.authService.getUserPermission(false,'/home');
-        this.router.navigateByUrl('/home');  
-        // this.authApiService.redirectionWithMenuType();
       }else{
         this.authService.redirectToSignInPage();
       }      
     }else{      
-        this.storageService.clearStorage();
+        this.storageService.removeDataFormStorage();
         this.authService.navigateByUrl("auth/verifyCompany");
     }
   }
@@ -328,19 +359,19 @@ export class AppComponent implements OnInit, OnDestroy {
       criteriaList = criteria;
     }
     const params = 'card_master';
-    let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
+    let data = this.commonFunctionService.getPaylodWithCriteria(params,'',criteria,{});
     data['pageNo'] = 0;
     data['pageSize'] = this.appCardMasterDataSize;
     let payload = {
       'data':data,
       'path':null
     }
-    this.apiService.getGridData(payload);
+    this.appApiService.getGridData(payload);
   } 
 
   showCardTemplate(card:any, index:number){    
     const moduleList = this.commonDataShareService.getModuleList();
-    const cardclickedindex = this.coreUtilityService.getIndexInArrayById(moduleList,card._id,"_id"); 
+    const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
     this.commonDataShareService.setModuleIndex(cardclickedindex);
     const selectedcard = moduleList[cardclickedindex];
     this.router.navigate(['card-view']);

@@ -1,9 +1,9 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { ApiService, CoreUtilityService, DataShareService, NotificationService, PermissionService, RestService, StorageService, ChartService } from '@core/ionic-core';
+import { CoreUtilityService, NotificationService, PermissionService, RestService, StorageService, AppDataShareService, AppApiService, DownloadService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
-import { Platform } from '@ionic/angular';
+import { Platform, isPlatform } from '@ionic/angular';
 // import { Directory, Filesystem } from '@capacitor/filesystem';
 // import { promise } from 'protractor';
 // import { writeFile } from "capacitor-blob-writer";
@@ -12,7 +12,7 @@ import { DatePipe } from '@angular/common';
 import { zonedTimeToUtc, utcToZonedTime, format} from 'date-fns-tz';
 import { parseISO } from 'date-fns';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
-// import { ChartService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, ChartService } from '@core/web-core';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -90,16 +90,20 @@ export class ChartFilterComponent implements OnInit {
     private restService: RestService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
-    private commonFunctionService:CoreUtilityService,
+    private coreUtilityService:CoreUtilityService,
     private file: File,
     private storageService:StorageService,
     private permissionService: PermissionService,
     private datePipe: DatePipe,
     private notificationService:NotificationService,
     private chartService:ChartService,
+    private appDataShareService: AppDataShareService,
+    private commonFunctionService: CommonFunctionService,
+    private appApiService: AppApiService,
+    private downloadService: DownloadService
   ) {
     this.accessToken = this.storageService.GetIdToken();
-    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
+    this.staticDataSubscription = this.appDataShareService.staticData.subscribe(data =>{
       if(data && data !=''){
         this.setStaticData(data);
       }
@@ -182,7 +186,7 @@ export class ChartFilterComponent implements OnInit {
         };
         let crList = [];
         if(fields && fields.length > 0){
-          crList = this.restService.getfilterCrlist(fields,filterData);
+          crList = this.commonFunctionService.getfilterCrlist(fields,filterData);
         }        
         let object = {}
 
@@ -238,7 +242,7 @@ export class ChartFilterComponent implements OnInit {
       const payload = [];
       const params = field.api_params;
       const criteria = field.api_params_criteria;
-      payload.push(this.restService.getPaylodWithCriteria(params, '', criteria, objectValue));
+      payload.push(this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, objectValue));
       this.apiService.GetTypeaheadData(payload);
     }
   }
@@ -355,9 +359,9 @@ export class ChartFilterComponent implements OnInit {
         });
       } 
       if(formField.length > 0){
-        let staticModalGroup = this.restService.commanApiPayload([],formField,[]);
+        let staticModalGroup = this.commonFunctionService.commanApiPayload([],formField,[]);
         if(staticModalGroup.length > 0){  
-          this.apiService.getStatiData(staticModalGroup);
+          this.appApiService.getStatiData(staticModalGroup);
         }
       }
       if (forControl) {
@@ -367,7 +371,7 @@ export class ChartFilterComponent implements OnInit {
   }
 
   setTypeaheadData(typeAheadData:any){
-    if (typeAheadData.length > 0) {
+    if (typeAheadData && typeAheadData.length > 0) {
       this.typeAheadData = typeAheadData;
     } else {
       this.typeAheadData = [];
@@ -622,10 +626,15 @@ export class ChartFilterComponent implements OnInit {
       }
     }
   }
-  download(object){
+  async download(object){
     let chartId = "filter_"+object.chartId;
     let chart = this.createdChartList[chartId];    
-    this.chartService.getDownloadData(chart,object);
+    let blobData:any = await this.chartService.getDownloadData(chart,object);
+    if(isPlatform('hybrid')){
+      this.downloadService.downloadBlobData(blobData.url, blobData.name)
+    }else{
+      this.chartService.downlodBlobData(blobData.url, blobData.name)
+    }
   } 
   close(item:any){
     this.checkGetDashletData = false;

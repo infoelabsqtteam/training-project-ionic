@@ -1,10 +1,11 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, NotificationService, RestService, StorageService, StorageTokenStatus, CoreUtilityService, CoreFunctionService } from '@core/ionic-core';
+import { AuthService, CommonDataShareService, EnvService, NotificationService, RestService, StorageService, StorageTokenStatus, CoreUtilityService, CoreFunctionService, AppApiService, AppDataShareService } from '@core/ionic-core';
 import { Platform, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { App } from '@capacitor/app';
+import { ApiService, CommonFunctionService, DataShareService } from '@core/web-core';
 
 
 @Component({
@@ -20,7 +21,6 @@ export class HomePage implements OnInit, OnDestroy {
 
   // get local data of card
   private authSub: Subscription;
-  // cardListSubscription;
   private previousAuthState = false;
   userData: any;
   userInfo: any={};
@@ -50,11 +50,11 @@ export class HomePage implements OnInit, OnDestroy {
   @Output() collection_name = new EventEmitter<string>();
   plt: any;
   pdfObj: any;
-  gridDataSubscription:any;
+  gridDataSubscription:Subscription;
   notification: boolean=false;
   cardMasterList:any;
   userAuthModules:any;
-  cardListSubscription:any;
+  // cardListSubscription:Subscription;
   appCardMasterDataSize:number;  
   ionEvent:any;
   isExitAlertOpen:boolean = false;
@@ -76,7 +76,10 @@ export class HomePage implements OnInit, OnDestroy {
     private commonDataShareService:CommonDataShareService,
     private notificationService: NotificationService,
     private coreUtilityService: CoreUtilityService,
-    private coreFunctionService: CoreFunctionService
+    private coreFunctionService: CoreFunctionService,
+    private commonFunctionService: CommonFunctionService,
+    private appApiService:AppApiService,
+    private appDataShareService: AppDataShareService
   ) 
   {
     this.initializeApp();
@@ -89,7 +92,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.homePageLayout = this.envService.getAppHomePageLayout();
     this.web_site_name = this.envService.getWebSiteName();
     this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
-    this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
+    this.gridDataSubscription = this.appDataShareService.gridData.subscribe((data:any) =>{
       if(data && data.data && data.data.length > 0){
         this.cardMasterList = data.data;
         this.commonDataShareService.setModuleList(this.cardMasterList);
@@ -110,13 +113,13 @@ export class HomePage implements OnInit, OnDestroy {
         }
       }
     });
-    this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{
-      if(data == "logged_out"){
-        this.cardList = [];
-      }else if(data == "logged_in"){
-        this.getGridData();
-      }
-    });
+    // this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{
+    //   if(data == "logged_out"){
+    //     this.cardList = [];
+    //   }else if(data == "logged_in"){
+    //     // this.getGridData();
+    //   }
+    // });
 
   }
 
@@ -149,9 +152,9 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   unsubscribeVariabbles(){
-    if (this.cardListSubscription) {
-      this.cardListSubscription.unsubscribe();
-    }
+    // if (this.cardListSubscription) {
+    //   this.cardListSubscription.unsubscribe();
+    // }
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
@@ -163,7 +166,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    if(this.coreFunctionService.isNotBlank(this.storageService.getClientCode())){
+    if(this.coreFunctionService.isNotBlank(this.storageService.getClientName())){
       if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
         this.authService.getUserPermission(false,'/home');
         // this.router.navigateByUrl('/home');
@@ -190,19 +193,19 @@ export class HomePage implements OnInit, OnDestroy {
       criteriaList = criteria;
     }
     const params = 'card_master';
-    let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
+    let data = this.commonFunctionService.getPaylodWithCriteria(params,'',criteria,{});
     data['pageNo'] = 0;
     data['pageSize'] = this.appCardMasterDataSize;
     let payload = {
       'data':data,
       'path':null
     }
-    this.apiService.getGridData(payload);
+    this.appApiService.getGridData(payload);
   }
 
   showCardTemplate(card:any, index:number){
     const moduleList = this.commonDataShareService.getModuleList();
-    const cardclickedindex = this.coreUtilityService.getIndexInArrayById(moduleList,card._id,"_id"); 
+    const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
     this.commonDataShareService.setModuleIndex(cardclickedindex);
     if(card['userAutherisedModule'] && card['userAutherisedModule']['name']){
       this.storageService.setModule(card['userAutherisedModule']['name']);

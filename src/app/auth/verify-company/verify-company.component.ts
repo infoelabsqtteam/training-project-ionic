@@ -1,10 +1,11 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
-import { AuthService, DataShareService, EnvService, LoaderService, NotificationService, StorageService } from '@core/ionic-core';
+import { AuthService, EnvService, LoaderService, NotificationService, StorageService } from '@core/ionic-core';
 import { AlertController, IonInput, IonRouterOutlet, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
+import { DataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-verify-company',
@@ -110,12 +111,12 @@ export class VerifyCompanyComponent implements OnInit {
   get ccform() { return this.cCodeForm.controls;}
   
   verifyCompanyCode(){
-    let clintCode:string = this.cCodeForm.value.code;
-    let isClientExist = this.envService.checkClientExistOrNot(clintCode);
-    if(isClientExist){
-      this.dataShareService.subscribeClientName(clintCode);
-      this.loaderService.showLoader("Please wait while we are setting up the App for you.")
-      // this.authService.navigateByUrl('auth/signine');
+    let clientCode:string = this.cCodeForm.value.code;
+    let isClientExist = this.envService.checkClientExistOrNot(clientCode);
+    if(isClientExist || clientCode === "localhost"){
+      this.dataShareService.subscribeClientName(clientCode);
+      this.storageService.setClientNAme(clientCode);
+      this.loaderService.showLoader("Please wait while we are setting up the App for you.");
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
     }

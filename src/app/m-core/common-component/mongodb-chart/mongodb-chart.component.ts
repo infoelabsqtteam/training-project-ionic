@@ -1,10 +1,10 @@
 import { Component, OnInit, AfterViewInit, Input, SimpleChanges } from '@angular/core';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
 import { Subscription } from 'rxjs';
-// import { ChartService, ApiService, DataShareService, CommonFunctionService } from '@core/web-core';
-import { RestService, StorageService, ChartService, DataShareService, ApiService } from '@core/ionic-core';
+import { RestService, StorageService, AppDataShareService, CoreUtilityService, AppApiService, ModelService, DownloadService } from '@core/ionic-core';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
-import { ModalController } from '@ionic/angular';
+import { ModalController, isPlatform } from '@ionic/angular';
+import { ApiService, CommonFunctionService, DataShareService, ChartService } from '@core/web-core';
 
 @Component({
   selector: 'app-mongodb-chart',
@@ -33,11 +33,17 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     private apiService:ApiService,
     private chartService:ChartService,
     private restService: RestService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private appDataShareService: AppDataShareService,
+    private coreUtilityService: CoreUtilityService,
+    private appApiService: AppApiService,
+    private modelService: ModelService,
+    private commonFunctionService: CommonFunctionService,
+    private downloadService: DownloadService
   ) {
       // this.getMongoChartList([]);
       // this.accessToken = this.storageService.GetIdToken();
-      this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
+      this.staticDataSubscription = this.appDataShareService.staticData.subscribe(data =>{
         if(data && data !=''){
           this.setStaticData(data);
         }
@@ -83,14 +89,14 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
   }
 
   getMongoChartList(Criteria){
-    const data = this.restService.getPaylodWithCriteria('mongo_dashlet_master','',Criteria,'');
+    const data = this.commonFunctionService.getPaylodWithCriteria('mongo_dashlet_master','',Criteria,'');
       data['pageNo'] = this.pageNumber - 1;
       data['pageSize'] = this.itemNumOfGrid; 
       const getFilterData = {
         data: data,
         path: null
       }
-      this.apiService.getMongoDashletMaster(getFilterData);
+      this.apiService.getMongoDashletMster(getFilterData);
   }
   populateMongodbChart(){
     if(this.accessToken != "" && this.accessToken != null){      
@@ -129,8 +135,8 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     }
   }
   getChartList(){
-    const payload = this.restService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
-    this.apiService.getStatiData([payload]);
+    const payload = this.commonFunctionService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
+    this.appApiService.getStatiData([payload]);
   }
   setStaticData(staticData?:any){
     if (staticData) {
@@ -147,9 +153,17 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
       'filter':filter,
       'index' : index
     }
-    this.chartFilterModal(object);
+    // this.chartFilterModal(object);
+    this.openModal(ChartFilterComponent,object);
     // this.modelService.open('chart-filter',object);
     
+  }
+  openModal(component:any, objectData:object){
+    this.modelService.openModal(component,objectData).then((data:any) => {
+      if(data && data.role == 'closed'){
+        console.log("ModalIs",data.role);
+      }
+    });
   }
   async chartFilterModal(data:any){
     // this.showfilter = true;
@@ -173,10 +187,15 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
         })
     return await modal.present();
   }
-  download(object){
+  async download(object){
     let chartId = object.chartId;
     let chart = this.createdChartList[chartId];    
-    this.chartService.getDownloadData(chart,object);
+    let blobData:any = await this.chartService.getDownloadData(chart,object);
+    if(isPlatform('hybrid')){
+      this.downloadService.downloadBlobData(blobData.url, blobData.name)
+    }else{
+      this.chartService.downlodBlobData(blobData.url, blobData.name)
+    }
   }  
   changeTheme(object,value){
     let chartId = object.chartId;

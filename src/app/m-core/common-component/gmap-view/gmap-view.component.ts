@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
-import { App_googleService, DataShareService, EnvService, NotificationService, PermissionService, CoreUtilityService, RestService, ApiService, StorageService } from '@core/ionic-core';
+import { App_googleService, AppDataShareService, EnvService, NotificationService, PermissionService, CoreUtilityService, RestService, StorageService, AppApiService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, Platform } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
@@ -7,6 +7,7 @@ import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { map } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
+import { ApiService, DataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-gmap-view',
@@ -97,18 +98,20 @@ export class GmapViewComponent implements OnInit {
     private restService: RestService,
     private apiService: ApiService,
     private ngZone: NgZone,
-    private coreFunctionService: CoreUtilityService,
+    private coreUtilityService: CoreUtilityService,
     private datePipe: DatePipe,
     private storageService: StorageService,
-    private dataShareServiceService: DataShareServiceService
+    private dataShareServiceService: DataShareServiceService,
+    private appApiService: AppApiService,
+    private appDataShareService: AppDataShareService
   ) {   
     this.currentPostionIconUrl = '../../../../assets/img/icons/current-location-1.png';
     this.destinationPostionIconUrl = '../../../../assets/img/icons/destination-location-1.png';
     this.isTracking = false;
-    this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
+    this.gridDataSubscription = this.appDataShareService.gridData.subscribe(data =>{
       this.setGridData(data);
     })
-    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
+    this.staticDataSubscription = this.appDataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
     })
 
@@ -628,20 +631,20 @@ export class GmapViewComponent implements OnInit {
     }
   }
 
-  getCall(selectedData){
-    let crList:any = [];
-    const cr = "_id;eq;" + selectedData._id + ";STATIC";
-    crList.push(cr);
+  // getCall(selectedData){
+  //   let crList:any = [];
+  //   const cr = "_id;eq;" + selectedData._id + ";STATIC";
+  //   crList.push(cr);
 
-    let data = this.restService.getPaylodWithCriteria('location_tracker','',crList,'');
-    data['pageNo'] = 0;
-    data['pageSize'] = 50;
-    let payload = {
-      'data':data,
-      'path':"null"
-    }
-    this.apiService.getGridData(payload);
-  }
+  //   let data = this.coreUtilityService.getPaylodWithCriteria('location_tracker','',crList,'');
+  //   data['pageNo'] = 0;
+  //   data['pageSize'] = 50;
+  //   let payload = {
+  //     'data':data,
+  //     'path':"null"
+  //   }
+  //   this.appApiService.getGridData(payload);
+  // }
 
   // JS Google Map Func.
   async loadMap(){
