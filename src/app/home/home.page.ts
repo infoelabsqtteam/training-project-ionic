@@ -163,7 +163,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    if(this.coreFunctionService.isNotBlank(this.storageService.getClientCode())){
+    if(this.coreFunctionService.isNotBlank(this.storageService.getClientName())){
       if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
         this.authService.getUserPermission(false,'/home');
         // this.router.navigateByUrl('/home');

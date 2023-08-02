@@ -2041,11 +2041,11 @@ tinymceConfig = {}
     }
   }
   async closeModal(){
-    this.modal?.offsetParent.dismiss(undefined,"confirmed",);
-    // const modal = await this.modalController.getTop();
-    // if(modal){
-    //   modal.dismiss(undefined,"confirmed")
-    // }
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss(undefined,"confirmed");
+    }else{        
+      this.modalController.dismiss(undefined,"confirmed",);
+    }
   }
   checkOnSuccessAction(){
     let actionValue = ''

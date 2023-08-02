@@ -210,11 +210,19 @@ export class GridSelectionDetailModalComponent implements OnInit {
     this.dismissModal();
   }
   dismissModal(data?:any,remove?:any){
-    this.modal?.offsetParent.dismiss({
-      'data':data,
-      'dismissed': true,
-      'remove':remove
-    });
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss({
+        'data':data,
+        'dismissed': true,
+        'remove':remove
+      });
+    }else{        
+      this.modalController.dismiss({
+        'data':data,
+        'dismissed': true,
+        'remove':remove
+      },);
+    }
   }
   async select(){
     if(this.alreadyAdded){

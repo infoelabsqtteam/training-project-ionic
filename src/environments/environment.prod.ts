@@ -1,12 +1,6 @@
 export const environment = {
   production: true,
-  serverhost: "https://prodserveritclabs.e-labs.ai/rest/",
-  // serverhost: "https://prodserverbbsrqualiteklab.e-labs.ai/rest/",
-  // serverhost: "https://serveraal.allaboutlab.com/rest/",
-  // serverhost: "https://serverqualiteklab.e-labs.ai/rest/",
-  // serverhost: "https://uatserverqualiteklab.e-labs.ai/rest/",
-  // serverhost: "https://sitserverelabs.e-labs.ai/rest/",
-  // serverhost: "https://serverhardgoodlabs.e-labs.ai/rest/",
+  serverhost: "https://prodserveritclabs.e-labs.ai",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.tech.elabs.ionic",
   appName: "e-labs",

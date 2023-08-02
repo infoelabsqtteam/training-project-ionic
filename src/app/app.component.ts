@@ -97,7 +97,7 @@ export class AppComponent implements OnInit, OnDestroy {
         // this.cardList = data.data;
         this.cardList = this.coreUtilityService.getUserAutherisedCards(data.data);
       }else{
-        console.log("Somethisng went wrong, please try again later");
+        console.log("Something went wrong, please try again later");
       }
     });
     
@@ -106,6 +106,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.userInfo = this.storageService.getUserInfo();
         this.showSidebarMenu = true;
       }else if(data == "logged_out"){
+        this.storageService.removeCapKeyFromStorage('authData');
         this.isClientCodeExist();
         this.resetVariables();
       }    
@@ -192,10 +193,10 @@ export class AppComponent implements OnInit, OnDestroy {
     //   }
     // })
   }
-  async isClientCodeExist(){
-      const clientCode = await this.storageService.getClientCode();
+  isClientCodeExist(){
+      const clientCode = this.storageService.getClientName();
       if(this.coreFunctionService.isNotBlank(clientCode)){
-        this.authService.gotToSigninPage();
+        this.authService.redirectToSignInPage();
       }else{            
         this.authService.navigateByUrl("auth/verifyCompany");
       }
@@ -237,8 +238,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.redirectToHomePageWithStorage();
   }
   async redirectToHomePageWithStorage(){
-    // let checkComapanyCode:any = this.storageService.getClientCode();
-    let checkComapanyCode:any = await this.storageService.getObject("CLIENT_NAME");
+    let checkComapanyCode:any = await this.storageService.getClientName();
     if(this.coreFunctionService.isNotBlank(checkComapanyCode)){
       if(!this.checkApplicationSetting()){
         this.restService.getApplicationAllSettings();
@@ -252,8 +252,8 @@ export class AppComponent implements OnInit, OnDestroy {
       }else{
         this.authService.redirectToSignInPage();
       }      
-    }else{      
-        this.storageService.clearStorage();
+    }else{
+        this.storageService.removeDataFormStorage();
         this.authService.navigateByUrl("auth/verifyCompany");
     }
   }
