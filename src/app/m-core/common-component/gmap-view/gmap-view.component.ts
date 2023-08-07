@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
 import { App_googleService, DataShareService, EnvService, NotificationService, PermissionService, CoreUtilityService, RestService, ApiService, StorageService } from '@core/ionic-core';
-import { ActionSheetController, AlertController, Platform } from '@ionic/angular';
+import { ActionSheetController, AlertController, ModalController, Platform } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
 import { GoogleMap, MapType } from '@capacitor/google-maps';
@@ -100,7 +100,8 @@ export class GmapViewComponent implements OnInit {
     private coreFunctionService: CoreUtilityService,
     private datePipe: DatePipe,
     private storageService: StorageService,
-    private dataShareServiceService: DataShareServiceService
+    private dataShareServiceService: DataShareServiceService,
+    private modalController: ModalController
   ) {   
     this.currentPostionIconUrl = '../../../../assets/img/icons/current-location-1.png';
     this.destinationPostionIconUrl = '../../../../assets/img/icons/destination-location-1.png';
@@ -414,11 +415,18 @@ export class GmapViewComponent implements OnInit {
     // }
   }
   dismissModal(data?:any,role?:any){
-    if(data !=null){
-      this.modal?.offsetParent.dismiss(data,role);      
+    if(data != undefined && data != null){
+      this.closeModal(data,role);     
     }else{
-      this.modal?.offsetParent.dismiss(this.selectedRowData,)
+      this.closeModal(this.selectedRowData);
     }
+  }
+  closeModal(data?:any,role?:any){
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss(data,role);
+    }else{        
+      this.modalController.dismiss(data,role,);
+    } 
   }
   async saveData(selectedRowData){    
     let payload = {

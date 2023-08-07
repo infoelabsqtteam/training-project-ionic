@@ -68,8 +68,8 @@ export class VerifyCompanyComponent implements OnInit {
     });
   }
   async onload(){
-    let keyList = await this.storageService.getKetList();
-    await this.storageService.clearStorage();
+    // let keyList = await this.storageService.getKetList();
+    await this.storageService.clearCapStorage();
     this.storageService.removeDataFormStorage();
   }
   showExitConfirm() {
@@ -110,11 +110,12 @@ export class VerifyCompanyComponent implements OnInit {
   get ccform() { return this.cCodeForm.controls;}
   
   verifyCompanyCode(){
-    let clintCode:string = this.cCodeForm.value.code;
-    let isClientExist = this.envService.checkClientExistOrNot(clintCode);
+    let clientCode:string = this.cCodeForm.value.code;
+    let isClientExist = this.envService.checkClientExistOrNot(clientCode);
     if(isClientExist){
-      this.dataShareService.subscribeClientName(clintCode);
-      this.loaderService.showLoader("Please wait while we are setting up the App for you.")
+      this.loaderService.showLoader("Please wait while we are setting up the App for you.");    
+      this.storageService.setClientNAme(clientCode);
+      this.dataShareService.subscribeClientName(clientCode);
       // this.authService.navigateByUrl('auth/signine');
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});

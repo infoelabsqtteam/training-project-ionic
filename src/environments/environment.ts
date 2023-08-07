@@ -5,10 +5,8 @@
 export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
-  // serverhost: "http://localhost:8104/rest/",
-  serverhost: "https://uatserveritclabs.e-labs.ai/rest/",
-  // serverhost: "https://serveritclabs.itclabs.com/rest/",
-  // serverhost: "https://prodserveritclabs.e-labs.ai/rest/",
+  serverhost: "http://localhost:8104/rest/",
+  // serverhost: "",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.tech.elabs.ionic",
   appName: "E-Labs",
