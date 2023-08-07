@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { CoreUtilityService, NotificationService, PermissionService, RestService, StorageService, AppDataShareService, AppApiService, DownloadService } from '@core/ionic-core';
+import { CoreUtilityService, NotificationService, PermissionService, RestService, AppStorageService, AppDataShareService, AppApiService, DownloadService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
 import { Platform, isPlatform } from '@ionic/angular';
@@ -92,7 +92,7 @@ export class ChartFilterComponent implements OnInit {
     private dataShareService:DataShareService,
     private coreUtilityService:CoreUtilityService,
     private file: File,
-    private storageService:StorageService,
+    private storageService:AppStorageService,
     private permissionService: PermissionService,
     private datePipe: DatePipe,
     private notificationService:NotificationService,
@@ -361,7 +361,7 @@ export class ChartFilterComponent implements OnInit {
       if(formField.length > 0){
         let staticModalGroup = this.commonFunctionService.commanApiPayload([],formField,[]);
         if(staticModalGroup.length > 0){  
-          this.appApiService.getStatiData(staticModalGroup);
+          this.apiService.getStatiData(staticModalGroup);
         }
       }
       if (forControl) {

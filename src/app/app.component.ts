@@ -4,13 +4,13 @@ import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
-import { AuthService, StorageTokenStatus,App_googleService, RestService, EnvService, NotificationService, CommonDataShareService, CoreUtilityService, CoreFunctionService, AppDataShareService, AppApiService } from '@core/ionic-core';
+import { StorageTokenStatus,App_googleService, RestService, AppEnvService, NotificationService, CommonDataShareService, CoreUtilityService, CoreFunctionService, AppDataShareService, AppApiService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
 import { AndroidpermissionsService } from './service/androidpermissions.service';
 import { Title } from '@angular/platform-browser';
-import { ApiService, CommonFunctionService, DataShareService, StorageService } from '@core/web-core';
+import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService } from '@core/web-core';
 
  
 @Component({ 
@@ -57,7 +57,7 @@ export class AppComponent implements OnInit, OnDestroy {
   favIcon: HTMLLinkElement = document.querySelector('#favIcon');
   themeName:any = '';
   clinetNameSubscription: Subscription;
-  loginAndLogoutResponce: any;
+  loginAndLogoutResponce: Subscription;
 
   constructor(
     private platform: Platform,
@@ -72,7 +72,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private restService: RestService,
     private apiService: ApiService,
     private dataShareService: DataShareService,
-    private envService: EnvService,
+    private appEnvService: AppEnvService,
     private notificationService: NotificationService,
     private commonDataShareService: CommonDataShareService,
     private coreUtilityService: CoreUtilityService,
@@ -84,7 +84,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ) {
     
-    this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
+    this.appCardMasterDataSize = this.appEnvService.getAppCardMasterDataSize();
     
     this.initializeApp();
 
@@ -96,7 +96,7 @@ export class AppComponent implements OnInit, OnDestroy {
           }
         });
     // this.web_site = appConstants.siteName;
-    this.app_Version  = this.envService.getAppVersion();
+    this.app_Version  = this.appEnvService.getAppVersion();
     this.gridDataSubscription = this.appDataShareService.gridData.subscribe(data =>{
       if(data && data.data && data.data.length > 0){
         // this.cardList = data.data;
@@ -112,7 +112,7 @@ export class AppComponent implements OnInit, OnDestroy {
           if(themeSetting && themeSetting.length > 0) {
             const settingObj = themeSetting[0];
             this.storageService.setThemeSetting(settingObj);
-            this.envService.setThemeSetting(settingObj);
+            this.appEnvService.setThemeSetting(settingObj);
             this.dataShareService.resetThemeSetting([]);            
           }
         })
@@ -124,7 +124,7 @@ export class AppComponent implements OnInit, OnDestroy {
           if(applicationSetting && applicationSetting.length > 0) {
             const settingObj = applicationSetting[0];
             this.storageService.setApplicationSetting(settingObj);
-            this.envService.setApplicationSetting();
+            this.appEnvService.setApplicationSetting();
             this.loadPage();
             this.dataShareService.subscribeTemeSetting("setting");
             this.dataShareService.resetApplicationSetting([]);
@@ -134,6 +134,7 @@ export class AppComponent implements OnInit, OnDestroy {
     
     this.loginAndLogoutResponce = this.appDataShareService.settingData.subscribe(data =>{      
       if(data == "logged_in"){
+        this.notificationService.presentToastOnBottom('Login successful',"success");
         this.userInfo = this.storageService.GetUserInfo();
         this.showSidebarMenu = true;
       }else if(data == "logged_out"){
@@ -148,6 +149,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   initializeApp() {
     this.platform.ready().then(() => {
+      let platForm = Capacitor.getPlatform();
+      // this.storageService.setPlatForm(platForm);
       window.addEventListener('offline', () => {
         this.androidpermissionsService.internetExceptionError();
       });
@@ -226,42 +229,10 @@ export class AppComponent implements OnInit, OnDestroy {
   isClientCodeExist(){
       const clientCode = this.storageService.getClientName();
       if(this.coreFunctionService.isNotBlank(clientCode)){
-        this.authService.redirectToSignInPage();
+        // this.authService.appLogout();
       }else{            
-        this.authService.navigateByUrl("auth/verifyCompany");
+        this.router.navigateByUrl("auth/verifyCompany");
       }
-  }
-  async appSettings(){
-    //  this.commonFunctionService.getApplicationAllSettings();
-    //  await this.themeandApplicationSetting();
-  }
-  async themeandApplicationSetting(){
-    if(this.dataShareService.themeSetting != undefined){
-      this.themeSettingSubscription = this.dataShareService.themeSetting.subscribe(
-        data =>{
-          const themeSetting = data;
-          if(themeSetting && themeSetting.length > 0) {
-            const settingObj = themeSetting[0];
-            this.storageService.setThemeSetting(settingObj);
-            this.envService.setThemeSetting(settingObj);
-            this.dataShareService.resetThemeSetting([]);            
-          }
-        })
-    }
-    if(this.dataShareService.applicationSetting != undefined){
-      this.applicationSettingSubscription = this.dataShareService.applicationSetting.subscribe(
-        data =>{
-          const applicationSetting = data;
-          if(applicationSetting && applicationSetting.length > 0) {
-            const settingObj = applicationSetting[0];
-            this.storageService.setApplicationSetting(settingObj);
-            this.envService.setApplicationSetting();
-            this.loadPage();
-            this.dataShareService.subscribeTemeSetting("setting");
-            this.dataShareService.resetApplicationSetting([]);
-          }
-        })
-    } 
   }
   redirectToHomePage(){
     //this.storageService.removeDataFormStorage();
@@ -279,13 +250,12 @@ export class AppComponent implements OnInit, OnDestroy {
       if(this.checkIdTokenStatus()){
         this.showSidebarMenu = true;
         this.userInfo = this.storageService.GetUserInfo(); 
-        this.authService.getUserPermission(false,'/home');
+        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken());
       }else{
-        this.authService.redirectToSignInPage();
+        // this.authService.appLogout();
       }      
     }else{      
-        this.storageService.removeDataFormStorage();
-        this.authService.navigateByUrl("auth/verifyCompany");
+        // this.authService.appClientNameResetData();
     }
   }
   checkIdTokenStatus(){
@@ -345,7 +315,7 @@ export class AppComponent implements OnInit, OnDestroy {
     //this.commonFunctionService.getCurrentAddress();
   }
   onLogout() {
-    this.authService.logout();
+    // this.authService.appLogout();
   }
   
   resetVariables(){
@@ -366,7 +336,7 @@ export class AppComponent implements OnInit, OnDestroy {
       'data':data,
       'path':null
     }
-    this.appApiService.getGridData(payload);
+    this.apiService.getGridData(payload);
   } 
 
   showCardTemplate(card:any, index:number){    
@@ -377,7 +347,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.router.navigate(['card-view']);
     this.dataShareServiceService.setcardData(selectedcard);
   }
-
   comingSoon() {
     this.notificationService.presentToastOnBottom('Comming Soon...',"primary");
   }
@@ -391,12 +360,11 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     return exists;
   }
-
   loadPage(){
     this.favIcon.href = this.storageService.getLogoPath() + "favicon.ico";
     this.titleService.setTitle(this.storageService.getPageTitle());
     this.themeName = this.storageService.getPageThmem();
-    this.authService.navigateByUrl('auth/signine');
+    this.router.navigateByUrl('auth/signine');
   }
 
 }

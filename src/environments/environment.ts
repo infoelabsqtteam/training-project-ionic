@@ -2,14 +2,13 @@
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 import {getPlatforms, isPlatform} from "@ionic/angular";
+import { Capacitor } from '@capacitor/core';
 
 export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
   // serverhost: "http://localhost:8104/rest/",
-  serverhost: "https://uatserveritclabs.e-labs.ai",
-  // serverhost: "https://serveritclabs.itclabs.com",
-  // serverhost: "https://prodserveritclabs.e-labs.ai",
+  serverhost: "https://prodservercentral.e-labs.ai",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.tech.elabs.ionic",
   appName: "E-Labs",
@@ -24,7 +23,7 @@ export const environment = {
   appHomePageLayout:"layout1",
   apiKey: "AIzaSyA--cLc1-rZJvuV18t0jxlzIbzxahuH-EQ",
   googleMapsApiKey: "AIzaSyAlvBSDoXj5p3D1Qdnee_j_cF8jIGo5pz8",  
-  isPlateform: getPlatforms()
+  plateformName: Capacitor.getPlatform() == "web" ? "android" : Capacitor.getPlatform()
 };
 
 /*

@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
-import { App_googleService, AppDataShareService, EnvService, NotificationService, PermissionService, CoreUtilityService, RestService, StorageService, AppApiService } from '@core/ionic-core';
+import { App_googleService, AppDataShareService, AppEnvService, NotificationService, PermissionService, CoreUtilityService, RestService, AppStorageService, AppApiService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, Platform } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
@@ -91,7 +91,7 @@ export class GmapViewComponent implements OnInit {
     private alertCtrl: AlertController,
     private permissionService: PermissionService,
     private platform: Platform,
-    private envService: EnvService,
+    private envService: AppEnvService,
     private dataShareService: DataShareService,
     private renderer: Renderer2,
     private actionSheetController: ActionSheetController,
@@ -100,7 +100,7 @@ export class GmapViewComponent implements OnInit {
     private ngZone: NgZone,
     private coreUtilityService: CoreUtilityService,
     private datePipe: DatePipe,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
     private dataShareServiceService: DataShareServiceService,
     private appApiService: AppApiService,
     private appDataShareService: AppDataShareService
@@ -643,7 +643,7 @@ export class GmapViewComponent implements OnInit {
   //     'data':data,
   //     'path':"null"
   //   }
-  //   this.appApiService.getGridData(payload);
+  //   this.apiService.getGridData(payload);
   // }
 
   // JS Google Map Func.

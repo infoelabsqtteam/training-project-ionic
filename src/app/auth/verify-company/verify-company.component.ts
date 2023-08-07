@@ -1,11 +1,11 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
-import { AuthService, EnvService, LoaderService, NotificationService, StorageService } from '@core/ionic-core';
+import { AppAuthService, LoaderService, NotificationService } from '@core/ionic-core';
 import { AlertController, IonInput, IonRouterOutlet, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
-import { DataShareService } from '@core/web-core';
+import { EnvService, DataShareService, StorageService } from '@core/web-core';
 
 @Component({
   selector: 'app-verify-company',
@@ -23,7 +23,7 @@ export class VerifyCompanyComponent implements OnInit {
   constructor(    
     private formBuilder: FormBuilder,
     private envService: EnvService,
-    private authService: AuthService,
+    private authService: AppAuthService,
     private dataShareService: DataShareService,
     private storageService: StorageService,
     private router: Router,
@@ -69,8 +69,8 @@ export class VerifyCompanyComponent implements OnInit {
     });
   }
   async onload(){
-    let keyList = await this.storageService.getKetList();
-    await this.storageService.clearStorage();
+    // let keyList = await this.storageService.getKetList();
+    await this.storageService.removeDataFormStorage();
     this.storageService.removeDataFormStorage();
   }
   showExitConfirm() {
@@ -114,9 +114,9 @@ export class VerifyCompanyComponent implements OnInit {
     let clientCode:string = this.cCodeForm.value.code;
     let isClientExist = this.envService.checkClientExistOrNot(clientCode);
     if(isClientExist || clientCode === "localhost"){
-      this.dataShareService.subscribeClientName(clientCode);
-      this.storageService.setClientNAme(clientCode);
       this.loaderService.showLoader("Please wait while we are setting up the App for you.");
+      this.storageService.setClientNAme(clientCode);
+      this.dataShareService.subscribeClientName(clientCode);
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
     }

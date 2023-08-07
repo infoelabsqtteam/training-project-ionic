@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController, AlertController } from '@ionic/angular';
-import { AuthService, StorageService } from '@core/ionic-core';
+import { AppAuthService, AppStorageService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-signup',
@@ -25,13 +25,13 @@ export class SignupComponent implements OnInit {
   submitted = false;
 
   constructor(
-    private authService: AuthService,
+    private authService: AppAuthService,
     private formBuilder: FormBuilder,
     private router: Router,
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
     private http: HttpClient,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
   ) { }
 
   ngOnInit() {

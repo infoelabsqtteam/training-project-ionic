@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CoreFunctionService, CoreUtilityService, AppDataShareService, NotificationService, RestService, StorageService, AppApiService } from '@core/ionic-core';
+import { CoreFunctionService, CoreUtilityService, AppDataShareService, NotificationService, RestService, AppStorageService, AppApiService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { GridSelectionDetailModalComponent } from '../grid-selection-detail-modal/grid-selection-detail-modal.component';
 //import { MatCheckboxChange } from '@angular/material/checkbox';
@@ -50,7 +50,7 @@ export class GridSelectionModalComponent implements OnInit {
     private restService:RestService,
     private apiService:ApiService,
     private notificationService:NotificationService,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
     private coreFunctionService: CoreFunctionService,
     private commonFunctionService: CommonFunctionService,
     private limsCalculationService: LimsCalculationsService,
@@ -209,7 +209,7 @@ export class GridSelectionModalComponent implements OnInit {
       });
     } 
     if(staticModal.length > 0){    
-      this.appApiService.getStatiData(staticModal);
+      this.apiService.getStatiData(staticModal);
     }
   }
   setStaticData(staticData){

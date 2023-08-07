@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController, AlertController } from '@ionic/angular';
-import { AuthService, EnvService, StorageService } from '@core/ionic-core';
-import { CustomvalidationService } from '@core/web-core';
+import { AppEnvService, AppStorageService, NotificationService } from '@core/ionic-core';
+import { CustomvalidationService, AuthService, DataShareService } from '@core/web-core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'lib-signupe',
@@ -18,6 +19,7 @@ export class SignupeComponent implements OnInit {
   showpassword = false;
   passwordNotMatch:boolean=false;
   confirmpassword = false;
+  signUpErrorSubscribe: Subscription;
 
   constructor(
     private authService: AuthService,
@@ -26,23 +28,44 @@ export class SignupeComponent implements OnInit {
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
     private http: HttpClient,
-    private storageService: StorageService,
-    private envService:EnvService,
-    private customValidationService: CustomvalidationService
-  ) { }
+    private storageService: AppStorageService,
+    private envService:AppEnvService,
+    private customValidationService: CustomvalidationService,
+    private notificationService: NotificationService,
+    private dataShareService: DataShareService
+  ) { 
+    // this.signUpErrorSubscribe = this.dataShareService.signUpResponse.subscribe(data =>{
+    //   let color = "danger";
+    //   if(data.response){
+    //     color = "success";
+    //   }
+    //   if(data.responsemsg){
+    //     if(data.present == 'alert'){
+    //       this.notificationService.showAlert(data.responsemsg, data.header, ['Dismiss']);
+    //     }else{          
+    //       this.notificationService.presentToastOnBottom(data.responsemsg,color);
+    //     }
+    //   }
+    // }) 
+  }
 
   ngOnInit() {
     this.initForm();
   }
+  ngDestroy(){
+    if(this.signUpErrorSubscribe){
+      this.signUpErrorSubscribe.unsubscribe();
+    }
+  }
 
   initForm(){
-    this.signUpForm = this.formBuilder.group({
-      name: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      mobileNo: ['', [Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]],
-      password: ['', [Validators.required], Validators.minLength(6)],
-      confpwd: ['', [Validators.required]],
-    },{ validators: this.customValidationService.MatchPassword('password','confirmPassword') }
+    this.signUpForm = new FormGroup({
+      name: new FormControl ('', [Validators.required]),
+      email: new FormControl ('', [Validators.required, Validators.email]),
+      mobileNo: new FormControl ('', [Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]),
+      password: new FormControl ('', [Validators.required, Validators.minLength(6)]),
+      confpwd: new FormControl ('', [Validators.required]),
+    },{ validators: this.customValidationService.MatchPassword('password','confpwd') }
     );
   }
 
@@ -50,6 +73,7 @@ export class SignupeComponent implements OnInit {
 
   onSubmit() {    
     if (this.signUpForm.invalid) {
+      this.notificationService.presentToastOnBottom("Please fill all * mark fields","danger");
       return;
     }
     const email = this.signUpForm.value.email;
@@ -66,7 +90,7 @@ export class SignupeComponent implements OnInit {
     const data = {email: email, password: password, name: name, mobileNumber: mobile, domain:"", userId: userId}
     //note: if autologin =true then set redirection= '/home', And if autologin =false then set redirection= '/auth/signine'
     const payload = { data:data, redirection:'/home',"autologin":true};
-    this.authService.signup(payload);
+    // this.authService.appSignup(payload);
     this.signUpForm.reset();
     //this.router.navigate(['/auth/signine']);
   }
@@ -79,7 +103,7 @@ export class SignupeComponent implements OnInit {
   }
   passwordmismatch(){
     if((this.signUpForm.value.password === this.signUpForm.value.confpwd)){
-      this.signUpForm.controls['confpwd'].setErrors(null);;
+      this.signUpForm.controls['confpwd'].setErrors(null);
       this.passwordNotMatch = false;
     }else{
       this.signUpForm.controls['confpwd'].setErrors({'invalid': true});

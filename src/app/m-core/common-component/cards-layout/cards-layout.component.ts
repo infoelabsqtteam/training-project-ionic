@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { EnvService, StorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService, CommonDataShareService, NotificationService, PermissionService, App_googleService } from '@core/ionic-core';
+import { AppStorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService, CommonDataShareService, NotificationService, PermissionService, App_googleService } from '@core/ionic-core';
 import { filter } from 'rxjs';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Platform, ModalController, AlertController, PopoverController, isPlatform } from '@ionic/angular';
@@ -133,8 +133,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   constructor(
     private platform: Platform,
-    private envService: EnvService,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
     private router: Router,
     private dataShareServiceService:DataShareServiceService,
     private formBuilder: FormBuilder,
@@ -166,7 +165,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
     // below code is for slider and title name
     this.initializeApp();
-    this.web_site_name = this.envService.getWebSiteName();
+    // this.web_site_name = this.envService.getWebSiteName();
     this.gridDataSubscription = this.appDataShareService.collectiondata.subscribe(data =>{
       let res:any;
       if(data && data.data && data.data_size && data.data.length > 0){
@@ -705,7 +704,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       'data':data,
       'path':null
     }
-    this.appApiService.getDatabyCollectionName(payload);
+    this.apiService.getDatabyCollectionName(payload);
   }
 
   getValueForGrid(field,object){
@@ -1076,7 +1075,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       const params = "grid";
       const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
       const payload = this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, {});
-      this.appApiService.GetChildGrid(payload);
+      this.apiService.GetChildGrid(payload);
   }
   // myFiles:any;
   setDownloadPdfData(downloadPdfData){

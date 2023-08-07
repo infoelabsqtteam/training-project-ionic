@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { AuthService, EnvService } from '@core/ionic-core';
+import { AppAuthService, AppEnvService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-verify-otp',
@@ -16,8 +16,8 @@ export class VerifyOtpComponent implements OnInit {
 
   constructor(
     private routers: ActivatedRoute,
-    private authService:AuthService,
-    private envService:EnvService,
+    private authService:AppAuthService,
+    private envService:AppEnvService,
     private formBuilder: FormBuilder,
   ) { }
 

@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitte
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn, FormArray, FormControl } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { AppApiService, App_googleService, Common, CommonDataShareService, CoreFunctionService, CoreUtilityService, AppDataShareService, EnvService, NotificationService, PermissionService, RestService, StorageService,  } from '@core/ionic-core';
+import { AppApiService, App_googleService, Common, CommonDataShareService, CoreFunctionService, CoreUtilityService, AppDataShareService, AppEnvService, NotificationService, PermissionService, RestService, AppStorageService,  } from '@core/ionic-core';
 import { AlertController, ItemReorderEventDetail, ModalController, ToastController, isPlatform  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
@@ -335,7 +335,7 @@ tinymceConfig = {}
     private dataShareService:DataShareService,
     private commonDataShareService:CommonDataShareService,
     private permissionService:PermissionService,
-    private storageService:StorageService,
+    private storageService:AppStorageService,
     private notificationService:NotificationService,
     private modalController: ModalController,
     private cameraService: CameraService, 
@@ -344,7 +344,7 @@ tinymceConfig = {}
     private loadingCtrl: LoadingController,
     private httpClient: HttpClient,
     private dataShareServiceService: DataShareServiceService,
-    private envService: EnvService,
+    private envService: AppEnvService,
     private fileOpener: FileOpener,
     private file: File,
     private apppermissionsService: AndroidpermissionsService,
@@ -736,7 +736,7 @@ tinymceConfig = {}
         else{
           //this.commonFunctionService.getStaticData();
           const payload = this.commonFunctionService.commanApiPayload([],this.tableFields,this.formFieldButtons,this.getFormValue(false));
-          this.appApiService.getStatiData(payload);
+          this.apiService.getStatiData(payload);
         }
         // if(this.isStepper){
         //   this.stepper.reset();
@@ -1271,7 +1271,7 @@ tinymceConfig = {}
           
         }
         if(staticModal.length > 0){
-          this.appApiService.getStatiData(staticModal);        
+          this.apiService.getStatiData(staticModal);        
         }
 
       }      
@@ -2199,7 +2199,7 @@ tinymceConfig = {}
       
     }
     if(staticModal.length > 0){    
-      this.appApiService.getStatiData(staticModal);
+      this.apiService.getStatiData(staticModal);
     }
   }
   updateDataOnFormField(formValue){
@@ -3835,7 +3835,7 @@ tinymceConfig = {}
           const crList = this.commonFunctionService.getCriteriaList(criteria,{});
           const payload = this.commonFunctionService.getDataForGrid(1,{},{'name':params},[],{},'');
           payload.data.crList = crList;
-          this.appApiService.getGridData(payload);
+          this.apiService.getGridData(payload);
           this.updateAddNew = true;
         }else{
           this.updateAddNew = false;
@@ -3899,7 +3899,7 @@ tinymceConfig = {}
         // // this.store.dispatch(
         // //   new CusTemGenAction.GetStaticData(staticModal)
         // // )
-        this.appApiService.getStatiData(staticModal);
+        this.apiService.getStatiData(staticModal);
       }
    }
   }
@@ -4690,7 +4690,7 @@ tinymceConfig = {}
       switch(function_name){
         case "calculation_of_script_for_tds":
           const payload = this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField);   
-          this.appApiService.getStatiData(payload);
+          this.apiService.getStatiData(payload);
           break;
         case "calculateQquoteAmount":
           this.custmizedFormValue[this.curTreeViewField.field_name].forEach(element => {
@@ -4737,7 +4737,7 @@ tinymceConfig = {}
         const staticModalGroup = []
         staticModalGroup.push(this.commonFunctionService.getPaylodWithCriteria(this.curTreeViewField.onchange_function_param,'',[],this.getFormValue(true)));
         //this.commonFunctionService.getStaticData(staticModalGroup);
-        this.appApiService.getStatiData(staticModalGroup);
+        this.apiService.getStatiData(staticModalGroup);
       }
     }
 
@@ -6115,7 +6115,7 @@ tinymceConfig = {}
       const payload = this.commonFunctionService.getPaylodWithCriteria(api_params,callBackfield,criteria,this.getFormValue(false));
       let payloads = [];
       payloads.push(this.checkQtmpApi(api_params,field,payload));
-      this.appApiService.getStatiData(payloads);
+      this.apiService.getStatiData(payloads);
     }
   }  
   checkQtmpApi(params,field,payload){

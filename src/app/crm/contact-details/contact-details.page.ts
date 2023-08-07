@@ -2,7 +2,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { EnvService, StorageService, RestService, CoreUtilityService } from '@core/ionic-core';
+import { AppEnvService, AppStorageService, RestService, CoreUtilityService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { ModalController, PopoverController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -56,9 +56,9 @@ export class ContactDetailsPage implements OnInit {
     public popoverController: PopoverController, 
     private modalController: ModalController,
     private dataShareServiceService:DataShareServiceService,
-    private envService: EnvService,
+    private envService: AppEnvService,
     private http: HttpClient,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
     private router: Router,
     private currencyPipe: CurrencyPipe,
     private callNumber: CallNumber,

@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, Platform, IonRouterOutlet } from '@ionic/angular';
-import { AuthService, StorageService, NotificationService, EnvService, CoreFunctionService, StorageTokenStatus } from '@core/ionic-core';
+import {  NotificationService, AppEnvService, CoreFunctionService, StorageTokenStatus } from '@core/ionic-core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
 import { App } from '@capacitor/app';
 import { Location } from '@angular/common';
+import { AuthService, DataShareService, StorageService } from '@core/web-core';
 
 @Component({
   selector: 'lib-signine',
@@ -24,6 +25,7 @@ export class SignineComponent implements OnInit {
   logoPath:string = '';
   imageTitle:string = '';
   appTitle:string = '';
+  authenticationMessage: Subscription;
 
   constructor(
     private authService: AuthService,
@@ -35,24 +37,38 @@ export class SignineComponent implements OnInit {
     private notificationService:NotificationService,
     private platform: Platform,
     private ionLoaderService: IonLoaderService,
-    private envService: EnvService,
+    private appEnvService: AppEnvService,
     private routerOutlet: IonRouterOutlet,
     private _location: Location,
+    private dataShareService: DataShareService
   ) { 
     this.initializeApp();
-    if(this.envService.getVerifyType() == "mobile"){
+    if(this.storageService.getVerifyType() == 'mobile' || this.appEnvService.getVerifyType() == "mobile"){
       this.VerifyType = true;
     }else{
      this.VerifyType = false;
     }
+
+    this.authenticationMessage = this.dataShareService.authenticated.subscribe(data => {
+      let msg = '';
+      let color = "danger"
+      if(!data){
+        // msg = this.dataShareService.getAuthenticationMessage();
+      }
+      if(msg){
+        this.notificationService.presentToastOnTop(msg,color).then(response => {
+          console.log(response);
+        })
+      }
+    })
   }
 
   initializeApp() {
     this.platform.ready().then(() => {});
     let isClientCodeExist:any = this.storageService.getClientName();
     let isHostNameExist:any = this.storageService.getHostNameDinamically();
-    if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.checkIdTokenStatus()){   
-      this.authService.getUserPermission(false,'/home');
+    if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.checkIdTokenStatus()){ 
+      this.authService.GetUserInfoFromToken(this.storageService.GetIdToken());
     }else if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
       this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
         let isloaderOpen:any = this.ionLoaderService.loadingController.getTop();
@@ -140,8 +156,10 @@ export class SignineComponent implements OnInit {
     if (this.loginForm.invalid) {
       return;
     }
+    this.storageService.setLoginRedirectUrl('/home');
     let loginObj = this.loginForm.value; 
-    this.authService.login(loginObj.userId, loginObj.password,'/home');
+    let payload = { userId: loginObj.userId, password: loginObj.password }
+    this.authService.Signin(payload);
     this.loginForm.reset();
   }
   showtxtpass() {
@@ -152,7 +170,7 @@ export class SignineComponent implements OnInit {
   }
   changeCode(){
     this.storageService.removeDataFormStorage();
-    this.authService.navigateByUrl('/auth/verifyCompany');
+    this.router.navigateByUrl('/auth/verifyCompany');
     this.resetVariables();
   }
   resetVariables(){

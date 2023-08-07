@@ -4,7 +4,7 @@ import { ModalController } from '@ionic/angular';
 import { element } from 'protractor';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalComponent } from '../../modal/modal.component';
-import { DataShareService, CommonFunctionService, MenuOrModuleCommonService } from '@core/web-core';
+import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService } from '@core/web-core';
 
 @Component({
   selector: 'app-modal-detail-card',
@@ -37,7 +37,7 @@ export class ModalDetailCardComponent implements OnInit {
     private commonDataShareService: CommonDataShareService,
     private restService:RestService,
     private notificationService: NotificationService,
-    private appApiService: AppApiService,
+    private apiService: ApiService,
     private appDataShareService: AppDataShareService,
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService
@@ -245,7 +245,7 @@ export class ModalDetailCardComponent implements OnInit {
       const params = "grid";
       const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
       const payload = this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, {});
-      this.appApiService.GetChildGrid(payload);
+      this.apiService.GetChildGrid(payload);
   }
 
 }

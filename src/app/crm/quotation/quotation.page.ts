@@ -1,5 +1,5 @@
 import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
-import { EnvService, StorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService, CommonDataShareService } from '@core/ionic-core';
+import { AppStorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService, CommonDataShareService } from '@core/ionic-core';
 import { Platform, ModalController, IonRouterOutlet} from '@ionic/angular';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { filter } from 'rxjs';
@@ -39,8 +39,7 @@ export class QuotationPage implements OnInit, OnDestroy {
   
   constructor(
     private platform: Platform,
-    private envService: EnvService,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
     private router: Router,
     private formBuilder: FormBuilder,
     private callNumber: CallNumber,

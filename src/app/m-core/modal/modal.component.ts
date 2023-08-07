@@ -83,7 +83,7 @@ export class ModalComponent implements OnInit {
           // this.store.dispatch(
           //   new CusTemGenAction.GetStaticData(staticModalGroup)
           // )
-          this.appApiService.getStatiData(staticModalGroup);
+          this.apiService.getStatiData(staticModalGroup);
         }
       }      
       //Object.assign([],alert.data.gridColumns);
@@ -313,7 +313,7 @@ export class ModalComponent implements OnInit {
       // this.store.dispatch(
       //   new CusTemGenAction.GetStaticData(staticModal)
       // )
-      this.appApiService.getStatiData(staticModal);
+      this.apiService.getStatiData(staticModal);
    }
   }
 

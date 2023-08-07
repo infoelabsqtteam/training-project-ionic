@@ -1,5 +1,5 @@
 import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2} from '@angular/core';
-import { EnvService, StorageService, RestService, CoreUtilityService, CommonDataShareService } from '@core/ionic-core';
+import { AppStorageService, RestService, CoreUtilityService, CommonDataShareService } from '@core/ionic-core';
 import { Platform, ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup} from '@angular/forms';
@@ -55,7 +55,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   nestedCardSubscribe:any;
   
     constructor(
-      private storageService: StorageService,
+      private storageService: AppStorageService,
       private coreUtilityService :CoreUtilityService,
       private commonDataShareService:CommonDataShareService,
       private restService:RestService,

@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, Input, SimpleChanges } from '@angular/core';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
 import { Subscription } from 'rxjs';
-import { RestService, StorageService, AppDataShareService, CoreUtilityService, AppApiService, ModelService, DownloadService } from '@core/ionic-core';
+import { RestService, AppStorageService, AppDataShareService, CoreUtilityService, AppApiService, ModelService, DownloadService } from '@core/ionic-core';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
 import { ModalController, isPlatform } from '@ionic/angular';
 import { ApiService, CommonFunctionService, DataShareService, ChartService } from '@core/web-core';
@@ -29,7 +29,7 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
 
   constructor(
     private dataShareService:DataShareService,
-    private storageService:StorageService,
+    private storageService:AppStorageService,
     private apiService:ApiService,
     private chartService:ChartService,
     private restService: RestService,
@@ -136,7 +136,7 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
   }
   getChartList(){
     const payload = this.commonFunctionService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
-    this.appApiService.getStatiData([payload]);
+    this.apiService.getStatiData([payload]);
   }
   setStaticData(staticData?:any){
     if (staticData) {

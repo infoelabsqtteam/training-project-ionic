@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoadingController, AlertController, Platform } from '@ionic/angular';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { AuthService, StorageService,LoaderService, CoreUtilityService, NotificationService } from '@core/ionic-core';
+import { AppAuthService, AppStorageService,LoaderService, CoreUtilityService, NotificationService } from '@core/ionic-core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -31,14 +31,14 @@ export class SigninComponent implements OnInit {
   resendOtp: boolean = false;
 
   constructor(
-    private authService: AuthService,
+    private authService: AppAuthService,
     private router: Router,
     private loadingCtrl: LoadingController,
     private loaderService: LoaderService,
     private formBuilder: FormBuilder,
     private alertCtrl: AlertController,
     private http: HttpClient,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
     private coreUtilService: CoreUtilityService,
     private notificationService:NotificationService,
     private platform: Platform

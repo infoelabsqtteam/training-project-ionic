@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import * as appConstants from '../shared/app.constants';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { logging } from 'selenium-webdriver';
-import { CoreUtilityService,StorageService,EndPoint, AuthService, AuthResponseData } from '@core/ionic-core';
+import { CoreUtilityService,AppStorageService,EndPoint, AppAuthService, AuthResponseData } from '@core/ionic-core';
 
 
 
@@ -29,12 +29,12 @@ export class AuthPage implements OnInit {
   otpSent: boolean = false;
 
   constructor(
-    private authService: AuthService,
+    private authService: AppAuthService,
     private router: Router,
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
     private http: HttpClient,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
     private coreUtilService:CoreUtilityService
   ) { }
 

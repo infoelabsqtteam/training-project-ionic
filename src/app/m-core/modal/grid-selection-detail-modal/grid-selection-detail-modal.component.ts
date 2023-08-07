@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { AppApiService, AppDataShareService, CoreFunctionService, CoreUtilityService, NotificationService, RestService, StorageService } from '@core/ionic-core';
+import { AppApiService, AppDataShareService, CoreFunctionService, CoreUtilityService, NotificationService, RestService, AppStorageService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService } from '@core/web-core';
 
@@ -48,7 +48,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     private dataShareService: DataShareService,
     private apiService: ApiService,
     private restService: RestService,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
     private notificationService: NotificationService,
     private coreFunctionService: CoreFunctionService,
     private commonFunctionService: CommonFunctionService,
@@ -202,7 +202,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       });
     } 
     if(staticModal.length > 0){    
-      this.appApiService.getStatiData(staticModal);
+      this.apiService.getStatiData(staticModal);
     }
   }
   getValueForGrid(field, object) {
@@ -329,7 +329,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   //     // this.store.dispatch(
   //     //   new CusTemGenAction.GetStaticData(staticModal)
   //     // )
-  //     this.appApiService.getStatiData(staticModal);
+  //     this.apiService.getStatiData(staticModal);
   //  }
   // }
   getddnDisplayVal(val) {

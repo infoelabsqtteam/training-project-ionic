@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonDataShareService, CoreUtilityService, StorageService,} from '@core/ionic-core';
+import { CommonDataShareService, CoreUtilityService, AppStorageService,} from '@core/ionic-core';
 import { CommonFunctionService } from '@core/web-core';
-import { MenuOrModuleCommonService } from '@core/web-core/lib/services/menu-or-module-common/menu-or-module-common.service';
+import { MenuOrModuleCommonService } from '@core/web-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
@@ -30,7 +30,7 @@ export class QuotationDetailsPage implements OnInit, OnDestroy {
     private coreUtilityService :CoreUtilityService,
     private commonDataShareService:CommonDataShareService,
     private callNumber: CallNumber,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService
   ) { 

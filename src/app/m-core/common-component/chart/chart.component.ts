@@ -216,7 +216,7 @@ export class ChartComponent implements OnInit{
   }
   getChartList(){
     const payload = this.commonFunctionService.getPaylodWithCriteria('dashlet_master','chart_list',[],'');
-    this.appApiService.getStatiData([payload]);
+    this.apiService.getStatiData([payload]);
   }
 
   filterchart() {    

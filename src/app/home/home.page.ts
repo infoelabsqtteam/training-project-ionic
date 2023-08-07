@@ -1,6 +1,6 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { AuthService, CommonDataShareService, EnvService, NotificationService, RestService, StorageService, StorageTokenStatus, CoreUtilityService, CoreFunctionService, AppApiService, AppDataShareService } from '@core/ionic-core';
+import { AppAuthService, CommonDataShareService, AppEnvService, NotificationService, RestService, AppStorageService, StorageTokenStatus, CoreUtilityService, CoreFunctionService, AppApiService, AppDataShareService } from '@core/ionic-core';
 import { Platform, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -64,12 +64,12 @@ export class HomePage implements OnInit, OnDestroy {
 
   constructor(
     private platform: Platform,
-    private authService: AuthService,
-    private storageService:StorageService,
+    private authService: AppAuthService,
+    private storageService:AppStorageService,
     private router: Router,
     private _location: Location,
     public alertController: AlertController,
-    private envService: EnvService,
+    private envService: AppEnvService,
     private dataShareService:DataShareService,
     private apiService:ApiService,
     private restService:RestService,
@@ -200,7 +200,7 @@ export class HomePage implements OnInit, OnDestroy {
       'data':data,
       'path':null
     }
-    this.appApiService.getGridData(payload);
+    this.apiService.getGridData(payload);
   }
 
   showCardTemplate(card:any, index:number){

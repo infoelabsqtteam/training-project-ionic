@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { CoreFunctionService, CoreUtilityService, AppDataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
+import { CoreFunctionService, CoreUtilityService, AppDataShareService, NotificationService, RestService, AppStorageService } from '@core/ionic-core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { Subscriber, Subscription } from 'rxjs';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
@@ -52,7 +52,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     private apiService:ApiService,
     private notificationService:NotificationService,
     private dataShareService:DataShareService,
-    private storageService: StorageService,
+    private storageService: AppStorageService,
     private alertController: AlertController,
     private coreFunctionService: CoreFunctionService,
     private appDataShareService: AppDataShareService,
