@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitte
 import { FormGroup, FormBuilder, Validators, AsyncValidatorFn, FormArray, FormControl } from "@angular/forms";
 import { DOCUMENT, DatePipe, CurrencyPipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { AppApiService, App_googleService, Common, CommonDataShareService, CoreFunctionService, CoreUtilityService, AppDataShareService, AppEnvService, NotificationService, PermissionService, RestService, AppStorageService,  } from '@core/ionic-core';
+import { AppApiService, App_googleService, Common, AppPermissionService, CoreFunctionService, CoreUtilityService, AppDataShareService, AppEnvService, NotificationService, RestService, AppStorageService,  } from '@core/ionic-core';
 import { AlertController, ItemReorderEventDetail, ModalController, ToastController, isPlatform  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
@@ -23,7 +23,7 @@ import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-de
 // import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
 import { environment } from 'src/environments/environment';
-import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService } from '@core/web-core';
+import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService } from '@core/web-core';
 
 interface User {
   id: number;
@@ -333,7 +333,7 @@ tinymceConfig = {}
     private coreUtilityService:CoreUtilityService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
-    private commonDataShareService:CommonDataShareService,
+    private commonAppDataShareService:CommonAppDataShareService,
     private permissionService:PermissionService,
     private storageService:AppStorageService,
     private notificationService:NotificationService,
@@ -356,7 +356,8 @@ tinymceConfig = {}
     private appDataShareService: AppDataShareService,
     private appApiService: AppApiService,
     private customValidationService: CustomvalidationService,
-    private limsCalculationsService: LimsCalculationsService
+    private limsCalculationsService: LimsCalculationsService,
+    private appPermissionService: AppPermissionService,
     ) {
 
       // this.mapsApiLoaded();
@@ -526,7 +527,7 @@ tinymceConfig = {}
     // this.unsubscribeVariabbles();
   }
   ngOnInit() {    
-    const id:any = this.commonDataShareService.getFormId();
+    const id:any = this.commonAppDataShareService.getFormId();
     this.getNextFormById(id);
     this.handleDisabeIf();
     this.formControlChanges();
@@ -5792,7 +5793,7 @@ tinymceConfig = {}
         "selected_tab_index": this.selectedIndex
       }
       this.dataShareServiceService.setchildDataList(newobj);  
-      this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);  
+      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);  
       this.router.navigate(['card-detail-view']);
     // }    
   }
@@ -6009,8 +6010,8 @@ tinymceConfig = {}
     }else{
       folderName = FolderName;
     }
-    let readPermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-    let writePermission = await this.permissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
+    let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
+    let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
 
     if(readPermission && writePermission){
 
@@ -6200,7 +6201,7 @@ tinymceConfig = {}
   async requestLocationPermission() {
     let isGpsEnable = false;
     if(isPlatform('hybrid')){
-      const permResult = await this.permissionService.checkAppPermission("ACCESS_FINE_LOCATION");
+      const permResult = await this.appPermissionService.checkAppPermission("ACCESS_FINE_LOCATION");
       if(permResult){
         isGpsEnable = await this.app_googleService.askToTurnOnGPS();
         if(isGpsEnable){

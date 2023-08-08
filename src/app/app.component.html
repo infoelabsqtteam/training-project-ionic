@@ -1,6 +1,6 @@
 <ion-app>
-    <ion-menu side="start" menuId="custom" contentId="main">
-        <ion-content class="sidenav" *ngIf="showSidebarMenu">
+    <ion-menu side="start" menuId="custom" contentId="main" *ngIf="showSidebarMenu">
+        <ion-content class="sidenav" >
             <div class="sidebarheader">
                 <div class="profilpic"><ion-icon name="person-circle-outline"></ion-icon></div>
                 <div class="prifiledetails" *ngIf="userInfo">

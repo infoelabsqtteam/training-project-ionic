@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonDataShareService, CoreUtilityService, AppStorageService,} from '@core/ionic-core';
-import { MenuOrModuleCommonService } from '@core/web-core';
+import { CoreUtilityService, AppStorageService,} from '@core/ionic-core';
+import { CommonAppDataShareService, MenuOrModuleCommonService } from '@core/web-core';
 import { CommonFunctionService } from '@core/web-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -28,7 +28,7 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
   constructor(
     private dataShareServiceService:DataShareServiceService,
     private coreUtilityService :CoreUtilityService,
-    private commonDataShareService:CommonDataShareService,
+    private commonAppDataShareService:CommonAppDataShareService,
     private callNumber: CallNumber,
     private storageService: AppStorageService,
     private commonFunctionService: CommonFunctionService,
@@ -58,7 +58,7 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
     let tabDetail:any = '';
     this.childData = this.dataShareServiceService.getchildCardData();
     let index:any = this.childData.selected_tab_index;
-    const moduleList = this.commonDataShareService.getModuleList();
+    const moduleList = this.commonAppDataShareService.getModuleList();
     if(index != -1){      
       let tabs:any = module.tab_menu;
       let tab:any = tabs[index];
@@ -91,7 +91,7 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
     this.childColumns = card.fields;
     if(card.tab_menu && card.tab_menu.length > 0){
       this.tabMenu = card.tab_menu;
-      const moduleList = this.commonDataShareService.getModuleList();
+      const moduleList = this.commonAppDataShareService.getModuleList();
       const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,this.tabMenu[0]._id,"_id");        
       const cardChild = moduleList[tabIndex]; 
       this.card = {

@@ -1,10 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CommonDataShareService, CoreUtilityService, AppDataShareService, RestService, NotificationService, AppApiService } from '@core/ionic-core';
+import { CoreUtilityService, AppDataShareService, RestService, NotificationService, AppApiService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { element } from 'protractor';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalComponent } from '../../modal/modal.component';
-import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService } from '@core/web-core';
+import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService, CommonAppDataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-modal-detail-card',
@@ -34,7 +34,7 @@ export class ModalDetailCardComponent implements OnInit {
     private modalController: ModalController,
     private dataShareServiceService: DataShareServiceService,
     private coreUtilityService: CoreUtilityService,
-    private commonDataShareService: CommonDataShareService,
+    private commonAppDataShareService: CommonAppDataShareService,
     private restService:RestService,
     private notificationService: NotificationService,
     private apiService: ApiService,
@@ -74,7 +74,7 @@ export class ModalDetailCardComponent implements OnInit {
     let tabDetail:any = '';
     // this.childData = this.dataShareServiceService.getchildCardData();
     let index:any = this.selected_tab_index;
-    const moduleList = this.commonDataShareService.getModuleList();
+    const moduleList = this.commonAppDataShareService.getModuleList();
     if(index != -1){      
       let tabs:any = module.tab_menu;
       if(tabs && tabs.length > 0){

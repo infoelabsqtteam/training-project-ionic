@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { AppStorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService, CommonDataShareService, NotificationService, PermissionService, App_googleService } from '@core/ionic-core';
+import { AppStorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService } from '@core/ionic-core';
 import { filter } from 'rxjs';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Platform, ModalController, AlertController, PopoverController, isPlatform } from '@ionic/angular';
@@ -18,7 +18,7 @@ import { AndroidpermissionsService } from '../../../service/androidpermissions.s
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { Geolocation } from '@capacitor/geolocation';
 import { zonedTimeToUtc } from 'date-fns-tz';
-import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService } from '@core/web-core';
+import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService } from '@core/web-core';
 
 @Component({
   selector: 'app-cards-layout',
@@ -144,7 +144,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private coreUtilityService :CoreUtilityService,
     private dataShareService: DataShareService,
     private appDataShareService: AppDataShareService,
-    private commonDataShareService:CommonDataShareService,
+    private commonAppDataShareService:CommonAppDataShareService,
     private modalController: ModalController,
     private alertController: AlertController,
     private datePipe: DatePipe,
@@ -157,7 +157,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     public renderer: Renderer2,
     private app_googleService: App_googleService,
     private commonFunctionService: CommonFunctionService,
-    private menuOrModuleCommonService: MenuOrModuleCommonService
+    private menuOrModuleCommonService: MenuOrModuleCommonService,
+    private loaderService: LoaderService,
+    private appPermissionService: AppPermissionService
   ) 
   {
     
@@ -166,7 +168,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     // below code is for slider and title name
     this.initializeApp();
     // this.web_site_name = this.envService.getWebSiteName();
-    this.gridDataSubscription = this.appDataShareService.collectiondata.subscribe(data =>{
+    this.gridDataSubscription = this.dataShareService.collectiondata.subscribe(data =>{
       let res:any;
       if(data && data.data && data.data_size && data.data.length > 0){
         res = data.data;
@@ -184,6 +186,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           this.notificationService.presentToastOnBottom("Somethisng went wrong, Data not available");
         }
       }
+      this.checkLoader();
     });
     
     this.pdfFileSubscription = this.dataShareService.downloadPdfData.subscribe(data =>{
@@ -201,7 +204,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.setSaveResponce(responce);
       }
     });
-    this.nestedCardSubscribe = this.commonDataShareService.nestedCard.subscribe(nextgriddata =>{
+    this.nestedCardSubscribe = this.commonAppDataShareService.nestedCard.subscribe(nextgriddata =>{
       if(nextgriddata && nextgriddata !=undefined){
         this.card = nextgriddata.card;
       }
@@ -266,7 +269,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.nodatafound=true;
     }
   }
-
   resetVariabls(){
     if(this.updateMode){
     }
@@ -279,7 +281,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.currentPageCount = 1;
     this.gridData = {};
   }
-
   initializeApp() {
     this.platform.ready().then(() => {
 
@@ -298,14 +299,23 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     });
 
   }
-  ionViewwillEnter(){}
-
+  ionViewwillEnter(){
+    console.log("ionViewwillEnter");
+  }
   ionViewwillLeave(){
     this.carddata=[];
     this.nodatafound=false;
   }
   ionViewDidLeave(){
     this.carddata=[];
+  }
+  checkLoader() {
+    new Promise(async (resolve)=>{
+      let checkLoader = await this.loaderService.loadingCtrl.getTop();
+      if(checkLoader && checkLoader['hasController']){
+        this.loaderService.hideLoader();
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -557,7 +567,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   async modaldetailCardButton(column, data){
     if(this.hasDetaildCard){
      const cardmaster=this.dataShareServiceService.getCardList();
-      // const cardmaster = this.commonDataShareService.getModuleList();
+      // const cardmaster = this.commonAppDataShareService.getModuleList();
       const childColumn = this.childColumn;
       if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
         cardmaster.forEach(element => {
@@ -601,7 +611,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         "selected_tab_index": this.selectedIndex
       }
       this.dataShareServiceService.setchildDataList(newobj);  
-      this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);  
+      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);  
       this.router.navigate(['card-detail-view']);
     }
     
@@ -704,6 +714,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       'data':data,
       'path':null
     }
+    if(payload.data && payload.data.value && !this.updateMode){      
+      this.loaderService.showLoader("Loading...");
+    }
     this.apiService.getDatabyCollectionName(payload);
   }
 
@@ -716,7 +729,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.carddata = [];
     this.createFormgroup = true;
     const tab = this.tabMenu[index];
-    const moduleList = this.commonDataShareService.getModuleList();
+    const moduleList = this.commonAppDataShareService.getModuleList();
     const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
     const card = moduleList[tabIndex];
     this.card['card'] = card;
@@ -737,7 +750,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }else{
         this.formTypeName = "default";
       }
-      this.commonDataShareService.setSelectedTabIndex(this.selectedIndex);
+      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);
       let card = this.card;
       let form:any = {};
       let id = '5f6d95da9feaa2409c3765cd';
@@ -750,7 +763,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           id = card.card.form._id;
         }
       }    
-      this.commonDataShareService.setFormId(id);
+      this.commonAppDataShareService.setFormId(id);
       // this.router.navigate(['crm/form']);
       const modal = await this.modalController.create({
         component: FormComponent,
@@ -978,18 +991,18 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       "selected_grid_card_index":index,
       "carddata_list":this.carddata,
       "updateMode" : updateMode,
-      "module_index":this.commonDataShareService.getModuleIndex(),
+      "module_index":this.commonAppDataShareService.getModuleIndex(),
     }
     if(this.multipleCardCollection && this.multipleCardCollection.length > 0){
       this.multipleCardCollection.forEach(element => {
-        if(element.module_index != this.commonDataShareService.getModuleIndex()){
+        if(element.module_index != this.commonAppDataShareService.getModuleIndex()){
           this.multipleCardCollection.push(cardLayoutDetails);
-          this.commonDataShareService.setMultipleCardCollection(this.multipleCardCollection);
+          this.commonAppDataShareService.setMultipleCardCollection(this.multipleCardCollection);
         }
       });
     }else{
       this.multipleCardCollection.push(cardLayoutDetails);
-      this.commonDataShareService.setMultipleCardCollection(this.multipleCardCollection);
+      this.commonAppDataShareService.setMultipleCardCollection(this.multipleCardCollection);
     }
        
   }
@@ -1012,12 +1025,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         if(nestedCard && nestedCard._id && nestedCard._id != ''){
           id = nestedCard._id;
         }
-        this.commonDataShareService.setNestedCardId(id);
-        const moduleList = this.commonDataShareService.getModuleList();
+        this.commonAppDataShareService.setNestedCardId(id);
+        const moduleList = this.commonAppDataShareService.getModuleList();
         const nxtCardindex = this.commonFunctionService.getIndexInArrayById(moduleList,nestedCard._id,"_id");
-        this.commonDataShareService.setModuleIndex(nxtCardindex);
+        this.commonAppDataShareService.setModuleIndex(nxtCardindex);
         this.getCardDataByCollection(index, gridData._id); 
-        // this.commonDataShareService.setNestedCard(nestedCard);
+        // this.commonAppDataShareService.setNestedCard(nestedCard);
         // let cardWithTabs:any = this.coreUtilityService.getCard(index);
         // let nestedCardDetail:any = cardWithTabs.card;
         // nestedCardDetail['parent_item_id']=
@@ -1181,8 +1194,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       folderName = FolderName;
     }
-    let readPermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-    let writePermission = await this.permissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
+    let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
+    let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
 
     if(readPermission && writePermission){
 
@@ -1287,7 +1300,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   async requestLocationPermission() {
     let isGpsEnable = false;
     if(isPlatform('hybrid')){
-      const permResult = await this.permissionService.checkAppPermission("ACCESS_FINE_LOCATION");
+      const permResult = await this.appPermissionService.checkAppPermission("ACCESS_FINE_LOCATION");
       if(permResult){
         isGpsEnable = await this.app_googleService.askToTurnOnGPS();
         if(isGpsEnable){

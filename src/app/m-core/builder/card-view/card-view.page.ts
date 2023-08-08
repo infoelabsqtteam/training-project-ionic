@@ -1,12 +1,12 @@
 import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2} from '@angular/core';
-import { AppStorageService, RestService, CoreUtilityService, CommonDataShareService } from '@core/ionic-core';
+import { AppStorageService, RestService, CoreUtilityService } from '@core/ionic-core';
 import { Platform, ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup} from '@angular/forms';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Router } from '@angular/router';
 import { PopoverComponent } from '../../common-component/popover/popover.component';
-import { ApiService, CommonFunctionService, MenuOrModuleCommonService } from '@core/web-core';
+import { ApiService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-card-view',
@@ -57,7 +57,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     constructor(
       private storageService: AppStorageService,
       private coreUtilityService :CoreUtilityService,
-      private commonDataShareService:CommonDataShareService,
+      private commonAppDataShareService:CommonAppDataShareService,
       private restService:RestService,
       private apiService:ApiService,
       private formBuilder: FormBuilder,
@@ -107,7 +107,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     load(){
       this.carddata = [];
       this.data = {};
-      const index = this.commonDataShareService.getSelectdTabIndex();
+      const index = this.commonAppDataShareService.getSelectdTabIndex();
       this.getCardDataByCollection(index);
     }
   
@@ -147,7 +147,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.storageService.presentToast('Comming Soon...');
     }
     async goBack(){
-      const multipleCardCollection = this.commonDataShareService.getMultipleCardCollection();
+      const multipleCardCollection = this.commonAppDataShareService.getMultipleCardCollection();
       let previousCollectiondData:any = {};
       let multiCardLength = multipleCardCollection.length;
       const lastIndex = multipleCardCollection.length - 1;
@@ -158,11 +158,11 @@ export class CardViewPage implements OnInit, OnDestroy {
         previousCollectiondData = multipleCardCollection[lastIndex];
         if(previousCollectiondData){          
           this.card = previousCollectiondData.card;
-          this.commonDataShareService.setModuleIndex(previousCollectiondData.module_index);
+          this.commonAppDataShareService.setModuleIndex(previousCollectiondData.module_index);
         }
         multipleCardCollection.splice(lastIndex,1);
-        this.commonDataShareService.setMultipleCardCollection(multipleCardCollection);
-        this.commonDataShareService.setNestedCard(previousCollectiondData);
+        this.commonAppDataShareService.setMultipleCardCollection(multipleCardCollection);
+        this.commonAppDataShareService.setNestedCard(previousCollectiondData);
         this.router.navigateByUrl('card-view');
       }else{
         this.router.navigateByUrl('home');
@@ -180,7 +180,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.popoverMenu = false;
       this.popoverTabbing = false;
       this.popoverItems = [];
-      this.commonDataShareService.setSelectedTabIndex(-1);
+      this.commonAppDataShareService.setSelectedTabIndex(-1);
       this.selectedgriddataId = "";
       this.searchcardvalue = "";
       this.selectedSearchCardField = {};
@@ -307,7 +307,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.carddata = [];
       this.createFormgroup = true;
       const tab = this.popoverItems[index];
-      const moduleList = this.commonDataShareService.getModuleList();
+      const moduleList = this.commonAppDataShareService.getModuleList();
       const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
       const card = moduleList[tabIndex];
       this.card['card'] = card;

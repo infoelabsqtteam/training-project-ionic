@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { CommonDataShareService, CoreUtilityService, RestService, NotificationService, AppApiService } from '@core/ionic-core';
+import { CoreUtilityService, RestService, NotificationService, AppApiService } from '@core/ionic-core';
 import { ApiService, CommonFunctionService } from '@core/web-core';
 
 

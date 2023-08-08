@@ -1,11 +1,11 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { AppAuthService, CommonDataShareService, AppEnvService, NotificationService, RestService, AppStorageService, StorageTokenStatus, CoreUtilityService, CoreFunctionService, AppApiService, AppDataShareService } from '@core/ionic-core';
+import { AppEnvService, NotificationService, RestService, AppStorageService, StorageTokenStatus, CoreUtilityService, CoreFunctionService, AppApiService, AppDataShareService } from '@core/ionic-core';
 import { Platform, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { App } from '@capacitor/app';
-import { ApiService, CommonFunctionService, DataShareService } from '@core/web-core';
+import { AuthService, ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService } from '@core/web-core';
 
 
 @Component({
@@ -64,7 +64,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   constructor(
     private platform: Platform,
-    private authService: AppAuthService,
+    private authService: AuthService,
     private storageService:AppStorageService,
     private router: Router,
     private _location: Location,
@@ -73,13 +73,13 @@ export class HomePage implements OnInit, OnDestroy {
     private dataShareService:DataShareService,
     private apiService:ApiService,
     private restService:RestService,
-    private commonDataShareService:CommonDataShareService,
+    private commonAppDataShareService:CommonAppDataShareService,
     private notificationService: NotificationService,
     private coreUtilityService: CoreUtilityService,
     private coreFunctionService: CoreFunctionService,
     private commonFunctionService: CommonFunctionService,
     private appApiService:AppApiService,
-    private appDataShareService: AppDataShareService
+    // private dataShareService: AppDataShareService
   ) 
   {
     this.initializeApp();
@@ -92,10 +92,10 @@ export class HomePage implements OnInit, OnDestroy {
     this.homePageLayout = this.envService.getAppHomePageLayout();
     this.web_site_name = this.envService.getWebSiteName();
     this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
-    this.gridDataSubscription = this.appDataShareService.gridData.subscribe((data:any) =>{
+    this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
       if(data && data.data && data.data.length > 0){
         this.cardMasterList = data.data;
-        this.commonDataShareService.setModuleList(this.cardMasterList);
+        this.commonAppDataShareService.setModuleList(this.cardMasterList);
         this.cardList = this.coreUtilityService.getUserAutherisedCards(this.cardMasterList);
         if(this.cardList == null){
           this.errorTitle = "No module assign";
@@ -166,22 +166,23 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    if(this.coreFunctionService.isNotBlank(this.storageService.getClientName())){
-      if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-        this.authService.getUserPermission(false,'/home');
-        // this.router.navigateByUrl('/home');
-        this.getGridData();
-      }else {
-        this.router.navigateByUrl('auth/signine');
-      }
-      // this.authService._user_info.subscribe(resp => {
-      //   this.userInfo = resp;
+    // if(this.coreFunctionService.isNotBlank(this.storageService.getClientName())){
+    //   if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
+    //     this.authService.GetUserInfoFromToken(this.storageService.GetIdToken());
+    //     // this.router.navigateByUrl('/home');
+    //     this.getGridData();
+    //   }else {
+    //     this.router.navigateByUrl('/signine');
+    //   }
+    //   // this.authService._user_info.subscribe(resp => {
+    //   //   this.userInfo = resp;
         
-      // })
-    }else{
-      this.storageService.removeDataFormStorage();
-      this.router.navigateByUrl('/auth/verifyCompany');
-    }
+    //   // })
+    // }else{
+    //   this.storageService.removeDataFormStorage();
+    //   this.router.navigateByUrl('/verifyCompany');
+    // }
+    this.getGridData();
   }
   resetVariables(){
     this.cardList = [];
@@ -204,9 +205,9 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   showCardTemplate(card:any, index:number){
-    const moduleList = this.commonDataShareService.getModuleList();
+    const moduleList = this.commonAppDataShareService.getModuleList();
     const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
-    this.commonDataShareService.setModuleIndex(cardclickedindex);
+    this.commonAppDataShareService.setModuleIndex(cardclickedindex);
     if(card['userAutherisedModule'] && card['userAutherisedModule']['name']){
       this.storageService.setModule(card['userAutherisedModule']['name']);
     }

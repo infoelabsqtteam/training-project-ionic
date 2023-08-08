@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
-import { App_googleService, AppDataShareService, AppEnvService, NotificationService, PermissionService, CoreUtilityService, RestService, AppStorageService, AppApiService } from '@core/ionic-core';
+import { App_googleService, AppDataShareService, AppEnvService, NotificationService, AppPermissionService, CoreUtilityService, RestService, AppStorageService, AppApiService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, Platform } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
@@ -89,7 +89,7 @@ export class GmapViewComponent implements OnInit {
     private app_googleService : App_googleService,
     private notificationService: NotificationService,
     private alertCtrl: AlertController,
-    private permissionService: PermissionService,
+    private permissionService: AppPermissionService,
     private platform: Platform,
     private envService: AppEnvService,
     private dataShareService: DataShareService,

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AppAuthService, AppEnvService, NotificationService, AppStorageService } from '@core/ionic-core';
+import {  AppEnvService, NotificationService, AppStorageService } from '@core/ionic-core';
 // import { ErrorMessageComponent } from 'src/app/component/error-message/error-message.component';
 
 @Component({
@@ -37,7 +37,7 @@ export class ChangepwdComponent implements OnInit {
   constructor(
     private router: Router,
     private storageService:AppStorageService,
-    private authService: AppAuthService,
+    // private authService: AppAuthService,
     private notificationService:NotificationService,
     private formBuilder:FormBuilder,
     private envService:AppEnvService,
@@ -96,7 +96,7 @@ export class ChangepwdComponent implements OnInit {
     if(newpwd==confirmpwd)
     { 
       const payload =  {currentPassword: oldpwd, newPassword: newpwd, confirmNewPassword: confirmpwd };
-       this.authService.changePassword(payload);
+      //  this.authService.changePassword(payload);
     }
     else{
       this.passwordNotMatch = false;
@@ -130,25 +130,25 @@ export class ChangepwdComponent implements OnInit {
   
 
   autoFillUserInfo(){
-    this.authService._user_info.subscribe(resp => {
-      this.userInfo = resp;      
-      this.username = this.userInfo.mobile1;
-      if(this.username != undefined && this.username != ''){
-        this.fForm.get('userId').setValue(this.username);
-      } 
-    })
+    // this.authService._user_info.subscribe(resp => {
+    //   this.userInfo = resp;      
+    //   this.username = this.userInfo.mobile1;
+    //   if(this.username != undefined && this.username != ''){
+    //     this.fForm.get('userId').setValue(this.username);
+    //   } 
+    // })
   }
 
   onResetPwd() {
     if (this.fForm.invalid) {
       return;
     }
-    this.authService.forgetPass(this.username);
+    // this.authService.forgetPass(this.username);
     this.resetPwd = false;
   }
 
   resendCode() {
-    this.authService.forgetPass(this.username);
+    // this.authService.forgetPass(this.username);
   }
   
   onVerifyPwd() {
@@ -158,7 +158,7 @@ export class ChangepwdComponent implements OnInit {
     const code = this.vForm.value.verifyCode;
     const password = this.vForm.value.password;
     const payload = { userId: this.username, code: code, newPassword: password };
-    this.authService.saveNewPassword(payload);   
+    // this.authService.saveNewPassword(payload);   
   }
   
   get f() {return this.fForm.controls;}

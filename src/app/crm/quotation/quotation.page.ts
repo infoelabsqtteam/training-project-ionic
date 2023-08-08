@@ -1,11 +1,11 @@
 import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
-import { AppStorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService, CommonDataShareService } from '@core/ionic-core';
+import { AppStorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService } from '@core/ionic-core';
 import { Platform, ModalController, IonRouterOutlet} from '@ionic/angular';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { filter } from 'rxjs';
 import { FormBuilder, FormGroup} from '@angular/forms';
 import { CallNumber } from '@ionic-native/call-number/ngx';
-import { MenuOrModuleCommonService } from '@core/web-core';
+import { CommonAppDataShareService, MenuOrModuleCommonService } from '@core/web-core';
 
 @Component({
   selector: 'app-quotation',
@@ -47,7 +47,7 @@ export class QuotationPage implements OnInit, OnDestroy {
     private restService:RestService,
     private coreUtilityService :CoreUtilityService,
     private dataShareService: AppDataShareService,
-    private commonDataShareService:CommonDataShareService,
+    private commonAppDataShareService:CommonAppDataShareService,
     public modalController: ModalController,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
     @Optional() private readonly routerOutlet?: IonRouterOutlet,
@@ -64,14 +64,14 @@ export class QuotationPage implements OnInit, OnDestroy {
     // this.router.events.pipe(
     //   filter((event: RouterEvent) => event instanceof NavigationEnd)
     // ).subscribe(() => {
-    //   const index = this.commonDataShareService.getSelectdTabIndex();
+    //   const index = this.commonAppDataShareService.getSelectdTabIndex();
     //   this.getCardDataByCollection(index);      
     // });
   }
 
   load(){
     this.carddata = [];
-    const index = this.commonDataShareService.getSelectdTabIndex();
+    const index = this.commonAppDataShareService.getSelectdTabIndex();
     this.getCardDataByCollection(index);
   }
   

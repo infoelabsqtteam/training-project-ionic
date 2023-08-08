@@ -28,6 +28,7 @@ import { McoreModule } from './m-core/m-core.module';
 import { LocationAccuracy } from '@ionic-native/location-accuracy/ngx';
 import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
 import { MyLibModule } from '@core/web-core';
+import { AuthModule } from './auth/auth.module';
 
  
 
@@ -47,6 +48,7 @@ import { MyLibModule } from '@core/web-core';
         AppRoutingModule,
         ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
         McoreModule,
+        AuthModule,
         MyLibModule.forRoot(environment)
     ],
     providers: [

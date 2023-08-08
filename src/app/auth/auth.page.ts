@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import * as appConstants from '../shared/app.constants';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { logging } from 'selenium-webdriver';
-import { CoreUtilityService,AppStorageService,EndPoint, AppAuthService, AuthResponseData } from '@core/ionic-core';
+import { CoreUtilityService,AppStorageService,EndPoint, AuthResponseData } from '@core/ionic-core';
 
 
 
@@ -29,7 +29,7 @@ export class AuthPage implements OnInit {
   otpSent: boolean = false;
 
   constructor(
-    private authService: AppAuthService,
+    // private authService: AppAuthService,
     private router: Router,
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
@@ -67,7 +67,7 @@ export class AuthPage implements OnInit {
         this.storageService.presentToast('Otp Matched !!');
         const obj = JSON.stringify({ authenticated: true, mobileNo: this.loginObj.mobileNo });
         this.storageService.setObject('userData', obj);
-        this.authService.navigateByUrl('/home');
+        // this.authService.navigateByUrl('/home');
       } else {
 
       }
@@ -90,7 +90,7 @@ export class AuthPage implements OnInit {
          let authObs: Observable<AuthResponseData>;
     if (this.isLogin) {
       //  authObs = this.authService.login(email, password);
-       this.authService.login(email, password,'/home');
+      //  this.authService.login(email, password,'/home');
      } else {
       //  authObs = this.authService.signup(email, password,name,mobile);
       //  this.authService.signup(email, password, name, mobile);
@@ -137,7 +137,7 @@ export class AuthPage implements OnInit {
      this.isResetPass = false;
      let email = form.value.email;
    
-       this.authService.forgetPass(email);   
+      //  this.authService.forgetPass(email);   
   }
   onSavePassword(form: NgForm){
     let otp = form.value.veriCode;

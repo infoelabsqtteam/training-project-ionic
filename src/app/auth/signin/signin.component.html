@@ -1,81 +1,46 @@
-<ion-content>
-    <div class="box">
-
-        <h4 class="ion-padding-start ion-no-margin div-text"> Login With Mobile Number</h4>
-
+<ion-content class="loginpage">
+    <div class="logintitle">
+        <h4>Welcome <span *ngIf="appTitle">to {{appTitle}}</span></h4>
+        <p>Sign-In to continue</p>   
     </div>
-    <ion-grid>
-        <ion-row class="ion-justify-content-center">
-            <ion-col size="4">
-
-            </ion-col>
-            <ion-col size="4" class="ion-text-center">
-                <img src="assets/logo.png">
-            </ion-col>
-            <ion-col size="4">
-
-            </ion-col>
-        </ion-row>
-
-        <ion-row>
-            <ion-card *ngIf="!otpSent" class="ion-margin-bottom card-width">
-                <form [formGroup]="otpForm" (ngSubmit)="onSubmit()">
-                    <ion-col size="12">
-                        <ion-item>
-                            <ion-input type="number" formControlName="mobileNo" placeholder="Mobile Number"></ion-input>
-                            <ion-icon name="phone-portrait-outline" slot="start" color="medium" class="item-left"></ion-icon>
-                        </ion-item>
-                        <div *ngIf="f.mobileNo.invalid && (f.mobileNo.dirty || f.mobileNo.touched)" class="alert">
-                            <div *ngIf="f.mobileNo.errors.required" class="warning">
-                                Mobile no is required.
-                            </div>
-                            <div *ngIf="f.mobileNo.errors?.pattern" class="warning">
-                                Mobile number should be 10 digit number.
-                            </div>
-                        </div>
-                    </ion-col>
-                    <ion-col size="12">
-                        <ion-button type="submit" [disabled]="!otpForm.valid" shape="round" expand="block" color="medium">Send OTP</ion-button>
-                    </ion-col>
-                </form>
-                <ion-col class="ion-text-end" size="4">
-
-                </ion-col>
-                <ion-col class="ion-text-end" size="5">
-
-                </ion-col>
-                <ion-col size="3">
-                    <ion-text class="signup" [routerLink]="['/auth/signup']" color="medium">SignUp</ion-text>
-                </ion-col>
-
-            </ion-card>
-            <ion-card *ngIf="otpSent" class="card-width">
-                <ion-item lines="none" style="padding: 0px;">
-                    <ion-icon (click)="goBackToOtp()" name="arrow-back" color="medium"></ion-icon>
+    <div class="loginlogo" *ngIf="logoPath"> 
+        <ion-img src="{{logoPath}}"
+                 alt="{{imageTitle}}" (ionError)="getLogoPath()">
+        </ion-img>
+    </div>
+    <div class="login">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="formgroup" *ngIf="!VerifyType">
+                <ion-item>
+                    <ion-label position="floating">E-mail Id</ion-label>
+                    <ion-input type="email" formControlName="userId" placeholder="Email Id"></ion-input>
+                    <ion-icon class="showpassword" name="checkmark-circle" *ngIf="f.userId.valid"></ion-icon>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched) && f.userId.errors?.required">Email Id is required</ion-note>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched) && f.userId.errors?.email">Enter Valid Email Id</ion-note>
                 </ion-item>
-                <form [formGroup]="otpVerifyForm" (ngSubmit)="verifyOtp()">
-                    <ion-col size="12 ">
-                        <ion-item>
-                            <ion-input type="number" formControlName="otp_input" placeholder="Enter OTP "></ion-input>
-                            <ion-icon name="phone-portrait-outline " slot="start " color="medium " class="item-left "></ion-icon>
-                        </ion-item>
-
-                    </ion-col>
-                    <ion-col size="12 ">
-                        <a class="ion-float-left ion-margin-bottom " *ngIf="!resendOtp">
-                            <ion-label class="ion-padding-start " color="medium "> {{time | async}}</ion-label>
-                        </a>
-                        <a class="ion-float-right ion-margin-bottom " (click)="sendOtp() ">
-                            <ion-label class="ion-padding-end " color="medium "> Resend</ion-label>
-                        </a>
-                    </ion-col>
-                    <ion-col size="12 ">
-                        <ion-button type="submit" [disabled]="!otpVerifyForm.valid" shape="round " expand="block" class="ion-margin-top " color="medium ">Verify OTP</ion-button>
-                    </ion-col>
-
-                </form>
-            </ion-card>
-        </ion-row>
-
-    </ion-grid>
+            </div>
+            <div class="formgroup" *ngIf="VerifyType">
+                <ion-item counter="true">
+                    <ion-label position="floating">Mobile number</ion-label>
+                    <ion-input type="number" formControlName="userId" placeholder="Enter mobile number" maxlength="10"></ion-input>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched) && f.userId.errors?.required">Mobile number is required</ion-note>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched) && f.userId.errors?.pattern">Enter valid mobile number</ion-note>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched) && f.userId.errors?.maxLength">Number should be 10 digit</ion-note>
+                </ion-item>
+            </div>
+            <div class="formgroup">
+                <ion-item>
+                    <ion-label position="floating">Password</ion-label>
+                    <ion-input [type]="showpassword ? 'text': 'password'" formControlName="password" placeholder="Password"></ion-input>
+                    <ion-icon [name]="showpassword ? 'eye': 'eye-off' " class="showpassword" (click)="showtxtpass()"></ion-icon>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.password.invalid && (f.password.dirty || f.password.touched) && f.password.errors?.required">Password is required</ion-note>
+                </ion-item>
+            </div>
+            <div class="formgroup ion-text-end"><ion-text class="forgetpassword" [routerLink]="['/forgetpassword']">Forgot Password?</ion-text></div>
+            <div class="formgroup"><ion-button type="submit" [disabled]="checkValidate()" expand="full">Login</ion-button></div>
+            <div class="formgroup ion-text-center"><ion-text class="signup">Don't have an account ? <a [routerLink]="['/signup']"><strong>Sign-up</strong></a></ion-text></div>
+            
+            <div class="ion-text-center"><ion-text class="signup">Change Company Code ? <a (click)="changeCode()"><strong>Change</strong></a></ion-text></div>
+        </form>
+    </div>
 </ion-content>

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoadingController, AlertController, Platform } from '@ionic/angular';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { AppAuthService, AppStorageService,LoaderService, CoreUtilityService, NotificationService, AppEnvService } from '@core/ionic-core';
+import {  AppStorageService,LoaderService, CoreUtilityService, NotificationService, AppEnvService } from '@core/ionic-core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
@@ -24,7 +24,7 @@ export class ForgetPasswordComponent implements OnInit {
   VerifyType : boolean = false;
 
   constructor(
-    private authService: AppAuthService,
+    // private authService: AppAuthService,
     private router: Router,
     private loadingCtrl: LoadingController,
     private loaderService: LoaderService,
@@ -83,12 +83,12 @@ export class ForgetPasswordComponent implements OnInit {
       return;
     }
     this.username = this.fForm.value.userId;
-    this.authService.forgetPass(this.username);
+    // this.authService.forgetPass(this.username);
     this.resetPwd = false;
   }
 
   resendCode() {
-    this.authService.forgetPass(this.username);
+    // this.authService.forgetPass(this.username);
   }
   
   onVerifyPwd() {
@@ -98,7 +98,7 @@ export class ForgetPasswordComponent implements OnInit {
     const code = this.vForm.value.verifyCode;
     const password = this.vForm.value.password;
     const payload = { userId: this.username, code: code, newPassword: password };
-    this.authService.saveNewPassword(payload);   
+    // this.authService.saveNewPassword(payload);   
   }
   get f() {return this.fForm.controls;}
   get r() {return this.vForm.controls;}

@@ -4,13 +4,13 @@ import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
-import { StorageTokenStatus,App_googleService, RestService, AppEnvService, NotificationService, CommonDataShareService, CoreUtilityService, CoreFunctionService, AppDataShareService, AppApiService } from '@core/ionic-core';
+import { StorageTokenStatus,App_googleService, RestService, AppEnvService, NotificationService, CoreUtilityService, CoreFunctionService, AppDataShareService, AppApiService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
 import { AndroidpermissionsService } from './service/androidpermissions.service';
 import { Title } from '@angular/platform-browser';
-import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService } from '@core/web-core';
+import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService } from '@core/web-core';
 
  
 @Component({ 
@@ -74,13 +74,14 @@ export class AppComponent implements OnInit, OnDestroy {
     private dataShareService: DataShareService,
     private appEnvService: AppEnvService,
     private notificationService: NotificationService,
-    private commonDataShareService: CommonDataShareService,
+    private commonAppDataShareService: CommonAppDataShareService,
     private coreUtilityService: CoreUtilityService,
     private titleService:Title,
     private coreFunctionService: CoreFunctionService,
     private commonFunctionService: CommonFunctionService,
     private appDataShareService: AppDataShareService,
-    private appApiService: AppApiService
+    private appApiService: AppApiService,
+    private authDataShareService: AuthDataShareService
 
   ) {
     
@@ -91,13 +92,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.clinetNameSubscription = this.dataShareService.setClientName.subscribe(
         data =>{
           if(data){
-            // this.appSettings();
             this.commonFunctionService.getApplicationAllSettings();
           }
         });
     // this.web_site = appConstants.siteName;
     this.app_Version  = this.appEnvService.getAppVersion();
-    this.gridDataSubscription = this.appDataShareService.gridData.subscribe(data =>{
+    this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
       if(data && data.data && data.data.length > 0){
         // this.cardList = data.data;
         this.cardList = this.coreUtilityService.getUserAutherisedCards(data.data);
@@ -132,14 +132,15 @@ export class AppComponent implements OnInit, OnDestroy {
         })
     } 
     
-    this.loginAndLogoutResponce = this.appDataShareService.settingData.subscribe(data =>{      
+    this.loginAndLogoutResponce = this.authDataShareService.settingData.subscribe(data =>{      
       if(data == "logged_in"){
-        this.notificationService.presentToastOnBottom('Login successful',"success");
+        // this.notificationService.presentToastOnBottom('Login successful',"success");
         this.userInfo = this.storageService.GetUserInfo();
         this.showSidebarMenu = true;
       }else if(data == "logged_out"){
         this.isClientCodeExist();
         this.resetVariables();
+        this.notificationService.presentToastOnTop('Logout successful',"secondary");
       }    
     });
     
@@ -213,7 +214,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // } 
     // else{
     //   console.log("Token Not active");
-    //   this.router.navigateByUrl('/auth/signine');
+    //   this.router.navigateByUrl('/signine');
     // }
     
     // this.authService._user_info.subscribe(resp => {
@@ -235,7 +236,6 @@ export class AppComponent implements OnInit, OnDestroy {
       }
   }
   redirectToHomePage(){
-    //this.storageService.removeDataFormStorage();
     this.redirectToHomePageWithStorage();
   }
   redirectToHomePageWithStorage(){
@@ -249,12 +249,15 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       if(this.checkIdTokenStatus()){
         this.showSidebarMenu = true;
-        this.userInfo = this.storageService.GetUserInfo(); 
-        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken());
+        // this.authService.redirectionWithMenuType('/home');
+        // this.userInfo = this.storageService.GetUserInfo();
+        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(),'/home');
       }else{
-        // this.authService.appLogout();
+        this.authService.redirectToSignPage();
       }      
-    }else{      
+    }else{
+      this.storageService.removeDataFormStorage("all");
+      this.router.navigate(['/verifyCompany']);
         // this.authService.appClientNameResetData();
     }
   }
@@ -315,7 +318,7 @@ export class AppComponent implements OnInit, OnDestroy {
     //this.commonFunctionService.getCurrentAddress();
   }
   onLogout() {
-    // this.authService.appLogout();
+    this.authService.Logout('');
   }
   
   resetVariables(){
@@ -340,9 +343,9 @@ export class AppComponent implements OnInit, OnDestroy {
   } 
 
   showCardTemplate(card:any, index:number){    
-    const moduleList = this.commonDataShareService.getModuleList();
+    const moduleList = this.commonAppDataShareService.getModuleList();
     const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
-    this.commonDataShareService.setModuleIndex(cardclickedindex);
+    this.commonAppDataShareService.setModuleIndex(cardclickedindex);
     const selectedcard = moduleList[cardclickedindex];
     this.router.navigate(['card-view']);
     this.dataShareServiceService.setcardData(selectedcard);
@@ -364,7 +367,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.favIcon.href = this.storageService.getLogoPath() + "favicon.ico";
     this.titleService.setTitle(this.storageService.getPageTitle());
     this.themeName = this.storageService.getPageThmem();
-    this.router.navigateByUrl('auth/signine');
   }
 
 }

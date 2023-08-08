@@ -1,0 +1,66 @@
+.topPosition {
+    margin-top: 120px;
+}
+
+.inputBg {
+    background-color: #dce0f3!important;
+    border-radius: 15px;
+    padding: 5px 10px!important;
+}
+
+#divPosition {
+    margin-top: 15px;
+}
+
+.bg {
+    background-color: #dce0f3!important;
+}
+
+.box {
+    width: 60%;
+    height: 0;
+    border-top: 100px solid #FE6F61;
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+    border-bottom: 121px solid #FE6F61;
+    border-bottom-right-radius: 213px;
+}
+
+.div-text {
+    color: #ffff;
+}
+
+login-input {
+    border-radius: 25px;
+    border: 1px solid lightgray;
+    --padding-start: 8px;
+}
+
+input-icon {
+    color: #5167c5;
+    right: 24px;
+    position: absolute;
+    font-size: 35px;
+    z-index: 99999;
+}
+
+ion-item {
+    border-radius: 30px !important;
+    border: solid 1px #ffff;
+    // background: #EBF0F3;
+    padding: 15px;
+}
+
+.item-highlight {
+    background: none;
+}
+
+.signup {
+    float: right;
+    padding: 15px;
+    font-size: 16px;
+}
+
+.card-width {
+    width: 100%;
+}

@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
-import { AppAuthService, LoaderService, NotificationService } from '@core/ionic-core';
+import { LoaderService, NotificationService } from '@core/ionic-core';
 import { AlertController, IonInput, IonRouterOutlet, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
@@ -23,7 +23,6 @@ export class VerifyCompanyComponent implements OnInit {
   constructor(    
     private formBuilder: FormBuilder,
     private envService: EnvService,
-    private authService: AppAuthService,
     private dataShareService: DataShareService,
     private storageService: StorageService,
     private router: Router,
@@ -50,7 +49,7 @@ export class VerifyCompanyComponent implements OnInit {
   exitTheApp(){ 
     this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
       console.log('Back press handler!');
-      if (this._location.isCurrentPathEqualTo('/auth/verifyCompany')) {
+      if (this._location.isCurrentPathEqualTo('/verifyCompany')) {
         let isloaderOpen:any = this.loaderService.loadingCtrl.getTop();
         if(isloaderOpen){
           this.loaderService.hideLoader();

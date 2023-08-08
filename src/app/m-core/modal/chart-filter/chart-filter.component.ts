@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { CoreUtilityService, NotificationService, PermissionService, RestService, AppStorageService, AppDataShareService, AppApiService, DownloadService } from '@core/ionic-core';
+import { CoreUtilityService, NotificationService, AppPermissionService, RestService, AppStorageService, AppDataShareService, AppApiService, DownloadService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
 import { Platform, isPlatform } from '@ionic/angular';
@@ -93,7 +93,7 @@ export class ChartFilterComponent implements OnInit {
     private coreUtilityService:CoreUtilityService,
     private file: File,
     private storageService:AppStorageService,
-    private permissionService: PermissionService,
+    private permissionService: AppPermissionService,
     private datePipe: DatePipe,
     private notificationService:NotificationService,
     private chartService:ChartService,
