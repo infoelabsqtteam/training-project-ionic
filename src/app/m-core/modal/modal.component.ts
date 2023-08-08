@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angu
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { CoreUtilityService, RestService, NotificationService, AppApiService } from '@core/ionic-core';
 import { ApiService, CommonFunctionService } from '@core/web-core';
+import { ModalController } from '@ionic/angular';
 
 
 @Component({
@@ -36,7 +37,8 @@ export class ModalComponent implements OnInit {
     private coreUtilityService: CoreUtilityService,
     private notificationService: NotificationService,
     private appApiService: AppApiService,
-    private commonFunctionService: CommonFunctionService
+    private commonFunctionService: CommonFunctionService,
+    private modalController: ModalController
   ) {
   }
 
@@ -46,7 +48,11 @@ export class ModalComponent implements OnInit {
   }
 
   dismissModal(role:string){
-    this.modal?.offsetParent.dismiss({'dismissed': true},role);
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss({'dismissed': true},role);
+    }else{        
+      this.modalController.dismiss({'dismissed': true},role,);
+    }
   }
   setGridDetails(alert){
     let typeofData:string = "";

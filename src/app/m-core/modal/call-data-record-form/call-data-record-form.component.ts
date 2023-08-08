@@ -3,7 +3,7 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CoreFunctionService, NotificationService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
-import { IonDatetime } from '@ionic/angular';
+import { IonDatetime, ModalController } from '@ionic/angular';
 import { format, parseISO, getDate, getMonth, getYear, getTime } from 'date-fns';
 import { ApiService, DataShareService } from '@core/web-core';
 
@@ -49,7 +49,8 @@ export class CallDataRecordFormComponent implements OnInit {
     private dataShareService:DataShareService,
     private notificationService: NotificationService,
     private callNumber: CallNumber,
-    private coreFunctionService: CoreFunctionService
+    private coreFunctionService: CoreFunctionService,
+    private modalController: ModalController
   ) {
     
     this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
@@ -144,7 +145,11 @@ export class CallDataRecordFormComponent implements OnInit {
   }
 
   dismissModal(){
-    this.modal?.offsetParent.dismiss({'dismissed': true},"backClicked");
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss({'dismissed': true},"backClicked");
+    }else{        
+      this.modalController.dismiss({'dismissed': true},"backClicked",);
+    }
   }
   
   async getDataDiff(endTimeMs:any) {    

@@ -183,7 +183,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           this.setCardData(data.data);
         }else{
           this.nodatafound=true;
-          this.notificationService.presentToastOnBottom("Somethisng went wrong, Data not available");
         }
       }
       this.checkLoader();

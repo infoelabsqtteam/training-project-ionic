@@ -430,10 +430,17 @@ export class GridSelectionModalComponent implements OnInit {
   }
   dismissModal(data){
     this.closeModal();
-    this.modal?.offsetParent.dismiss({
-      'dismissed': true,
-      'data':data
-    });
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss({
+        'dismissed': true,
+        'data':data
+      });
+    }else{        
+      this.modalController.dismiss({
+        'dismissed': true,
+        'data':data
+      },);
+    }
   }
   toggle(data:any,event:any, indx:any) {
     let index:any;

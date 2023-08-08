@@ -7,8 +7,8 @@ import { Capacitor } from '@capacitor/core';
 export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
-  // serverhost: "http://localhost:8104/rest/",
-  serverhost: "https://prodservercentral.e-labs.ai",
+  serverhost: "http://localhost:8104/rest/",
+  // serverhost: "",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.tech.elabs.ionic",
   appName: "E-Labs",

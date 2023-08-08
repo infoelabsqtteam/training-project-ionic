@@ -102,7 +102,7 @@ export class AppComponent implements OnInit, OnDestroy {
         // this.cardList = data.data;
         this.cardList = this.coreUtilityService.getUserAutherisedCards(data.data);
       }else{
-        console.log("Somethisng went wrong, please try again later");
+        console.log("Something went wrong, please try again later");
       }
     });
     if(this.dataShareService.themeSetting != undefined){
@@ -232,7 +232,7 @@ export class AppComponent implements OnInit, OnDestroy {
       if(this.coreFunctionService.isNotBlank(clientCode)){
         // this.authService.appLogout();
       }else{            
-        this.router.navigateByUrl("auth/verifyCompany");
+        this.router.navigateByUrl("/verifyCompany");
       }
   }
   redirectToHomePage(){

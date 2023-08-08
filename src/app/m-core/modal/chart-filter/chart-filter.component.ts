@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { CoreUtilityService, NotificationService, AppPermissionService, RestService, AppStorageService, AppDataShareService, AppApiService, DownloadService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
-import { Platform, isPlatform } from '@ionic/angular';
+import { ModalController, Platform, isPlatform } from '@ionic/angular';
 // import { Directory, Filesystem } from '@capacitor/filesystem';
 // import { promise } from 'protractor';
 // import { writeFile } from "capacitor-blob-writer";
@@ -100,7 +100,8 @@ export class ChartFilterComponent implements OnInit {
     private appDataShareService: AppDataShareService,
     private commonFunctionService: CommonFunctionService,
     private appApiService: AppApiService,
-    private downloadService: DownloadService
+    private downloadService: DownloadService,
+    private modalController: ModalController
   ) {
     this.accessToken = this.storageService.GetIdToken();
     this.staticDataSubscription = this.appDataShareService.staticData.subscribe(data =>{
@@ -380,7 +381,11 @@ export class ChartFilterComponent implements OnInit {
 
   dismissModal(item:any){
     this.close(item);
-    this.modal?.offsetParent.dismiss({'dismissed': true},'closed');
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss({'dismissed': true},'closed');
+    }else{        
+      this.modalController.dismiss({'dismissed': true},'closed',);
+    }
   }
 
   exportexcel():void {
