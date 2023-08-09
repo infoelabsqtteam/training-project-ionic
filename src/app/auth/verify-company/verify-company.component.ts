@@ -25,8 +25,6 @@ export class VerifyCompanyComponent implements OnInit {
     private envService: EnvService,
     private dataShareService: DataShareService,
     private storageService: StorageService,
-    private router: Router,
-    private routerOutlet: IonRouterOutlet,
     private _location: Location,
     private platform: Platform,
     private alertController: AlertController,

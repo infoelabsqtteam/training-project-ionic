@@ -1,11 +1,11 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { AppEnvService, NotificationService, RestService, AppStorageService, StorageTokenStatus, CoreUtilityService, CoreFunctionService, AppApiService, AppDataShareService } from '@core/ionic-core';
+import { AppStorageService, NotificationService } from '@core/ionic-core';
 import { Platform, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { App } from '@capacitor/app';
-import { AuthService, ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService, StorageService, MenuOrModuleCommonService } from '@core/web-core';
 
 
 @Component({
@@ -64,22 +64,17 @@ export class HomePage implements OnInit, OnDestroy {
 
   constructor(
     private platform: Platform,
-    private authService: AuthService,
-    private storageService:AppStorageService,
+    private storageService: StorageService,
     private router: Router,
     private _location: Location,
     public alertController: AlertController,
-    private envService: AppEnvService,
     private dataShareService:DataShareService,
     private apiService:ApiService,
-    private restService:RestService,
     private commonAppDataShareService:CommonAppDataShareService,
     private notificationService: NotificationService,
-    private coreUtilityService: CoreUtilityService,
-    private coreFunctionService: CoreFunctionService,
     private commonFunctionService: CommonFunctionService,
-    private appApiService:AppApiService,
-    // private dataShareService: AppDataShareService
+    private menuOrModuleCommonService: MenuOrModuleCommonService,
+    private appStorageService: AppStorageService
   ) 
   {
     this.initializeApp();
@@ -89,14 +84,14 @@ export class HomePage implements OnInit, OnDestroy {
       'assets/img/home/banner3.jpg',
       'assets/img/home/banner4.jpg'
     ];
-    this.homePageLayout = this.envService.getAppHomePageLayout();
-    this.web_site_name = this.envService.getWebSiteName();
-    this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
+    this.homePageLayout = this.appStorageService.getAppHomePageLayout();
+    this.web_site_name = this.appStorageService.getWebSiteName();
+    this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
       if(data && data.data && data.data.length > 0){
         this.cardMasterList = data.data;
         this.commonAppDataShareService.setModuleList(this.cardMasterList);
-        this.cardList = this.coreUtilityService.getUserAutherisedCards(this.cardMasterList);
+        this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(this.cardMasterList);
         if(this.cardList == null){
           this.errorTitle = "No module assign";
           this.errorMessage = "Permission error, No module found!";

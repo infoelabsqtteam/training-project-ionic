@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { CoreUtilityService, RestService } from '@core/ionic-core';
 import { ApiService, CommonAppDataShareService, CommonFunctionService } from '@core/web-core';
 
 @Component({
@@ -34,9 +33,6 @@ export class PopoverComponent implements OnInit {
   }
 
   constructor(
-    private coreUtilityService :CoreUtilityService,
-    private apiService:ApiService,
-    private restService:RestService,
     private commonAppDataShareService:CommonAppDataShareService,
     private commonFunctionService: CommonFunctionService
     ) {

@@ -1,11 +1,8 @@
-import { Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
-import { App_googleService, AppDataShareService, AppEnvService, NotificationService, AppPermissionService, CoreUtilityService, RestService, AppStorageService, AppApiService } from '@core/ionic-core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
+import { App_googleService, NotificationService, AppPermissionService, AppStorageService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, ModalController, Platform } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
-import { Capacitor } from '@capacitor/core';
 import { GoogleMap, MapType } from '@capacitor/google-maps';
-import { map } from 'rxjs';
-import { DatePipe } from '@angular/common';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ApiService, DataShareService } from '@core/web-core';
 
@@ -91,28 +88,21 @@ export class GmapViewComponent implements OnInit {
     private alertCtrl: AlertController,
     private permissionService: AppPermissionService,
     private platform: Platform,
-    private envService: AppEnvService,
     private dataShareService: DataShareService,
     private renderer: Renderer2,
     private actionSheetController: ActionSheetController,
-    private restService: RestService,
     private apiService: ApiService,
-    private ngZone: NgZone,
-    private coreUtilityService: CoreUtilityService,
-    private datePipe: DatePipe,
-    private storageService: AppStorageService,
     private dataShareServiceService: DataShareServiceService,
-    private appApiService: AppApiService,
-    private appDataShareService: AppDataShareService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private appStorageService: AppStorageService
   ) {   
     this.currentPostionIconUrl = '../../../../assets/img/icons/current-location-1.png';
     this.destinationPostionIconUrl = '../../../../assets/img/icons/destination-location-1.png';
     this.isTracking = false;
-    this.gridDataSubscription = this.appDataShareService.gridData.subscribe(data =>{
+    this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
       this.setGridData(data);
     })
-    this.staticDataSubscription = this.appDataShareService.staticData.subscribe(data =>{
+    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
     })
 
@@ -456,7 +446,7 @@ export class GmapViewComponent implements OnInit {
       this.newMap = await GoogleMap.create({
         id: 'google-map'+"-"+this.selectedRowData.recordId,
         element: this.mapRef.nativeElement,
-        apiKey: this.envService.getGoogleMapApiKey(),
+        apiKey: this.appStorageService.getGoogleMapApiKey(),
         config: {
           center: data,
           zoom: 15,

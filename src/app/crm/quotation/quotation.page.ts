@@ -1,10 +1,7 @@
 import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
-import { AppStorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService } from '@core/ionic-core';
-import { Platform, ModalController, IonRouterOutlet} from '@ionic/angular';
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { filter } from 'rxjs';
-import { FormBuilder, FormGroup} from '@angular/forms';
-import { CallNumber } from '@ionic-native/call-number/ngx';
+import { NotificationService } from '@core/ionic-core';
+import { ModalController, IonRouterOutlet} from '@ionic/angular';
+import { FormGroup} from '@angular/forms';
 import { CommonAppDataShareService, MenuOrModuleCommonService } from '@core/web-core';
 
 @Component({
@@ -19,7 +16,6 @@ export class QuotationPage implements OnInit, OnDestroy {
   cardList: any = [];
   selectedIndex= -1;
   tabMenu: any = [];
-  // cardListSubscription:any;
   columnList: any = [];
   carddata: any;
   cardtitle: any;
@@ -29,27 +25,14 @@ export class QuotationPage implements OnInit, OnDestroy {
   filterForm: FormGroup;
   createFormgroup: boolean = true;
   collectionname: any;
-
   card:any={};
-  data :any ={};
-
-  // new var
-  // gridDataSubscription: any;
-  
+  data :any ={};  
   
   constructor(
-    private platform: Platform,
-    private storageService: AppStorageService,
-    private router: Router,
-    private formBuilder: FormBuilder,
-    private callNumber: CallNumber,
-    private apiService:AppApiService,
-    private restService:RestService,
-    private coreUtilityService :CoreUtilityService,
-    private dataShareService: AppDataShareService,
     private commonAppDataShareService:CommonAppDataShareService,
     public modalController: ModalController,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
+    private notificationService: NotificationService,
     @Optional() private readonly routerOutlet?: IonRouterOutlet,
   ) 
   {
@@ -98,7 +81,7 @@ export class QuotationPage implements OnInit, OnDestroy {
   }  
   
   comingSoon() {
-    this.storageService.presentToast('Comming Soon...');
+    this.notificationService.presentToast('Comming Soon...');
   }  
 
 }

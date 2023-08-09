@@ -4,13 +4,13 @@ import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
-import { StorageTokenStatus,App_googleService, RestService, AppEnvService, NotificationService, CoreUtilityService, CoreFunctionService, AppDataShareService, AppApiService } from '@core/ionic-core';
+import { AppStorageService, App_googleService, NotificationService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
 import { AndroidpermissionsService } from './service/androidpermissions.service';
 import { Title } from '@angular/platform-browser';
-import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService } from '@core/web-core';
+import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService, MenuOrModuleCommonService, EnvService, CoreFunctionService, StorageTokenStatus } from '@core/web-core';
 
  
 @Component({ 
@@ -62,30 +62,28 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private platform: Platform,
     private authService: AuthService,
-    private storageService:StorageService,
+    private storageService: StorageService,
     private router: Router,
     private statusBar: StatusBar,
     private dataShareServiceService:DataShareServiceService,
     private app_googleService: App_googleService,
-    private nativeGeocoder:NativeGeocoder,
+    private nativeGeocoder: NativeGeocoder,
     private androidpermissionsService: AndroidpermissionsService,
-    private restService: RestService,
     private apiService: ApiService,
     private dataShareService: DataShareService,
-    private appEnvService: AppEnvService,
     private notificationService: NotificationService,
     private commonAppDataShareService: CommonAppDataShareService,
-    private coreUtilityService: CoreUtilityService,
     private titleService:Title,
     private coreFunctionService: CoreFunctionService,
     private commonFunctionService: CommonFunctionService,
-    private appDataShareService: AppDataShareService,
-    private appApiService: AppApiService,
-    private authDataShareService: AuthDataShareService
+    private authDataShareService: AuthDataShareService,
+    private menuOrModuleCommonService: MenuOrModuleCommonService,    
+    private envService: EnvService,
+    private appStorageService: AppStorageService
 
   ) {
     
-    this.appCardMasterDataSize = this.appEnvService.getAppCardMasterDataSize();
+    this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
     
     this.initializeApp();
 
@@ -96,11 +94,11 @@ export class AppComponent implements OnInit, OnDestroy {
           }
         });
     // this.web_site = appConstants.siteName;
-    this.app_Version  = this.appEnvService.getAppVersion();
+    // this.app_Version  = this.appEnvService.getAppVersion();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
       if(data && data.data && data.data.length > 0){
         // this.cardList = data.data;
-        this.cardList = this.coreUtilityService.getUserAutherisedCards(data.data);
+        this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(data.data);
       }else{
         console.log("Something went wrong, please try again later");
       }
@@ -112,7 +110,7 @@ export class AppComponent implements OnInit, OnDestroy {
           if(themeSetting && themeSetting.length > 0) {
             const settingObj = themeSetting[0];
             this.storageService.setThemeSetting(settingObj);
-            this.appEnvService.setThemeSetting(settingObj);
+            this.envService.setThemeSetting(settingObj);
             this.dataShareService.resetThemeSetting([]);            
           }
         })
@@ -124,7 +122,7 @@ export class AppComponent implements OnInit, OnDestroy {
           if(applicationSetting && applicationSetting.length > 0) {
             const settingObj = applicationSetting[0];
             this.storageService.setApplicationSetting(settingObj);
-            this.appEnvService.setApplicationSetting();
+            this.envService.setApplicationSetting();
             this.loadPage();
             this.dataShareService.subscribeTemeSetting("setting");
             this.dataShareService.resetApplicationSetting([]);

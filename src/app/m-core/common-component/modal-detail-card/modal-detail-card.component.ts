@@ -1,8 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CoreUtilityService, AppDataShareService, RestService, NotificationService, AppApiService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
-import { element } from 'protractor';
-import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalComponent } from '../../modal/modal.component';
 import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService, CommonAppDataShareService } from '@core/web-core';
 
@@ -32,17 +29,13 @@ export class ModalDetailCardComponent implements OnInit {
   
   constructor(
     private modalController: ModalController,
-    private dataShareServiceService: DataShareServiceService,
-    private coreUtilityService: CoreUtilityService,
+    private dataShareService: DataShareService,
     private commonAppDataShareService: CommonAppDataShareService,
-    private restService:RestService,
-    private notificationService: NotificationService,
     private apiService: ApiService,
-    private appDataShareService: AppDataShareService,
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService
     ) {
-      this.childgridsubscription = this.appDataShareService.childGrid.subscribe(data =>{
+      this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
         if(data && data.gridColumns){
           this.childColumns = data.gridColumns;
         }else{

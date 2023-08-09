@@ -1,9 +1,7 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LoadingController, AlertController } from '@ionic/angular';
-import { AppEnvService, AppStorageService, NotificationService } from '@core/ionic-core';
+import { NotificationService } from '@core/ionic-core';
 import { CustomvalidationService, AuthService, AuthDataShareService, EnvService } from '@core/web-core';
 import { Subscription } from 'rxjs';
 
@@ -23,13 +21,7 @@ export class SignupComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private formBuilder: FormBuilder,
     private router: Router,
-    private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController,
-    private http: HttpClient,
-    private storageService: AppStorageService,
-    private appEnvService:AppEnvService,
     private customValidationService: CustomvalidationService,
     private notificationService: NotificationService,
     private authDataShareService: AuthDataShareService,
@@ -102,7 +94,7 @@ export class SignupComponent implements OnInit {
     const name = this.signUpForm.value.name;
     const mobile = this.signUpForm.value.mobileNo;
     let userId = "";
-    if(this.appEnvService.getVerifyType() == "mobile"){
+    if(this.envService.getVerifyType() == "mobile"){
       userId = mobile;
     }else{
      userId = email;

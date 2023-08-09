@@ -1,10 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { LoadingController, AlertController, Platform } from '@ionic/angular';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import {  AppStorageService,LoaderService, CoreUtilityService, NotificationService, AppEnvService } from '@core/ionic-core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { DataShareServiceService } from 'src/app/service/data-share-service.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AuthService, EnvService } from '@core/web-core';
 
 @Component({
   selector: 'app-forget-password',
@@ -24,19 +20,9 @@ export class ForgetPasswordComponent implements OnInit {
   VerifyType : boolean = false;
 
   constructor(
-    // private authService: AppAuthService,
-    private router: Router,
-    private loadingCtrl: LoadingController,
-    private loaderService: LoaderService,
     private formBuilder: FormBuilder,
-    private alertCtrl: AlertController,
-    private http: HttpClient,
-    private storageService: AppStorageService,
-    private coreUtilService: CoreUtilityService,
-    private notificationService:NotificationService,
-    private platform: Platform,
-    private envService:AppEnvService,
-    private dataShareService: DataShareServiceService,
+    private envService:EnvService,
+    private authService: AuthService
   ) { 
     if(this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true;

@@ -1,12 +1,9 @@
 import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2} from '@angular/core';
-import { AppStorageService, RestService, CoreUtilityService } from '@core/ionic-core';
-import { Platform, ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
-import { filter } from 'rxjs';
+import { NotificationService } from '@core/ionic-core';
+import { ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { FormBuilder, FormGroup} from '@angular/forms';
-import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Router } from '@angular/router';
-import { PopoverComponent } from '../../common-component/popover/popover.component';
-import { ApiService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService } from '@core/web-core';
+import { CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-card-view',
@@ -55,11 +52,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   nestedCardSubscribe:any;
   
     constructor(
-      private storageService: AppStorageService,
-      private coreUtilityService :CoreUtilityService,
       private commonAppDataShareService:CommonAppDataShareService,
-      private restService:RestService,
-      private apiService:ApiService,
       private formBuilder: FormBuilder,
       public modalController: ModalController,
       private router:Router,
@@ -67,6 +60,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       public renderer: Renderer2,
       private commonFunctionService: CommonFunctionService,
       private menuOrModuleCommonService: MenuOrModuleCommonService,
+      private notificationService: NotificationService,
       @Optional() private readonly routerOutlet?: IonRouterOutlet,
     ){}
   
@@ -129,7 +123,7 @@ export class CardViewPage implements OnInit, OnDestroy {
             navigation = 'home';
           }
           if(navigation == 'home'){
-            this.storageService.presentToast("Path Changed, please connect to admin.");
+            this.notificationService.presentToastOnBottom("Path Changed, please connect to admin.");
           }
           this.router.navigateByUrl(navigation);
         }else{
@@ -144,7 +138,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
     
     comingSoon() {
-      this.storageService.presentToast('Comming Soon...');
+      this.notificationService.presentToastOnBottom('Comming Soon...');
     }
     async goBack(){
       const multipleCardCollection = this.commonAppDataShareService.getMultipleCardCollection();

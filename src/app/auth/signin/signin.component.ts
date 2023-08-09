@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, Platform, IonRouterOutlet } from '@ionic/angular';
-import {  NotificationService, AppEnvService, CoreFunctionService, StorageTokenStatus } from '@core/ionic-core';
+import {  NotificationService } from '@core/ionic-core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
 import { App } from '@capacitor/app';
 import { Location } from '@angular/common';
-import { AuthDataShareService, AuthService, DataShareService, StorageService } from '@core/web-core';
+import { AuthDataShareService, AuthService, CoreFunctionService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
 
 @Component({
   selector: 'app-signine',
@@ -37,13 +37,13 @@ export class SigninComponent implements OnInit {
     private notificationService:NotificationService,
     private platform: Platform,
     private ionLoaderService: IonLoaderService,
-    private appEnvService: AppEnvService,
+    private envService: EnvService,
     private routerOutlet: IonRouterOutlet,
     private _location: Location,
     private authDataShareService: AuthDataShareService
   ) { 
     this.initializeApp();
-    if(this.storageService.getVerifyType() == 'mobile' || this.appEnvService.getVerifyType() == "mobile"){
+    if(this.storageService.getVerifyType() == 'mobile' || this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true;
     }else{
      this.VerifyType = false;

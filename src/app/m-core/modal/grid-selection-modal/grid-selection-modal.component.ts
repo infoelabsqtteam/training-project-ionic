@@ -1,9 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CoreFunctionService, CoreUtilityService, AppDataShareService, NotificationService, RestService, AppStorageService, AppApiService } from '@core/ionic-core';
+import { AppDataShareService, NotificationService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { GridSelectionDetailModalComponent } from '../grid-selection-detail-modal/grid-selection-detail-modal.component';
-//import { MatCheckboxChange } from '@angular/material/checkbox';
-import { ApiService, CommonFunctionService, LimsCalculationsService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService } from '@core/web-core';
 
 
 @Component({
@@ -46,16 +45,13 @@ export class GridSelectionModalComponent implements OnInit {
 
   constructor(
     private modalController: ModalController,
-    private coreUtilityService: CoreUtilityService,
-    private restService:RestService,
     private apiService:ApiService,
     private notificationService:NotificationService,
-    private storageService: AppStorageService,
     private coreFunctionService: CoreFunctionService,
     private commonFunctionService: CommonFunctionService,
     private limsCalculationService: LimsCalculationsService,
-    private appDataShareService: AppDataShareService,
-    private appApiService: AppApiService
+    private dataShareService: DataShareService,
+    private appDataShareService: AppDataShareService
   ) { }
 
   ngOnInit() {
@@ -70,7 +66,7 @@ export class GridSelectionModalComponent implements OnInit {
     this.unsubscribe();
   }
   subscribe(){
-    this.staticDataSubscriber = this.appDataShareService.staticData.subscribe(data =>{
+    this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
       if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field)  && data[this.field.ddn_field]){
         this.responseData = data[this.field.ddn_field];
       }else{
@@ -87,7 +83,6 @@ export class GridSelectionModalComponent implements OnInit {
           }
         })
       }
-      // this.copyStaticData = data;
       if(this.setGridData && this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null){
         this.setStaticData(data);
         if(this.gridData.length > 0 && this.listOfGridFieldName.length > 0){
@@ -105,7 +100,7 @@ export class GridSelectionModalComponent implements OnInit {
   }
   reloadStaticData(){
     this.reloadBtn = true;
-    let data:any = this.appDataShareService.getStatiData();
+    let data:any = this.dataShareService.getStatiData();
     this.copyStaticData = data;
     if(this.setGridData && this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null && data[this.field.ddn_field] != undefined){
       if((Array.isArray(data[this.field.ddn_field]) && data[this.field.ddn_field].length > 0)){
@@ -411,7 +406,7 @@ export class GridSelectionModalComponent implements OnInit {
     }
     if(check != 0){
       this.selectedData = [];
-      this.storageService.presentToast(validation.msg);
+      this.notificationService.presentToastOnBottom(validation.msg);
     }else{
       this.selectedData = this.updateGridDataToModifiedData(this.grid_row_selection,this.gridData,this.modifiedGridData,this.listOfGridFieldName,);
       this.dismissModal(this.selectedData); 

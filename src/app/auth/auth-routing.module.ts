@@ -6,8 +6,6 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
 import { ChangepwdComponent } from './changepwd/changepwd.component';
 import { VerifyOtpComponent } from './verify-otp/verify-otp.component';
 import { VerifyCompanyComponent } from './verify-company/verify-company.component';
-import { SigninOldComponent } from './signinOld/signin.component';
-import { SignupOldComponent } from './signupOld/signup.component';
 
 const authRoutes : Routes = [
     { path: 'signin', component: SigninComponent, },
@@ -15,9 +13,7 @@ const authRoutes : Routes = [
     { path: 'forgetpassword', component: ForgetPasswordComponent },
     { path: 'changepwd', component: ChangepwdComponent },
     { path: 'otp_varify/:username', component: VerifyOtpComponent },
-    { path: 'verifyCompany', component: VerifyCompanyComponent },
-    { path: 'signinold', component: SigninOldComponent},
-    { path: 'signupold', component: SignupOldComponent}
+    { path: 'verifyCompany', component: VerifyCompanyComponent }
 ];
 
 

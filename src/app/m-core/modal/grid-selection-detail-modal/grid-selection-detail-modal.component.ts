@@ -1,7 +1,7 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { AppApiService, AppDataShareService, CoreFunctionService, CoreUtilityService, NotificationService, RestService, AppStorageService } from '@core/ionic-core';
+import { Component, Input, OnInit } from '@angular/core';
+import { NotificationService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
-import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-grid-selection-detail-modal',
@@ -44,19 +44,14 @@ export class GridSelectionDetailModalComponent implements OnInit {
 
   constructor(
     private modalController: ModalController,
-    private coreUtilityService: CoreUtilityService,
     private dataShareService: DataShareService,
     private apiService: ApiService,
-    private restService: RestService,
-    private storageService: AppStorageService,
     private notificationService: NotificationService,
     private coreFunctionService: CoreFunctionService,
     private commonFunctionService: CommonFunctionService,
-    private appDataShareService: AppDataShareService,
-    private limsCalculationsService: LimsCalculationsService,
-    private appApiService: AppApiService
+    private limsCalculationsService: LimsCalculationsService
   ) { 
-    this.staticDataSubscription = this.appDataShareService.staticData.subscribe(data =>{
+    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
     })
     this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data => {
@@ -178,7 +173,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       }
     }
     if(msg !==""){
-      this.storageService.presentToast(msg);
+      this.notificationService.presentToastOnBottom(msg);
     }
     if(!this.grid_row_selection && !this.field.add_new_enabled && !this.readonly) {
       this.action_button_SaveupdateData = true;
@@ -231,20 +226,20 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   async select(){
     if(this.alreadyAdded){
-      // this.storageService.presentToast("Can't perform this action because this record already added");
+      // this.notificationService.presentToastOnBottom("Can't perform this action because this record already added");
       this.dismissModal(this.data,false);
     }else{
       // if(this.checkValidator()){
-        this.storageService.presentToast("Record selected");
+        this.notificationService.presentToastOnBottom("Record selected");
         this.dismissModal(this.data,false);
       // }
     }
   }
   remove(){
     if(!this.alreadyAdded){
-      this.storageService.presentToast("Can't perform this action because this record not selected");
+      this.notificationService.presentToastOnBottom("Can't perform this action because this record not selected");
     }else{
-      this.storageService.presentToast("Record removed");
+      this.notificationService.presentToastOnBottom("Record removed");
       this.dismissModal(this.data,true);
     }
   }
@@ -308,13 +303,17 @@ export class GridSelectionDetailModalComponent implements OnInit {
     // this.selectedTab = ev.target.value;
     console.log(ev);
   }
-  setStaticData(staticData){
-    if (staticData) {
-      this.staticData = staticData;
-      Object.keys(this.staticData).forEach(key => {
-        if(this.staticData[key]){       
-        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
-      } })
+  setStaticData(staticDatas){
+    if(Object.keys(staticDatas).length > 0) {
+      Object.keys(staticDatas).forEach(key => {  
+        let staticData = {};
+        staticData[key] = staticDatas[key];  
+        if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
+          if(staticData[key]) { 
+            this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
+          }
+        } 
+      });
     }
   }
   // setValue(column,i){
@@ -374,7 +373,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       const alreadyAddedList = data[field.field_name];
       if ((option.keyCode == 13 || option.keyCode == 9) && option.target.value !="" && option.target.value != undefined){
         if(this.commonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option.target.value,alreadyAddedList)){
-          this.storageService.presentToast( option.target.value + ' Already Added');
+          this.notificationService.presentToastOnBottom( option.target.value + ' Already Added');
         }else{
           if(data[field.field_name] == null) {
             data[field.field_name] = [];
@@ -385,11 +384,11 @@ export class GridSelectionDetailModalComponent implements OnInit {
         }
         // option.target.value = "";
       }else if(option.target && option.target.value ==""){
-        this.storageService.presentToast( "Please enter any " + field.label);
+        this.notificationService.presentToastOnBottom( "Please enter any " + field.label);
       }else{
         if(option !=""){
           if(this.commonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
-            this.storageService.presentToast( option.name + ' Already Added');
+            this.notificationService.presentToastOnBottom( option.name + ' Already Added');
           }else{
             if(data[field.field_name] == null) data[field.field_name] = [];
             data[field.field_name].push(option); 
@@ -464,7 +463,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       // }
     }
     if(check != 0){
-      this.storageService.presentToast(validation.msg);
+      this.notificationService.presentToastOnBottom(validation.msg);
     }else{
       this.dismissModal(this.data,"onlyupdate"); 
     }

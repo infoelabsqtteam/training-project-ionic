@@ -1,8 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { AppStorageService, AppApiService, RestService, CoreUtilityService, AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService } from '@core/ionic-core';
-import { filter } from 'rxjs';
+import { Router } from '@angular/router';
+import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Platform, ModalController, AlertController, PopoverController, isPlatform } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -10,15 +8,12 @@ import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card
 import { FormComponent } from '../form/form.component';
 import { DatePipe } from '@angular/common';
 import { CallDataRecordFormComponent } from '../../modal/call-data-record-form/call-data-record-form.component';
-import { Directory, Filesystem } from '@capacitor/filesystem';
-import { HttpClient, HttpEventType } from '@angular/common/http';
 import { FileOpener } from '@ionic-native/file-opener/ngx';
 import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
-import { Geolocation } from '@capacitor/geolocation';
 import { zonedTimeToUtc } from 'date-fns-tz';
-import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService } from '@core/web-core';
+import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService } from '@core/web-core';
 
 @Component({
   selector: 'app-cards-layout',
@@ -133,15 +128,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   constructor(
     private platform: Platform,
-    private storageService: AppStorageService,
+    private storageService: StorageService,
     private router: Router,
     private dataShareServiceService:DataShareServiceService,
-    private formBuilder: FormBuilder,
     private callNumber: CallNumber,
     private apiService:ApiService,
-    private appApiService:AppApiService,
-    private restService:RestService,
-    private coreUtilityService :CoreUtilityService,
     private dataShareService: DataShareService,
     private appDataShareService: AppDataShareService,
     private commonAppDataShareService:CommonAppDataShareService,
@@ -150,7 +141,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private datePipe: DatePipe,
     private notificationService: NotificationService,
     private permissionService:PermissionService,
-    private http: HttpClient,
     private fileOpener: FileOpener,
     private file: File,
     private apppermissionsService: AndroidpermissionsService,
@@ -191,7 +181,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.pdfFileSubscription = this.dataShareService.downloadPdfData.subscribe(data =>{
       this.setDownloadPdfData(data);
     })
-    this.childgridsubscription = this.appDataShareService.childGrid.subscribe(data =>{
+    this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
       if(data && data.gridColumns){
         this.childColumns = data.gridColumns;
       }
@@ -687,7 +677,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       } 
     }
     
-    let user = this.storageService.getUserInfo();
+    let user = this.storageService.GetUserInfo();
     object["user"]=user;
     let data = this.commonFunctionService.getPaylodWithCriteria(params,'',cardCriteria,object);
     this.currentPage = this.currentPageCount - 1;
@@ -1020,7 +1010,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       let nestedCard:any = {};
       let id="";
       if(parentcard && parentcard.gridChildCard){
-        nestedCard = this.coreUtilityService.getNestedCard(parentcard.gridChildCard,buttonName);
+        nestedCard = this.menuOrModuleCommonService.getNestedCard(parentcard.gridChildCard,buttonName);
         if(nestedCard && nestedCard._id && nestedCard._id != ''){
           id = nestedCard._id;
         }
@@ -1105,42 +1095,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
       
       if(this.platform.is("hybrid")){
-        this.downloadToMobile(file,fileName)
-          // this.http.get(url , {
-          //   responseType : 'blob',
-          //   reportProgress: true,
-          //   observe:'events'
-          // }).subscribe(async event =>{
-          //   if(event.type === HttpEventType.DownloadProgress){
-          //     this.downloadProgress = Math.round((100 * event.loaded)/event.total);
-          //   }
-          //   else if(event.type === HttpEventType.Response){
-          //     this.downloadProgress = 0;
-      
-          //     const name = downloadPdfData.filename;
-          //     const base64 = await this.convertBlobToBase64(event.body) as string;
-      
-          //     const savedFile = await Filesystem.writeFile({
-          //       path: name,
-          //       data: base64,
-          //       directory: Directory.Documents,
-          //     });
-          //     console.log(savedFile.uri);
-          //     const path = savedFile.uri;
-          //     const mimeType = this.getMimetype(name);
-      
-          //     this.fileOpener.open(path,mimeType)
-          //     .then(()=> console.log('File is opened'))
-          //     .catch(error => console.log('Error opening file',error));
-      
-          //     // this.myFiles.unshift(path);
-              
-          //     // Storage.set({
-          //     //   key:FILE_KEY,
-          //     //   value: JSON.stringify(this.myFiles)
-          //     // })
-          //   }
-          // })
+        this.downloadToMobile(file,fileName);
       }else{
         link.download = downloadPdfData.filename;
         document.body.appendChild(link);
@@ -1212,7 +1167,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             .catch(error => console.log('Error opening file ',error));
           }
         }).catch( (error:any) =>{
-          this.storageService.presentToast(JSON.stringify(error));
+          this.notificationService.presentToastOnBottom(JSON.stringify(error), 'danger');
         })
         
       }).catch( (error:any) =>{
@@ -1221,11 +1176,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
             console.log('Directory create '+ response);
             this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
-              this.storageService.presentToast(fileName + " Saved in " + folderName);
+              this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
             })
 
           }).catch( (error:any) =>{            
-            this.storageService.presentToast(JSON.stringify(error));
+            this.notificationService.presentToastOnBottom(JSON.stringify(error));
           })
         }
       });

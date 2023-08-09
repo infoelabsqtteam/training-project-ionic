@@ -1,9 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { CoreFunctionService, CoreUtilityService, AppDataShareService, NotificationService, RestService, AppStorageService } from '@core/ionic-core';
+import { AppDataShareService, NotificationService, AppStorageService } from '@core/ionic-core';
 import { AlertController, ModalController } from '@ionic/angular';
-import { Subscriber, Subscription } from 'rxjs';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
-import { ApiService, DataShareService, LimsCalculationsService, CommonFunctionService } from '@core/web-core';
+import { ApiService, DataShareService, LimsCalculationsService, CommonFunctionService, CoreFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-grid-selection',
@@ -47,13 +46,8 @@ export class GridSelectionComponent implements OnInit, OnChanges {
 
   constructor(    
     private modalController: ModalController,
-    private coreUtilityService: CoreUtilityService,
-    private restService:RestService,
-    private apiService:ApiService,
     private notificationService:NotificationService,
     private dataShareService:DataShareService,
-    private storageService: AppStorageService,
-    private alertController: AlertController,
     private coreFunctionService: CoreFunctionService,
     private appDataShareService: AppDataShareService,
     private limsCalculationsService: LimsCalculationsService,
@@ -78,7 +72,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     } 
   }
   subscribe(){
-    this.staticDataSubscriber = this.appDataShareService.staticData.subscribe(data =>{
+    this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
       if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field) && data[this.field.ddn_field]){
         this.responseData = data[this.field.ddn_field];
       }else{
@@ -90,7 +84,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   reloadStaticData(){
     this.reloadBtn = true;
-    let data:any = this.appDataShareService.getStatiData();
+    let data:any = this.dataShareService.getStatiData();
     this.copyStaticData = data;
     if(this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null && data[this.field.ddn_field] != undefined){
       if((Array.isArray(data[this.field.ddn_field]) && data[this.field.ddn_field].length > 0)){
@@ -141,65 +135,83 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }    
   }
   
-  setStaticData(staticData){
-    if(staticData){
-      if(this.field.ddn_field && staticData[this.field.ddn_field] && staticData[this.field.ddn_field] != null){
+  setStaticData(staticData) {
+    if (staticData) {
+      if (this.field.ddn_field && staticData[this.field.ddn_field] && staticData[this.field.ddn_field] != null) {
         this.gridData = [];
-        if(staticData[this.field.ddn_field] && staticData[this.field.ddn_field].length>0){
+        if (staticData[this.field.ddn_field] && staticData[this.field.ddn_field].length > 0) {
           staticData[this.field.ddn_field].forEach(element => {
             const gridData = JSON.parse(JSON.stringify(element))
-            if(gridData.selected && this.selecteData.length < 0){
+            if (gridData.selected && this.selecteData.length < 0) {
               gridData.selected = false;
             }
             this.gridData.push(gridData);
           });
         }
-       
-        if(this.gridData && this.gridData.length > 0){
 
-          if(this.field.onchange_function && this.field.onchange_function_param != ""){
-            switch(this.field.onchange_function_param){
+        if (this.gridData && this.gridData.length > 0) {
+
+          if (this.field.onchange_function && this.field.onchange_function_param != "") {
+            switch (this.field.onchange_function_param) {
               case "calculateQquoteAmount":
                 this.gridData = this.limsCalculationsService.calculateAutoEffRate(this.gridData);
                 break;
             }
           }
-          
-          this.selecteData.forEach(element => {
-            this.gridData.forEach((row, i) => {
-              if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0){
-                var validity = true;
-                this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
-                  if(this.commonFunctionService.getObjectValue(matchcriteria,element) == this.commonFunctionService.getObjectValue(matchcriteria,row)){
-                    validity = validity && true;
-                  }
-                  else{
-                    validity = validity && false;
-                  }
-                });
-                if(validity == true){
-                  this.gridData[i]= element
-                const grid_data = JSON.parse(JSON.stringify(this.gridData[i]))
-                grid_data.selected = true;
-                this.gridData[i] = grid_data;
-                }
-              }
-              else{
-                 if(this.commonFunctionService.getObjectValue("_id",element) == this.commonFunctionService.getObjectValue('_id',row)){
-                  this.gridData[i]= element
-                  const grid_data = JSON.parse(JSON.stringify(this.gridData[i]))
-                  grid_data.selected = true;
-                  this.gridData[i] = grid_data;
-                }
-              }
-            });
-          });  
-          //this.getSelectedData();        
+          if(this.selecteData && this.selecteData.length > 0){
+            this.updateSelectedDataInGridData(this.selecteData);            
+          }        
+          // this.setGridData = false;
         }else{
           this.nogridDdata=true;
         }
-      }        
+      }
     }
+  }
+  
+  
+  updateSelectedDataInGridData(selecteData){
+    if(selecteData && selecteData.length > 0){
+      selecteData.forEach(element => {
+        for (let i = 0; i < this.gridData.length; i++) {
+          const row = this.gridData[i];
+          if (this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length > 0) {
+            var validity = true;
+            for (let index = 0; index < this.field.matching_fields_for_grid_selection.length; index++) {
+              const matchcriteria = this.field.matching_fields_for_grid_selection[index];
+              if (this.commonFunctionService.getObjectValue(matchcriteria, element) == this.commonFunctionService.getObjectValue(matchcriteria, row)) {
+                validity = validity && true;
+              }
+              else {
+                validity = validity && false;
+                break;
+              }
+            };
+            if (validity == true) {
+              this.updateRowData(element,i);
+              break;
+            }
+          }
+          else {
+            if (this.commonFunctionService.getObjectValue("_id", element) == this.commonFunctionService.getObjectValue('_id', row)) {
+              this.updateRowData(element,i);
+              break;
+            }
+          }
+        };
+      });  
+    }
+  }
+  updateRowData(element,i){
+    this.gridData[i] = element
+    const grid_data = JSON.parse(JSON.stringify(this.gridData[i]));
+    grid_data.selected = true;
+    // if(this.editableGridColumns.length > 0){
+    //   this.editableGridColumns.forEach(column => {
+    //     grid_data[column.field_name] = element[column.field_name];
+    //   });
+    // }
+    this.gridData[i] = grid_data;
   }
 
   getValueForGrid(field, object) {

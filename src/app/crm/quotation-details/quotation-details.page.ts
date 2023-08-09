@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CoreUtilityService, AppStorageService,} from '@core/ionic-core';
+import { NotificationService,} from '@core/ionic-core';
 import { CommonAppDataShareService, CommonFunctionService } from '@core/web-core';
 import { MenuOrModuleCommonService } from '@core/web-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
@@ -27,12 +27,11 @@ export class QuotationDetailsPage implements OnInit, OnDestroy {
   
   constructor(
     private dataShareServiceService:DataShareServiceService,
-    private coreUtilityService :CoreUtilityService,
     private commonAppDataShareService:CommonAppDataShareService,
     private callNumber: CallNumber,
-    private storageService: AppStorageService,
     private commonFunctionService: CommonFunctionService,
-    private menuOrModuleCommonService: MenuOrModuleCommonService
+    private menuOrModuleCommonService: MenuOrModuleCommonService,
+    private notificationService: NotificationService
   ) { 
     
   }
@@ -159,7 +158,7 @@ export class QuotationDetailsPage implements OnInit, OnDestroy {
   async detailCardButton(column, data){}
 
   comingSoon() {
-    this.storageService.presentToast('Comming Soon...');
+    this.notificationService.presentToastOnBottom('Comming Soon...');
   }
 
 }

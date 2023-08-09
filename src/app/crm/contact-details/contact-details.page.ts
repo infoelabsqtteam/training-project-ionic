@@ -1,16 +1,15 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { AppEnvService, AppStorageService, RestService, CoreUtilityService } from '@core/ionic-core';
+import { Router } from '@angular/router';
+import { AppStorageService, NotificationService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
-import { ModalController, PopoverController } from '@ionic/angular';
+import { PopoverController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { SocialOptionComponent } from '../social-option/social-option.component';
-import { SmsRetriever } from '@ionic-native/sms-retriever'
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
-import { CommonFunctionService } from '@core/web-core';
+import { CommonFunctionService, EnvService, StorageService } from '@core/web-core';
 
 @Component({
   selector: 'app-contact-details',
@@ -53,22 +52,20 @@ export class ContactDetailsPage implements OnInit {
   childTabMenu: any=[];
 
   constructor(
-    public popoverController: PopoverController, 
-    private modalController: ModalController,
+    public popoverController: PopoverController,
     private dataShareServiceService:DataShareServiceService,
-    private envService: AppEnvService,
+    private envService: EnvService,
     private http: HttpClient,
-    private storageService: AppStorageService,
+    private storageService: StorageService,
     private router: Router,
-    private currencyPipe: CurrencyPipe,
     private callNumber: CallNumber,
     private formBuilder: FormBuilder,
     private datePipe: DatePipe,
     private CurrencyPipe: CurrencyPipe,
     private ionLoaderService: IonLoaderService,
-    private restService: RestService,    
     private commonFunctionService:CommonFunctionService,
-    private coreUtilityService: CoreUtilityService
+    private appStorageService: AppStorageService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -165,7 +162,7 @@ export class ContactDetailsPage implements OnInit {
   }
 
   commonFunction(data:any) {
-    this.storageService.getObject('authData').then(async (val) => {
+    this.appStorageService.getObject('authData').then(async (val) => {
       if (val && val.idToken != null) {
         var header = {
           headers: new HttpHeaders()
@@ -367,7 +364,7 @@ export class ContactDetailsPage implements OnInit {
   }
 
   getcardData(collection_name:any){
-    this.storageService.getObject('authData').then(async (val) => {
+    this.appStorageService.getObject('authData').then(async (val) => {
       if (val && val.idToken != null) {
         var header = {
           headers: new HttpHeaders()
@@ -600,7 +597,7 @@ export class ContactDetailsPage implements OnInit {
   }
 
   comingSoon() {
-    this.storageService.presentToast('Comming Soon...');
+    this.notificationService.presentToast('Comming Soon...');
   }
 
 }

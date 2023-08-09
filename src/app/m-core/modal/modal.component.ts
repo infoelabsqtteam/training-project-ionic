@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { CoreUtilityService, RestService, NotificationService, AppApiService } from '@core/ionic-core';
+import { NotificationService } from '@core/ionic-core';
 import { ApiService, CommonFunctionService } from '@core/web-core';
 import { ModalController } from '@ionic/angular';
 
@@ -32,11 +32,8 @@ export class ModalComponent implements OnInit {
 
   constructor(
     private formBuilder: FormBuilder,
-    private restService:RestService,
     private apiService:ApiService,
-    private coreUtilityService: CoreUtilityService,
     private notificationService: NotificationService,
-    private appApiService: AppApiService,
     private commonFunctionService: CommonFunctionService,
     private modalController: ModalController
   ) {

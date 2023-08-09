@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { AppEnvService, CoreFunctionService, NotificationService } from '@core/ionic-core';
-import { StorageService, AuthService, AuthDataShareService } from '@core/web-core';
+import { NotificationService } from '@core/ionic-core';
+import { StorageService, AuthService, AuthDataShareService, CoreFunctionService } from '@core/web-core';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -23,7 +23,6 @@ export class VerifyOtpComponent implements OnInit {
   constructor(
     private routers: ActivatedRoute,
     private authService:AuthService,
-    private envService:AppEnvService,
     private formBuilder: FormBuilder,
     private storageService: StorageService,
     private coreFunctionService: CoreFunctionService,
@@ -67,7 +66,7 @@ export class VerifyOtpComponent implements OnInit {
       username: ['', [Validators.required]],
       verifyCode: ['', [Validators.required]]
     });
-    if(this.envService.getVerifyType() == "mobile"){
+    if(this.storageService.getVerifyType() == "mobile"){
       this.isVerify = true;
     }else{
       this.isVerify = false;

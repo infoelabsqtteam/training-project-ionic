@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { CoreUtilityService, NotificationService, AppPermissionService, RestService, AppStorageService, AppDataShareService, AppApiService, DownloadService } from '@core/ionic-core';
+import { NotificationService, AppPermissionService, AppDataShareService, DownloadService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
 import { ModalController, Platform, isPlatform } from '@ionic/angular';
@@ -12,7 +12,7 @@ import { DatePipe } from '@angular/common';
 import { zonedTimeToUtc, utcToZonedTime, format} from 'date-fns-tz';
 import { parseISO } from 'date-fns';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
-import { ApiService, CommonFunctionService, DataShareService, ChartService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService } from '@core/web-core';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -59,7 +59,6 @@ export class ChartFilterComponent implements OnInit {
 
   checkGetDashletData:boolean=true;
   //staticData: any = {};
-  copyStaticData:any={};
   typeAheadData:any=[];
   showFilter:boolean=false;
   dashlet_call_back: any;
@@ -87,27 +86,21 @@ export class ChartFilterComponent implements OnInit {
   constructor(
     private platform: Platform,
     public formBuilder: FormBuilder,
-    private restService: RestService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
-    private coreUtilityService:CoreUtilityService,
     private file: File,
-    private storageService:AppStorageService,
+    private storageService:StorageService,
     private permissionService: AppPermissionService,
     private datePipe: DatePipe,
     private notificationService:NotificationService,
     private chartService:ChartService,
-    private appDataShareService: AppDataShareService,
     private commonFunctionService: CommonFunctionService,
-    private appApiService: AppApiService,
     private downloadService: DownloadService,
     private modalController: ModalController
   ) {
     this.accessToken = this.storageService.GetIdToken();
-    this.staticDataSubscription = this.appDataShareService.staticData.subscribe(data =>{
-      if(data && data !=''){
+    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
         this.setStaticData(data);
-      }
     })
     this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data =>{
       this.setTypeaheadData(data);
@@ -487,12 +480,12 @@ export class ChartFilterComponent implements OnInit {
       this.file.checkDir(this.file.externalRootDirectory, "Download").then(() => {
 
         this.file.writeFile(this.file.externalRootDirectory + '/Download/',fileName,excelBlobData,{replace:true}).then(() => {
-          this.storageService.presentToast(fileName + " Saved in Downloads");
+          this.notificationService.presentToastOnBottom(fileName + " Saved in Downloads");
         }).catch( (error:any) =>{
           if(error && error.message){
-            this.storageService.presentToast(error.message);
+            this.notificationService.presentToastOnBottom(error.message);
           }else{
-            this.storageService.presentToast(error);
+            this.notificationService.presentToastOnBottom(error);
           }
         })
         
@@ -501,14 +494,14 @@ export class ChartFilterComponent implements OnInit {
         this.file.createDir(this.file.externalRootDirectory, "Download", true).then(() => {
           
           this.file.writeFile(this.file.externalRootDirectory + "/Download/",fileName,excelBlobData,{replace:true}).then(() => {
-            this.storageService.presentToast(fileName + " Saved in Download");
+            this.notificationService.presentToastOnBottom(fileName + " Saved in Download");
           })
 
         }).catch( (error:any) =>{
           if(error && error.message){
-            this.storageService.presentToast(error.message);
+            this.notificationService.presentToastOnBottom(error.message);
           }else{
-            this.storageService.presentToast(error);
+            this.notificationService.presentToastOnBottom(error);
           }
         })
         }
@@ -707,12 +700,17 @@ export class ChartFilterComponent implements OnInit {
       this.notificationService.presentToastOnBottom("Please First select Start Date","danger")
     }
   }
-  setStaticData(staticData?:any){
-    if (staticData) {
-      this.staticData = staticData;
-      Object.keys(this.staticData).forEach(key => {        
-        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
-      }) 
+  setStaticData(staticDatas){
+    if(Object.keys(staticDatas).length > 0) {
+      Object.keys(staticDatas).forEach(key => {  
+        let staticData = {};
+        staticData[key] = staticDatas[key];  
+        if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
+          if(staticData[key]) { 
+            this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
+          }
+        } 
+      });
     }
   }
 

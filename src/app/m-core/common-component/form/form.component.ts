@@ -1,29 +1,25 @@
 import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter, Output, HostListener, NgZone } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, AsyncValidatorFn, FormArray, FormControl } from "@angular/forms";
-import { DOCUMENT, DatePipe, CurrencyPipe } from '@angular/common'; 
+import { FormGroup, FormBuilder, Validators, FormArray, FormControl } from "@angular/forms";
+import { DatePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { AppApiService, App_googleService, Common, AppPermissionService, CoreFunctionService, CoreUtilityService, AppDataShareService, AppEnvService, NotificationService, RestService, AppStorageService,  } from '@core/ionic-core';
-import { AlertController, ItemReorderEventDetail, ModalController, ToastController, isPlatform  } from '@ionic/angular';
+import { App_googleService, NotificationService, AppDataShareService, AppPermissionService } from '@core/ionic-core';
+import { AlertController, ItemReorderEventDetail, ModalController, isPlatform  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
-import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
+import { ActionSheetController, Platform } from '@ionic/angular';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Observable, catchError, finalize, last, map, of } from 'rxjs';
-import { CameraService } from 'src/app/service/camera-service/camera.service';
-import { HttpClient } from '@angular/common/http';
 import { zonedTimeToUtc, utcToZonedTime} from 'date-fns-tz';
 import { parseISO, format, hoursToMilliseconds, isToday, add } from 'date-fns';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import {FileOpener} from '@ionic-native/file-opener/ngx';
 import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from 'src/app/service/androidpermissions.service';
-import { PopoverModalService } from '../../../service/modal-service/popover-modal.service'
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 // import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
-import { environment } from 'src/environments/environment';
-import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService } from '@core/web-core';
+import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common } from '@core/web-core';
 
 interface User {
   id: number;
@@ -219,7 +215,7 @@ tinymceConfig = {}
   isStepper:boolean = false;
   getTableField:boolean = true;
   staticData: any = {};
-  copyStaticData:any={};
+  // copyStaticData:any={};
   dinamic_form:any={};
   currentActionButton:any={};
   close_form_on_success:boolean=false;
@@ -328,36 +324,29 @@ tinymceConfig = {}
     public formBuilder: FormBuilder,
     private datePipe: DatePipe,
     private router: Router,
-    private restService:RestService,
     private commonFunctionService:CommonFunctionService,
-    private coreUtilityService:CoreUtilityService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
     private commonAppDataShareService:CommonAppDataShareService,
     private permissionService:PermissionService,
-    private storageService:AppStorageService,
     private notificationService:NotificationService,
     private modalController: ModalController,
-    private cameraService: CameraService, 
     private plt: Platform, 
     private actionSheetCtrl: ActionSheetController,
-    private loadingCtrl: LoadingController,
-    private httpClient: HttpClient,
     private dataShareServiceService: DataShareServiceService,
-    private envService: AppEnvService,
+    private envService: EnvService,
     private fileOpener: FileOpener,
     private file: File,
     private apppermissionsService: AndroidpermissionsService,
-    private popoverModalService: PopoverModalService,
     private app_googleService: App_googleService,
     private alertController: AlertController,
     private ngZone: NgZone,
-    private coreFunctionService: CoreFunctionService,
-    private appDataShareService: AppDataShareService,
-    private appApiService: AppApiService,
     private customValidationService: CustomvalidationService,
     private limsCalculationsService: LimsCalculationsService,
-    private appPermissionService: AppPermissionService,
+    private coreFunctionService: CoreFunctionService,
+    private storageService: StorageService,
+    private appDataShareService: AppDataShareService,
+    private appPermissionService: AppPermissionService
     ) {
 
       // this.mapsApiLoaded();
@@ -418,7 +407,7 @@ tinymceConfig = {}
       }
 
 
-      this.staticDataSubscriber = this.appDataShareService.staticData.subscribe(data =>{
+      this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
         this.setStaticData(data);
       });
       this.dinamicFormSubscription = this.dataShareService.form.subscribe(form =>{
@@ -547,93 +536,95 @@ tinymceConfig = {}
       this.typeAheadData = [];
     }
   }
-  setStaticData(staticData:any){
-    if(staticData['staticDataMessgae'] != null && staticData['staticDataMessgae'] != ''){
-      this.notificationService.presentToastOnBottom(staticData['staticDataMessgae'], "danger");
-      const fieldName = {
-        "field" : "staticDataMessgae"
-      }
-      this.apiService.ResetStaticData(fieldName);
-    }
-    this.staticData = staticData;
-    Object.keys(this.staticData).forEach(key => { 
-      if(this.staticData[key]){   
-        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
-      }
-    })
-    
-    this.tableFields.forEach(element => {
-      switch (element.type) {              
-        case 'pdf_view':
-          if(this.commonFunctionService.isArray(this.copyStaticData[element.ddn_field]) && this.copyStaticData[element.ddn_field] != null){
-            const data = this.copyStaticData[element.ddn_field][0];
-            if(data['bytes'] && data['bytes'] != '' && data['bytes'] != null){
-              const arrayBuffer = data['bytes'];
-              // this.pdfViewLink = encodeURIComponent(escape(window.atob( arrayBuffer )));
-              // this.pdfViewLink = decodeURIComponent(escape(window.atob( arrayBuffer )));
-              this.pdfViewLink = arrayBuffer;
-              this.pdfViewListData = JSON.parse(JSON.stringify(this.copyStaticData[element.ddn_field]))
-            }
-          }else{
-            this.pdfViewLink = '';
-          }             
-          break;
-        case 'info_html':
-        case 'html_view':
-          if(this.copyStaticData[element.ddn_field] && this.copyStaticData[element.ddn_field] != null){
-            this.templateForm.controls[element.field_name].setValue(this.copyStaticData[element.ddn_field])
+  setStaticData(staticDatas:any){
+    if(Object.keys(staticDatas).length > 0) {
+      Object.keys(staticDatas).forEach(key => {
+        let staticData = {};
+        staticData[key] = staticDatas[key];
+        if(staticData['staticDataMessgae'] != null && staticData['staticDataMessgae'] != ''){
+          this.notificationService.presentToastOnBottom(staticData['staticDataMessgae'], "danger");
+          // const fieldName = {
+          //   "field" : "staticDataMessgae"
+          // }
+          // this.apiService.ResetStaticData(fieldName);
+        }
+        if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
+          if(staticData[key]) { 
+            this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
           }
-          break;
-        default:              
-          break;
-      }
-    })  
-    if(this.staticData["FORM_GROUP"] && this.staticData["FORM_GROUP"] != null){          
-      this.updateDataOnFormField(this.staticData["FORM_GROUP"]);          
-      const fieldName = {
-        "field" : "FORM_GROUP"
-      }
-      this.apiService.ResetStaticData(fieldName);
+        }
+        this.tableFields.forEach(element => {
+          switch (element.type) {              
+            case 'pdf_view':
+              if(this.commonFunctionService.isArray(staticData[element.ddn_field]) && staticData[element.ddn_field] != null){
+                const data = staticData[element.ddn_field][0];
+                if(data['bytes'] && data['bytes'] != '' && data['bytes'] != null){
+                  const arrayBuffer = data['bytes'];
+                  // this.pdfViewLink = encodeURIComponent(escape(window.atob( arrayBuffer )));
+                  // this.pdfViewLink = decodeURIComponent(escape(window.atob( arrayBuffer )));
+                  this.pdfViewLink = arrayBuffer;
+                  this.pdfViewListData = JSON.parse(JSON.stringify(staticData[element.ddn_field]))
+                }
+              }else{
+                this.pdfViewLink = '';
+              }             
+              break;
+            case 'info_html':
+            case 'html_view':
+              if(staticData[element.ddn_field] && staticData[element.ddn_field] != null){
+                this.templateForm.controls[element.field_name].setValue(staticData[element.ddn_field])
+              }
+              break;
+            default:              
+              break;
+          }
+        })
+
+        if(staticData["FORM_GROUP"] && staticData["FORM_GROUP"] != null){          
+          this.updateDataOnFormField(staticData["FORM_GROUP"]);          
+          const fieldName = {
+            "field" : "FORM_GROUP"
+          }
+          this.apiService.ResetStaticData(fieldName);
+        }    
+        if(staticData["CHILD_OBJECT"] && staticData["CHILD_OBJECT"] != null){
+          this.updateDataOnFormField(staticData["CHILD_OBJECT"]); 
+          const fieldName = {
+            "field" : "CHILD_OBJECT"
+          }
+          this.apiService.ResetStaticData(fieldName);
+          
+        }    
+        if(staticData["COMPLETE_OBJECT"] && staticData["COMPLETE_OBJECT"] != null){
+          if(this.curFormField && this.curFormField.resetFormAfterQtmp){
+            this.resetForm();
+            this.curFormField = {};
+            this.curParentFormField = {};
+          }
+          this.updateDataOnFormField(staticData["COMPLETE_OBJECT"]);          
+          this.selectedRow = staticData["COMPLETE_OBJECT"];
+          this.complete_object_payload_mode = true;
+          const fieldName = {
+            "field" : "COMPLETE_OBJECT"
+          }
+          this.apiService.ResetStaticData(fieldName);
+          
+        }    
+        if(staticData["FORM_GROUP_FIELDS"] && staticData["FORM_GROUP_FIELDS"] != null){
+          this.updateDataOnFormField(staticData["FORM_GROUP_FIELDS"]);
+          const fieldName = {
+            "field" : "FORM_GROUP_FIELDS"
+          }
+          this.apiService.ResetStaticData(fieldName);    
+        }
+        if (this.checkBoxFieldListValue.length > 0 && Object.keys(staticData).length > 0) {
+          this.setCheckboxFileListValue();
+        }
+        
+      })
     }
-
-    if(this.staticData["CHILD_OBJECT"] && this.staticData["CHILD_OBJECT"] != null){
-      this.updateDataOnFormField(this.staticData["CHILD_OBJECT"]); 
-      const fieldName = {
-        "field" : "CHILD_OBJECT"
-      }
-      this.apiService.ResetStaticData(fieldName);
-      
-    }
-
-    if(this.staticData["COMPLETE_OBJECT"] && this.staticData["COMPLETE_OBJECT"] != null){
-      if(this.curFormField && this.curFormField.resetFormAfterQtmp){
-        this.resetForm();
-        this.curFormField = {};
-        this.curParentFormField = {};
-      }
-      this.updateDataOnFormField(this.staticData["COMPLETE_OBJECT"]);          
-      this.selectedRow = this.staticData["COMPLETE_OBJECT"];
-      this.complete_object_payload_mode = true;
-      const fieldName = {
-        "field" : "COMPLETE_OBJECT"
-      }
-      this.apiService.ResetStaticData(fieldName);
-      
-    }
-
-    if(this.staticData["FORM_GROUP_FIELDS"] && this.staticData["FORM_GROUP_FIELDS"] != null){
-      this.updateDataOnFormField(this.staticData["FORM_GROUP_FIELDS"]);
-      const fieldName = {
-        "field" : "FORM_GROUP_FIELDS"
-      }
-      this.apiService.ResetStaticData(fieldName);
-
-    }
-    if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
-
-      this.setCheckboxFileListValue();
-    }    
   }
+
   setCheckboxFileListValue() {
     this.checkBoxFieldListValue.forEach(element => {
       let checkCreatControl: any;
@@ -1925,7 +1916,7 @@ tinymceConfig = {}
             this.dataSaveInProgress = false;            
             formValue['log'] = this.storageService.getUserLog();
             if(!formValue['refCode'] || formValue['refCode'] == '' || formValue['refCode'] == null){
-              formValue['refCode'] = this.storageService.getRefcode();
+              formValue['refCode'] = this.storageService.getRefCode();
             } 
             if(!formValue['appId'] || formValue['appId'] == '' || formValue['appId'] == null){
               formValue['appId'] = this.storageService.getAppId();
@@ -2024,7 +2015,7 @@ tinymceConfig = {}
   }
   close(){
     this.apiService.resetStaticAllData();
-    this.copyStaticData = {};
+    this.staticData = {};
     this.typeAheadData = [];
     this.latitude = 0;
     this.longitude = 0;
@@ -2578,10 +2569,10 @@ tinymceConfig = {}
                 if(object != undefined && object != null){
                   this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(object));     
                 } 
-                if(Array.isArray(this.copyStaticData[element.ddn_field]) && Array.isArray(this.custmizedFormValue[fieldName])){
+                if(Array.isArray(this.staticData[element.ddn_field]) && Array.isArray(this.custmizedFormValue[fieldName])){
                   this.custmizedFormValue[fieldName].forEach(staData => {
-                    if(this.copyStaticData[element.ddn_field][staData._id]){
-                      this.copyStaticData[element.ddn_field][staData._id].selected = true;
+                    if(this.staticData[element.ddn_field][staData._id]){
+                      this.staticData[element.ddn_field][staData._id].selected = true;
                     }
                   });
                 }          
@@ -4231,7 +4222,7 @@ tinymceConfig = {}
     this.updateMode=false;
     this.dataListForUpload = []
     this.filePreviewFields = [];
-    this.copyStaticData = {};
+    this.staticData = {};
     this.apiService.resetStaticAllData();
     // this.modal.dismiss();
     // this.modal.dismiss(null, null, this.form._id);
@@ -6029,7 +6020,7 @@ tinymceConfig = {}
             .catch(error => console.log('Error opening file ',error));
           }
         }).catch( (error:any) =>{
-          this.storageService.presentToast(JSON.stringify(error));
+          this.notificationService.presentToastOnBottom(JSON.stringify(error));
         })
         
       }).catch( (error:any) =>{
@@ -6038,11 +6029,11 @@ tinymceConfig = {}
           this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
             console.log('Directory create '+ response);
             this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
-              this.storageService.presentToast(fileName + " Saved in " + folderName);
+              this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
             })
 
           }).catch( (error:any) =>{
-              this.storageService.presentToast(JSON.stringify(error));
+              this.notificationService.presentToastOnBottom(JSON.stringify(error));
           })
         }
       });

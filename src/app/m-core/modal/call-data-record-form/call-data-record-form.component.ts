@@ -1,11 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { CoreFunctionService, NotificationService } from '@core/ionic-core';
+import { NotificationService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { IonDatetime, ModalController } from '@ionic/angular';
 import { format, parseISO, getDate, getMonth, getYear, getTime } from 'date-fns';
-import { ApiService, DataShareService } from '@core/web-core';
+import { ApiService, DataShareService, CoreFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-call-data-record-form',
