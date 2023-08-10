@@ -32,15 +32,15 @@ export class SignupComponent implements OnInit {
       let msg = data.msg;
       if(data && data.status == 'success'){
         this.signUpForm.reset();
-        color = 'success';
-        if(this.envService.getVerifyType() == 'mobile'){
-          this.notificationService.presentToastOnTop(msg,color);
-          this.authDataShareService.setOtpAutoLogin(data.payload);
-          this.router.navigate(['otp_varify'+'/'+data?.payload?.userId]);
+        color = 'success';        
+        if(data && data.autoLogin){
+          this.notificationService.presentToastOnTop(data.msg,color);
+          this.authService.Signin(data.payload);
         }else{
-          if(data && data.autoLogin){
-            this.notificationService.presentToastOnTop(data.msg,color);
-            this.authService.Signin(data.payload);
+          if(this.envService.getVerifyType() == 'mobile'){
+            this.notificationService.presentToastOnTop(msg,color);
+            this.authDataShareService.setOtpAutoLogin(data.payload);
+            this.router.navigate(['otp_varify'+'/'+data?.payload?.userId]);
           }else{
             if(data.appPresentAlert){
               let header = '';
@@ -56,6 +56,7 @@ export class SignupComponent implements OnInit {
             this.authService.redirectToSignPage();
           }
         }
+        
       }else{
         this.notificationService.presentToastOnTop(data.msg, color);
       }

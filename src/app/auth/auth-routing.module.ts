@@ -6,14 +6,15 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
 import { ChangepwdComponent } from './changepwd/changepwd.component';
 import { VerifyOtpComponent } from './verify-otp/verify-otp.component';
 import { VerifyCompanyComponent } from './verify-company/verify-company.component';
+import { AuthGuard } from '@core/web-core';
 
 const authRoutes : Routes = [
     { path: 'signin', component: SigninComponent, },
     { path: 'signup', component: SignupComponent },
     { path: 'forgetpassword', component: ForgetPasswordComponent },
-    { path: 'changepwd', component: ChangepwdComponent },
+    { path: 'createpwd', component: ChangepwdComponent, canActivate: [AuthGuard]  },
     { path: 'otp_varify/:username', component: VerifyOtpComponent },
-    { path: 'verifyCompany', component: VerifyCompanyComponent }
+    { path: 'checkcompany', component: VerifyCompanyComponent }
 ];
 
 

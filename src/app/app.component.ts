@@ -86,15 +86,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
     
     this.initializeApp();
-
-    this.clinetNameSubscription = this.dataShareService.setClientName.subscribe(
-        data =>{
-          if(data){
-            this.commonFunctionService.getApplicationAllSettings();
-          }
-        });
+    
     // this.web_site = appConstants.siteName;
-    // this.app_Version  = this.appEnvService.getAppVersion();
+    let newdate = new Date().getFullYear()
+    this.app_Version  = newdate +"@" + this.envService.getAppName();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
       if(data && data.data && data.data.length > 0){
         // this.cardList = data.data;
@@ -124,6 +119,9 @@ export class AppComponent implements OnInit, OnDestroy {
             this.storageService.setApplicationSetting(settingObj);
             this.envService.setApplicationSetting();
             this.loadPage();
+            if(this.coreFunctionService.isNotBlank(this.storageService.getClientName()) && !this.checkIdTokenStatus()){
+              this.authService.redirectToSignPage();
+            }
             this.dataShareService.subscribeTemeSetting("setting");
             this.dataShareService.resetApplicationSetting([]);
           }
@@ -230,14 +228,13 @@ export class AppComponent implements OnInit, OnDestroy {
       if(this.coreFunctionService.isNotBlank(clientCode)){
         // this.authService.appLogout();
       }else{            
-        this.router.navigateByUrl("/verifyCompany");
+        this.router.navigateByUrl("/checkcompany");
       }
   }
   redirectToHomePage(){
     this.redirectToHomePageWithStorage();
   }
   redirectToHomePageWithStorage(){
-    // let checkComapanyCode:any = this.storageService.getClientName();
     let checkComapanyCode:any = this.storageService.getClientName();
     if(this.coreFunctionService.isNotBlank(checkComapanyCode)){
       if(!this.checkApplicationSetting()){
@@ -247,16 +244,13 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       if(this.checkIdTokenStatus()){
         this.showSidebarMenu = true;
-        // this.authService.redirectionWithMenuType('/home');
-        // this.userInfo = this.storageService.GetUserInfo();
         this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(),'/home');
       }else{
         this.authService.redirectToSignPage();
       }      
     }else{
       this.storageService.removeDataFormStorage("all");
-      this.router.navigate(['/verifyCompany']);
-        // this.authService.appClientNameResetData();
+      this.router.navigate(['/checkcompany']);
     }
   }
   checkIdTokenStatus(){

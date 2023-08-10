@@ -19,7 +19,7 @@ import { AndroidpermissionsService } from 'src/app/service/androidpermissions.se
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 // import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
-import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common } from '@core/web-core';
+import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common, GridCommonFunctionService } from '@core/web-core';
 
 interface User {
   id: number;
@@ -303,6 +303,8 @@ tinymceConfig = {}
   selectedIndex= -1;
   hide = true;
   checkForDownloadReport:boolean = false;
+  pageSize:any=100;
+
   	/**
 	 * Convert Files list to normal array list
 	 * @param files (Files List)
@@ -346,7 +348,8 @@ tinymceConfig = {}
     private coreFunctionService: CoreFunctionService,
     private storageService: StorageService,
     private appDataShareService: AppDataShareService,
-    private appPermissionService: AppPermissionService
+    private appPermissionService: AppPermissionService,
+    private gridCommonFunctionService: GridCommonFunctionService
     ) {
 
       // this.mapsApiLoaded();
@@ -425,8 +428,6 @@ tinymceConfig = {}
               this.editedRowData(this.childData);
             }
           }
-        }else{
-          this.notificationService.showAlert("something went wrong, please try again later", "Alert",['Dismiss']);
         }
       });
       this.fileDataSubscription = this.dataShareService.getfileData.subscribe(data =>{
@@ -4665,7 +4666,7 @@ tinymceConfig = {}
       if(this.samePageGridSelection){
         this.samePageGridSelection = false;
       }
-      this.updateListofFields(this.curTreeViewField,index);
+      this.updateListofFields(this.curTreeViewField,{},index);
     }
 
     if (!this.custmizedFormValue[this.curTreeViewField.field_name]) this.custmizedFormValue[this.curTreeViewField.field_name] = [];
@@ -5120,7 +5121,16 @@ tinymceConfig = {}
       this.samePageGridSelection = false;
     }
   }
-  updateListofFields(field,index){    
+  updateListofFields(field,object,index){ 
+    let searchValue = this.term[field.field_name];
+    let correctIndex = index;
+    let data = this.custmizedFormValue[field.field_name];    
+    if(searchValue != '' || data && data.length > this.pageSize){
+      if(searchValue == undefined || searchValue == ''){
+        searchValue = 'this.pageNo';
+      }
+      correctIndex = this.gridCommonFunctionService.getCorrectIndex(object,index,field,data,searchValue);
+    }    
     this.storeFormDetails("",field,index); 
   }
   nextForm(){

@@ -15,6 +15,12 @@
                         <ion-label class="ion-margin-start">Home</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
+                <ion-menu-toggle>
+                    <ion-item lines="none" [routerLink]="['/createpwd']">
+                        <ion-icon name="key-outline"></ion-icon>
+                        <ion-label class="ion-margin-start">Change Password</ion-label>
+                    </ion-item>
+                </ion-menu-toggle>
                 <ion-menu-toggle auto-hide="false">
                     <ion-item lines="none" *ngFor="let cardItem of cardList; let i = index"
                         (click)="showCardTemplate(cardItem, i)" lines="none" detail="false"

@@ -5,7 +5,7 @@ import { LoaderService, NotificationService } from '@core/ionic-core';
 import { AlertController, IonInput, IonRouterOutlet, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
-import { EnvService, DataShareService, StorageService } from '@core/web-core';
+import { EnvService, DataShareService, StorageService, CommonFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-verify-company',
@@ -29,7 +29,8 @@ export class VerifyCompanyComponent implements OnInit {
     private platform: Platform,
     private alertController: AlertController,
     private notificationService: NotificationService,
-    private loaderService: LoaderService
+    private loaderService: LoaderService,
+    private commonFunctionService: CommonFunctionService
   ) { }
 
   ionViewWillEnter(){
@@ -47,7 +48,7 @@ export class VerifyCompanyComponent implements OnInit {
   exitTheApp(){ 
     this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
       console.log('Back press handler!');
-      if (this._location.isCurrentPathEqualTo('/verifyCompany')) {
+      if (this._location.isCurrentPathEqualTo('/checkcompany')) {
         let isloaderOpen:any = this.loaderService.loadingCtrl.getTop();
         if(isloaderOpen){
           this.loaderService.hideLoader();
@@ -113,7 +114,8 @@ export class VerifyCompanyComponent implements OnInit {
     if(isClientExist || clientCode === "localhost"){
       this.loaderService.showLoader("Please wait while we are setting up the App for you.");
       this.storageService.setClientNAme(clientCode);
-      this.dataShareService.subscribeClientName(clientCode);
+      // this.dataShareService.subscribeClientName(clientCode);
+      this.commonFunctionService.getApplicationAllSettings();
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
     }

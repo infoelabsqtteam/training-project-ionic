@@ -175,7 +175,7 @@ export class HomePage implements OnInit, OnDestroy {
     //   // })
     // }else{
     //   this.storageService.removeDataFormStorage();
-    //   this.router.navigateByUrl('/verifyCompany');
+    //   this.router.navigateByUrl('/checkcompany');
     // }
     this.getGridData();
   }

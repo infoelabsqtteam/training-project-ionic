@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationService } from '@core/ionic-core';
-import { EnvService, AuthService } from '@core/web-core';
+import { EnvService, AuthService, AuthDataShareService } from '@core/web-core';
 // import { ErrorMessageComponent } from 'src/app/component/error-message/error-message.component';
 
 @Component({
@@ -34,6 +34,7 @@ export class ChangepwdComponent implements OnInit {
   newpwd: any;
   passwordNotMatch: boolean;
   userInfo :any;
+  changepwdSubscribe:any;
 
   constructor(
     private router: Router,
@@ -41,12 +42,27 @@ export class ChangepwdComponent implements OnInit {
     private notificationService:NotificationService,
     private formBuilder:FormBuilder,
     private envService: EnvService,
+    private authDataShareService: AuthDataShareService
   ) { 
     if(this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true;
     }else{
      this.VerifyType = false;
     }
+    this.changepwdSubscribe = this.authDataShareService.createPwd.subscribe(data =>{
+      let color = 'danger';
+      let msg = data.msg;
+      if(data && data.status == "success"){
+        color = 'success';
+        if(data.msg === "Your Password has been updates successfully"){
+          msg = 'Password changed successfully';
+        }
+        this.authService.Logout("");
+      }
+      if(msg != ''){
+        this.notificationService.presentToastOnBottom(msg,color);
+      }
+    })
   }
 
   ngOnInit() {
@@ -92,9 +108,8 @@ export class ChangepwdComponent implements OnInit {
      const oldpwd = this.changepwdform.value.oldpwd;
      const newpwd = this.changepwdform.value.newpwd;
      const confirmpwd= this.changepwdform.value.confpwd;
-    if(newpwd==confirmpwd)
-    { 
-      const payload =  {currentPassword: oldpwd, newPassword: newpwd, confirmNewPassword: confirmpwd };
+    if(newpwd==confirmpwd){ 
+      const payload =  {currentPassword:oldpwd, newPassword:newpwd, confirmNewPassword:confirmpwd };
        this.authService.changePassword(payload);
     }
     else{

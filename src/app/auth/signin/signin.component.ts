@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
 import { App } from '@capacitor/app';
 import { Location } from '@angular/common';
-import { AuthDataShareService, AuthService, CoreFunctionService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
+import { AuthDataShareService, AuthService, CommonFunctionService, CoreFunctionService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
 
 @Component({
   selector: 'app-signine',
@@ -26,6 +26,7 @@ export class SigninComponent implements OnInit {
   imageTitle:string = '';
   appTitle:string = '';
   authenticationMessage: Subscription;
+  resetSignin:any;
 
   constructor(
     private authService: AuthService,
@@ -40,9 +41,17 @@ export class SigninComponent implements OnInit {
     private envService: EnvService,
     private routerOutlet: IonRouterOutlet,
     private _location: Location,
-    private authDataShareService: AuthDataShareService
+    private authDataShareService: AuthDataShareService,
+    private commonFunctionService: CommonFunctionService
   ) { 
     this.initializeApp();
+    this.checkValues();
+    this.resetSignin = this.authDataShareService.settingData.subscribe(data =>{      
+      if(data == "logged_in"){
+        this.loginForm.reset();
+      }    
+    });
+    
     if(this.storageService.getVerifyType() == 'mobile' || this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true;
     }else{
@@ -66,27 +75,31 @@ export class SigninComponent implements OnInit {
 
   initializeApp() {
     this.platform.ready().then(() => {});
+    this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+      let isloaderOpen:any = this.ionLoaderService.loadingController.getTop();
+      if(isloaderOpen){
+        this.ionLoaderService.hideLoader();
+      }
+      if(this.isExitAlertOpen){
+        this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
+      }else{
+        this.showExitConfirm();
+        // processNextHandler();
+      }  
+    });
+  }
+  async checkValues(){    
     let isClientCodeExist:any = this.storageService.getClientName();
     let isHostNameExist:any = this.storageService.getHostNameDinamically();
-    if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.checkIdTokenStatus()){
-      this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
-    }else if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
-      this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
-        let isloaderOpen:any = this.ionLoaderService.loadingController.getTop();
-        if(isloaderOpen){
-          this.ionLoaderService.hideLoader();
-        }
-        if(this.isExitAlertOpen){
-          this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
-        }else{
-          this.showExitConfirm();
-          // processNextHandler();
-        }  
-      });
+    if(this.coreFunctionService.isNotBlank(isClientCodeExist)){
+      if(this.checkIdTokenStatus()){
+        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
+      }else if(this.coreFunctionService.isNotBlank(isClientCodeExist) && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
+        // await this.commonFunctionService.getApplicationAllSettings();
+      }
     }else{
-      this.router.navigateByUrl('/verifyCompany');
+      this.router.navigateByUrl('/checkcompany');
     }
-
   }
   showExitConfirm() {
     this.isExitAlertOpen = true;
@@ -160,7 +173,6 @@ export class SigninComponent implements OnInit {
     let loginObj = this.loginForm.value; 
     let payload = { userId: loginObj.userId, password: loginObj.password }
     this.authService.Signin(payload);
-    this.loginForm.reset();
   }
   showtxtpass() {
     this.showpassword = !this.showpassword;
@@ -170,7 +182,7 @@ export class SigninComponent implements OnInit {
   }
   changeCode(){
     this.storageService.removeDataFormStorage('all');
-    this.router.navigateByUrl('/verifyCompany');
+    this.router.navigateByUrl('/checkcompany');
     this.resetVariables();
   }
   resetVariables(){
