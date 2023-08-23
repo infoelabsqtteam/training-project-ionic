@@ -6,7 +6,7 @@ capacitor-google-map {
 
 .gmap{
   // position: absolute;
-  height: 80%;
+  height: 60%;
   width: 100%;
   background-color: transparent;
   opacity: 0;
@@ -18,4 +18,11 @@ capacitor-google-map {
 .googleMarkerHeading{
   font-size: 16px;
     margin: 0;
+}
+.note{
+  white-space: inherit;
+  font-size: 10px;
+}
+.f-14{
+  font-size: 14px;
 }

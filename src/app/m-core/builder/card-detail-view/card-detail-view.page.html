@@ -16,7 +16,7 @@
       <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,childDataValue)"></ion-button>
 
       <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'info'">
-        <ion-button shape="round" fill="outline" (click)="griddetail()" ></ion-button>
+        <ion-button shape="round" fill="outline"></ion-button>
       </strong>
     </ion-item>
 

@@ -55,9 +55,9 @@ export class ChangepwdComponent implements OnInit {
       if(data && data.status == "success"){
         color = 'success';
         if(data.msg === "Your Password has been updates successfully"){
-          msg = 'Password changed successfully';
+          msg = 'Password changed successfully, please relogin';
+          this.authService.Logout("");
         }
-        this.authService.Logout("");
       }
       if(msg != ''){
         this.notificationService.presentToastOnBottom(msg,color);

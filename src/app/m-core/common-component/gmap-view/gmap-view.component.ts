@@ -4,7 +4,7 @@ import { ActionSheetController, AlertController, ModalController, Platform } fro
 import { Geolocation } from '@capacitor/geolocation';
 import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
-import { ApiService, DataShareService } from '@core/web-core';
+import { ApiService, DataShareService, StorageService } from '@core/web-core';
 
 @Component({
   selector: 'app-gmap-view',
@@ -80,6 +80,8 @@ export class GmapViewComponent implements OnInit {
   leftBtnText:string = "";
   reachBtnSpinner:boolean = false;
   leftBtnSpinner:boolean = false;
+  appTitle:string;
+  userLocationDetails:any = {}
 
 
   constructor(
@@ -94,13 +96,15 @@ export class GmapViewComponent implements OnInit {
     private apiService: ApiService,
     private dataShareServiceService: DataShareServiceService,
     private modalController: ModalController,
-    private appStorageService: AppStorageService
-  ) {   
+    private appStorageService: AppStorageService,
+    private storageService: StorageService
+  ) {
+    this.appTitle = this.storageService.getPageTitle();
     this.currentPostionIconUrl = '../../../../assets/img/icons/current-location-1.png';
     this.destinationPostionIconUrl = '../../../../assets/img/icons/destination-location-1.png';
     this.isTracking = false;
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
-      this.setGridData(data);
+      // this.setGridData(data);
     })
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
@@ -113,8 +117,8 @@ export class GmapViewComponent implements OnInit {
   }
 
   ionViewDidEnter(){
-    this.onload();
     this.checkPermissionandRequest();
+    this.onload();
   }
   ngonDestroy(){
     if(this.gridDataSubscription){
@@ -126,14 +130,30 @@ export class GmapViewComponent implements OnInit {
   }
 
   async onload(){
-    // this.googleMaps = JSON.parse(JSON.stringify(localStorage.getItem('JsGoogleMap')));
-    if(this.selectedRowData){      
+    if(this.selectedRowData){
       this.collectionCustomFunction(this.selectedRowData);      
     }else{
       // this.notificationService.presentToastOnBottom("Something went wrong.");
     }
+    this.setCurrentAndDestination();
   }
-
+  setCurrentAndDestination(){    
+    if(this.additionalData?.destinationAddress && this.additionalData?.destinationAddress?.formatted_address){
+      this.destinationLocationData['heading'] = this.additionalData?.destinationAddress?.formatted_address;
+    }else if(this.selectedRowData && this.selectedRowData.customerAddress){
+      this.destinationLocationData['heading'] = this.selectedRowData.customerAddress;
+    }else{
+      this.destinationLocationData['heading'] = "Destination Location";
+    }
+    if(this.additionalData && this.additionalData.currentLatLngDetails && this.additionalData.currentLatLngDetails.formatted_address){
+      this.userLocationDetails['heading'] = this.additionalData.currentLatLngDetails.formatted_address;
+    }
+    if(this.additionalData && this.additionalData.currentLatLng && this.additionalData.currentLatLng.lat && this.additionalData?.destinationAddress && this.additionalData?.destinationAddress?.geometry.location){
+      this.destinationLatLng = this.additionalData?.destinationAddress?.geometry.location;
+      this.currentLatLng = this.additionalData.currentLatLng;
+      this.loadMap();
+    }
+  }
   async collectionCustomFunction(selectedrowdata:any){
     let collectionName:any ='';
     if(this.additionalData && this.additionalData.collectionName){
@@ -151,9 +171,9 @@ export class GmapViewComponent implements OnInit {
           this.leftBtn = true;
         }        
         if(this.leftBtn){
-          this.leftBtnText = "Delivered";
+          this.leftBtnText = "Completed";
         }else{
-          this.leftBtnText = "Left";
+          this.leftBtnText = "Leave";
         }
         if(selectedrowdata.reachDateTime ==null){
           this.reachBtn = false;
@@ -165,25 +185,11 @@ export class GmapViewComponent implements OnInit {
         }else{
           this.reachBtnText = "Reach";
         }
-        if(this.additionalData?.destinationAddress && this.additionalData?.destinationAddress?.formatted_address){
-          this.destinationLocationData['heading'] = this.additionalData?.destinationAddress?.formatted_address;
-        }else if(selectedrowdata && selectedrowdata.customerAddress){
-          this.destinationLocationData['heading'] = selectedrowdata.customerAddress;
-        }else{
-          this.destinationLocationData['heading'] = "Destination Location";
-        }
-        if(this.additionalData && this.additionalData.currentLatLng && this.additionalData.currentLatLng.lat && this.additionalData?.destinationAddress && this.additionalData?.destinationAddress?.geometry.location){
-          this.destinationLatLng = this.additionalData?.destinationAddress?.geometry.location;
-          this.currentLatLng = this.additionalData.currentLatLng;
-          this.loadMap();
-        }
         // this.createMap(this.center);
         break;
       default: 
         // this.notificationService.presentToast("error ");
-    }
-
-      
+    }      
   }
 
   async checkPermissionandRequest(){
@@ -245,12 +251,11 @@ export class GmapViewComponent implements OnInit {
       }
     }
   }
-
   async gpsEnableAlert(){     
       const alert = await this.alertCtrl.create({
         cssClass: 'my-gps-class',
         header: 'Please Enable GPS !',
-        message: 'ITC collects Your location data to serve you better service',
+        message: this.appTitle + ' collects Your location data to serve you better service',
         buttons: [
           {
             text: 'No, thanks',
@@ -268,7 +273,6 @@ export class GmapViewComponent implements OnInit {
   
     await alert.present();
   }
-
   async enableGPSandgetCoordinates(enableGPS?:any){
     if(this.platform.is('hybrid')){
       enableGPS = await this.app_googleService.checkGPSPermission();
@@ -349,6 +353,7 @@ export class GmapViewComponent implements OnInit {
   }
   async customButtonClick(buttonName?:any){
     const isGpsEnable = await this.app_googleService.checkGPSPermission();
+    let currentposition:any = await this.app_googleService.getUserLocation();
     if(isGpsEnable){
       if(buttonName == "reach"){
         this.reachBtn = true;
@@ -359,8 +364,7 @@ export class GmapViewComponent implements OnInit {
       }else if(buttonName == "deliver"){
         this.deliverBtn = true;
       }
-      let currentposition:any = await this.app_googleService.getUserLocation();
-      if(currentposition && currentposition.lat !=null && currentposition.lng !=null){
+      if(currentposition && currentposition.lat != null && currentposition.lng != null){
         let currentlatlng: any = {
           'latitude': currentposition.lat,
           'longitude': currentposition.lng,
@@ -388,6 +392,7 @@ export class GmapViewComponent implements OnInit {
         
         this.collectionCustomFunction(this.selectedRowData);      
         this.saveData(this.selectedRowData);
+        this.notificationService.showAlert("Your current position has been saved.","Location data saved",['Dismiss']);
 
       }else{
         if(!currentposition.gpsenable){
@@ -775,6 +780,15 @@ export class GmapViewComponent implements OnInit {
       this.map.setZoom(16);
       infowindow.open(this.map, this.destinationLocationMarkerId);
     });
+  }
+  openMapLink(){    
+    let origin = "&origin=" + this.currentLatLng.lat + "," + this.currentLatLng.lng;
+    let destination = "&destination=" + this.destinationLatLng.lat + "," + this.destinationLatLng.lng;
+    const url = 'https://www.google.com/maps/dir/?api=1'+ origin + destination +'&travelmode=driving'+ ',13z?hl=en-US&amp;gl=US';
+    const a = document.createElement('a');
+    a.click();
+    window.open(url,"_blank")
+    a.remove();
   }
   ongoogleMapOriginMarkerClick(){
     let markerHeading = "";

@@ -224,9 +224,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         for(let i=0;i<data.length;i++){
           this.carddata.push(data[i]);
         }
-      }else if(((data && data.length > 0 && (this.carddata.length > 0 && this.carddata.length !== this.totalDataCount) && (this.loadMoreData || this.refreshlist)))){
+      }else if(((data && data.length > 0 && (this.carddata.length > 0 ) && (this.loadMoreData || this.refreshlist)))){
         if(this.ionEvent){
-          if(this.ionEvent.type == 'ionInfinite'){
+          if(this.ionEvent.type == 'ionInfinite' && this.carddata.length !== this.totalDataCount){
             for(let i=0;i<data.length;i++){
               this.carddata.push(data[i]);
             }
@@ -835,11 +835,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         event.target.complete();
         let card:any;
         let criteria:any = [];
-        if (this.carddata.length === this.totalDataCount) { // App logic to determine if all data is loaded
+        // if (this.carddata.length === this.totalDataCount) { 
+          // App logic to determine if all data is loaded
           // this.refreshEvent.target.disabled = true;    // Disable the infinite scroll if carddata.length === response.totaldata.length
           // console.log('doRefresh async operation has ended');
-          this.notificationService.presentToastOnBottom("No Updates Available","success");
-        }else{
+          // this.notificationService.presentToastOnBottom("No Updates Available","success");
+        // }else{
           if(this.card && this.card.card){
             card = this.card.card;
           }
@@ -849,7 +850,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             });
           }
           this.getGridData(this.collectionname, criteria, card);
-        }
+        // }
       }, 2000);
 
     }else{
@@ -1360,9 +1361,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           }
           this.getGridData(this.collectionname,);
           // this.setCardDetails(this.card.card);
-        }if (saveFromDataRsponce.success == 'success' && this.updateMode) {
+        }else if (saveFromDataRsponce.success == 'success' && this.updateMode) {
           this.carddata[this.editedRowIndex] == saveFromDataRsponce.data;
-        }
+          let status = saveFromDataRsponce.data.trackingStatus;
+          if(status == 'PROGRESS' || status == "REACHED" || status == 'DELIVERED'){
+            this.notificationService.showAlert("Your current position has been saved.","Location data saved",['Dismiss']);
+          }
+        }        
+        this.apiService.ResetSaveResponce()
       }
     }
   }
@@ -1378,6 +1384,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             'address' : data.customerAddress
           }
           destination = await this.app_googleService.getGoogleAddressFromString(geocodeAddress);          
+        }
+        let currentlatlngdetails:any;
+        if(this.currentLatLng !=null && this.currentLatLng.lat !=''){
+          currentlatlngdetails = await this.app_googleService.getAddressFromLatLong(this.currentLatLng.lat,this.currentLatLng.lng);
         }
         if(data.trackingStatus == "ASSIGNED"){
           const newDate = new Date();
@@ -1403,6 +1413,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         let additionalData:any = {
           "collectionName":this.collectionname,
           "currentLatLng":this.currentLatLng,
+          "currentLatLngDetails": currentlatlngdetails['0'],
           "destinationAddress": destination
         }
         const modal = await this.modalController.create({
@@ -1416,6 +1427,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           id: data._id,
           showBackdrop:true,
           backdropDismiss:false,
+          initialBreakpoint : 0.25,
+          breakpoints : [0.25, 0.5, 0.75],
+          backdropBreakpoint : 0.5,
+          handleBehavior:'cycle'
         });
         modal.present();
         modal.componentProps.modal = modal;

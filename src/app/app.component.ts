@@ -130,7 +130,6 @@ export class AppComponent implements OnInit, OnDestroy {
     
     this.loginAndLogoutResponce = this.authDataShareService.settingData.subscribe(data =>{      
       if(data == "logged_in"){
-        // this.notificationService.presentToastOnBottom('Login successful',"success");
         this.userInfo = this.storageService.GetUserInfo();
         this.showSidebarMenu = true;
       }else if(data == "logged_out"){

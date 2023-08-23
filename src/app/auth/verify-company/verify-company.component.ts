@@ -112,9 +112,9 @@ export class VerifyCompanyComponent implements OnInit {
     let clientCode:string = this.cCodeForm.value.code;
     let isClientExist = this.envService.checkClientExistOrNot(clientCode);
     if(isClientExist || clientCode === "localhost"){
+      this.storageService.removeDataFormStorage('all');
       this.loaderService.showLoader("Please wait while we are setting up the App for you.");
       this.storageService.setClientNAme(clientCode);
-      // this.dataShareService.subscribeClientName(clientCode);
       this.commonFunctionService.getApplicationAllSettings();
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});

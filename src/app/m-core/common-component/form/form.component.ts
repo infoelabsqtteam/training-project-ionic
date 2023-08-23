@@ -206,6 +206,7 @@ tinymceConfig = {}
   elements:any=[];
   showIfFieldList:any=[];
   disableIfFieldList:any=[];
+  calculationFieldList:any=[];
   createFormgroup:boolean=false;
   checkBoxFieldListValue:any=[];
   selectedRowIndex: any = -1;
@@ -304,6 +305,7 @@ tinymceConfig = {}
   hide = true;
   checkForDownloadReport:boolean = false;
   pageSize:any=100;
+  buttonIfList=[];
 
   	/**
 	 * Convert Files list to normal array list
@@ -434,7 +436,9 @@ tinymceConfig = {}
         this.setFileData(data);
       })
       this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
-        this.setSaveResponce(responce);
+        if(responce != null){
+          this.setSaveResponce(responce);
+        }
       });
       this.typeaheadDataSubscription = this.dataShareService.typeAheadData.subscribe(data =>{
         this.setTypeaheadData(data);
@@ -538,7 +542,7 @@ tinymceConfig = {}
     }
   }
   setStaticData(staticDatas:any){
-    if(Object.keys(staticDatas).length > 0) {
+    if(staticDatas && Object.keys(staticDatas).length > 0) {
       Object.keys(staticDatas).forEach(key => {
         let staticData = {};
         staticData[key] = staticDatas[key];
@@ -680,9 +684,9 @@ tinymceConfig = {}
     }
   }
   setSaveResponce(saveFromDataRsponce){
-    if (saveFromDataRsponce) {
+    if(saveFromDataRsponce){
       if (saveFromDataRsponce.success && saveFromDataRsponce.success != '' && this.showNotify) {
-        if (saveFromDataRsponce.success == 'success' && !this.updateMode) {
+        if(saveFromDataRsponce.success == 'success' && !this.updateMode){
           if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick.success_msg && this.currentActionButton.onclick.success_msg != ''){
             this.notificationService.showAlert(this.currentActionButton.onclick.success_msg,'',['Dismiss']);
           }else if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
@@ -698,7 +702,7 @@ tinymceConfig = {}
           this.dataListForUpload = {}
           //this.addAndUpdateResponce.emit('add');
           this.saveResponceData = saveFromDataRsponce.data;
-        } else if (saveFromDataRsponce.success == 'success' && this.updateMode) {
+        }else if(saveFromDataRsponce.success == 'success' && this.updateMode){
           if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick.success_msg && this.currentActionButton.onclick.success_msg != ''){
             this.notificationService.showAlert(this.currentActionButton.onclick.success_msg,'',['Dismiss']);
           }else if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
@@ -722,11 +726,9 @@ tinymceConfig = {}
         if(this.close_form_on_success){
           this.close_form_on_success=false;
           this.close();
-        }
-        else if(this.multipleFormCollection.length > 0){
+        }else if(this.multipleFormCollection.length > 0){
           this.close();
-        }
-        else{
+        }else{
           //this.commonFunctionService.getStaticData();
           const payload = this.commonFunctionService.commanApiPayload([],this.tableFields,this.formFieldButtons,this.getFormValue(false));
           this.apiService.getStatiData(payload);
@@ -767,22 +769,20 @@ tinymceConfig = {}
         this.dataSaveInProgress = true;
         this.apiService.ResetSaveResponce()
         this.checkOnSuccessAction();
-      }
-      else if (saveFromDataRsponce.error && saveFromDataRsponce.error != '' && this.showNotify) {
+      }else if(saveFromDataRsponce.error && saveFromDataRsponce.error != '' && this.showNotify){
         this.notificationService.showAlert(saveFromDataRsponce.error,'',['Dismiss']);
         this.showNotify = false;
         this.dataSaveInProgress = true;
         this.apiService.ResetSaveResponce()
-      }
-      else{
-        this.notificationService.showAlert("No data return",'',['Dismiss']);
+      }else{
+        this.notificationService.presentToastOnBottom("No data return",'danger');
         this.dataSaveInProgress = true;
       }
     }
   }
   
   setForm(){
-    if(this.form.details && this.form.details.collection_name && this.form.details.collection_name != '' && (this.currentMenu != undefined || this.envService.getRequestType() == 'PUBLIC')){
+    if(this.form && this.form.details && this.form.details.collection_name && this.form.details.collection_name != '' && (this.currentMenu != undefined || this.envService.getRequestType() == 'PUBLIC')){
       if(this.currentMenu == undefined){
         this.currentMenu = {};
       }
@@ -820,7 +820,7 @@ tinymceConfig = {}
     if(this.form.tab_list_buttons && this.form.tab_list_buttons != undefined && this.form.tab_list_buttons.length > 0){
       this.formFieldButtons = this.form.tab_list_buttons; 
     } 
-
+    this.calculationFieldList=[];
     this.showIfFieldList=[];
     this.disableIfFieldList=[];
     this.mendetoryIfFieldList = [];
@@ -937,6 +937,8 @@ tinymceConfig = {}
                       }                    
                       //show if handling
                       if(data.show_if && data.show_if != ''){
+                        modifyData['parentIndex'] = index;
+                        modifyData['currentIndex'] = j;
                         this.showIfFieldList.push(modifyData);
                       }
                       //Mendetory If handling
@@ -951,6 +953,10 @@ tinymceConfig = {}
                         modifyData.is_mandatory=false;
                       }
                       if(data.field_name && data.field_name != '' && element.datatype != "list_of_object_with_popup"){
+                        // Calculation onChange handling
+                        if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != ""){
+                          this.calculationFieldList.push(element);
+                        }
                         switch (data.type) {
                           case "list_of_checkbox":
                             this.commonFunctionService.createFormControl(list_of_fields, modifyData, [], "list")
@@ -1032,7 +1038,10 @@ tinymceConfig = {}
                         if((data.disable_if && data.disable_if != '') || (data.disable_on_update && data.disable_on_update != '' && data.disable_on_update != undefined && data.disable_on_update != null)){                          
                           this.disableIfFieldList.push(modifyData);
                         }                     
-                        
+                        // Calculation onChange handling
+                        if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != ""){
+                          this.calculationFieldList.push(element);
+                        }
                         this.commonFunctionService.createFormControl(stepper_of_fields, modifyData, '', "text")
                         if(data.tree_view_object && data.tree_view_object.field_name != ""){
                           let treeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));                
@@ -1068,6 +1077,11 @@ tinymceConfig = {}
                       element['mendetory_fields'] = colParField['mendetory_fields'];
                     }
                   }
+                  if(element && element.addNewButtonIf && element.addNewButtonIf != ''){
+                    this.buttonIfList.push(element);                
+                    element['fieldIndex'] = index;
+                  }
+                  element['showButton'] = this.checkGridSelectionButtonCondition(element,'add');
                   this.commonFunctionService.createFormControl(forControl, element, '', "text")
                 break;
               default:
@@ -1098,6 +1112,10 @@ tinymceConfig = {}
           if((element.disable_if && element.disable_if != '') || (element.disable_on_update && element.disable_on_update != '' && element.disable_on_update != undefined && element.disable_on_update != null) || (element.disable_on_add && element.disable_on_add != '' && element.disable_on_add != undefined && element.disable_on_add != null)){                  
             this.disableIfFieldList.push(element);
           }
+          // Calculation onChange handling
+          if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != ""){
+            this.calculationFieldList.push(element);
+          }
           // if(element.type && element.type == 'pdf_view'){
           //   this.filePreviewFields.push(element)
           // }
@@ -1106,7 +1124,7 @@ tinymceConfig = {}
           }
         }
       }
-      if(this.formFieldButtons.length > 0){
+      if(this.formFieldButtons && this.formFieldButtons.length > 0){
         this.formFieldButtons.forEach(element => {
           if(element.field_name && element.field_name != ''){              
             switch (element.type) {
@@ -2096,105 +2114,215 @@ tinymceConfig = {}
     }
   }
   getStaticDataWithDependentData(){
-    const staticModal = [];
-    let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
-    let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(true));
-    this.tableFields.forEach(element => {
-      if(element.field_name && element.field_name != ''){
-        if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != "") {
-          switch (element.onchange_function_param) {        
-              case 'autopopulateFields':
-                this.limsCalculationsService.autopopulateFields(this.templateForm);
-                break;
-            default:
-             this.inputOnChangeFunc('',element);
-          }
-        }
-      }
-    });
-    this.tableFields.forEach(element => {
-      if(element.field_name && element.field_name != ''){
-        let fieldName = element.field_name;
-        let object = this.selectedRow[fieldName];        
-        if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
-          const checkFormGroup = element.onchange_call_back_field.indexOf("FORM_GROUP");
-          const checkCLTFN = element.onchange_api_params.indexOf('CLTFN')
-          if(checkFormGroup == -1 && checkCLTFN == -1){
+    const staticModal = []
+    let formValueWithCustomData = this.getFormValue(true)
+    let formValue = this.getFormValue(false)
+    if(this.tableFields && this.tableFields.length > 0){
+      this.tableFields.forEach(element => {
+        if(element.field_name && element.field_name != ''){
+          if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
+            const checkFormGroup = element.onchange_call_back_field.indexOf("FORM_GROUP");
+            const checkCLTFN = element.onchange_api_params.indexOf('CLTFN')
+            if(checkFormGroup == -1 && checkCLTFN == -1){
 
-            const payload = this.commonFunctionService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.selectedRow)
-            if(element.onchange_api_params.indexOf('QTMP') >= 0){
-              if(element && element.formValueAsObjectForQtmp){
-                payload["data"]=this.getFormValue(false);
-              }else{
-                payload["data"]=this.getFormValue(true);
-              }
-            } 
-            staticModal.push(payload);
-          }
-        }
-        switch (element.type) {
-          case "stepper":
-            if (element.list_of_fields.length > 0) {
-              element.list_of_fields.forEach((step) => {                
-                if (step.list_of_fields.length > 0) {
-                  step.list_of_fields.forEach((data) => {
-                    if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) {
-                      const checkFormGroup = data.onchange_call_back_field.indexOf("FORM_GROUP");
-                      if(checkFormGroup == -1){
-            
-                        const payload = this.commonFunctionService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.selectedRow)
-                        if(data.onchange_api_params.indexOf('QTMP') >= 0){
-                          if(element && element.formValueAsObjectForQtmp){
-                            payload["data"]=this.getFormValue(false);
-                          }else{
-                            payload["data"]=this.getFormValue(true);
-                          }
-                        } 
-                        staticModal.push(payload);
-                      }
-                    }
-                    if(data.tree_view_object && data.tree_view_object.field_name != ""){
-                      let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
-                      if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
-                        staticModal.push(this.commonFunctionService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, this.selectedRow));
-                      }
-                    }
-                  });
+              const payload = this.commonFunctionService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, formValueWithCustomData)
+              if(element.onchange_api_params.indexOf('QTMP') >= 0){
+                if(element && element.formValueAsObjectForQtmp){
+                  payload["data"]=formValue;
+                }else{
+                  payload["data"]=formValueWithCustomData;
                 }
-              });
+              } 
+              staticModal.push(payload);
             }
-            break;
-        }
-        if(element.tree_view_object && element.tree_view_object.field_name != ""){
-          let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
-          if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
-            staticModal.push(this.commonFunctionService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, this.selectedRow));
+          }
+          switch (element.type) {
+            case "stepper":
+              if (element.list_of_fields.length > 0) {
+                element.list_of_fields.forEach((step) => {                
+                  if (step.list_of_fields.length > 0) {
+                    step.list_of_fields.forEach((data) => {
+                      if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) {
+                        const checkFormGroup = data.onchange_call_back_field.indexOf("FORM_GROUP");
+                        if(checkFormGroup == -1){
+              
+                          const payload = this.commonFunctionService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, formValueWithCustomData)
+                          if(data.onchange_api_params.indexOf('QTMP') >= 0){
+                            if(element && element.formValueAsObjectForQtmp){
+                               payload["data"]=formValue;
+                            }else{
+                              payload["data"]=formValueWithCustomData;
+                            }
+                          } 
+                          staticModal.push(payload);
+                        }
+                      }
+                      if(data.tree_view_object && data.tree_view_object.field_name != ""){
+                        let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
+                        if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
+                          staticModal.push(this.commonFunctionService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
+                        }
+                      }
+                    });
+                  }
+                });
+              }
+              break;
+          }
+          if(element.tree_view_object && element.tree_view_object.field_name != ""){
+            let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
+            if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
+              staticModal.push(this.commonFunctionService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
+            }
           }
         }
-      }
-      if(element.type && element.type == 'pdf_view'){
-        staticModal.push(this.commonFunctionService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,this.selectedRow))
-      }
-    });
-    let staticModalGroup = this.commonFunctionService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
-    if(staticModalGroup.length > 0){
-      staticModalGroup.forEach(element => {
+        if(element.type && element.type == 'pdf_view'){
+          staticModal.push(this.commonFunctionService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,formValueWithCustomData))
+        }
+      });
+    }
+    this.getStaticData(staticModal,formValueWithCustomData,formValue);    
+  }
+  getStaticData(staticModal,object,formDataObject){
+    let formValue = object;
+    if(this.multipleFormCollection && this.multipleFormCollection.length > 0){
+      let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+      formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
+    }
+    let staticModalG = this.commonFunctionService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
+    if(staticModalG && staticModalG.length > 0){
+      staticModalG.forEach(element => {
         staticModal.push(element);
       });
-    } 
-    if(this.form.api_params && this.form.api_params != null && this.form.api_params != "" && this.form.api_params != undefined){
+    }
+    // if(this.tab && this.tab.api_params && this.tab.api_params != null && this.tab.api_params != "" && this.tab.api_params != undefined){      
+    //   let criteria = [];
+    //   if(this.tab.api_params_criteria && this.tab.api_params_criteria != null){
+    //     criteria=this.tab.api_params_criteria
+    //   }
+    //   staticModal.push(this.commonFunctionService.getPaylodWithCriteria(this.tab.api_params,this.tab.call_back_field,criteria,{}))
       
+    // }
+    if(this.form && this.form.api_params && this.form.api_params != null && this.form.api_params != "" && this.form.api_params != undefined){         
+      if(this.form.api_params == 'QTMP:EMAIL_WITH_TEMP:QUOTATION_LETTER'){
+        object = this.saveResponceData;
+      }          
       let criteria = [];
       if(this.form.api_params_criteria && this.form.api_params_criteria != null){
         criteria=this.form.api_params_criteria
       }
-      staticModal.push(this.commonFunctionService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,this.getFormValue(true)))
-      
+      if(this.editedRowIndex > -1){
+        formDataObject = formValue;
+      }
+      staticModal.push(this.commonFunctionService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,formDataObject))      
     }
-    if(staticModal.length > 0){    
-      this.apiService.getStatiData(staticModal);
+    this.callStaticData(staticModal);
+  }
+  callStaticData(payloads){
+    if(payloads.length > 0){
+      this.apiService.getStatiData(payloads);        
+    }else{      
+      this.checkFormFieldIfCondition();      
     }
   }
+  checkFormFieldIfCondition(){
+    if(this.buttonIfList.length > 0){
+      this.buttonIfList.forEach(element => {
+        let fieldIndex = element['fieldIndex'];
+        this.tableFields[fieldIndex]['showButton'] = this.checkGridSelectionButtonCondition(element,'add');
+      });
+    }
+    if(this.disableIfFieldList.length > 0){
+      this.disableIfFieldList.forEach(element => {
+        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+          this.isDisable(element.parent,element);
+        }else{
+          this.isDisable('',element)
+        }
+      });
+    }
+    if(this.mendetoryIfFieldList.length > 0){
+      this.mendetoryIfFieldList.forEach(element => {
+        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+          this.isMendetory(element.parent,element);
+        }else{
+          this.isMendetory('',element)
+        }
+      });
+    }
+    if(this.showIfFieldList.length > 0){
+      this.showIfFieldList.forEach(element => {
+        let id = '';
+        let parentFieldName = '';
+        let parentIndex = -1;
+        let fieldIndex = -1;
+        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+          id = element._id;
+          parentFieldName = element.parent;
+          parentIndex = element.parentIndex;
+          fieldIndex = element.currentIndex;
+          this.tableFields[parentIndex].list_of_fields[fieldIndex]['notDisplay'] = this.checkShowIfListOfFiedlds(parentFieldName,element);
+        }else{
+          id = element._id;
+        }
+        let elementDetails = document.getElementById(id);
+        if(!this.showIf(element)){          
+          if(elementDetails && elementDetails != null){
+            const classes = Array.from(elementDetails.classList)
+            if(!classes.includes('d-none')){
+              this.removeClass(elementDetails,' d-inline-block');
+              elementDetails.className += " d-none";
+              element['show'] = false;
+              const objectValue = this.templateForm.getRawValue();
+              if(element.type != "group_of_fields" && element.type != "list_of_fields" && objectValue[element.field_name] && objectValue[element.field_name] != ''){
+                this.templateForm.get(element.field_name).setValue('');
+              } 
+              if(element.type == "group_of_fields" || element.type == "list_of_fields"){
+                this.templateForm.get(element.field_name).reset();
+                element.list_of_fields.forEach(field => {
+                  if(field.type == 'list_of_string' || field.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
+                    const custmizedKey = this.commonFunctionService.custmizedKey(element);            
+                    if (this.custmizedFormValue[custmizedKey]){ 
+                      if (this.custmizedFormValue[custmizedKey][field.field_name]) this.custmizedFormValue[custmizedKey][field.field_name] = [];
+                    }
+                  }
+                });
+              }  
+              if(element.type == 'list_of_string' || element.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
+                if (this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = [];
+              }         
+              if(element.is_mandatory){
+                if(this.templateFormControl[element.field_name].status == 'INVALID'){
+                  this.templateForm.get(element.field_name).clearValidators();
+                  this.templateForm.get(element.field_name).updateValueAndValidity();
+                }              
+              }
+            }            
+          }                
+        }else{          
+          if(elementDetails && elementDetails != null){
+            const classes = Array.from(elementDetails.classList)
+            if(!classes.includes('d-inline-block')){
+              this.removeClass(elementDetails,' d-none');
+              elementDetails.className += " d-inline-block"; 
+              element['show'] = true;
+              if(element.is_mandatory){
+                if(this.templateFormControl[element.field_name].status == 'VALID'){
+                  this.templateForm.get(element.field_name).setValidators([Validators.required]);
+                  this.templateForm.get(element.field_name).updateValueAndValidity();
+                }              
+              }
+            }            
+          }
+        }
+      });
+      return true;
+    }      
+    if(this.disableIfFieldList.length == 0 && this.showIfFieldList.length == 0){
+      return true;
+    } 
+  }
+  
   updateDataOnFormField(formValue){
     const checkDataType = typeof formValue;
     if(checkDataType == 'object' && !this.commonFunctionService.isArray(formValue) && this.tableFields && this.tableFields.length > 0){
@@ -2209,413 +2337,790 @@ tinymceConfig = {}
           // }
           let fieldName = element.field_name;
           let object = formValue[fieldName];
-          if(element && element.field_name && element.field_name != ''){
-            switch (element.type) {
-              case "grid_selection":
-              case 'grid_selection_vertical':
-              case "list_of_string":
-              case "drag_drop":
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                  if(this.commonFunctionService.isArray(formValue[element.field_name])){
-                    this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
+          if(object != null && object != undefined){
+            if(element && element.field_name && element.field_name != ''){
+              switch (element.type) {
+                case "grid_selection":
+                case 'grid_selection_vertical':
+                case "list_of_string":
+                case "drag_drop":
+                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                    if(this.commonFunctionService.isArray(formValue[element.field_name])){
+                      this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
+                    }
+                    this.templateForm.controls[element.field_name].setValue('')
                   }
-                  this.templateForm.controls[element.field_name].setValue('')
-                }
-                break;
-              case "file":
-              case "input_with_uploadfile":
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                  this.dataListForUpload[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
-                  const value = this.commonFunctionService.modifyFileSetValue(formValue[element.field_name]);
-                  this.templateForm.controls[element.field_name].setValue(value);
-                }
-                break;
-              case "list_of_fields":
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                  if(this.commonFunctionService.isArray(formValue[element.field_name])){
-                    this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
-                  }else if(typeof formValue[element.field_name] == "object" && element.datatype == 'key_value'){
-                    this.custmizedFormValue[element.field_name] = formValue[element.field_name]
-                  }else{
-                    if(element.list_of_fields && element.list_of_fields != null){
-                      element.list_of_fields.forEach(data => {
-                        switch (data.type) {
-                          case "list_of_string":
-                          case "grid_selection":
-                          case 'grid_selection_vertical':
-                          case "drag_drop":                    
-                            if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
-                              this.custmizedFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name]
-                              this.templateForm.get(element.field_name).get(data.field_name).setValue('')
-                              //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
-                            }
-                            break;
-                          case "typeahead":
-                            if(data.datatype == "list_of_object" || element.datatype == 'chips'){
+                  break;
+                case "file":
+                case "input_with_uploadfile":
+                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                    this.dataListForUpload[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
+                    const value = this.commonFunctionService.modifyFileSetValue(formValue[element.field_name]);
+                    this.templateForm.controls[element.field_name].setValue(value);
+                  }
+                  break;
+                case "list_of_fields":
+                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                    if(this.commonFunctionService.isArray(formValue[element.field_name])){
+                      this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
+                    }else if(typeof formValue[element.field_name] == "object" && element.datatype == 'key_value'){
+                      this.custmizedFormValue[element.field_name] = formValue[element.field_name]
+                    }else{
+                      if(element.list_of_fields && element.list_of_fields != null){
+                        element.list_of_fields.forEach(data => {
+                          switch (data.type) {
+                            case "list_of_string":
+                            case "grid_selection":
+                            case 'grid_selection_vertical':
+                            case "drag_drop":                    
                               if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
                                 this.custmizedFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name]
                                 this.templateForm.get(element.field_name).get(data.field_name).setValue('')
                                 //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
                               }
-                            }else{
+                              break;
+                            case "typeahead":
+                              if(data.datatype == "list_of_object" || element.datatype == 'chips'){
+                                if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
+                                  this.custmizedFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name]
+                                  this.templateForm.get(element.field_name).get(data.field_name).setValue('')
+                                  //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
+                                }
+                              }else{
+                                if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
+                                  const value = formValue[element.field_name][data.field_name];
+                                  this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+                                  //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
+                                }
+                              }
+                              break;
+                            default:
                               if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
                                 const value = formValue[element.field_name][data.field_name];
                                 this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
                                 //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
                               }
-                            }
-                            break;
-                          default:
-                            if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
-                              const value = formValue[element.field_name][data.field_name];
-                              this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                              //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
-                            }
-                            break;
-                        }
-                      });
-                    }
-                  }
-                }
-                break; 
-              case "typeahead":
-                if(element.datatype == "list_of_object" || element.datatype == 'chips'){
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
-                    this.templateForm.controls[element.field_name].setValue('')
-                  }
-                }else{
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){                  
-                    const value = formValue[element.field_name];
-                    this.typeAheadData = [value];
-                    this.templateForm.controls[element.field_name].setValue(value)
-                  }
-                }  
-                break;
-              case "group_of_fields":
-                if(element.list_of_fields && element.list_of_fields.length > 0){
-                  element.list_of_fields.forEach(data => {
-                    let ChildFieldData = formValue[element.field_name];
-                    if(data && data.field_name && data.field_name != '' && ChildFieldData && ChildFieldData != null){
-                      switch (data.type) {
-                        case "list_of_string":
-                        case "grid_selection":
-                        case 'grid_selection_vertical':
-                        case "drag_drop": 
-                          if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                            if (!this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = {};
-                            const value = JSON.parse(JSON.stringify(ChildFieldData[data.field_name]));
-                            this.custmizedFormValue[element.field_name][data.field_name] = value;
-                            this.templateForm.get(element.field_name).get(data.field_name).setValue('')
-                            //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
+                              break;
                           }
-                          break;   
-                        case "typeahead":
-                          if(data.datatype == "list_of_object" || data.datatype == 'chips'){
-                            if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                              if (!this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = {};
-                              const value = JSON.parse(JSON.stringify(ChildFieldData[data.field_name]));
-                              this.custmizedFormValue[element.field_name][data.field_name] = value;
-                              this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                              //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
-                            }
-                          }else{
-                            if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                              const value = ChildFieldData[data.field_name];
-                              this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                              //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
-                            }
-                          }  
-                          break;               
-                        case "number":
-                          if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                            let gvalue;
-                            const value = ChildFieldData[data.field_name];
-                            if(value != null && value != ''){
-                              gvalue = value;
-                            }else{
-                              gvalue = 0;
-                            }
-                            this.templateForm.get(element.field_name).get(data.field_name).setValue(gvalue)
-                            //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(gvalue);
-                          }else if(ChildFieldData && ChildFieldData.hasOwnProperty(data.field_name)){
-                            let gvalue = 0;
-                            this.templateForm.get(element.field_name).get(data.field_name).setValue(gvalue)
-                          }
-                          break;
-                        case "list_of_checkbox":
-                          this.templateForm.get(element.field_name).get(data.field_name).patchValue([])
-                          if(element.parent){
-                            this.selectedRow[element.parent] = {}
-                            this.selectedRow[element.parent][element.field_name] = ChildFieldData;
-                          }else{
-                            this.selectedRow[element.field_name] = ChildFieldData;
-                          }
-                          //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue([]);
-                          break;
-                        case "date":
-                          if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                            if(data.date_format && data.date_format !="" && typeof ChildFieldData[data.field_name] === 'string'){
-                              const date = ChildFieldData[data.field_name];
-                              const dateMonthYear = date.split('/');
-                              const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
-                              const value = new Date(formatedDate);
-                              this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                            }else{                  
-                              const value = formValue[element.field_name][data.field_name] == null ? null : formValue[element.field_name][data.field_name];
-                              this.templateForm.get(element.field_name).get(data.field_name).setValue(value);              
-                            }
-                          }
-                          break;
-                        default:
-                          if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                            const value = ChildFieldData[data.field_name];
-                            this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                            //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
-                          }
-                          break;
+                        });
                       }
                     }
-                  });
-                }
-                break;
-              case "tree_view_selection":
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                  this.treeViewData[fieldName] = [];            
-                  let treeDropdownValue = object == null ? null : object;
-                  if(treeDropdownValue != ""){
-                    this.treeViewData[fieldName].push(JSON.parse(JSON.stringify(treeDropdownValue)));
                   }
-                  this.templateForm.controls[fieldName].setValue(treeDropdownValue)
-                }
-                break;
-              case "stepper":
-                if(element.list_of_fields && element.list_of_fields.length > 0){
-                  element.list_of_fields.forEach(step => {
-                    if(step.list_of_fields && step.list_of_fields.length > 0){
-                      step.list_of_fields.forEach(data => {
+                  break; 
+                case "typeahead":
+                  if(element.datatype == "list_of_object" || element.datatype == 'chips'){
+                    if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                      this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
+                      this.templateForm.controls[element.field_name].setValue('')
+                    }
+                  }else{
+                    if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){                  
+                      const value = formValue[element.field_name];
+                      this.typeAheadData = [value];
+                      this.templateForm.controls[element.field_name].setValue(value)
+                    }
+                  }  
+                  break;
+                case "group_of_fields":
+                  if(element.list_of_fields && element.list_of_fields.length > 0){
+                    element.list_of_fields.forEach(data => {
+                      let ChildFieldData = formValue[element.field_name];
+                      if(data && data.field_name && data.field_name != '' && ChildFieldData && ChildFieldData != null){
                         switch (data.type) {
                           case "list_of_string":
                           case "grid_selection":
                           case 'grid_selection_vertical':
-                            if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){                                             
-                              this.custmizedFormValue[data.field_name] = formValue[data.field_name]                    
+                          case "drag_drop": 
+                            if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+                              if (!this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = {};
+                              const value = JSON.parse(JSON.stringify(ChildFieldData[data.field_name]));
+                              this.custmizedFormValue[element.field_name][data.field_name] = value;
+                              this.templateForm.get(element.field_name).get(data.field_name).setValue('')
+                              //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
                             }
-                            this.templateForm.get(step.field_name).get(data.field_name).setValue('')
-                            //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue('');
-                            break;
+                            break;   
                           case "typeahead":
                             if(data.datatype == "list_of_object" || data.datatype == 'chips'){
-                              if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){                      
-                                this.custmizedFormValue[data.field_name] = formValue[data.field_name]
-                                this.templateForm.get(step.field_name).get(data.field_name).setValue('')
-                                //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue('');
+                              if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+                                if (!this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = {};
+                                const value = JSON.parse(JSON.stringify(ChildFieldData[data.field_name]));
+                                this.custmizedFormValue[element.field_name][data.field_name] = value;
+                                this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+                                //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
                               }
                             }else{
-                              if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){
-                                const value = formValue[data.field_name];
-                                this.templateForm.get(step.field_name).get(data.field_name).setValue(value)
-                                //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(value);
+                              if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+                                const value = ChildFieldData[data.field_name];
+                                this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+                                //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
                               }
-                            }
-                            break;
+                            }  
+                            break;               
                           case "number":
+                            if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
                               let gvalue;
-                              const value = formValue[data.field_name];
+                              const value = ChildFieldData[data.field_name];
                               if(value != null && value != ''){
                                 gvalue = value;
                               }else{
                                 gvalue = 0;
                               }
-                              this.templateForm.get(step.field_name).get(data.field_name).setValue(gvalue)
-                              //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(gvalue);
+                              this.templateForm.get(element.field_name).get(data.field_name).setValue(gvalue)
+                              //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(gvalue);
+                            }else if(ChildFieldData && ChildFieldData.hasOwnProperty(data.field_name)){
+                              let gvalue = 0;
+                              this.templateForm.get(element.field_name).get(data.field_name).setValue(gvalue)
+                            }
                             break;
                           case "list_of_checkbox":
-                            this.templateForm.get(step.field_name).get(data.field_name).patchValue([])
-                            //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue([]);
+                            this.templateForm.get(element.field_name).get(data.field_name).patchValue([])
+                            if(element.parent){
+                              this.selectedRow[element.parent] = {}
+                              this.selectedRow[element.parent][element.field_name] = ChildFieldData;
+                            }else{
+                              this.selectedRow[element.field_name] = ChildFieldData;
+                            }
+                            //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue([]);
+                            break;
+                          case "date":
+                            if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+                              if(data.date_format && data.date_format !="" && typeof ChildFieldData[data.field_name] === 'string'){
+                                const date = ChildFieldData[data.field_name];
+                                const dateMonthYear = date.split('/');
+                                const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
+                                const value = new Date(formatedDate);
+                                this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+                              }else{                  
+                                const value = formValue[element.field_name][data.field_name] == null ? null : formValue[element.field_name][data.field_name];
+                                this.templateForm.get(element.field_name).get(data.field_name).setValue(value);              
+                              }
+                            }
                             break;
                           default:
-                            if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){
-                              const value = formValue[data.field_name];
-                              this.templateForm.get(step.field_name).get(data.field_name).setValue(value)
-                              //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(value);
+                            if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+                              const value = ChildFieldData[data.field_name];
+                              this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+                              //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
                             }
                             break;
                         }
-                        if(data.tree_view_object && data.tree_view_object.field_name != ""){
-                          let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
-                          const treeObject = this.selectedRow[editeTreeModifyData.field_name];
-                          this.templateForm.get(step.field_name).get(editeTreeModifyData.field_name).setValue(treeObject)
-                          //(<FormGroup>this.templateForm.controls[step.field_name]).controls[editeTreeModifyData.field_name].patchValue(treeObject);
-                        } 
-                      });
-                    }
-                  });
-                }
-                break;            
-              case "number":
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                  let value;
-                  if(object != null && object != ''){
-                    value = object;
-                    this.templateForm.controls[element.field_name].setValue(value)
-                  }else if(object == 0){
-                    value = object;
-                    this.templateForm.controls[element.field_name].setValue(value)
-                  }
-                }
-              break; 
-              case "gmap":
-              case "gmapview":
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                  if(formValue['longitude']){
-                    this.longitude = formValue['longitude'];
-                  }
-                  if(formValue['latitude']){
-                    this.latitude = formValue['latitude'];
-                  }
-                  if(formValue['zoom']){
-                    this.zoom = formValue['zoom'];
-                  }    
-                  if(this.longitude != 0 && this.latitude != 0){
-                    this.getAddressfromLatLng(this.latitude,this.longitude)
-                  } 
-                  this.templateForm.controls[element.field_name].setValue(object)
-                }
-                break;
-              case "daterange":
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                  let list_of_dates = [
-                    {field_name : 'start'},
-                    {field_name : 'end'}
-                  ]
-                  if (list_of_dates.length > 0) {
-                    list_of_dates.forEach((data) => { 
-                      this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
-                      //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(object[data.field_name]);
+                      }
                     });
                   }
-                }                                   
-                break;
-              case "date":
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                  if(element.date_format && element.date_format != '' && typeof object === 'string'){
-                    const date = object[element.field_name];
-                    const dateMonthYear = date.split('/');
-                    const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
-                    const value = new Date(formatedDate);
-                    this.templateForm.controls[element.field_name].setValue(value)
-                  }else{        
-                    const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
-                    //need in this format 2022-06-30T00:00:00+05:30
-                    // let isoString = new Date(value).toISOString()
-                    let transformzonedTime :any;
-                    let zonedTime:any;
-                    if(value !=''){
-                      zonedTime = utcToZonedTime(value, this.userTimeZone);
-                      // let transformzonedTime = (parseISO(zonedTime), "yyyy-MM-dd'T'HH:mm:ssZ");
-                      transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'T'HH:mm:ssZZZZZ", this.userTimeZone);
-                      // let pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'";
-                      // let output = format(zonedTime, pattern, { timeZone: userTimeZone })
-
-                    }else{
-                      transformzonedTime='';
+                  break;
+                case "tree_view_selection":
+                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                    this.treeViewData[fieldName] = [];            
+                    let treeDropdownValue = object == null ? null : object;
+                    if(treeDropdownValue != ""){
+                      this.treeViewData[fieldName].push(JSON.parse(JSON.stringify(treeDropdownValue)));
                     }
-                    this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
+                    this.templateForm.controls[fieldName].setValue(treeDropdownValue)
                   }
-                }
-                break;
-              case "time":
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                  if(element.time_format && element.time_format != '' && typeof object === 'string'){
-                    const time = object[element.field_name];
-                    this.templateForm.controls[element.field_name].setValue(time)
-                  }else{
-                    const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
-                    let transformzonedTime :any;
-                    if(value !='' && value !=null && value !=undefined){
-                      //new way required foramt for Ionic TimeFormat to convert into 24hr is "07:05:45 PM"
-                      let splitServerValue = value.split(" ");
-                      let addsec = splitServerValue[0] +":"+'00'+" "+splitServerValue[1];
-                      let date = new Date("2023-01-01 " + addsec);
-                      // Format the date object into a 24 hour time string
-                      transformzonedTime = date.toLocaleTimeString([], { hour12: false });
-                      console.log("format :",transformzonedTime);
-
-                      // below code with ion-datetime input work, need to do changes
-                      // const isoValue = new Date(value).toISOString();
-                      // const isotime = new Date(isoValue);
-                      // let splitHrMin:any = value.split(":");
-                      // const getHr:any = splitHrMin[0];
-                      // const splitMinFormat:any = splitHrMin[1];
-                      // const getMin:any = splitMinFormat.split(" ");
-                      // const time = new Date(value);
-                      // const hours = time.getHours();
-                      // const minutes = time.getMinutes();
-                      // const formattedTime = new Date(`2022-01-01T${splitHrMin[0]}:${getMin}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
-                      // console.log(formattedTime);
-                      // const now = new Date();
-                      // const newTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
-                      // const resultIonTime = newTime.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
-                      // console.log(resultIonTime);
-
-                    }else{
-                      transformzonedTime='';
-                    }
-                    this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
+                  break;
+                case "stepper":
+                  if(element.list_of_fields && element.list_of_fields.length > 0){
+                    element.list_of_fields.forEach(step => {
+                      if(step.list_of_fields && step.list_of_fields.length > 0){
+                        step.list_of_fields.forEach(data => {
+                          switch (data.type) {
+                            case "list_of_string":
+                            case "grid_selection":
+                            case 'grid_selection_vertical':
+                              if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){                                             
+                                this.custmizedFormValue[data.field_name] = formValue[data.field_name]                    
+                              }
+                              this.templateForm.get(step.field_name).get(data.field_name).setValue('')
+                              //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue('');
+                              break;
+                            case "typeahead":
+                              if(data.datatype == "list_of_object" || data.datatype == 'chips'){
+                                if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){                      
+                                  this.custmizedFormValue[data.field_name] = formValue[data.field_name]
+                                  this.templateForm.get(step.field_name).get(data.field_name).setValue('')
+                                  //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue('');
+                                }
+                              }else{
+                                if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){
+                                  const value = formValue[data.field_name];
+                                  this.templateForm.get(step.field_name).get(data.field_name).setValue(value)
+                                  //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(value);
+                                }
+                              }
+                              break;
+                            case "number":
+                                let gvalue;
+                                const value = formValue[data.field_name];
+                                if(value != null && value != ''){
+                                  gvalue = value;
+                                }else{
+                                  gvalue = 0;
+                                }
+                                this.templateForm.get(step.field_name).get(data.field_name).setValue(gvalue)
+                                //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(gvalue);
+                              break;
+                            case "list_of_checkbox":
+                              this.templateForm.get(step.field_name).get(data.field_name).patchValue([])
+                              //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue([]);
+                              break;
+                            default:
+                              if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){
+                                const value = formValue[data.field_name];
+                                this.templateForm.get(step.field_name).get(data.field_name).setValue(value)
+                                //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(value);
+                              }
+                              break;
+                          }
+                          if(data.tree_view_object && data.tree_view_object.field_name != ""){
+                            let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
+                            const treeObject = this.selectedRow[editeTreeModifyData.field_name];
+                            this.templateForm.get(step.field_name).get(editeTreeModifyData.field_name).setValue(treeObject)
+                            //(<FormGroup>this.templateForm.controls[step.field_name]).controls[editeTreeModifyData.field_name].patchValue(treeObject);
+                          } 
+                        });
+                      }
+                    });
                   }
-                }
-                break;
-              case "tabular_data_selector":   
-                if(object != undefined && object != null){
-                  this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(object));     
-                } 
-                if(Array.isArray(this.staticData[element.ddn_field]) && Array.isArray(this.custmizedFormValue[fieldName])){
-                  this.custmizedFormValue[fieldName].forEach(staData => {
-                    if(this.staticData[element.ddn_field][staData._id]){
-                      this.staticData[element.ddn_field][staData._id].selected = true;
+                  break;            
+                case "number":
+                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                    let value;
+                    if(object != null && object != ''){
+                      value = object;
+                      this.templateForm.controls[element.field_name].setValue(value)
+                    }else if(object == 0){
+                      value = object;
+                      this.templateForm.controls[element.field_name].setValue(value)
                     }
-                  });
-                }          
-                break;
-              case "list_of_checkbox":
-                this.templateForm.controls[element.field_name].setValue([]);
-                break;
-              default:
-                if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                  const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
-                  this.templateForm.controls[element.field_name].setValue(value)
-                }
-                break;
-            } 
-          }  
-          if(element.tree_view_object && element.tree_view_object.field_name != ""){
-            let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
-            const object = this.selectedRow[editeTreeModifyData.field_name];
-            this.templateForm.controls[editeTreeModifyData.field_name].setValue(object)
-          } 
-        }  
-      });
-      if(this.formFieldButtons.length > 0){
-        this.formFieldButtons.forEach(element => {
-          let fieldName = element.field_name;
-          let object = this.selectedRow[fieldName];
-          if(formValue[fieldName] != null && formValue[fieldName] != undefined){
-            if(element.field_name && element.field_name != ''){              
-              switch (element.type) {
-                case "dropdown":
-                  let dropdownValue = object == null ? null : object;
-                  this.templateForm.controls[element.field_name].setValue(dropdownValue);
+                  }
+                break; 
+                case "gmap":
+                case "gmapview":
+                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                    if(formValue['longitude']){
+                      this.longitude = formValue['longitude'];
+                    }
+                    if(formValue['latitude']){
+                      this.latitude = formValue['latitude'];
+                    }
+                    if(formValue['zoom']){
+                      this.zoom = formValue['zoom'];
+                    }    
+                    if(this.longitude != 0 && this.latitude != 0){
+                      this.getAddressfromLatLng(this.latitude,this.longitude)
+                    } 
+                    this.templateForm.controls[element.field_name].setValue(object)
+                  }
+                  break;
+                case "daterange":
+                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                    let list_of_dates = [
+                      {field_name : 'start'},
+                      {field_name : 'end'}
+                    ]
+                    if (list_of_dates.length > 0) {
+                      list_of_dates.forEach((data) => { 
+                        this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
+                        //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(object[data.field_name]);
+                      });
+                    }
+                  }                                   
+                  break;
+                case "date":
+                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                    if(element.date_format && element.date_format != '' && typeof object === 'string'){
+                      const date = object[element.field_name];
+                      const dateMonthYear = date.split('/');
+                      const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
+                      const value = new Date(formatedDate);
+                      this.templateForm.controls[element.field_name].setValue(value)
+                    }else{        
+                      const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
+                      //need in this format 2022-06-30T00:00:00+05:30
+                      // let isoString = new Date(value).toISOString()
+                      let transformzonedTime :any;
+                      let zonedTime:any;
+                      if(value !=''){
+                        zonedTime = utcToZonedTime(value, this.userTimeZone);
+                        // let transformzonedTime = (parseISO(zonedTime), "yyyy-MM-dd'T'HH:mm:ssZ");
+                        transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'T'HH:mm:ssZZZZZ", this.userTimeZone);
+                        // let pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'";
+                        // let output = format(zonedTime, pattern, { timeZone: userTimeZone })
+  
+                      }else{
+                        transformzonedTime='';
+                      }
+                      this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
+                    }
+                  }
+                  break;
+                case "time":
+                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                    if(element.time_format && element.time_format != '' && typeof object === 'string'){
+                      const time = object[element.field_name];
+                      this.templateForm.controls[element.field_name].setValue(time)
+                    }else{
+                      const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
+                      let transformzonedTime :any;
+                      if(value !='' && value !=null && value !=undefined){
+                        //new way required foramt for Ionic TimeFormat to convert into 24hr is "07:05:45 PM"
+                        let splitServerValue = value.split(" ");
+                        let addsec = splitServerValue[0] +":"+'00'+" "+splitServerValue[1];
+                        let date = new Date("2023-01-01 " + addsec);
+                        // Format the date object into a 24 hour time string
+                        transformzonedTime = date.toLocaleTimeString([], { hour12: false });
+                        console.log("format :",transformzonedTime);
+  
+                        // below code with ion-datetime input work, need to do changes
+                        // const isoValue = new Date(value).toISOString();
+                        // const isotime = new Date(isoValue);
+                        // let splitHrMin:any = value.split(":");
+                        // const getHr:any = splitHrMin[0];
+                        // const splitMinFormat:any = splitHrMin[1];
+                        // const getMin:any = splitMinFormat.split(" ");
+                        // const time = new Date(value);
+                        // const hours = time.getHours();
+                        // const minutes = time.getMinutes();
+                        // const formattedTime = new Date(`2022-01-01T${splitHrMin[0]}:${getMin}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+                        // console.log(formattedTime);
+                        // const now = new Date();
+                        // const newTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+                        // const resultIonTime = newTime.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+                        // console.log(resultIonTime);
+  
+                      }else{
+                        transformzonedTime='';
+                      }
+                      this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
+                    }
+                  }
+                  break;
+                case "tabular_data_selector":   
+                  if(object != undefined && object != null){
+                    this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(object));     
+                  } 
+                  if(Array.isArray(this.staticData[element.ddn_field]) && Array.isArray(this.custmizedFormValue[fieldName])){
+                    this.custmizedFormValue[fieldName].forEach(staData => {
+                      if(this.staticData[element.ddn_field][staData._id]){
+                        this.staticData[element.ddn_field][staData._id].selected = true;
+                      }
+                    });
+                  }          
+                  break;
+                case "list_of_checkbox":
+                  this.templateForm.controls[element.field_name].setValue([]);
                   break;
                 default:
+                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+                    const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
+                    this.templateForm.controls[element.field_name].setValue(value)
+                  }
                   break;
-              }
-            }
+              } 
+            }  
+            if(element.tree_view_object && element.tree_view_object.field_name != ""){
+              let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
+              const object = this.selectedRow[editeTreeModifyData.field_name];
+              this.templateForm.controls[editeTreeModifyData.field_name].setValue(object)
+            } 
+
           }
-        });
-      }
+        }  
+      });
+      // if(this.formFieldButtons.length > 0){
+      //   this.formFieldButtons.forEach(element => {
+      //     let fieldName = element.field_name;
+      //     let object = this.selectedRow[fieldName];
+      //     if(formValue[fieldName] != null && formValue[fieldName] != undefined){
+      //       if(element.field_name && element.field_name != ''){              
+      //         switch (element.type) {
+      //           case "dropdown":
+      //             let dropdownValue = object == null ? null : object;
+      //             this.templateForm.controls[element.field_name].setValue(dropdownValue);
+      //             break;
+      //           default:
+      //             break;
+      //         }
+      //       }
+      //     }
+      //   });
+      // }
     }
   }
+  // updateFormValue(element,formValue){  
+  //   let type = element.type;
+  //   let datatype = element.datatype;
+  //   let tree_view_object = element.tree_view_object;
+  //   let date_format = element.date_format;
+  //   let fieldName = element.field_name;  
+  //   let ddn_field = element.ddn_field;
+  //   let parent = element.parent;
+  //   let list_of_fields = element.list_of_fields;
+  //   let object = formValue[fieldName];
+  //   switch (type) { 
+  //     case "grid_selection":
+  //     case 'grid_selection_vertical':
+  //     case "list_of_string":
+  //     case "drag_drop":
+  //       if(object != null && object != undefined){
+  //         if(Array.isArray(object)){
+  //           this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(object));
+  //           if(type.startsWith("grid_selection")){
+  //             const modifyData = this.gridCommonFunctionService.gridDataModify(this.modifyCustmizedFormValue,this.custmizedFormValue,this.tableFields,fieldName,"grid_selection",formValue);
+  //             this.modifyCustmizedFormValue = modifyData.modifyData;
+  //             if(modifyData.field_index != -1){
+  //               const index = modifyData.field_index;
+  //               this.tableFields[index] = modifyData.fields[index];
+  //             }                    
+  //           }
+  //         }
+  //         this.templateForm.controls[fieldName].setValue('')
+  //       }
+  //       break;
+  //     case "file":
+  //     case "input_with_uploadfile":
+  //       if(object != null && object != undefined){
+  //         this.dataListForUpload[fieldName] = JSON.parse(JSON.stringify(object));
+  //         const value = this.modifyFileSetValue(object);
+  //         if(type == 'input_with_uploadfile'){
+  //           // let tooltipMsg = this.getFileTooltipMsg(object);
+  //           // element['tooltipMsg'] = tooltipMsg;
+  //         }
+  //         this.templateForm.controls[fieldName].setValue(value);
+  //       }
+  //       break;
+  //     case "list_of_fields":
+  //       if(object != null && object != undefined){
+  //         if(Array.isArray(object)){
+  //           this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(object));
+  //           let modifyObject = this.gridCommonFunctionService.modifyListofFieldsData(element,this.custmizedFormValue[fieldName],element.list_of_fields);
+  //           this.modifyCustmizedFormValue[fieldName] = modifyObject['data'];
+  //         }else if(typeof object == "object" && datatype == 'key_value'){
+  //           this.custmizedFormValue[fieldName] = object;
+  //         }else{
+  //           if(list_of_fields && list_of_fields != null && list_of_fields.length > 0){
+  //             list_of_fields.forEach((data,j) => {
+  //               switch (data.type) {
+  //                 case "list_of_string":
+  //                 case "grid_selection":
+  //                 case 'grid_selection_vertical':
+  //                 case "drag_drop":                    
+  //                   if(object && object[data.field_name] != null && object[data.field_name] != undefined){
+  //                     if(Array.isArray(object[data.field_name])){
+  //                       if (!this.custmizedFormValue[fieldName]) this.custmizedFormValue[fieldName] = {};
+  //                       this.custmizedFormValue[fieldName][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
+  //                     }
+  //                     this.templateForm.get(fieldName).get(data.field_name).setValue('')
+  //                     //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
+  //                   }
+  //                   break;
+  //                 case "typeahead":
+  //                   if(data.datatype == "list_of_object" || datatype == 'chips'){
+  //                     if(object && object[data.field_name] != null && object[data.field_name] != undefined){
+  //                       if(Array.isArray(object[data.field_name])){
+  //                         if (!this.custmizedFormValue[fieldName]) this.custmizedFormValue[fieldName] = {};
+  //                         this.custmizedFormValue[fieldName][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
+  //                       }
+  //                       this.templateForm.get(fieldName).get(data.field_name).setValue('')
+  //                       //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
+  //                     }
+  //                   }else{
+  //                     if(object && object[data.field_name] != null && object[data.field_name] != undefined){
+  //                       const value = object[data.field_name];
+  //                       this.templateForm.get(fieldName).get(data.field_name).setValue(value)
+  //                       //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
+  //                     }
+  //                   }
+  //                   break;
+  //                 case "input_with_uploadfile":
+  //                   if(object != null && object != undefined && object[data.field_name] != null && object[data.field_name] != undefined){
+  //                     let custmisedKey = this.commonFunctionService.custmizedKey(element);
+  //                     this.dataListForUpload[custmisedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
+  //                     const value = this.modifyFileSetValue(object[data.field_name]);
+  //                     // let tooltipMsg = this.getFileTooltipMsg(object[data.field_name]);
+  //                     // element.list_of_fields[j]['tooltipMsg'] = tooltipMsg;
+  //                     this.templateForm.get(fieldName).get(data.field_name).setValue(value);
+  //                   }
+  //                   break;
+  //                 default:
+  //                   if(object && object[data.field_name] != null && object[data.field_name] != undefined){
+  //                     const value = object[data.field_name];
+  //                     this.templateForm.get(fieldName).get(data.field_name).setValue(value)
+  //                     //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
+  //                   }
+  //                   break;
+  //               }
+  //             });
+  //           }
+  //         }
+  //       }
+  //       break; 
+  //     case "typeahead":
+  //       if(datatype == "list_of_object" || datatype == 'chips'){
+  //         if(object != null && object != undefined){
+  //           this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(object));
+  //           this.templateForm.controls[fieldName].setValue('')
+  //         }
+  //       }else{
+  //         if(object != null && object != undefined){
+  //           const value = object;
+  //           this.templateForm.controls[fieldName].setValue(value)
+  //         }
+  //       }  
+  //       break;
+  //     case "group_of_fields":
+  //       if(list_of_fields && list_of_fields.length > 0){
+  //         list_of_fields.forEach((data,j) => {
+  //           let ChildFieldData = object;
+  //           let childFieldName = data.field_name;
+  //           if(data && childFieldName && childFieldName != '' && ChildFieldData && ChildFieldData != null){
+  //             switch (data.type) {
+  //               case "list_of_string":
+  //               case "grid_selection":
+  //               case 'grid_selection_vertical':
+  //               case "drag_drop": 
+  //                 if(ChildFieldData && ChildFieldData[childFieldName] != null && ChildFieldData[childFieldName] != undefined && ChildFieldData[childFieldName] != ''){
+  //                   if (!this.custmizedFormValue[fieldName]) this.custmizedFormValue[fieldName] = {};
+  //                   const value = JSON.parse(JSON.stringify(ChildFieldData[childFieldName]));
+  //                   this.custmizedFormValue[fieldName][childFieldName] = value;
+  //                   this.templateForm.get(fieldName).get(childFieldName).setValue('')
+  //                   //(<FormGroup>this.templateForm.controls[fieldName]).controls[childFieldName].patchValue('');
+  //                 }
+  //                 break;   
+  //               case "typeahead":
+  //                 if(data.datatype == "list_of_object" || data.datatype == 'chips'){
+  //                   if(ChildFieldData && ChildFieldData[childFieldName] != null && ChildFieldData[childFieldName] != undefined && ChildFieldData[childFieldName] != ''){
+  //                     if (!this.custmizedFormValue[fieldName]) this.custmizedFormValue[fieldName] = {};
+  //                     const value = JSON.parse(JSON.stringify(ChildFieldData[childFieldName]));
+  //                     this.custmizedFormValue[fieldName][childFieldName] = value;
+  //                     this.templateForm.get(fieldName).get(childFieldName).setValue(value);
+  //                     //(<FormGroup>this.templateForm.controls[fieldName]).controls[childFieldName].patchValue('');
+  //                   }
+  //                 }else{
+  //                   if(ChildFieldData && ChildFieldData[childFieldName] != null && ChildFieldData[childFieldName] != undefined && ChildFieldData[childFieldName] != ''){
+  //                     const value = ChildFieldData[childFieldName];
+  //                     this.templateForm.get(fieldName).get(childFieldName).setValue(value)
+  //                     //(<FormGroup>this.templateForm.controls[fieldName]).controls[childFieldName].patchValue(value);
+  //                   }
+  //                 }  
+  //                 break;               
+  //               case "number":
+  //                 if(ChildFieldData && ChildFieldData[childFieldName] != null && ChildFieldData[childFieldName] != undefined && ChildFieldData[childFieldName] != ''){
+  //                   let gvalue;
+  //                   const value = ChildFieldData[childFieldName];
+  //                   if(value != null && value != ''){
+  //                     gvalue = value;
+  //                   }else{
+  //                     gvalue = 0;
+  //                   }
+  //                   this.templateForm.get(fieldName).get(childFieldName).setValue(gvalue)
+  //                   //(<FormGroup>this.templateForm.controls[fieldName]).controls[childFieldName].patchValue(gvalue);
+  //                 }else if(ChildFieldData && ChildFieldData.hasOwnProperty(childFieldName)){
+  //                   let gvalue = 0;
+  //                   this.templateForm.get(fieldName).get(childFieldName).setValue(gvalue)
+  //                 }
+  //                 break;
+  //               case "list_of_checkbox":
+  //                 this.templateForm.get(fieldName).get(childFieldName).patchValue([])
+  //                 if(parent){
+  //                   this.selectedRow[parent] = {}
+  //                   this.selectedRow[parent][fieldName] = ChildFieldData;
+  //                 }else{
+  //                   this.selectedRow[fieldName] = ChildFieldData;
+  //                 }
+  //                 //(<FormGroup>this.templateForm.controls[fieldName]).controls[childFieldName].patchValue([]);
+  //                 break;
+  //               case "date":
+  //                 if(ChildFieldData && ChildFieldData[childFieldName] != null && ChildFieldData[childFieldName] != undefined && ChildFieldData[childFieldName] != ''){
+  //                   if(data.date_format && data.date_format !="" && typeof ChildFieldData[childFieldName] === 'string'){
+  //                     const date = ChildFieldData[childFieldName];
+  //                     const dateMonthYear = date.split('/');
+  //                     const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
+  //                     const value = new Date(formatedDate);
+  //                     this.templateForm.get(fieldName).get(childFieldName).setValue(value)
+  //                   }else{                  
+  //                     const value = formValue[fieldName][childFieldName] == null ? null : formValue[fieldName][childFieldName];
+  //                     this.templateForm.get(fieldName).get(childFieldName).setValue(value);              
+  //                   }
+  //                 }
+  //                 break;
+  //               case "input_with_uploadfile":
+  //                 if(object != null && object != undefined && object[data.field_name] != null && object[data.field_name] != undefined){
+  //                   let custmisedKey = this.commonFunctionService.custmizedKey(element);
+  //                   this.dataListForUpload[custmisedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
+  //                   const value = this.modifyFileSetValue(object[data.field_name]);
+  //                   // let tooltipMsg = this.getFileTooltipMsg(object[data.field_name]);
+  //                   // element.list_of_fields[j]['tooltipMsg'] = tooltipMsg;
+  //                   this.templateForm.get(fieldName).get(data.field_name).setValue(value);
+  //                 }
+  //                 break;
+  //               default:
+  //                 if(ChildFieldData && ChildFieldData[childFieldName] != null && ChildFieldData[childFieldName] != undefined && ChildFieldData[childFieldName] != ''){
+  //                   const value = ChildFieldData[childFieldName];
+  //                   this.templateForm.get(fieldName).get(childFieldName).setValue(value)
+  //                   //(<FormGroup>this.templateForm.controls[fieldName]).controls[childFieldName].patchValue(value);
+  //                 }
+  //                 break;
+  //             }
+  //           }
+  //         });
+  //       }
+  //       break;
+  //     case "tree_view_selection":
+  //       if(formValue[fieldName] != null && formValue[fieldName] != undefined){
+  //         this.treeViewData[fieldName] = [];            
+  //         let treeDropdownValue = object == null ? null : object;
+  //         if(treeDropdownValue != ""){
+  //           this.treeViewData[fieldName].push(JSON.parse(JSON.stringify(treeDropdownValue)));
+  //         }
+  //         this.templateForm.controls[fieldName].setValue(treeDropdownValue)
+  //       }
+  //       break;
+  //     case "stepper":
+  //       if(list_of_fields && list_of_fields.length > 0){
+  //         list_of_fields.forEach(step => {
+  //           if(step.list_of_fields && step.list_of_fields.length > 0){
+  //             step.list_of_fields.forEach(data => {
+  //               let childFieldName = data.field_name;
+  //               switch (data.type) {
+  //                 case "list_of_string":
+  //                 case "grid_selection":
+  //                 case 'grid_selection_vertical':
+  //                   if(formValue[childFieldName] != null && formValue[childFieldName] != undefined && formValue[childFieldName] != ''){                                             
+  //                     this.custmizedFormValue[childFieldName] = formValue[childFieldName]                    
+  //                   }
+  //                   this.templateForm.get(step.field_name).get(childFieldName).setValue('');
+  //                   break;
+  //                 case "typeahead":
+  //                   if(data.datatype == "list_of_object" || data.datatype == 'chips'){
+  //                     if(formValue[childFieldName] != null && formValue[childFieldName] != undefined && formValue[childFieldName] != ''){                      
+  //                       this.custmizedFormValue[childFieldName] = formValue[childFieldName]
+  //                       this.templateForm.get(step.field_name).get(childFieldName).setValue('');
+  //                     }
+  //                   }else{
+  //                     if(formValue[childFieldName] != null && formValue[childFieldName] != undefined && formValue[childFieldName] != ''){
+  //                       const value = formValue[childFieldName];
+  //                       this.templateForm.get(step.field_name).get(childFieldName).setValue(value);
+  //                     }
+  //                   }
+  //                   break;
+  //                 case "number":
+  //                     let gvalue;
+  //                     const value = formValue[childFieldName];
+  //                     if(value != null && value != ''){
+  //                       gvalue = value;
+  //                     }else{
+  //                       gvalue = 0;
+  //                     }
+  //                     this.templateForm.get(step.field_name).get(childFieldName).setValue(gvalue);
+  //                   break;
+  //                 case "list_of_checkbox":
+  //                   this.templateForm.get(step.field_name).get(childFieldName).patchValue([]);
+  //                   break;
+  //                 default:
+  //                   if(formValue[childFieldName] != null && formValue[childFieldName] != undefined && formValue[childFieldName] != ''){
+  //                     const value = formValue[childFieldName];
+  //                     this.templateForm.get(step.field_name).get(childFieldName).setValue(value);
+  //                   }
+  //                   break;
+  //               }
+  //               if(data.tree_view_object && data.tree_view_object.field_name != ""){
+  //                 let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
+  //                 const treeObject = this.selectedRow[editeTreeModifyData.field_name];
+  //                 this.templateForm.get(step.field_name).get(editeTreeModifyData.field_name).setValue(treeObject);
+  //               } 
+  //             });
+  //           }
+  //         });
+  //       }
+  //       break;            
+  //     case "number":
+  //       if(object != null && object != undefined){
+  //         let value;
+  //         if(object != null && object != ''){
+  //           value = object;
+  //           this.templateForm.controls[fieldName].setValue(value)
+  //         }else if(object == 0){
+  //           value = object;
+  //           this.templateForm.controls[fieldName].setValue(value)
+  //         }
+  //       }
+  //     break;            
+  //     case "gmap":        
+  //     case "gmapview":
+  //       if(object != null && object != undefined){
+  //         if(formValue['longitude']){
+  //           this.longitude = formValue['longitude'];
+  //         }
+  //         if(formValue['latitude']){
+  //           this.latitude = formValue['latitude'];
+  //         }
+  //         if(formValue['zoom']){
+  //           this.zoom = formValue['zoom'];
+  //         }    
+  //         if(this.longitude != 0 && this.latitude != 0){
+  //           this.getAddress(this.latitude,this.longitude)
+  //         } 
+  //         this.templateForm.controls[fieldName].setValue(object)
+  //       }
+  //       break;
+  //     case "daterange":
+  //       if(object != null && object != undefined){
+  //         let list_of_dates = [
+  //           {field_name : 'start'},
+  //           {field_name : 'end'}
+  //         ]
+  //         if (list_of_dates.length > 0) {
+  //           list_of_dates.forEach((data) => { 
+  //             let childFieldName = data.field_name;
+  //             this.templateForm.get(fieldName).get(childFieldName).setValue(object[childFieldName]);
+  //           });
+  //         } 
+  //       }                                  
+  //       break;
+  //     case "date":
+  //       if(object != null && object != undefined){
+  //         if(date_format && date_format != '' && typeof object === 'string'){
+  //           const date = object[fieldName];
+  //           const dateMonthYear = date.split('/');
+  //           const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
+  //           const value = new Date(formatedDate);
+  //           this.templateForm.controls[fieldName].setValue(value)
+  //         }else{                  
+  //           const value = formValue[fieldName] == null ? null : formValue[fieldName];
+  //           this.templateForm.controls[fieldName].setValue(value);                  
+  //         }
+  //       }
+  //       break;
+  //     case "tabular_data_selector":   
+  //       if(object != undefined && object != null){
+  //         this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(object));     
+  //       } 
+  //       if(Array.isArray(this.staticData[ddn_field]) && Array.isArray(this.custmizedFormValue[fieldName])){
+  //         this.custmizedFormValue[fieldName].forEach(staData => {
+  //           if(this.staticData[ddn_field][staData._id]){
+  //             this.staticData[ddn_field][staData._id].selected = true;
+  //           }
+  //         });
+  //       }          
+  //       break;
+  //     case "list_of_checkbox":
+  //       this.templateForm.controls[fieldName].setValue([]);
+  //       break;
+  //     default:
+  //       if(object != null && object != undefined){
+  //         const value = object == null ? null : object;
+  //         this.templateForm.controls[fieldName].setValue(value);
+  //       }
+  //       break;
+  //   } 
+   
+  //   if(tree_view_object && tree_view_object.field_name != ""){
+  //     let editeTreeModifyData = JSON.parse(JSON.stringify(tree_view_object));
+  //     const object = this.selectedRow[editeTreeModifyData.field_name];
+  //     this.templateForm.controls[editeTreeModifyData.field_name].setValue(object)
+  //   }
+  // }
   
   checkValidator(action_button){
     if(action_button.field_name){
@@ -2651,6 +3156,8 @@ tinymceConfig = {}
 
   resetFlagsForNewForm(){    
     //this.tableFields = [];
+    this.calculationFieldList=[];
+    this.buttonIfList=[];
     this.showIfFieldList=[];
     this.disableIfFieldList=[];
     this.mendetoryIfFieldList = [];
@@ -3771,21 +4278,20 @@ tinymceConfig = {}
           const fieldName = nextFormData['current_field']['field_name'];
           if(this.commonFunctionService.isArray(cdata)){
             this.custmizedFormValue[fieldName] = cdata;
+            // this.modifyCustmizedValue(fieldName);
           }
           break;      
         default:
           break;
       }
     }
-    if(this.editedRowIndex >= 0){
-      this.getStaticDataWithDependentData();
-      // this.updateDataOnFormField(this.childData);
-      // this.editedRowData(this.childData);
-    }
     if(nextFormData && nextFormData['next_form_data'] && nextFormData['next_form_data']['updataModeInPopupType']){
       this.editedRowData(fData);
     }else{
-      this.updateDataOnFormField(fData);    
+      this.updateDataOnFormField(fData);
+      if(this.editedRowIndex >= 0 || Object.keys(fData).length > 0){
+        this.getStaticDataWithDependentData();
+      }   
     }
     let nextFormFocusedFieldname = '';
     for (let key in fData) {
@@ -5157,7 +5663,7 @@ tinymceConfig = {}
  
   loadPreviousForm(){
     let multiFormLength = this.multipleFormCollection.length;
-    const lastIndex = this.multipleFormCollection.length - 1;
+    const lastIndex = multiFormLength - 1;
     const formCollecition = this.multipleFormCollection[lastIndex];
     let previousFormData = {};
     if(multiFormLength > 1){
@@ -5167,7 +5673,6 @@ tinymceConfig = {}
     this.modal.id = this.form._id;
     this.resetFlagsForNewForm();
     const data = formCollecition['data'];
-    //console.log(data);
 
     this.updateMode = formCollecition['updateMode'];
     if(this.updateMode || this.complete_object_payload_mode){
@@ -5176,11 +5681,12 @@ tinymceConfig = {}
     this.setForm();
     this.updateDataOnFormField(data);
     this.getStaticDataWithDependentData();
+    if(this.calculationFieldList && this.calculationFieldList.length > 0){
+      this.callCalculation();
+    }
     this.currentMenu['name'] = formCollecition['collection_name'];
-    this.previousFormFocusField = formCollecition['current_field']; 
-
+    this.previousFormFocusField = formCollecition['current_field'];
     this.focusFieldParent = formCollecition['parent_field'];
-  
     if(this.previousFormFocusField && this.previousFormFocusField['add_next_form_button']){
       this.enableNextButton = true;
     }else{
@@ -5216,7 +5722,20 @@ tinymceConfig = {}
       default:
         break;
     }
-    
+    if(this.focusFieldParent && this.focusFieldParent.type == "list_of_fields" && this.focusFieldParent.datatype == "list_of_object"){
+      const listOfFieldUpdateMode = formCollecition['listOfFieldUpdateMode'];
+      if(listOfFieldUpdateMode){
+        const listOfFieldsUpdateIndex = formCollecition['listOfFieldsUpdateIndex'];
+        if(listOfFieldsUpdateIndex != -1){
+          const fieldName = this.focusFieldParent.field_name;
+          if(fieldName && fieldName != ""){
+            const listData = data[fieldName];
+            const editedData = listData[listOfFieldsUpdateIndex];
+            this.editListOfFiedls(listOfFieldsUpdateIndex,this.focusFieldParent);
+          }          
+        }
+      }
+    }   
     this.multipleFormCollection.splice(lastIndex,1);    
   }
 
@@ -5850,15 +6369,14 @@ tinymceConfig = {}
     }
   }
 
-  checkShowIfListOfFiedlds(parent,field,index){
+  checkShowIfListOfFiedlds(parent,field){
     let formValue = this.getFormValue(true);
-    let parentFieldName = parent.field_name;
-    let fieldValue = formValue[parentFieldName];    
+    let fieldValue = formValue[parent];    
     if(fieldValue && fieldValue.length > 0 && field && field.show_if && field.show_if != null && field.show_if != ''){
       let check = 0;      
       for (let index = 0; index < fieldValue.length; index++) {
         const value = fieldValue[index];
-        formValue[parentFieldName] = value;
+        formValue[parent] = value;
         if(this.commonFunctionService.showIf(field,formValue)){
           check = 1;
           break;
@@ -6462,6 +6980,20 @@ tinymceConfig = {}
   //   })
     
   // }
+  callCalculation(){
+    if(this.calculationFieldList && this.calculationFieldList.length > 0){
+      for (var i = 0;i<this.calculationFieldList.length ;++i){
+        let element = this.calculationFieldList[i];
+        switch (element.onchange_function_param) {        
+            case 'autopopulateFields':
+              this.limsCalculationsService.autopopulateFields(this.templateForm);
+              break;
+          default:
+            this.inputOnChangeFunc('',element);
+        }
+      }
+    }
+  }
 
   // Please let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last in this file
   async readAsBase64(photo: Photo) {
@@ -6486,4 +7018,5 @@ tinymceConfig = {}
       }
       reader.readAsDataURL(blob);
   });
+  
 }

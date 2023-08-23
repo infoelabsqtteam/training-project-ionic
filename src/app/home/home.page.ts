@@ -108,13 +108,6 @@ export class HomePage implements OnInit, OnDestroy {
         }
       }
     });
-    // this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{
-    //   if(data == "logged_out"){
-    //     this.cardList = [];
-    //   }else if(data == "logged_in"){
-    //     // this.getGridData();
-    //   }
-    // });
 
   }
 
@@ -147,9 +140,6 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   unsubscribeVariabbles(){
-    // if (this.cardListSubscription) {
-    //   this.cardListSubscription.unsubscribe();
-    // }
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
@@ -161,22 +151,6 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // if(this.coreFunctionService.isNotBlank(this.storageService.getClientName())){
-    //   if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-    //     this.authService.GetUserInfoFromToken(this.storageService.GetIdToken());
-    //     // this.router.navigateByUrl('/home');
-    //     this.getGridData();
-    //   }else {
-    //     this.router.navigateByUrl('/signine');
-    //   }
-    //   // this.authService._user_info.subscribe(resp => {
-    //   //   this.userInfo = resp;
-        
-    //   // })
-    // }else{
-    //   this.storageService.removeDataFormStorage();
-    //   this.router.navigateByUrl('/checkcompany');
-    // }
     this.getGridData();
   }
   resetVariables(){
@@ -236,23 +210,16 @@ export class HomePage implements OnInit, OnDestroy {
         alert.present();
       });
   }
-
   
   // search module below
   search() {
     const criteria = "name;stwic;"+this.myInput+";STATIC";
     this.getGridData([criteria]);
-  } 
-
-  openSearch(){
-    console.log("function open searchbar");
-  }
-  
+  }  
   comingSoon() {
     this.notificationService.presentToastOnBottom('Comming Soon...','danger');
   }
-
-  // Pull from Top for Do refreshing or update card list 
+  // Pull from Top to Do refreshing or update card list 
   doRefresh(event:any) {
     // if(this.refreshlist){
       this.ionEvent = event;

@@ -89,7 +89,9 @@ ion-header {
 // Footer Tabs
 ion-tabs.footertab {
     ion-tab-bar {background:var(--themebg);}
-    ion-tab-button{background:none;color:var(--ion-color-light);}
+    ion-tab-button{background:none;color:var(--ion-color-light);
+        ion-label{white-space: pre-line;line-height: 1.1;}
+    }
     .tab-selected {background:rgba(0,0,0,0.2);}
 }
 
@@ -99,10 +101,10 @@ ion-tabs.footertab {
 }
 //***---------- Contact Listing  ----------***//
 .contactlist {margin:0px 8px 40px;
-    ion-item-sliding{margin-bottom:6px;margin-top: 6px;    
+    ion-item-sliding{margin-bottom:10px;margin-top: 0px;    
         ion-item-options {height:calc(100% - 0px);background: var(--themebg);border-radius: 10px;}
         ion-item-options.item-options-start ion-item-option{border-radius: 10px 0 0 10px;}
-        ion-item-options.item-options-end ion-item-option{border-radius: 0 10px 10px 0;}
+        ion-item-options.item-options-end ion-item-option:nth-child(odd){border-radius: 0 10px 10px 0;}
         ion-item-option {line-height:66px;color:#fff;width:50px;}
     }
     ion-item {--padding-start:0px;--inner-padding-end:0px;--inner-border-width:0;background:var(--card-bg-light);--background:var(--card-bg-light);padding:10px;border-radius: 10px;
@@ -124,7 +126,15 @@ ion-tabs.footertab {
 .contactlist.app-grid_list{margin:0 6px;padding: 0;
     ion-list{padding: 0;}
 }
-
+.contactlist.trackOnMap {
+    ion-item-sliding {
+        ion-item-option {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+    }
+}
 
 @supports ((-webkit-margin-start: 0) or (margin-inline-start: 0)) or (-webkit-margin-start: 0)
 {
