@@ -249,8 +249,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       }
     }else{
-      this.nodatafound=true;
-      console.log("Current page greater than totalPage");
+      if(data && data.length == 0){
+        this.carddata = [];
+        this.nodatafound=true;
+        console.log("Current page greater than totalPage");
+      }
     }
     if(this.carddata && this.carddata.length > 0){
       this.nodatafound=false;
@@ -376,6 +379,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if(this.nestedCardSubscribe){
       this.nestedCardSubscribe.unsubscribe();
     }
+  }
+  unsubscribedSavecall(){    
     if(this.saveResponceSubscription){
       this.saveResponceSubscription.unsubscribe();
     }
@@ -784,7 +789,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       modal.componentProps.modal = modal;
       modal.onDidDismiss().then((result) => {        
         this.getCardDataByCollection(this.selectedIndex);
-        this.unSubscribed();
+        this.unsubscribedSavecall();
       });
     } else {
       this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
@@ -1278,14 +1283,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   await alert.present();
   }
   async enableGPSandgetCoordinates(){
-    if(isPlatform('hybrid')){
-        this.gpsEnableAlert();
-    }else{
       const isGpsEnable:boolean = await this.app_googleService.checkGPSPermission();
       if(isGpsEnable){
         this.requestLocationPermission();
       }
-    }
   }
   async requestLocationPermission() {
     let isGpsEnable = false;
@@ -1304,7 +1305,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           }
         }
         else{
-          this.enableGPSandgetCoordinates();
+          this.gpsEnableAlert();
         }
       }
     }else{      
@@ -1398,6 +1399,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           // this.setCardDetails(this.card.card);
         }else if ((saveFromDataRsponce.success == 'success' || saveFromDataRsponce.success != '' ) && this.updateMode) {
           this.carddata[this.editedRowIndex] == saveFromDataRsponce.data;
+          if(saveFromDataRsponce.success != ''){
+            this.notificationService.showAlert(saveFromDataRsponce.success,'',['Dismiss']);
+          }
         }
         this.apiService.ResetSaveResponce()
       }
@@ -1453,15 +1457,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         modal.onDidDismiss().then(async (result:any) => {
           console.log("Google map Modal Closed", result);
           if(result && result.role == "completed"){
-            this.editedRowData(index,"UPDATE");
-            //   let packagePayload = {
-            //   "curTemp":this.collectionname,
-            //   "data":result.data
-            // }
-            // await this.apiService.SaveFormData(packagePayload);
+            // this.editedRowData(index,"UPDATE"); //for open form
           }
           this.carddata[index] = result.data;
-          // this.getCardDataByCollection(this.selectedIndex);
         });
       }else{
         await this.requestLocationPermission();

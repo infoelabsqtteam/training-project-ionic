@@ -448,7 +448,6 @@ export class GmapViewComponent implements OnInit {
           this.leftBtn = false;
           this.leftBtnSpinner = false;
           // await this.clearWatch();
-          this.dismissModal(this.selectedRowData,"completed");
         }
         
         this.collectionCustomFunction(this.selectedRowData);
@@ -881,11 +880,18 @@ export class GmapViewComponent implements OnInit {
           // }
           // this.getGridData(this.collectionname,);
           // this.setCardDetails(this.card.card);
-        }else if ((saveFromDataRsponce.success == 'success' || saveFromDataRsponce.success != '' ) && this.additionalData.updateMode) {
+        }else if ((saveFromDataRsponce.success == 'success' || saveFromDataRsponce.success_msg != '' ) && this.additionalData.updateMode) {
           this.selectedRowData == saveFromDataRsponce.data;
           let status = saveFromDataRsponce.data.trackingStatus;
           if(status == 'PROGRESS' || status == "REACHED" || status == 'DELIVERED' || status == 'COMPLETED'){
-            this.notificationService.showAlert(saveFromDataRsponce.success,"Location saved",['Dismiss']);
+            if(saveFromDataRsponce.success_msg != '' && saveFromDataRsponce.success_msg != undefined){
+              this.notificationService.showAlert(saveFromDataRsponce.success_msg,"Location saved",['Dismiss']);
+            }else{
+              this.notificationService.showAlert("Your Current Location Saved","Location saved",['Dismiss']);
+            }
+          }
+          if(status == 'COMPLETED'){            
+            this.dismissModal(saveFromDataRsponce.data,"completed");
           }
         }
       }else if(saveFromDataRsponce && saveFromDataRsponce.error){

@@ -6746,6 +6746,9 @@ tinymceConfig = {}
     let permResult = false;
     if(isPlatform('hybrid')){
       permResult = await this.app_googleService.checkGPSPermission();
+      if(!permResult){
+        permResult = await this.app_googleService.checkGeolocationPermission();
+      }
       this.requestLocationPermission();
     }else{
       permResult = await this.app_googleService.checkGPSPermission();
@@ -6845,10 +6848,8 @@ tinymceConfig = {}
   }
   async locateMe(event:any,field?:any){
     this.zoom = 17;
-    let centerLat = event.lat    
-    let centerLng = event.lng
-    const hasGpsPermission = await this.app_googleService.checkGPSPermission();
-    if(hasGpsPermission){
+    const hasGpsPermission = await this.app_googleService.checkGeolocationPermission();
+    if(hasGpsPermission ){
       await this.setCurrentLocation();
       await this.getAddressfromLatLng(this.latitude,this.longitude);
       this.setAddressOnForm(field);

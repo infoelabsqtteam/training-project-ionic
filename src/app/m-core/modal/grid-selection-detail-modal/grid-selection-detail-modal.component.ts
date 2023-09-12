@@ -83,7 +83,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
     if(this.typeaheadDataSubscription){
       this.typeaheadDataSubscription.unsubscribe();
-    }    
+    }
+    this.resetVariables();    
   }
   onload(){
     this.cardType = this.childCardType;
@@ -375,7 +376,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       this.typeAheadData = [];
     }
   }
-  setValue(option,field,data) {
+  setValue(option:any,field,data) {
     if(option != null && option != "" && option.key !=""){
       const alreadyAddedList = data[field.field_name];
       if ((option.keyCode == 13 || option.keyCode == 9) && option.target.value !="" && option.target.value != undefined){
