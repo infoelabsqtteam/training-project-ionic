@@ -41,6 +41,13 @@ export class GridSelectionDetailModalComponent implements OnInit {
   grid_row_selection: boolean = false;
   action_button_SaveupdateData = false;
   grid_row_refresh_icon: boolean = false;
+  // below ion-select changes 
+  customAlertOptions:object = {
+    backdropDismiss: false,
+    translucent: true
+  };
+  ionSelectInterface:string = 'alert';
+  //  Ion-select changes end
 
   constructor(
     private modalController: ModalController,
@@ -417,6 +424,24 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }else{
       return field.label;
     }
+  }
+  selectionFocus(tableField:any){
+    let selectionmsg:string = '';
+    let backdropdismiss:boolean = false;
+    if(tableField?.interface && tableField?.interface != 'alert' && !tableField?.multi_select){
+      this.ionSelectInterface = tableField.interface;
+      backdropdismiss = true;
+    }
+    if(tableField?.multi_select){
+      selectionmsg = 'Choose multiple';
+    } else{
+      selectionmsg = 'Choose only one';
+    }
+    this.customAlertOptions = {
+      message: selectionmsg,
+      backdropDismiss: backdropdismiss,
+      translucent: true,
+    };
   }
   clearDropdownField(e:any,field:any){
     if(e.target.value && e.target.value.name){      

@@ -4,7 +4,8 @@ import { ActionSheetController, AlertController, ModalController, Platform } fro
 import { Geolocation } from '@capacitor/geolocation';
 import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
-import { ApiService, DataShareService, StorageService } from '@core/web-core';
+import { ApiService, CoreFunctionService, DataShareService, StorageService } from '@core/web-core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-gmap-view',
@@ -56,8 +57,8 @@ export class GmapViewComponent implements OnInit {
   //    {location: { lat: 41.8339037, lng: -87.8720468 }}
   // ];
   waypoints:any=[];
-  gridDataSubscription;
-  staticDataSubscription;
+  gridDataSubscription:Subscription;
+  staticDataSubscription:Subscription;
 
   //javascript GoogleMaps Variables
   googleMaps:any;
@@ -73,15 +74,18 @@ export class GmapViewComponent implements OnInit {
   currentPostionIconUrl:any = '../../../../assets/img/icons/current-location-1.png';
   destinationPostionIconUrl:any = '../../../../assets/img/icons/destination-location-1.png';
   googleAddress:any;
+  startBtn:boolean = false;
   reachBtn:boolean = false;
   leftBtn:boolean = false;
-  deliverBtn:boolean = false;
+  startBtnText:string = "";
   reachBtnText:string = "";
   leftBtnText:string = "";
+  startBtnSpinner:boolean = false;
   reachBtnSpinner:boolean = false;
   leftBtnSpinner:boolean = false;
   appTitle:string;
   userLocationDetails:any = {}
+  saveResponceSubscription:Subscription;
 
 
   constructor(
@@ -97,7 +101,8 @@ export class GmapViewComponent implements OnInit {
     private dataShareServiceService: DataShareServiceService,
     private modalController: ModalController,
     private appStorageService: AppStorageService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private coreFunctionService: CoreFunctionService
   ) {
     this.appTitle = this.storageService.getPageTitle();
     this.currentPostionIconUrl = '../../../../assets/img/icons/current-location-1.png';
@@ -108,24 +113,38 @@ export class GmapViewComponent implements OnInit {
     })
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
-    })
+    });
+    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
+        this.setSaveResponce(responce);
+    });
 
   }
 
   ngOnInit() {
 
   }
-
   ionViewDidEnter(){
     this.checkPermissionandRequest();
     this.onload();
   }
   ngonDestroy(){
+    this.unSubscribed();
+  }
+  ionViewDidLeave(){
+    this.unSubscribed();
+    this.resetVariables()
+  }
+  ionViewWillLeave(){
+  }
+  unSubscribed(){
     if(this.gridDataSubscription){
       this.gridDataSubscription.unsubscribe();
     }
     if(this.staticDataSubscription){
       this.staticDataSubscription.unsubscribe();
+    }
+    if(this.saveResponceSubscription){
+      this.saveResponceSubscription.unsubscribe();
     }
   }
 
@@ -165,25 +184,35 @@ export class GmapViewComponent implements OnInit {
         if(selectedrowdata.name){
           this.SelectedItemName = selectedrowdata.name;
         }
-        if(selectedrowdata.leftDateTime ==null){
-          this.leftBtn = false;
+        if(this.coreFunctionService.isNotBlank(selectedrowdata.trackStartDateTime)){
+          this.startBtn = true;
         }else{
-          this.leftBtn = true;
-        }        
-        if(this.leftBtn){
-          this.leftBtnText = "Completed";
-        }else{
-          this.leftBtnText = "Leave";
+          this.startBtn = false;
         }
-        if(selectedrowdata.reachDateTime ==null){
-          this.reachBtn = false;
+        if(this.startBtn){
+          this.startBtnText = "Started";
         }else{
+          this.startBtnText = "Start";
+        }
+        if(this.coreFunctionService.isNotBlank(selectedrowdata.reachDateTime)){
           this.reachBtn = true;
+        }else{
+          this.reachBtn = false;
         }
         if(this.reachBtn){
           this.reachBtnText = "Reached";
         }else{
           this.reachBtnText = "Reach";
+        }
+        if(this.coreFunctionService.isNotBlank(selectedrowdata.leftDateTime)){
+          this.leftBtn = true;
+        }else{
+          this.leftBtn = false;
+        }
+        if(this.leftBtn){
+          this.leftBtnText = "Completed";
+        }else{
+          this.leftBtnText = "Return";
         }
         // this.createMap(this.center);
         break;
@@ -350,56 +379,85 @@ export class GmapViewComponent implements OnInit {
     this.waypoints = [];
     this.destinationLocationMarkerId = '';
     this.currentLocationMarkerId = '';
+    this.selectedRowData = {};
   }
-  async customButtonClick(buttonName?:any){
+  async customButtonClick(buttonName?:any,confirmation?:boolean){
     const isGpsEnable = await this.app_googleService.checkGPSPermission();
     let currentposition:any = await this.app_googleService.getUserLocation();
+    let newDate = new Date();
     if(isGpsEnable){
-      if(buttonName == "reach"){
+      if(buttonName == "start"){
+        // if(confirmation){
+          this.startBtn = true;
+          this.startBtnSpinner = true;
+        // }else{
+        //   await this.presentConfirmationActionSheet(buttonName,'').then( data => {
+        //     console.log(data)
+        //   })
+        // }
+      }else if(buttonName == "reach"){
         this.reachBtn = true;
         this.reachBtnSpinner = true;
       }else if(buttonName == "left"){
         this.leftBtn = true;
         this.leftBtnSpinner = true;
-      }else if(buttonName == "deliver"){
-        this.deliverBtn = true;
       }
       if(currentposition && currentposition.lat != null && currentposition.lng != null){
         let currentlatlng: any = {
           'latitude': currentposition.lat,
           'longitude': currentposition.lng,
         }
+        let currentlatlngdetails:any = await this.app_googleService.getAddressFromLatLong(this.currentLatLng.lat,this.currentLatLng.lng);
+        let currentAddress = currentlatlngdetails[0];
+        let locationData = {
+          'latitude' : currentposition.lat,
+          'longitude' : currentposition.lng,
+          'address' : currentAddress.formatted_address,
+          'date' : JSON.parse(JSON.stringify(newDate)),
+          'time' : this.dataShareServiceService.getCurrentTime(newDate),
+          'placeId' : currentAddress.place_id
+        }
+        if(buttonName == "start"){
+          this.selectedRowData['trackingStatus'] = "PROGRESS";
+          this.selectedRowData['trackStartDateTime'] = JSON.parse(JSON.stringify(newDate));
+          this.selectedRowData['trackStartTime'] = await this.dataShareServiceService.getCurrentTime(newDate);          
+          this.selectedRowData['trackStartLocation'] = locationData;
+          this.selectedRowData['customerAddressDetail'] = {
+            'latitude': this.additionalData.destinationAddress?.geometry?.location.lat,
+            'longitude': this.additionalData.destinationAddress?.geometry?.location.lat,
+            'placeId': this.additionalData.destinationAddress?.place_id
+          };          
+          this.startBtn = false;
+          this.startBtnSpinner = false;
+        }
         if(buttonName == "reach"){
           this.selectedRowData['reachDateTime'] = JSON.parse(JSON.stringify(new Date()));
           this.selectedRowData['reachTime'] = await this.dataShareServiceService.getCurrentTime(new Date()); 
-          this.selectedRowData['reachLocation'] = currentlatlng;
+          this.selectedRowData['reachLocation'] = locationData;
           this.selectedRowData['trackingStatus'] = "REACHED";
           this.reachBtn = false;
-          this.reachBtnSpinner=false;
+          this.reachBtnSpinner = false;
+          if(confirmation){
+            this.selectedRowData['validationStatus'] = "Not Reached";
+          }
         }else if(buttonName == "left"){
           this.selectedRowData['leftDateTime'] = JSON.parse(JSON.stringify(new Date()));
           this.selectedRowData['leftTime'] = await this.dataShareServiceService.getCurrentTime(new Date()); 
-          this.selectedRowData['leftLocation'] = currentlatlng;
-          this.selectedRowData['trackingStatus'] = "DELIVERED";
+          this.selectedRowData['leftLocation'] = locationData;
+          this.selectedRowData['trackingStatus'] = "COMPLETED";
           this.leftBtn = false;
           this.leftBtnSpinner = false;
-          await this.clearWatch();
-          this.dismissModal(this.selectedRowData,"delivered");
-        }else if(buttonName == "deliver"){
-          this.selectedRowData['deliverDateTime'] = JSON.parse(JSON.stringify(new Date()));
-          this.selectedRowData['deliverLocation'] = currentlatlng;
+          // await this.clearWatch();
+          this.dismissModal(this.selectedRowData,"completed");
         }
         
-        this.collectionCustomFunction(this.selectedRowData);      
+        this.collectionCustomFunction(this.selectedRowData);
         this.saveData(this.selectedRowData);
-        this.notificationService.showAlert("Your current position has been saved.","Location data saved",['Dismiss']);
 
       }else{
         if(!currentposition.gpsenable){
-          if(buttonName == "reach"){
-            this.reachBtn = false;
-            this.reachBtnSpinner = false;
-          }else if(buttonName == "left")
+          this.reachBtn = false;
+          this.reachBtnSpinner = false;
           this.leftBtn = false;
           this.leftBtnSpinner = false;
         }
@@ -806,6 +864,88 @@ export class GmapViewComponent implements OnInit {
     });
   }
   //End JS Google Map Func.
+
+  setSaveResponce(saveFromDataRsponce){
+    if (saveFromDataRsponce) {
+      if (saveFromDataRsponce.success && saveFromDataRsponce.success != '' && saveFromDataRsponce.data) {
+        if (saveFromDataRsponce.success == 'success' && !this.additionalData.updateMode) {          
+          // let card:any;
+          // let criteria:any = [];
+          // if(this.card && this.card.card){
+          //   card = this.card.card;
+          // }
+          // if(card && card.api_params_criteria && card.api_params_criteria.length > 0){
+          //   card.api_params_criteria.forEach(element => {
+          //     criteria.push(element);
+          //   });
+          // }
+          // this.getGridData(this.collectionname,);
+          // this.setCardDetails(this.card.card);
+        }else if ((saveFromDataRsponce.success == 'success' || saveFromDataRsponce.success != '' ) && this.additionalData.updateMode) {
+          this.selectedRowData == saveFromDataRsponce.data;
+          let status = saveFromDataRsponce.data.trackingStatus;
+          if(status == 'PROGRESS' || status == "REACHED" || status == 'DELIVERED' || status == 'COMPLETED'){
+            this.notificationService.showAlert(saveFromDataRsponce.success,"Location saved",['Dismiss']);
+          }
+        }
+      }else if(saveFromDataRsponce && saveFromDataRsponce.error){
+        if(saveFromDataRsponce.error == "Your Current Location Not Matched with Destination Location, Do you Still want to save ?"){
+          // let isOpen = await this.actionSheetController.getTop();
+          // if(!isOpen){
+            this.presentConfirmationActionSheet('reach',saveFromDataRsponce.error);
+          // }
+        }else{
+          this.notificationService.showAlert(saveFromDataRsponce.error,"Alert",['Dismiss']);
+        }
+        this.apiService.ResetSaveResponce();
+      }
+    }
+  }
+  async presentConfirmationActionSheet(btnName,errorMsg) {
+    let dynamicActionName ='';
+    if(btnName == "start"){
+      dynamicActionName = 'Start';
+    }else if(btnName == 'reach'){
+      dynamicActionName = 'Reach';
+    }else{
+      dynamicActionName = btnName;
+    }
+    const actionSheet = await this.actionSheetController.create({
+      header: "Are You Sure ?",
+      subHeader: errorMsg,
+      buttons: [{
+        text: dynamicActionName ? dynamicActionName : 'Save',
+        role: 'confirm',
+        icon: 'location',
+        handler: () => {
+          // this.customButtonClick(btnName,true);
+          console.log('Confirm clicked');
+        }
+      },
+      {
+        text: 'Cancel',
+        icon: 'close',
+        role: 'cancel',
+        handler: () => {
+            // this.collectionCustomFunction(this.selectedRowData);
+            console.log('Cancel clicked');
+        }
+      }]
+    });
+  
+    await actionSheet.present();
+    const result = await actionSheet.onDidDismiss();
+    if(result.role == 'confirm'){
+      this.customButtonClick(btnName,true);
+    }else{
+      this.selectedRowData['reachDateTime'] = '';
+      this.selectedRowData['reachTime'] = ''; 
+      this.selectedRowData['reachLocation'] = {};
+      this.selectedRowData['trackingStatus'] = "Assigned";
+      this.collectionCustomFunction(this.selectedRowData);
+    }
+    console.log("action result : ", result)
+  }
 
   // Testing Functions and sample example
   addDestinationMarker(location){

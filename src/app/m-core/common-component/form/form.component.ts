@@ -9,7 +9,7 @@ import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
 import { ActionSheetController, Platform } from '@ionic/angular';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Observable, catchError, finalize, last, map, of } from 'rxjs';
+import { Observable, Subscription, catchError, finalize, last, map, of } from 'rxjs';
 import { zonedTimeToUtc, utcToZonedTime} from 'date-fns-tz';
 import { parseISO, format, hoursToMilliseconds, isToday, add } from 'date-fns';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -179,7 +179,7 @@ tinymceConfig = {}
   @Input() isBulkUpdate:boolean;
   @Input() bulkDataList:any;
   @ViewChild('capacitormap') capMapRef: ElementRef<HTMLElement>;
-  @ViewChild('search') searchElementRef: ElementRef; 
+  @ViewChild('search', {read:ElementRef}) searchElementRef: ElementRef;
   @ViewChild(MapInfoWindow) infoWindow: MapInfoWindow;
   @ViewChild(GoogleMap) public map!: GoogleMap;
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
@@ -245,13 +245,14 @@ tinymceConfig = {}
 
   dinamicFormSubscription:any;
   staticDataSubscriber:any;
-  nestedFormSubscription:any;
-  saveResponceSubscription:any;
+  nestedFormSubscription:Subscription;
+  saveResponceSubscription:Subscription;
   typeaheadDataSubscription:any;
   fileDataSubscription:any;
   fileDownloadUrlSubscription:any;
-  nextFormSubscription:any;
+  nextFormSubscription:Subscription;
   gridSelectionOpenOrNotSubscription:any;
+  gridRealTimeDataSubscription:Subscription;
   isGridSelectionOpen: boolean = true;
   deleteGridRowData: boolean = false;
   clickFieldName:any={};
@@ -306,6 +307,7 @@ tinymceConfig = {}
   checkForDownloadReport:boolean = false;
   pageSize:any=100;
   buttonIfList=[];
+  confirmationSubscription:any;
 
   	/**
 	 * Convert Files list to normal array list
@@ -462,6 +464,9 @@ tinymceConfig = {}
           this.openNextForm(false);
         }
       })
+      this.gridRealTimeDataSubscription = this.dataShareService.gridRunningData.subscribe(data =>{
+        this.updateRunningData(data.data);
+      })
 
       this.onLoadVariable();
   }
@@ -498,6 +503,9 @@ tinymceConfig = {}
     if(this.gridSelectionOpenOrNotSubscription){
       this.gridSelectionOpenOrNotSubscription.unsubscribe();
     }
+    if(this.gridRealTimeDataSubscription){
+      this.gridRealTimeDataSubscription.unsubscribe();
+    }
 
   }
 
@@ -515,6 +523,7 @@ tinymceConfig = {}
   }
   ngAfterViewInit(){
     // this.gmapSearchPlaces();
+    
   }
   ngOnDestroy() {
     //Abobe ionViewwillLeave is working fine.
@@ -533,7 +542,29 @@ tinymceConfig = {}
     const payload = this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, {});
     this.apiService.GetNestedForm(payload);
   }
-
+  updateRunningData(data:any){
+    if (this.editedRowIndex >= 0) {
+      this.selectedRowIndex = this.editedRowIndex;
+      if(this.childData && this.childData._id){
+        if(data && data.data){
+          if(this.childData._id == data.data[0]._id){
+            this.editedRowData(data.data[0]);
+          }
+        }else{
+          this.editedRowData(this.childData);
+        }
+      }
+    }else{
+      this.selectedRowIndex = -1;
+      if(this.editedRowIndex == -1) {
+        if(data && data._id == undefined) {
+          setTimeout(() => {
+            this.updateDataOnFormField(data);
+          }, 100);
+        }
+      }
+    }
+  }
   setTypeaheadData(typeAheadData){
     if (typeAheadData && typeAheadData.length > 0) {
       this.typeAheadData = typeAheadData;
@@ -1082,10 +1113,15 @@ tinymceConfig = {}
                     element['fieldIndex'] = index;
                   }
                   element['showButton'] = this.checkGridSelectionButtonCondition(element,'add');
-                  this.commonFunctionService.createFormControl(forControl, element, '', "text")
+                  this.commonFunctionService.createFormControl(forControl, element, '', "text");
+                break;
+              case "gmap":
+              case "gmapview": 
+                this.requestLocationPermission();
+                this.commonFunctionService.createFormControl(forControl, element, '', "text");
                 break;
               default:
-                this.commonFunctionService.createFormControl(forControl, element, '', "text")
+                this.commonFunctionService.createFormControl(forControl, element, '', "text");
                 break;
             }
             
@@ -1602,9 +1638,19 @@ tinymceConfig = {}
             break;
           case 'gmap':
           case "gmapview":
-            selectedRow['latitude'] = this.latitude;
-            selectedRow['longitude'] = this.longitude;
-            selectedRow['address'] = this.address;
+            if(element && element.datatype == "object"){
+              let locationData = {};
+              locationData['latitude'] = this.latitude;
+              locationData['longitude'] = this.longitude;
+              locationData['address'] = this.address;
+              locationData['date'] = JSON.parse(JSON.stringify(new Date()));
+              locationData['time'] = this.dataShareServiceService.getCurrentTime(new Date);
+              selectedRow[element.field_name] = locationData;
+            }else{
+              selectedRow['latitude'] = this.latitude;
+              selectedRow['longitude'] = this.longitude;
+              selectedRow[element.field_name] = this.address;
+            }
             break;
           case 'date':
             if(element && element.date_format && element.date_format != ''){
@@ -1697,9 +1743,19 @@ tinymceConfig = {}
             break;
           case 'gmap':
           case "gmapview":
-            modifyFormValue['latitude'] = this.latitude;
-            modifyFormValue['longitude'] = this.longitude;
-            modifyFormValue['address'] = this.address;
+            if(element && element.datatype == "object"){
+              let locationData = {};
+              locationData['latitude'] = this.latitude;
+              locationData['longitude'] = this.longitude;
+              locationData['address'] = this.address;
+              locationData['date'] = JSON.parse(JSON.stringify(new Date()));
+              locationData['time'] = this.dataShareServiceService.getCurrentTime(new Date);
+              modifyFormValue[element.field_name] = locationData;
+            }else{
+              modifyFormValue['latitude'] = this.latitude;
+              modifyFormValue['longitude'] = this.longitude;
+              modifyFormValue[element.field_name] = this.address;
+            }
             break;
           case 'date':
             if(element && element.date_format && element.date_format != ''){
@@ -1895,7 +1951,8 @@ tinymceConfig = {}
       if(this.center !=null && this.center.lat !=null){
         valueOfForm['locationDetail'] = {
           'latitude' : this.center.lat ? this.center.lat : this.latitude,
-          'longitude' : this.center.lng ? this.center.lng : this.longitude
+          'longitude' : this.center.lng ? this.center.lng : this.longitude,
+          'address' : this.address
         }
       }else{
         this.requestLocationPermission();
@@ -1927,7 +1984,7 @@ tinymceConfig = {}
        
     if(hasPermission){
       let gridSelectionValidation:any = this.checkGridSelectionMendetory(); 
-      if(this.templateForm.valid && gridSelectionValidation.status){
+      if(this.isFormValid() && gridSelectionValidation.status){
         let checkCustmizedValuValidation = this.commonFunctionService.checkCustmizedValuValidation(this.tableFields,formValue);
         if(checkCustmizedValuValidation.status){
           if (this.dataSaveInProgress) {
@@ -1974,7 +2031,10 @@ tinymceConfig = {}
       this.notificationService.showAlert("Permission denied !!!",'',['Dismiss']);
     }
   }
-  saveFormData(){
+  isFormValid() : boolean { 
+    return this.templateForm.disabled ? true : this.templateForm.valid
+  }
+  saveFormData(confirmation?:any){
     let checkValidatiaon = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(false),true,this.getFormValue(true));
     if(typeof checkValidatiaon != 'object'){
       const saveFromData = this.getSavePayloadData();
@@ -1982,6 +2042,14 @@ tinymceConfig = {}
       //   saveFromData.data['data'] = this.bulkDataList;
       //   saveFromData.data['bulk_update'] = true;
       // }
+      if(confirmation && confirmation.confirm){
+        let formField = confirmation.griddata.field_name;
+        saveFromData[formField] = {
+          'latitude' : this.latitude,
+          'longitude' : this.longitude,
+          'address' : this.address,
+        }
+      }
       if(this.getSavePayload){
         if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.api && this.currentActionButton.onclick.api != null && this.currentActionButton.onclick.api.toLowerCase() == 'send_email'){
           this.apiService.SendEmail(saveFromData)
@@ -3130,7 +3198,8 @@ tinymceConfig = {}
         case "update":
         case "updateandnext":
         case "send_email":
-          return !this.templateForm.valid;
+          const valid:boolean =  this.isFormValid();
+          return !valid;
         default:
           return;
       }
@@ -4277,8 +4346,12 @@ tinymceConfig = {}
         case 'grid_selection':
           const fieldName = nextFormData['current_field']['field_name'];
           if(this.commonFunctionService.isArray(cdata)){
-            this.custmizedFormValue[fieldName] = cdata;
-            // this.modifyCustmizedValue(fieldName);
+            if(this.form && this.form.buttons){
+              if(!this.checkAddNewButtonOnGridSelection(this.form.buttons)){
+                this.custmizedFormValue[fieldName] = cdata;
+                // this.modifyCustmizedValue(fieldName);
+              }
+            }
           }
           break;      
         default:
@@ -4449,18 +4522,18 @@ tinymceConfig = {}
           calFormValue = this.commonFunctionService.getDateInStringFunction(tamplateFormValue);
           this.updateDataOnFormField(calFormValue); 
           break;
-        // case 'getTaWithCalculation':
-        //   calFormValue = this.limsCalculationsService.getTaWithCalculation(tamplateFormValue1);
-        //   this.updateDataOnFormField(calFormValue); 
-        //   calFormValue = this.limsCalculationsService.calculateTotalFair(this.templateForm.getRawValue());
-        //   this.updateDataOnFormField(calFormValue); 
-        //   break;
-        // case 'funModeTravelChange':
-        //   calFormValue = this.limsCalculationsService.funModeTravelChange(tamplateFormValue1);
-        //   this.updateDataOnFormField(calFormValue);
-        //   calFormValue = this.limsCalculationsService.calculateTotalFair(this.templateForm.getRawValue());
-        //   this.updateDataOnFormField(calFormValue);
-        //   break;
+        case 'getTaWithCalculation':
+          calFormValue = this.limsCalculationsService.getTaWithCalculation(tamplateFormValue1);
+          this.updateDataOnFormField(calFormValue); 
+          calFormValue = this.limsCalculationsService.calculateTotalFair(this.templateForm.getRawValue());
+          this.updateDataOnFormField(calFormValue); 
+          break;
+        case 'funModeTravelChange':
+          calFormValue = this.commonFunctionService.funModeTravelChange(tamplateFormValue1);
+          this.updateDataOnFormField(calFormValue);
+          calFormValue = this.limsCalculationsService.calculateTotalFair(this.templateForm.getRawValue());
+          this.updateDataOnFormField(calFormValue);
+          break;
 
         // case 'quote_amount_via_sample_no':
         //   calFormValue = this.limsCalculationsService.quote_amount_via_sample_no(tamplateFormValue,this.custmizedFormValue['quotation_param_methods']);
@@ -6768,21 +6841,29 @@ tinymceConfig = {}
     }else{
       await this.getCoordinatesOnBrowser();
     }
-    this.zoom = 10;
+    this.zoom = 17;
   }
-  // async mapsApiLoaded(){
-  //   let apiKey:any = environment.googleMapsApiKey;    
-  //   this.apiLoaded = this.httpClient.jsonp('https://maps.googleapis.com/maps/api/js?key='+ apiKey +'&libraries=places', 'callback')
-  //       .pipe(
-  //         map(() => true),
-  //         catchError(() => of(false)),
-  //       );
-  // }
+  async locateMe(event: google.maps.LatLngLiteral,field?:any){
+    this.zoom = 17;
+    let centerLat = event.lat    
+    let centerLng = event.lng
+    const hasGpsPermission = await this.app_googleService.checkGPSPermission();
+    if(hasGpsPermission){
+      await this.setCurrentLocation();
+      await this.getAddressfromLatLng(this.latitude,this.longitude);
+      this.setAddressOnForm(field);
+    }else{
+      this.requestLocationPermission();
+    }
+  }
   async gmapSearchPlaces(inputData?:any,field?:any){
     if(inputData?.target?.value){
       if(this.searchElementRef != undefined){
-        // this.searchElementRef['el'].value  = inputData.target.value; // for ion-input
-        this.searchElementRef.nativeElement.value  = inputData.target.value;
+        if(this.searchElementRef && this.searchElementRef.nativeElement){
+          this.searchElementRef.nativeElement.value  = inputData.target.value;
+        }else{
+          this.searchElementRef['el']['value']  = inputData.target.value; // for ion-input
+        } 
       }
     }
     let loadGoogleMap:boolean = false;
@@ -6806,8 +6887,14 @@ tinymceConfig = {}
           "lng": this.longitude
         }
         if(this.searchElementRef != undefined){
+          let googleautosearch;
+          if(this.searchElementRef && this.searchElementRef.nativeElement){
+            googleautosearch = this.searchElementRef.nativeElement
+          }else{
+            googleautosearch = this.searchElementRef['el']
+          }
           let autocomplete = new google.maps.places.Autocomplete(
-            this.searchElementRef.nativeElement
+            googleautosearch
           );
           autocomplete.addListener('place_changed', () => {
             this.ngZone.run(() => {
@@ -6834,7 +6921,7 @@ tinymceConfig = {}
     }
   }
   async mapClick(event: google.maps.MapMouseEvent,field?:any) {
-    this.zoom = 17;
+    this.zoom = 16;
     this.center = (event.latLng.toJSON());
     await this.getAddressfromLatLng(this.center.lat, this.center.lng);
     this.setAddressOnForm(field);
@@ -6873,10 +6960,10 @@ tinymceConfig = {}
       this.ionSelectInterface = tableField.interface;
       backdropdismiss = true;
     }
-    if(tableField?.datatype == 'text'){
-      selectionmsg = 'Choose only one';
-    } else{
+    if(tableField?.multi_select){
       selectionmsg = 'Choose multiple';
+    } else{
+      selectionmsg = 'Choose only one';
     }
     this.customAlertOptions = {
       message: selectionmsg,
@@ -6993,6 +7080,19 @@ tinymceConfig = {}
         }
       }
     }
+  }
+  checkAddNewButtonOnGridSelection(buttons){
+    let check = false;
+    if(buttons && buttons.length >0){
+        for (let i = 0; i < buttons.length; i++) {
+          const btn = buttons[i];
+          if(btn && btn.onclick && btn.onclick.api && btn.onclick.api == "save"){
+            check = true;
+            break;
+          }
+        }
+    }
+    return check;
   }
 
   // Please let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last in this file

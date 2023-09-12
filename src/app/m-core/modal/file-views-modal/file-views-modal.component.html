@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" (click)="closeModal('close')"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-buttons>
+    <!-- <ion-title class="ion-no-padding ion-text-capitalize">{{Data.field.field_label}}</ion-title> -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pages">
+  <div class="" #fileViewModal>
+    <ion-card>
+      <ion-card-header *ngIf="coloumName! && coloumName!=''">
+        <ion-card-title>{{coloumName}}</ion-card-title>
+        <!-- <ion-card-subtitle>{{Data.field.field_label}}</ion-card-subtitle> -->
+      </ion-card-header>
+      <ion-card-content class="ion-table-responsive-x-axis ion-padding-horizontal-0 ion-padding-top-0">
+        <table class="table-bordered table-striped one-line-text" *ngIf="data.length > 0 && gridColumns.length > 0">
+          <thead>
+            <tr>
+              <th class="p-1">#</th>                
+              <th class="p-1" *ngFor="let coloum of gridColumns">{{ coloum.label }}</th>
+              <th><span>Action</span></th>
+            </tr>
+          </thead>
+          <tbody >
+            <tr *ngFor="let item of data; let i = index">
+              <td scope="row" class="p-1">{{ i + 1 }}</td>                
+              <td class="p-1" *ngFor="let coloum of gridColumns">
+                <div>
+                    <span  [innerHtml]="getddnDisplayVal(getValueForGrid(coloum,item))"></span>                     
+                </div>
+              </td>
+              <td>
+                  <!-- <mdb-icon fas icon="download" class="pl-3 cursor-pointer" (click)="downloadFile(item)"></mdb-icon> -->
+                  <ion-button size="small" (click)="downloadFile(item)"><ion-icon name="download" slot="icon-only"></ion-icon></ion-button>
+                  <!-- <ion-button size="small" (click)="previewImage(item)"><ion-icon name="image-outline" slot="icon-only"></ion-icon></ion-button> -->
+              </td>
+            </tr>
+            <tr>
+              <img [src]="imgurl">
+            </tr>
+          </tbody>
+        </table>
+        <table class="table-bordered table-striped one-line-text" *ngIf="gridColumns.length == 0">
+          <thead>
+            <tr>
+              <th class="p-1">#</th>                
+              <th class="p-1" >File Name</th>
+              <th><span>Action</span></th>
+            </tr>
+          </thead>
+          <tbody >
+            <tr *ngFor="let item of data; let i = index">
+              <td scope="row" class="p-1">{{ i + 1 }}</td>                
+              <td class="p-1">
+                <div>
+                    <span>{{item['rollName']}}</span>                     
+                </div>
+              </td>
+              <td>
+                <span class="material-symbols-outlined cursor-pointer" (click)="downloadFile(item)">download</span>
+                <ion-button size="small" (click)="downloadFile(item)"><ion-icon name="download" slot="icon-only"></ion-icon></ion-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-item>
+    <ion-button type="button" mdbBtn color="primary" outline="true" slot="end" size="small" class="waves-light" data-dismiss="modal" (click)="closeModal('close')">Close</ion-button>
+  </ion-item>
+</ion-footer>

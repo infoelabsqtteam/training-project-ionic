@@ -5,7 +5,7 @@ export const environment = {
   serverhost: "https://prodserveritclabs.e-labs.ai",
   mediceaHost: "http://pcp.medicea.in/rest/",
   appId: "com.tech.elabs.ionic",
-  appName: "e-labs",
+  appName: "E-labs",
   appPlatformName: "E-Labs",
   web_site: "",
   razorpay_key : "rzp_test_P7SL8C2oelMvzE",

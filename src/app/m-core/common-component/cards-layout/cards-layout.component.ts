@@ -2,7 +2,7 @@ import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, 
 import { Router } from '@angular/router';
 import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
-import { Platform, ModalController, AlertController, PopoverController, isPlatform } from '@ionic/angular';
+import { Platform, ModalController, AlertController, PopoverController, isPlatform, ActionSheetController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card.component';
 import { FormComponent } from '../form/form.component';
@@ -149,7 +149,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
     private loaderService: LoaderService,
-    private appPermissionService: AppPermissionService
+    private appPermissionService: AppPermissionService,
+    private actionSheetController: ActionSheetController
   ) 
   {
     
@@ -187,18 +188,17 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     });
     this.nodatafound=false;
-
-    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
-      if(responce && responce.data){
-        this.setSaveResponce(responce);
-      }
-    });
     this.nestedCardSubscribe = this.commonAppDataShareService.nestedCard.subscribe(nextgriddata =>{
       if(nextgriddata && nextgriddata !=undefined){
         this.card = nextgriddata.card;
       }
     });
     
+  }
+  saveCallSubscribe(){
+    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
+      this.setSaveResponce(responce);
+    })
   }
 
   setCardData(data:any){
@@ -298,6 +298,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   ionViewDidLeave(){
     this.carddata=[];
   }
+  ionVieDidEnter(){
+    console.log("DidEnter");
+    // this.checkLoader();
+  }
   checkLoader() {
     new Promise(async (resolve)=>{
       let checkLoader = await this.loaderService.loadingCtrl.getTop();
@@ -357,6 +361,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     // if (this.cardListSubscription) {
     //   this.cardListSubscription.unsubscribe();
     // }
+    this.unSubscribed();
+  }
+  unSubscribed(){
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
@@ -365,6 +372,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     if(this.childgridsubscription){
       this.childgridsubscription.unsubscribe();
+    }
+    if(this.nestedCardSubscribe){
+      this.nestedCardSubscribe.unsubscribe();
+    }
+    if(this.saveResponceSubscription){
+      this.saveResponceSubscription.unsubscribe();
     }
   }
   
@@ -704,7 +717,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       'path':null
     }
     if(payload.data && payload.data.value && !this.updateMode){      
-      this.loaderService.showLoader("Loading...");
+      // this.loaderService.showLoader("Loading...");
     }
     this.apiService.getDatabyCollectionName(payload);
   }
@@ -754,6 +767,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }    
       this.commonAppDataShareService.setFormId(id);
       // this.router.navigate(['crm/form']);
+      this.saveCallSubscribe();
       const modal = await this.modalController.create({
         component: FormComponent,
         componentProps: {
@@ -768,8 +782,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       });
       modal.present();
       modal.componentProps.modal = modal;
-      modal.onDidDismiss().then((result) => {
+      modal.onDidDismiss().then((result) => {        
         this.getCardDataByCollection(this.selectedIndex);
+        this.unSubscribed();
       });
     } else {
       this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
@@ -817,12 +832,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           }
         }else{
           this.notificationService.presentToastOnBottom("No more data.");
-        }
-        
+        }        
       }, 2000);
 
     }else{
-      console.log("Load More Data feature disable.");
+      setTimeout(() => {
+        console.log("Load More Data feature disable.");
+          event.target.complete();
+      }, 2000);
     }
   }
   // Pull from Top for Do refreshing or update card list 
@@ -849,15 +866,22 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
               criteria.push(element);
             });
           }
+          if(card && card.parent_id){
+            if(card && card.collection_name == "travel_tracking_master" && card.parent_id && card.parent_id !=''){
+              const cr = "travelPlan._id;eq;" + card.parent_id + ";STATIC";
+              criteria.push(cr);
+            }            
+          }
           this.getGridData(this.collectionname, criteria, card);
         // }
       }, 2000);
 
     }else{
       console.log("Top refresh feature disable.");
+      event.target.complete();
     }
   }
-  gridButtonAction(gridData,index,button){
+  gridButtonAction(gridData,index,button,confirmation?:boolean){
     if(button && button.onclick && button.onclick.action_name){
       switch (button.onclick.action_name.toUpperCase()) {
         case "PREVIEW":
@@ -940,6 +964,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           case 'GOOGLE_TRACKING_START':
             this.startTracking(gridData, index, button.onclick.action_name.toUpperCase());
             break;
+          case 'GOOGLE_TRACKING_END':
+            if(confirmation){
+              this.saveCurrentLocationDetails(gridData,index);
+              // this.editedRowData(index,button.onclick.action_name);
+            }else{
+              this.presentConfirmationActionSheet(gridData, index, button);
+            }
+            break;
         default:
           this.editedRowData(index,button.onclick.action_name);
           break;
@@ -954,17 +986,19 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.selectedgriddataId = this.gridData._id;
       this.updateMode = true;
       if(formName == 'UPDATE'){   
-        // if(this.checkUpdatePermission(this.carddata[index])){
-        //   return;
-        // }   
-        // if(this.checkFieldsAvailability('UPDATE')){
-        //   this.addNewForm(formName);
-        // }else{
-        //   return;
-        // }  
-        this.addNewForm(formName, 'edit');      
+        if(this.checkUpdatePermission(this.carddata[index])){
+          return;
+        }   
+        if(this.checkFieldsAvailability('UPDATE')){
+          this.addNewForm(formName);
+          this.commonFunctionService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
+        }else{
+          return;
+        }  
+        // this.addNewForm(formName, 'edit');      
       }else{
         this.addNewForm(formName, 'edit');
+        this.commonFunctionService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
       }  
       this.selectedIndex = index;    
     } else {
@@ -1063,9 +1097,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
   }
   checkFieldsAvailability(formName){
-    if(this.card && this.card.card && this.card.card.forms){
-      let form = this.commonFunctionService.getForm(this.card.card.forms,formName,this.gridButtons);        
-      if(form['tableFields'] && form['tableFields'] != undefined && form['tableFields'] != null){
+    if(this.card && this.card.card && this.card.card.form){
+      let form = this.commonFunctionService.getForm(this.card.card.form,formName,this.gridButtons);
+      // if(form['tableFields'] && form['tableFields'] != undefined && form['tableFields'] != null){ //web based condition
+      if(form['_id'] && form['_id'] != undefined && form['_id'] != null){ //app based condition
         return true;
       }else{
         return false;
@@ -1348,7 +1383,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   setSaveResponce(saveFromDataRsponce){
     if (saveFromDataRsponce) {
       if (saveFromDataRsponce.success && saveFromDataRsponce.success != '') {
-        if (saveFromDataRsponce.success == 'success' && !this.updateMode) {          
+        if (saveFromDataRsponce.success == 'success' && !this.updateMode) {
           let card:any;
           let criteria:any = [];
           if(this.card && this.card.card){
@@ -1361,60 +1396,41 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           }
           this.getGridData(this.collectionname,);
           // this.setCardDetails(this.card.card);
-        }else if (saveFromDataRsponce.success == 'success' && this.updateMode) {
+        }else if ((saveFromDataRsponce.success == 'success' || saveFromDataRsponce.success != '' ) && this.updateMode) {
           this.carddata[this.editedRowIndex] == saveFromDataRsponce.data;
-          let status = saveFromDataRsponce.data.trackingStatus;
-          if(status == 'PROGRESS' || status == "REACHED" || status == 'DELIVERED'){
-            this.notificationService.showAlert("Your current position has been saved.","Location data saved",['Dismiss']);
-          }
-        }        
+        }
         this.apiService.ResetSaveResponce()
       }
     }
   }
   async startTracking(data:any,index:number,actionname?:any){
     try{
+      console.log("currentTime",await this.dataShareServiceService.getCurrentTime(new Date()));
       this.updateMode = true;
       this.editedRowIndex = index;
       let isGpsEnable = await this.app_googleService.checkGPSPermission();
       if(isGpsEnable && this.currentLatLng && this.currentLatLng.lat){
         let destination:any={}
-        if(data.customerAddress !=null && data.customerAddress !=undefined){
+        if(data.customerAddress != null && data.customerAddress != 'null' && data.customerAddress != undefined && data.customerAddress != ''){
           const geocodeAddress:any = {
             'address' : data.customerAddress
           }
-          destination = await this.app_googleService.getGoogleAddressFromString(geocodeAddress);          
+          if(geocodeAddress.address != ''){
+            destination = await this.app_googleService.getGoogleAddressFromString(geocodeAddress);
+          }else{
+            return this.notificationService.presentToastOnBottom("Destination Address not Present.","danger")
+          }
         }
         let currentlatlngdetails:any;
         if(this.currentLatLng !=null && this.currentLatLng.lat !=''){
           currentlatlngdetails = await this.app_googleService.getAddressFromLatLong(this.currentLatLng.lat,this.currentLatLng.lng);
         }
-        if(data.trackingStatus == "ASSIGNED"){
-          const newDate = new Date();
-          // let startTime = await this.getCurrentTime(newDate);
-          data['trackingStatus'] = "PROGRESS";
-          data['trackStartDateTime'] = JSON.parse(JSON.stringify(newDate));
-          data['trackStartTime'] = await this.dataShareServiceService.getCurrentTime(newDate);          
-          data['trackStartLocation'] = {
-            'latitude': this.currentLatLng.lat,
-            'longitude': this.currentLatLng.lat
-          }
-          data['customerAddressDetail'] = {
-            'latitude': destination?.geometry?.location.lat,
-            'longitude': destination?.geometry?.location.lat,
-            'placeId': destination?.place_id
-          };
-          let packagePayload = {
-            "curTemp":this.collectionname,
-            "data":data
-          }
-          this.apiService.SaveFormData(packagePayload); //For updation status of package item
-        }
         let additionalData:any = {
           "collectionName":this.collectionname,
           "currentLatLng":this.currentLatLng,
           "currentLatLngDetails": currentlatlngdetails['0'],
-          "destinationAddress": destination
+          "destinationAddress": destination,
+          "updateMode" : true
         }
         const modal = await this.modalController.create({
           component: GmapViewComponent,
@@ -1427,16 +1443,16 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           id: data._id,
           showBackdrop:true,
           backdropDismiss:false,
-          initialBreakpoint : 0.25,
-          breakpoints : [0.25, 0.5, 0.75],
-          backdropBreakpoint : 0.5,
+          initialBreakpoint : 1,
+          breakpoints : [0.75, 1],
+          backdropBreakpoint : 0.75,
           handleBehavior:'cycle'
         });
         modal.present();
         modal.componentProps.modal = modal;
         modal.onDidDismiss().then(async (result:any) => {
           console.log("Google map Modal Closed", result);
-          if(result && result.role == "delivered"){
+          if(result && result.role == "completed"){
             this.editedRowData(index,"UPDATE");
             //   let packagePayload = {
             //   "curTemp":this.collectionname,
@@ -1450,12 +1466,50 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }else{
         await this.requestLocationPermission();
         this.notificationService.presentToastOnBottom("Getting your location, please wait..");
-        this.startTracking(data,index); 
+        this.startTracking(data,index);
       }
 
     }catch{
 
     }
+  }
+  async presentConfirmationActionSheet(gridData, index:number, btnName, errorMsg?:string) {
+    const actionSheet = await this.actionSheetController.create({
+      header: "Are You Sure ?",
+      subHeader: errorMsg,
+      buttons: [{
+        text: btnName.label ? btnName.label : "Save",
+        role: 'confirm',
+        icon: 'checkmark',
+        handler: () => {
+          console.log('Confirmed clicked');
+        }
+      },
+      {
+        text: 'Cancel',
+        icon: 'close',
+        role: 'cancel',
+        handler: () => {
+            console.log('Canceled clicked');
+        }
+      }]
+    });
+  
+    await actionSheet.present();
+    const result:any = await actionSheet.onDidDismiss();
+    if(result && result.role == "confirm"){
+      // this.gridButtonAction(gridData, index, btnName,true);      
+      let confirmatioObject = {
+        'gridData': gridData,
+        'index': index,
+        'btnName': btnName,
+        'confirm': result.role
+      }
+      this.dataShareServiceService.setConfirmation(confirmatioObject);//not working neeed to do more changes
+    }
+  }
+  saveCurrentLocationDetails(data,index:number){
+    const formData = ''
   }
   
   async getUTCDate(date:any){

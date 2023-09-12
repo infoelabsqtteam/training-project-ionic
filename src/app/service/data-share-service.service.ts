@@ -1,5 +1,5 @@
 import { Injectable,EventEmitter } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -42,6 +42,7 @@ export class DataShareServiceService {
   childCardData: any = [];
   setcollectionName: EventEmitter<any> = new EventEmitter<any>(null);
   collectionName: any = '';
+  confirmationCheck: Subject<any> = new Subject();
 
   //Usage of search medecine 
   setmedecineData(responce){
@@ -138,7 +139,7 @@ export class DataShareServiceService {
   getCollectionName(){
     return this.collectionName;
   }
-  async getCurrentTime(newDate:any){
+  getCurrentTime(newDate:any){
     var dt = newDate
     var hours = dt.getHours(); // gives the value in 24 hours format
     var AmOrPm = hours >= 12 ? 'PM' : 'AM';
@@ -146,6 +147,9 @@ export class DataShareServiceService {
     var minutes = dt.getMinutes();
     var finalTime = hours + ':' + minutes + ' ' + AmOrPm;
     return finalTime;
+  }
+  setConfirmation(responce:any){
+    this.confirmationCheck.next(responce);
   }
   
 }

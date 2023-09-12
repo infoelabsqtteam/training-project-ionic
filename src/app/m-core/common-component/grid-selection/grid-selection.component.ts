@@ -16,6 +16,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   @Input() modal: any;
   @Output() selectedTabAgain = new EventEmitter<any>();
   @Output() gridSelectionResponce = new EventEmitter<any>();
+  
 
   selecteData:any=[];
   selectedData:any = [];

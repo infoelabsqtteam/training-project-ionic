@@ -2,6 +2,8 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ModalComponent } from '../../modal/modal.component';
 import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService, CommonAppDataShareService } from '@core/web-core';
+import { ModelService } from '@core/ionic-core';
+import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
 
 @Component({
   selector: 'app-modal-detail-card',
@@ -33,7 +35,8 @@ export class ModalDetailCardComponent implements OnInit {
     private commonAppDataShareService: CommonAppDataShareService,
     private apiService: ApiService,
     private commonFunctionService: CommonFunctionService,
-    private menuOrModuleCommonService: MenuOrModuleCommonService
+    private menuOrModuleCommonService: MenuOrModuleCommonService,
+    private modelService: ModelService
     ) {
       this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
         if(data && data.gridColumns){
@@ -195,7 +198,7 @@ export class ModalDetailCardComponent implements OnInit {
         if (value['data'] && value['data'] != '') {
           this.selectedViewRowIndex = -1;
           this.viewColumnName = '';
-          // this.viewModal('fileview-grid-modal', value, field, i, field.field_name,editemode);
+          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode);
         };
         break;
       case "download_file":
@@ -233,7 +236,33 @@ export class ModalDetailCardComponent implements OnInit {
     });
     return await modal.present();
   }
-
+  async viewFileModal(component:any, value, field, i,field_name,editemode){    
+    let objectData:any = {
+      'data' : value,
+      'field' : field,
+      'index' : i,
+      'field_name': field_name,
+      'editemode' : editemode
+    }
+    // this.modelService.openModal(component,objectData).then((data:any) => {
+    //   if(data && data.role == 'closed'){
+    //     console.log("ModalIs",data.role);
+    //   }
+    // });
+    const modal = await this.modalController.create({
+      component: FileViewsModalComponent,
+      cssClass: 'file-info-modal',
+      componentProps: {
+        "objectData": objectData,      
+      },
+    });
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss()
+      .then((data) => {
+          console.log("File Download Modal closed " , data.role);                
+    });
+    return await modal.present();
+  }
   getChildGridFieldsbyId(childrGridId:string){
       const params = "grid";
       const criteria = ["_id;eq;" + childrGridId + ";STATIC"];

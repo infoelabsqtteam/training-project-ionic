@@ -21,6 +21,7 @@
                         <ion-label class="ion-margin-start">Change Password</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
+                <!-- Dynamic Sidebar -->
                 <ion-menu-toggle auto-hide="false">
                     <ion-item lines="none" *ngFor="let cardItem of cardList; let i = index"
                         (click)="showCardTemplate(cardItem, i)" lines="none" detail="false"
@@ -28,6 +29,14 @@
                         <ion-avatar slot="start"><img [src]="cardItem.image_src"></ion-avatar>
                         <ion-label class="ion-margin-start">{{cardItem.name}}</ion-label>
                     </ion-item>
+                </ion-menu-toggle>
+                <!-- Dynamic Sidebar End -->
+                <ion-menu-toggle>
+                    <ion-item (click)="shareApp()">
+                        <ion-icon name="share" slot="start" style="margin-right:16px;"></ion-icon>
+                        <!-- <span class="material-symbols-outlined"slot="start" >share</span> -->
+                        <ion-label class="ion-margin-start">Share</ion-label>
+                    </ion-item>                    
                 </ion-menu-toggle>
             </ion-list>
             <ion-footer>

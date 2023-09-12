@@ -248,7 +248,7 @@
             <ion-item>
               <ion-label>{{ tableField.label | titlecase}} <ion-text *ngIf="tableField.is_mandatory" class=""> *</ion-text></ion-label>
               <ion-input
-                value="{{ templateForm.get(tableField.field_name).value | date: 'dd.MM.yyyy' }}"
+                value="{{ templateForm.get(tableField.field_name).value | date: 'mediumDate' }}"
                 id="{{tableField._id + '_' + tableField.field_name}}"
                 class="ion-text-end  ion-flex-direction-row-reverse"
                 [required]="tableField.is_mandatory" (ionChange)="inputOnChangeFunc('',tableField)"
@@ -848,13 +848,17 @@
             </ion-accordion-group>                        
           </div>
           <div *ngIf="tableField.type == 'gmap' || tableField.type == 'gmapview'">
-              <div class="input-container w-100">
+              <div class="input-container w-100 gmap">
                   <label for="search" position="floating">{{ tableField.label | titlecase}}</label>
                   <input type="text" class="w-100 not-ioninput" autocomplete="on" (keyup)="gmapSearchPlaces($event,tableField)" [placeholder]="tableField.placeholder ? tableField.placeholder : tableField.label | titlecase" [required]="tableField.is_mandatory" spellcheck="off" type="text" #search [formControlName]="tableField.field_name" (keydown.enter)="$event.preventDefault()">
               </div>
-              <div *ngIf="tableField.type == 'gmapview'">
+              <!-- <ion-item class="input-container w-100 gmap">
+                <ion-input type="text" class="w-100 not-ioninput" autocomplete="on" (keyup)="gmapSearchPlaces($event,tableField)" [placeholder]="tableField.placeholder ? tableField.placeholder : tableField.label | titlecase" [required]="tableField.is_mandatory" spellcheck="off" type="text" #search id="search" [formControlName]="tableField.field_name" (keydown.enter)="$event.preventDefault()" [readonly]="tableField.is_disabled"></ion-input>
+              </ion-item>               -->
+              <ion-button expand="block" shape="" fill="outline" size="small" (click)="locateMe($event,tableField)" *ngIf="tableField.type == 'gmapview'">Locate Me<ion-icon name="locate" slot="end"></ion-icon></ion-button>
+              <div *ngIf="tableField.type == 'gmapview'" class="gmapview">
                 <!-- <capacitor-google-map #capacitormap style="min-height: 250px;max-height: 350px;width: 100%" height="250px" width="100%"></capacitor-google-map> -->
-                  <google-map #angularGoogleMap style="min-height: 250px;max-height: 350px;width: 100%" height="250px" width="100%" [center]="center" [zoom]="zoom" (mapClick)="mapClick($event,tableField)">
+                  <google-map #angularGoogleMap style="min-height: 250px;max-height: 350px;width: 100%" height="250px" width="100%" [center]="center" [zoom]="zoom" (mapClick)="mapClick($event,tableField)" disableDefaultUI="true">
                       <map-marker #marker="mapMarker"
                           *ngIf="center"
                           [position]="center"

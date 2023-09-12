@@ -11,6 +11,8 @@ import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@io
 import { AndroidpermissionsService } from './service/androidpermissions.service';
 import { Title } from '@angular/platform-browser';
 import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService, MenuOrModuleCommonService, EnvService, CoreFunctionService, StorageTokenStatus } from '@core/web-core';
+import { App } from '@capacitor/app';
+import { Share } from '@capacitor/share';
 
  
 @Component({ 
@@ -358,6 +360,23 @@ export class AppComponent implements OnInit, OnDestroy {
     this.favIcon.href = this.storageService.getLogoPath() + "favicon.ico";
     this.titleService.setTitle(this.storageService.getPageTitle());
     this.themeName = this.storageService.getPageThmem();
+  }
+  async shareApp(){
+    let appInfo:any = {};
+    if(Capacitor.isNativePlatform()){
+      appInfo = await App.getInfo();
+    }else{
+      appInfo = {
+        'name': this.storageService.getClientCodeEnviorment().appName,
+        'id' : this.storageService.getClientCodeEnviorment().appId
+      }
+    }
+    await Share.share({
+      title: appInfo.name,
+      text: 'E-Labs Mobile application is perfect companion for your next generation E-Labs LIMS.',
+      url: 'https://play.google.com/store/apps/details?id='+ appInfo.id,
+      dialogTitle: 'Share with friends',
+    });
   }
 
 }

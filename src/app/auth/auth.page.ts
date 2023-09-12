@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 
 import * as appConstants from '../shared/app.constants';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { AppStorageService, AuthResponseData, NotificationService } from '@core/ionic-core';
+import { AuthResponseData, NotificationService } from '@core/ionic-core';
 
 
 
@@ -29,7 +29,6 @@ export class AuthPage implements OnInit {
   constructor(
     private alertCtrl: AlertController,
     private http: HttpClient,
-    private storageService: AppStorageService,
     private notificationService: NotificationService
   ) { }
 
@@ -59,7 +58,7 @@ export class AuthPage implements OnInit {
         this.loginObj.sessionId = resp['Details'];
         this.notificationService.presentToastOnBottom('Otp Matched !!', 'succeess');
         const obj = JSON.stringify({ authenticated: true, mobileNo: this.loginObj.mobileNo });
-        this.storageService.setObject('userData', obj);
+        // this.storageService.setObject('userData', obj);
       } else {
 
       }

@@ -41,7 +41,7 @@
     "@capacitor/splash-screen": "4.0.1",
     "@capacitor/status-bar": "4.0.1",
     "@core/ionic-core": "^1.2.4",
-    "@core/web-core": "^1.2.17",
+    "@core/web-core": "^1.0.33",
     "@ionic-native/android-permissions": "^5.35.0",
     "@ionic-native/call-number": "^5.34.0",
     "@ionic-native/camera": "^5.34.0",
