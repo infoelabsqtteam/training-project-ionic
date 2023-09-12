@@ -6843,7 +6843,7 @@ tinymceConfig = {}
     }
     this.zoom = 17;
   }
-  async locateMe(event: google.maps.LatLngLiteral,field?:any){
+  async locateMe(event:any,field?:any){
     this.zoom = 17;
     let centerLat = event.lat    
     let centerLng = event.lng
