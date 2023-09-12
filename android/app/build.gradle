@@ -14,7 +14,7 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "com.tech.elabs.ionic"
-        minSdk minSdkVersion
+        minSdkVersion rootProject.ext.minSdkVersion
         targetSdk 33
         versionCode getMyVersionCode()
         versionName getMyVersionName()
@@ -33,10 +33,10 @@ android {
                 keyAlias System.getenv()["CM_KEY_ALIAS"]
                 keyPassword System.getenv()["CM_KEY_PASSWORD"]
             } else {
-               storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-               storePassword System.getenv()['CM_KEYSTORE_PASSWORD']
-               keyAlias System.getenv()['CM_KEY_ALIAS_USERNAME']
-               keyPassword System.getenv()['CM_KEY_ALIAS_PASSWORD']
+              storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+              storePassword System.getenv()['CM_KEYSTORE_PASSWORD']
+              keyAlias System.getenv()['CM_KEY_ALIAS_USERNAME']
+              keyPassword System.getenv()['CM_KEY_ALIAS_PASSWORD']
             }
         }
     }
