@@ -202,27 +202,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.redirectToHomePageWithStorage();
         }
       }      
-   })
-    
-    // if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-    //   // this.getGridData();
-    //   this.authService.getUserPermission(false,'/home');
-    //   this.router.navigateByUrl('/home');  
-    // } 
-    // else{
-    //   console.log("Token Not active");
-    //   this.router.navigateByUrl('/signine');
-    // }
-    
-    // this.authService._user_info.subscribe(resp => {
-    //   if(resp!== null){
-    //     this.dataShareServiceService.setUserDetails(resp);
-    //     this.userInfo = this.dataShareServiceService.getUserDetails();
-    //   }
-    //   else{
-    //     this.userInfo = {};
-    //   }
-    // })
+    })
   }
   isClientCodeExist(){
       const clientCode = this.storageService.getClientName();
@@ -267,49 +247,19 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     return tokenStatus;
   }
-  
-  async getCurrentLocation(){
-    try{
-      const coordinates = await this.app_googleService.getUserLocation();
-      this.coords = coordinates;
-      console.log("coords:", this.coords);
-      this.latitude = this.coords.lat;
-      this.dataShareServiceService.setCurrentLatitude(this.latitude);
-      this.longitude = this.coords.lng;
-      this.dataShareServiceService.setCurrentLongitude(this.longitude);
 
-      let options: NativeGeocoderOptions = {
-        useLocale: true,
-        maxResults: 1
-      };
-        this.nativeGeocoder.reverseGeocode(this.latitude, this.longitude, options)
-      .then((result: NativeGeocoderResult[]) =>{
-         this.result = (JSON.stringify(result[0]));
-         console.log(this.result);
-         
-      })
-      .catch((error: any) => console.log(error));
-
-    }catch(e) {
-      // this.notificationService.showAlert("GPS is unable to locate you.", 'Enable GPS',['OK']);
-      console.log('Error getting location: ', e);
-    }
-  }
-
-  forwardLocation(inputaddress){
-    let options: NativeGeocoderOptions = {
-      useLocale: false,
-      maxResults: 1
-    };
-    this.nativeGeocoder.forwardGeocode(inputaddress, options)
-      .then((result: NativeGeocoderResult[]) => console.log('The coordinates are latitude=' + result[0].latitude + ' and longitude=' + result[0].longitude  ))
-      .catch((error: any) => console.log(error));
-  }
+  // forwardLocation(inputaddress){
+  //   let options: NativeGeocoderOptions = {
+  //     useLocale: false,
+  //     maxResults: 1
+  //   };
+  //   this.nativeGeocoder.forwardGeocode(inputaddress, options)
+  //     .then((result: NativeGeocoderResult[]) => console.log('The coordinates are latitude=' + result[0].latitude + ' and longitude=' + result[0].longitude  ))
+  //     .catch((error: any) => console.log(error));
+  // }
   
   
-  ionViewWillEnter() {
-    //this.commonFunctionService.getCurrentAddress();
-  }
+  ionViewWillEnter() {}
   onLogout() {
     this.authService.Logout('');
   }

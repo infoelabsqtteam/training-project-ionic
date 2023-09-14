@@ -6,6 +6,7 @@ import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ApiService, CoreFunctionService, DataShareService, StorageService } from '@core/web-core';
 import { Subscription } from 'rxjs';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-gmap-view',
@@ -102,7 +103,8 @@ export class GmapViewComponent implements OnInit {
     private modalController: ModalController,
     private appStorageService: AppStorageService,
     private storageService: StorageService,
-    private coreFunctionService: CoreFunctionService
+    private coreFunctionService: CoreFunctionService,
+    private datePipe: DatePipe,
   ) {
     this.appTitle = this.storageService.getPageTitle();
     this.currentPostionIconUrl = '../../../../assets/img/icons/current-location-1.png';
@@ -380,7 +382,6 @@ export class GmapViewComponent implements OnInit {
   }
   async customButtonClick(buttonName?:any,confirmation?:boolean){
     const isGpsEnable = await this.app_googleService.checkGeolocationPermission();
-    let newDate = new Date();
     if(isGpsEnable){
       let currentposition:any = await this.app_googleService.getUserLocation();
       if(buttonName == "start"){
@@ -410,14 +411,14 @@ export class GmapViewComponent implements OnInit {
           'latitude' : currentposition.lat,
           'longitude' : currentposition.lng,
           'address' : currentAddress.formatted_address,
-          'date' : JSON.parse(JSON.stringify(newDate)),
-          'time' : this.dataShareServiceService.getCurrentTime(newDate),
+          'date' : JSON.parse(JSON.stringify(new Date())),
+          'time' : this.datePipe.transform(new Date(),'shortTime'),
           'placeId' : currentAddress.place_id
         }
         if(buttonName == "start"){
           this.selectedRowData['trackingStatus'] = "PROGRESS";
-          this.selectedRowData['trackStartDateTime'] = JSON.parse(JSON.stringify(newDate));
-          this.selectedRowData['trackStartTime'] = await this.dataShareServiceService.getCurrentTime(newDate);          
+          this.selectedRowData['trackStartDateTime'] = JSON.parse(JSON.stringify(new Date()));
+          this.selectedRowData['trackStartTime'] = this.datePipe.transform(new Date(),'shortTime');          
           this.selectedRowData['trackStartLocation'] = locationData;
           this.selectedRowData['customerAddressDetail'] = {
             'latitude': this.additionalData.destinationAddress?.geometry?.location.lat,
@@ -429,7 +430,7 @@ export class GmapViewComponent implements OnInit {
         }
         if(buttonName == "reach"){
           this.selectedRowData['reachDateTime'] = JSON.parse(JSON.stringify(new Date()));
-          this.selectedRowData['reachTime'] = await this.dataShareServiceService.getCurrentTime(new Date()); 
+          this.selectedRowData['reachTime'] = this.datePipe.transform(new Date(),'shortTime'); 
           this.selectedRowData['reachLocation'] = locationData;
           this.selectedRowData['trackingStatus'] = "REACHED";
           this.reachBtn = false;
@@ -439,7 +440,7 @@ export class GmapViewComponent implements OnInit {
           }
         }else if(buttonName == "left"){
           this.selectedRowData['leftDateTime'] = JSON.parse(JSON.stringify(new Date()));
-          this.selectedRowData['leftTime'] = await this.dataShareServiceService.getCurrentTime(new Date()); 
+          this.selectedRowData['leftTime'] = this.datePipe.transform(new Date(),'shortTime'); 
           this.selectedRowData['leftLocation'] = locationData;
           this.selectedRowData['trackingStatus'] = "COMPLETED";
           this.leftBtn = false;

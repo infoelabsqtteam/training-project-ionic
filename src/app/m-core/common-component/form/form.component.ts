@@ -1645,7 +1645,7 @@ tinymceConfig = {}
               locationData['longitude'] = this.longitude;
               locationData['address'] = this.address;
               locationData['date'] = JSON.parse(JSON.stringify(new Date()));
-              locationData['time'] = this.dataShareServiceService.getCurrentTime(new Date);
+              locationData['time'] = this.datePipe.transform(new Date(),'shortTime');
               selectedRow[element.field_name] = locationData;
             }else{
               selectedRow['latitude'] = this.latitude;
@@ -1750,7 +1750,7 @@ tinymceConfig = {}
               locationData['longitude'] = this.longitude;
               locationData['address'] = this.address;
               locationData['date'] = JSON.parse(JSON.stringify(new Date()));
-              locationData['time'] = this.dataShareServiceService.getCurrentTime(new Date);
+              locationData['time'] = this.datePipe.transform(new Date(),'shortTime');
               modifyFormValue[element.field_name] = locationData;
             }else{
               modifyFormValue['latitude'] = this.latitude;
@@ -7095,7 +7095,7 @@ tinymceConfig = {}
     return check;
   }
 
-  // Please let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last in this file
+  // Let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last of this file
   async readAsBase64(photo: Photo) {
     if (this.plt.is('hybrid')) {
         const file = await Filesystem.readFile({
