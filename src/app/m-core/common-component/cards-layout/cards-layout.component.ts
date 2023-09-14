@@ -13,7 +13,7 @@ import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
-import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService } from '@core/web-core';
+import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-cards-layout',
@@ -125,6 +125,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   nestedCardSubscribe:any;
   userTimeZone: any;
   userLocale:any;
+  gpsAlertResult:any;
 
   constructor(
     private platform: Platform,
@@ -150,7 +151,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private menuOrModuleCommonService: MenuOrModuleCommonService,
     private loaderService: LoaderService,
     private appPermissionService: AppPermissionService,
-    private actionSheetController: ActionSheetController
+    private actionSheetController: ActionSheetController,
+    private coreFunctionService: CoreFunctionService
   ) 
   {
     
@@ -534,12 +536,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     let customCriteria = [];
     if(this.cardType == "trackOnMap"){
       if(this.platform.is("hybrid")){
-        // let isGpsEnabled = await this.app_googleService.checkGPSPermission();
         let isGpsEnabled = await this.app_googleService.checkGeolocationPermission();
-        if(isGpsEnabled){
-          this.requestLocationPermission();
-        }else{
-          this.gpsEnableAlert();
+        if(!isGpsEnabled){
+          await this.gpsEnableAlert();
         }
       }else{
         await this.getCurrentPosition();
@@ -722,7 +721,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       'path':null
     }
     if(payload.data && payload.data.value && !this.updateMode){      
-      // this.loaderService.showLoader("Loading...");
+      await this.loaderService.showLoader("Loading...");
     }
     this.apiService.getDatabyCollectionName(payload);
   }
@@ -1260,38 +1259,53 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     
   }
-  async gpsEnableAlert(){     
+  async gpsEnableAlert(alerttype?:string){
+    let alertType = alerttype ? alerttype : "GPS";
+    let alertHeader:string = 'Please Enable GPS !';
+    let message: string = 'For smooth app experience please give us your location access.';
+    if(alertType == 'userDeniedAlert'){
+      alertHeader = 'GPS Turned Off !'
+      message = 'Allow us to turn on GPS for smooth app experience.'
+    }else if(alertType == 'trackingAlert'){
+      alertHeader = 'We need your location access !'
+      message = 'Allow us to turn on GPS for smooth app experience.'
+    }
     const alert = await this.alertController.create({
       cssClass: 'my-gps-class',
-      header: 'Please Enable GPS !',
-      message: 'For smooth app experience please give us your location access.',
+      header: alertHeader,
+      message: message,
       buttons: [
         {
           text: 'No, thanks',
           role: 'cancel',
+          handler: () => {
+            console.log(alertType.toUpperCase() + " alert action : ", "cancel");
+          }
         },
         {
           text: 'OK',
           role: 'confirmed',
           handler: () => {
-            this.requestLocationPermission();
+            console.log(alertType.toUpperCase() + " alert action : ", "Confirmed");
           },
         },
       ],
     });
 
-  await alert.present();
+    await alert.present();
+    await alert.onDidDismiss().then(value => {
+      this.gpsAlertResult = value;
+    });
+    if(this.gpsAlertResult && this.gpsAlertResult.role == 'confirmed'){
+      await this.requestLocationPermission();
+    }
   }
-  async enableGPSandgetCoordinates(){
-      const isGpsEnable:boolean = await this.app_googleService.checkGPSPermission();
-      if(isGpsEnable){
-        this.requestLocationPermission();
-      }
-  }
+
   async requestLocationPermission() {
     let isGpsEnable = false;
     if(isPlatform('hybrid')){
       const permResult = await this.appPermissionService.checkAppPermission("ACCESS_FINE_LOCATION");
+      const permResult1 = await this.appPermissionService.checkAppPermission("ACCESS_COARSE_LOCATION");
       if(permResult){
         isGpsEnable = await this.app_googleService.askToTurnOnGPS();
         if(isGpsEnable){
@@ -1303,32 +1317,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             }
             return true;
           }
-        }
-        else{
-          this.gpsEnableAlert();
+        }else{
+          this.currentLatLng = {}
         }
       }
-    }else{      
-      // if(navigator.geolocation){
-        // const successCallback = (position) => {
-        //   console.log("Web current Location: ",position);
-        //   if(position && position.coords){
-        //     this.userLocation = position;
-        //     let pos = position.coords;
-        //     this.currentLatLng ={
-        //       lat:pos.latitude,
-        //       lng:pos.longitude
-        //     }
-        //     return true;
-        //   }
-        // };      
-        // const errorCallback = (error) => {
-        //   console.log(error);
-        //   this.currentLatLng = {}
-        //   return false;
-        // };
-        // navigator.geolocation.getCurrentPosition(successCallback, errorCallback);        
-      // }
+    }else{ 
       await this.getCurrentPosition();
     }
     
@@ -1409,62 +1402,73 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
   async startTracking(data:any,index:number,actionname?:any){
     try{
-      console.log("currentTime",await this.dataShareServiceService.getCurrentTime(new Date()));
       this.updateMode = true;
       this.editedRowIndex = index;
-      let isGpsEnable = await this.app_googleService.checkGPSPermission();
-      if(isGpsEnable && this.currentLatLng && this.currentLatLng.lat){
-        let destination:any={}
-        if(data.customerAddress != null && data.customerAddress != 'null' && data.customerAddress != undefined && data.customerAddress != ''){
-          const geocodeAddress:any = {
-            'address' : data.customerAddress
+      let isGpsEnable = await this.app_googleService.checkGeolocationPermission();
+      if(isGpsEnable){
+        if(this.currentLatLng && this.currentLatLng.lat){
+          let destination:any={}
+          if(data.customerAddress != null && data.customerAddress != 'null' && data.customerAddress != undefined && data.customerAddress != ''){
+            const geocodeAddress:any = {
+              'address' : data.customerAddress
+            }
+            if(this.coreFunctionService.isNotBlank(geocodeAddress.address) && geocodeAddress.address != "null,"){
+              destination = await this.app_googleService.getGoogleAddressFromString(geocodeAddress);
+            }else{
+              return this.notificationService.presentToastOnBottom("Location Address not Present.","danger")
+            }
           }
-          if(geocodeAddress.address != ''){
-            destination = await this.app_googleService.getGoogleAddressFromString(geocodeAddress);
-          }else{
-            return this.notificationService.presentToastOnBottom("Destination Address not Present.","danger")
+          let currentlatlngdetails:any;
+          if(this.currentLatLng !=null && this.currentLatLng.lat !=''){
+            currentlatlngdetails = await this.app_googleService.getAddressFromLatLong(this.currentLatLng.lat,this.currentLatLng.lng);
           }
-        }
-        let currentlatlngdetails:any;
-        if(this.currentLatLng !=null && this.currentLatLng.lat !=''){
-          currentlatlngdetails = await this.app_googleService.getAddressFromLatLong(this.currentLatLng.lat,this.currentLatLng.lng);
-        }
-        let additionalData:any = {
-          "collectionName":this.collectionname,
-          "currentLatLng":this.currentLatLng,
-          "currentLatLngDetails": currentlatlngdetails['0'],
-          "destinationAddress": destination,
-          "updateMode" : true
-        }
-        const modal = await this.modalController.create({
-          component: GmapViewComponent,
-          cssClass: 'my-custom-modal-css',
-          componentProps: { 
-            "selectedRowData": data,
-            "selectedRowIndex": index,
-            "additionalData": additionalData,
-          },
-          id: data._id,
-          showBackdrop:true,
-          backdropDismiss:false,
-          initialBreakpoint : 1,
-          breakpoints : [0.75, 1],
-          backdropBreakpoint : 0.75,
-          handleBehavior:'cycle'
-        });
-        modal.present();
-        modal.componentProps.modal = modal;
-        modal.onDidDismiss().then(async (result:any) => {
-          console.log("Google map Modal Closed", result);
-          if(result && result.role == "completed"){
-            // this.editedRowData(index,"UPDATE"); //for open form
+          let additionalData:any = {
+            "collectionName":this.collectionname,
+            "currentLatLng":this.currentLatLng,
+            "currentLatLngDetails": currentlatlngdetails['0'],
+            "destinationAddress": destination,
+            "updateMode" : true
           }
-          this.carddata[index] = result.data;
-        });
+          const modal = await this.modalController.create({
+            component: GmapViewComponent,
+            cssClass: 'my-custom-modal-css',
+            componentProps: { 
+              "selectedRowData": data,
+              "selectedRowIndex": index,
+              "additionalData": additionalData,
+            },
+            id: data._id,
+            showBackdrop:true,
+            backdropDismiss:false,
+            initialBreakpoint : 1,
+            breakpoints : [0.75, 1],
+            backdropBreakpoint : 0.75,
+            handleBehavior:'cycle'
+          });
+          modal.present();
+          modal.componentProps.modal = modal;
+          modal.onDidDismiss().then(async (result:any) => {
+            console.log("Google map Modal Closed", result);
+            if(result && result.role == "completed"){
+              // this.editedRowData(index,"UPDATE"); //for open form
+            }
+            this.carddata[index] = result.data;
+          });
+        }else{
+          await this.requestLocationPermission();
+          this.startTracking(data,index);
+        }
       }else{
-        await this.requestLocationPermission();
-        this.notificationService.presentToastOnBottom("Getting your location, please wait..");
-        this.startTracking(data,index);
+        await this.gpsEnableAlert('trackingAlert').then((confirm:any) => {
+          if(this.gpsAlertResult && this.gpsAlertResult.role == "confirmed" && this.currentLatLng && this.currentLatLng.lat){ 
+            this.notificationService.presentToastOnBottom("Getting your location, please wait..");
+            this.startTracking(data,index);
+          }else{
+            this.notificationService.presentToastOnBottom("Please enable GPS to serve you better !");
+          }
+        }).catch(error => {
+          this.notificationService.presentToastOnBottom("Please enable GPS to serve you better !");
+        })
       }
 
     }catch{

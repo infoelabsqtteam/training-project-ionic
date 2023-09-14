@@ -534,7 +534,7 @@ tinymceConfig = {}
     this.getNextFormById(id);
     this.handleDisabeIf();
     this.formControlChanges();
-    this.checkPermissionandRequest();
+    // this.checkPermissionandRequest();
   }
   private getNextFormById(id: string) {
     const params = "form";
@@ -838,7 +838,8 @@ tinymceConfig = {}
     }
     if(this.form && this.form.getLocation){
       this.getLocation = this.form.getLocation;
-      this.requestLocationPermission();
+      this.checkPermissionandRequest();
+      // this.requestLocationPermission();
     }else{
       this.getLocation = false;
     }
@@ -6745,16 +6746,18 @@ tinymceConfig = {}
   async checkPermissionandRequest(){
     let permResult = false;
     if(isPlatform('hybrid')){
-      permResult = await this.app_googleService.checkGPSPermission();
-      if(!permResult){
-        permResult = await this.app_googleService.checkGeolocationPermission();
+      permResult = await this.app_googleService.checkGeolocationPermission();
+      if(permResult){        
+        this.requestLocationPermission();
       }
-      this.requestLocationPermission();
     }else{
-      permResult = await this.app_googleService.checkGPSPermission();
+      permResult = await this.app_googleService.checkGeolocationPermission();
     }   
     if(!permResult){
-      this.gpsEnableAlert();
+      let alreadyOpen = await this.alertController.getTop();
+      if(alreadyOpen == undefined){
+        this.gpsEnableAlert();
+      }
     }else{
       if(isPlatform('hybrid')){
         this.setCurrentLocation();
@@ -6765,7 +6768,7 @@ tinymceConfig = {}
   }
   async gpsEnableAlert(){     
     const alert = await this.alertController.create({
-      cssClass: 'my-gps-class',
+      cssClass: 'form-gps-class',
       header: 'Please Enable GPS !',
       message: 'For smooth app experience please give us your location access.',
       buttons: [
@@ -6776,21 +6779,19 @@ tinymceConfig = {}
         {
           text: 'OK',
           role: 'confirmed',
-          handler: () => {
-            this.requestLocationPermission();
-          },
+          handler: () => {},
         },
       ],
     });
 
-  await alert.present();
-  }
-  async enableGPSandgetCoordinates(){
-    const isGpsEnable:boolean = await this.app_googleService.checkGPSPermission();
-    if(isGpsEnable){
-      this.setCurrentLocation();
-    }else{
-      // this.gpsEnableAlert();
+    await alert.present();
+    let resultrole:any='';
+    await alert.onDidDismiss().then(value => {
+      resultrole = value;
+      console.log("Form Gps Alert :",value.role)
+    });
+    if(resultrole && resultrole.role == 'confirmed'){
+      await this.requestLocationPermission();
     }
   }
   async requestLocationPermission() {
@@ -6801,8 +6802,6 @@ tinymceConfig = {}
         isGpsEnable = await this.app_googleService.askToTurnOnGPS();
         if(isGpsEnable){
           this.setCurrentLocation();
-        }else{
-          this.enableGPSandgetCoordinates();
         }
       }
     }else{      
@@ -6854,7 +6853,7 @@ tinymceConfig = {}
       await this.getAddressfromLatLng(this.latitude,this.longitude);
       this.setAddressOnForm(field);
     }else{
-      this.requestLocationPermission();
+      this.gpsEnableAlert();
     }
   }
   async gmapSearchPlaces(inputData?:any,field?:any){

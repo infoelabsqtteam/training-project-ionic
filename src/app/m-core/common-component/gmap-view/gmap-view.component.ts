@@ -223,7 +223,7 @@ export class GmapViewComponent implements OnInit {
 
   async checkPermissionandRequest(){
     if (this.platform.is('hybrid')) {
-      let permResult = await this.app_googleService.checkGPSPermission();
+      let permResult = await this.app_googleService.checkGeolocationPermission();
       if(!permResult){
         this.enableGPSandgetCoordinates();
       }
@@ -257,9 +257,6 @@ export class GmapViewComponent implements OnInit {
   }
   async requestPermissions() {
     const permResult = await this.permissionService.checkAppPermission("ACCESS_FINE_LOCATION");
-    console.log('ACCESS_FINE_LOCATION: ', permResult);
-    let geopermResult = await this.app_googleService.requestLocationPermission();
-    console.log("geopermResult: ", geopermResult);
     if(permResult){
       if(this.platform.is('hybrid')) {
         this.gpsEnableAlert();
@@ -304,7 +301,7 @@ export class GmapViewComponent implements OnInit {
   }
   async enableGPSandgetCoordinates(enableGPS?:any){
     if(this.platform.is('hybrid')){
-      enableGPS = await this.app_googleService.checkGPSPermission();
+      enableGPS = await this.app_googleService.checkGeolocationPermission();
       if(enableGPS){
         this.canUseGPS = true;
         this.positionOptions['enableHighAccuracy'] = enableGPS;   
@@ -382,10 +379,10 @@ export class GmapViewComponent implements OnInit {
     this.selectedRowData = {};
   }
   async customButtonClick(buttonName?:any,confirmation?:boolean){
-    const isGpsEnable = await this.app_googleService.checkGPSPermission();
-    let currentposition:any = await this.app_googleService.getUserLocation();
+    const isGpsEnable = await this.app_googleService.checkGeolocationPermission();
     let newDate = new Date();
     if(isGpsEnable){
+      let currentposition:any = await this.app_googleService.getUserLocation();
       if(buttonName == "start"){
         // if(confirmation){
           this.startBtn = true;
@@ -570,7 +567,7 @@ export class GmapViewComponent implements OnInit {
   }
   
   async getCurrentLocation() {
-    const enableGPS = await this.app_googleService.checkGPSPermission();
+    const enableGPS = await this.app_googleService.checkGeolocationPermission();
     if(enableGPS){
       if(this.platform.is("hybrid")){
         const currentLatLng = await this.app_googleService.getUserLocation();
@@ -620,8 +617,6 @@ export class GmapViewComponent implements OnInit {
         }
 
       }
-    }else{
-      this.gpsEnableAlert();
     }
   }
   async addMarkerOnCurrentLocation(CurrentPostionlatLng){
