@@ -1,23 +1,13 @@
 apply plugin: 'com.android.application'
 
-// get version code from the specified property argument `-PversionCode` during the build call
-def getMyVersionCode = { ->
-    return project.hasProperty('versionCode') ? versionCode.toInteger() : 1
-}
-
-// get version name from the specified property argument `-PversionName` during the build call
-def getMyVersionName = { ->
-    return project.hasProperty('versionName') ? versionName : "1.0"
-}
-
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.tech.elabs.ionic"
+        applicationId "com.tech.elabs.ai"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdk 33
-        versionCode getMyVersionCode()
-        versionName getMyVersionName()
+        targetSdkVersion 33
+        versionCode 2
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -25,26 +15,10 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    signingConfigs {
-        release {
-            if (System.getenv()["CI"]) { // CI=true is exported by Codemagic
-                storeFile file(System.getenv()["CM_KEYSTORE_PATH"])
-                storePassword System.getenv()["CM_KEYSTORE_PASSWORD"]
-                keyAlias System.getenv()["CM_KEY_ALIAS"]
-                keyPassword System.getenv()["CM_KEY_PASSWORD"]
-            } else {
-              storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-              storePassword System.getenv()['CM_KEYSTORE_PASSWORD']
-              keyAlias System.getenv()['CM_KEY_ALIAS_USERNAME']
-              keyPassword System.getenv()['CM_KEY_ALIAS_PASSWORD']
-            }
-        }
-    }
     buildTypes {
         release {
-            signingConfig signingConfigs.release
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'            
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
