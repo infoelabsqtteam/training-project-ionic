@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NotificationService } from '@core/ionic-core';
 import { AuthDataShareService, AuthService, EnvService, StorageService } from '@core/web-core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-forget-password',
@@ -19,7 +20,8 @@ export class ForgetPasswordComponent implements OnInit {
   newpwd: any;
   passwordNotMatch: boolean;
   VerifyType : boolean = false;
-  forGotSubscription:any;
+  forGotSubscription:Subscription;
+  resetPassSubscription:Subscription;
   title = "";
   template:string = "temp1";
   logoPath = '';
@@ -43,36 +45,50 @@ export class ForgetPasswordComponent implements OnInit {
       let msg = data.msg;
       if(data && data.status == "success"){
         if(data.msg === "Reset password is successful, notification with a verification code has been sent to your registered user id"){
-          msg = 'Verification code has been sent to your registered user id';
-        }else{          
-          this.authService.redirectToSignPage();
+          msg = 'Verification code has been sent to your registered UserId';
+        }else{ 
+          msg = data.msg;
         }
         color = 'success';
         this.resetPwd = false;
       }else{
-        if(msg === "UserId Entered is not correct"){
-          msg = "Invald UserId, please enter registered UserId"
+        if(data && data.status == "error" && msg == "UserId Entered is not correct"){
+          msg = "Invalid UserId, please enter registered UserId"
         }
       }
       if(msg != ''){
         this.notificationService.presentToastOnBottom(msg,color);
       }
     })
-    // this.appNameSubscription = this.dataShareService.appName.subscribe(data =>{
-    //   this.setAppName(data);
-    // })
-    this.pageloded();
+    this.resetPassSubscription = this.authDataShareService.resetPass.subscribe(data =>{
+      let color = 'danger';
+      let msg = data.msg;
+      if(data && data.msg != '' && data.status == "success") {
+        color = 'success';
+        this.gobackandreset();
+        this.fForm.reset();
+      }
+      if(msg != ''){
+        this.notificationService.presentToastOnBottom(msg,color);
+      }
+      if(data && data.status == 'success') {
+        this.authService.redirectToSignPage();
+      }
+    })
   }
 
   ngOnInit() {
     this.initForm();
-    // this.pageloded();
+    this.pageloded();
   }
-  // setAppName(data){
-  //   if (data.appName && data.appName.hasOwnProperty("appName")) {
-  //     this.appName = data.appName["appName"]
-  //   }
-  // }
+  ngOnDestroy(){
+    if(this.forGotSubscription){
+      this.forGotSubscription.unsubscribe();
+    }
+    if(this.resetPassSubscription){
+      this.resetPassSubscription.unsubscribe();
+    }
+  }
 
   initForm() {
     this.username = "";

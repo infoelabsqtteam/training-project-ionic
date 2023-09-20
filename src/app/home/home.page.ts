@@ -94,17 +94,17 @@ export class HomePage implements OnInit, OnDestroy {
         this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(this.cardMasterList);
         if(this.cardList == null){
           this.errorTitle = "No module assign";
-          this.errorMessage = "Permission error, No module found!";
-          this.notificationService.presentToastOnBottom("You don't have permission or assign any module.","danger")
+          this.errorMessage = "Permission denied, No module found!";
+          this.notificationService.presentToastOnBottom("You don't have any permission or assign module.","danger")
         }
       }else{
         if(this.myInput && this.myInput.length > 0 ){
-          this.errorTitle = "No matching element found";
+          this.errorTitle = "No matching module found";
           this.errorMessage = "Try again by adjusting your search value!";
           this.cardList = [];
         }else{
           this.errorTitle = "No module assign";
-          this.errorMessage = "Permission error, No module found!";
+          this.errorMessage = "Permission denied, No module found!";
         }
       }
     });
@@ -177,10 +177,12 @@ export class HomePage implements OnInit, OnDestroy {
     const moduleList = this.commonAppDataShareService.getModuleList();
     const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
     this.commonAppDataShareService.setModuleIndex(cardclickedindex);
-    if(card['userAutherisedModule'] && card['userAutherisedModule']['name']){
+    if(card['userAutherisedModule'] && card['userAutherisedModule']['name'] && card['userAutherisedModule']['_id']){
       this.storageService.setModule(card['userAutherisedModule']['name']);
+      this.router.navigate(['card-view']);
+    }else{
+      this.notificationService.presentToastOnBottom("Clicked module does not autherised to you","danger");
     }
-    this.router.navigate(['card-view']); 
   }
 
   showExitConfirm() {

@@ -19,7 +19,7 @@ import { AndroidpermissionsService } from 'src/app/service/androidpermissions.se
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 // import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
-import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common, GridCommonFunctionService } from '@core/web-core';
+import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common, GridCommonFunctionService, FileHandlerService } from '@core/web-core';
 
 interface User {
   id: number;
@@ -353,7 +353,8 @@ tinymceConfig = {}
     private storageService: StorageService,
     private appDataShareService: AppDataShareService,
     private appPermissionService: AppPermissionService,
-    private gridCommonFunctionService: GridCommonFunctionService
+    private gridCommonFunctionService: GridCommonFunctionService,
+    private fileHandlerService: FileHandlerService
     ) {
 
       // this.mapsApiLoaded();
@@ -1601,7 +1602,7 @@ tinymceConfig = {}
     let modifyFormValue = {};   
     let valueOfForm = {};
     if (this.updateMode || this.complete_object_payload_mode){      
-      this.tableFields.forEach(async element => {
+      this.tableFields.forEach(element => {
         switch (element.type) {
           case 'stepper':
             element.list_of_fields.forEach(step => {
@@ -1709,7 +1710,7 @@ tinymceConfig = {}
         }
       });
     }else{
-      this.tableFields.forEach(async element => {
+      this.tableFields.forEach(element => {
         switch (element.type) {
           case 'stepper':
             element.list_of_fields.forEach(step => {
@@ -3483,8 +3484,6 @@ tinymceConfig = {}
       }
     }
   }
-
-
   checkFieldShowOrHide(field){    
     for (let index = 0; index < this.showIfFieldList.length; index++) {
       const element = this.showIfFieldList[index];
@@ -3497,35 +3496,10 @@ tinymceConfig = {}
       }
       
     }
-  } 
-
-
-  modifyUploadFiles(files){
-    const fileList = [];
-    if(files && files.length > 0){
-      files.forEach(element => {
-        if(element._id){
-          fileList.push(element)
-        }else{
-          fileList.push({uploadData:[element]})
-        }
-      });
-    }                  
-    return fileList;
   }
-  modifyFileSetValue(files){
-    let fileName = '';
-    let fileLength = files.length;
-    let file = files[0];
-    if(fileLength == 1){
-      fileName = file.fileName || file.rollName;
-    }else if(fileLength > 1){
-      fileName = fileLength + " Files";
-    }
-    return fileName;
-  }
+  
 
-  setValue(parentfield:any,field:any, add?:any, event?:any) {
+  setValue(parentfield:any,field:any,add?:any,event?:any) {
     let formValue = this.templateForm.getRawValue();
     let formValueWithoutCustomData = this.getFormValue(false);
     let formValueWithCustomData = this.getFormValue(true);
@@ -3862,7 +3836,7 @@ tinymceConfig = {}
               }
               if(this.dataListForUpload[keyName]){
                 Object.keys(this.dataListForUpload[keyName]).forEach(childkey => {                  
-                  updateCustmizedValue[this.listOfFieldsUpdateIndex][childkey] = this.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
+                  updateCustmizedValue[this.listOfFieldsUpdateIndex][childkey] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
                 })
               }
               if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
@@ -3914,7 +3888,7 @@ tinymceConfig = {}
               }
               if(this.dataListForUpload[keyName]){
                 Object.keys(this.dataListForUpload[keyName]).forEach(childkey => {                 
-                  listOfFieldData[childkey] = this.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
+                  listOfFieldData[childkey] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
                 })
               }
               if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
@@ -6346,7 +6320,7 @@ tinymceConfig = {}
                         if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
                         if (!this.dataListForUpload[custmizedKey][data.field_name]) this.dataListForUpload[custmizedKey][data.field_name] = [];
                         this.dataListForUpload[custmizedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
-                        const value = this.modifyFileSetValue(object[data.field_name]);
+                        const value = this.commonFunctionService.modifyFileSetValue(object[data.field_name]);
                         this.templateForm.get(element.field_name).get(data.field_name).setValue(value);
                       }
                       break;
@@ -6544,7 +6518,9 @@ tinymceConfig = {}
         break;
       case "file":
         if (value['data'] && value['data'] != '') {
-          this.viewModal('fileview-grid-modal', value, item, editemode);
+          let fileData = {};
+          fileData['data'] = this.fileHandlerService.modifyUploadFiles(value['data']);
+          this.viewModal('fileview-grid-modal', fileData, item, editemode);
         };
         break;      
       default:

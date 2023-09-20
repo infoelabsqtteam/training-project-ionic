@@ -3,7 +3,7 @@ import { NotificationService } from '@core/ionic-core';
 import { ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { FormBuilder, FormGroup} from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService } from '@core/web-core';
+import { CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, AuthService } from '@core/web-core';
 
 @Component({
   selector: 'app-card-view',
@@ -61,6 +61,8 @@ export class CardViewPage implements OnInit, OnDestroy {
       private commonFunctionService: CommonFunctionService,
       private menuOrModuleCommonService: MenuOrModuleCommonService,
       private notificationService: NotificationService,
+      private permissionService: PermissionService,
+      private authService: AuthService,
       @Optional() private readonly routerOutlet?: IonRouterOutlet,
     ){}
   
@@ -112,29 +114,41 @@ export class CardViewPage implements OnInit, OnDestroy {
     private getCardDataByCollection(i:number) {
       const cardWithTab = this.menuOrModuleCommonService.getCard(i);
       this.collectionName = cardWithTab.card.collection_name;
-      if(cardWithTab && cardWithTab.card){
-        if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
-          let navigation = '';
-          if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'chartview'){
-            navigation = 'chart';
-          }else if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'mongochart'){
-            navigation = 'mongochart';
+      if (this.permissionService.checkPermission(this.collectionName, 'view')) {
+        if(cardWithTab && cardWithTab.card){
+          if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
+            let navigation = '';
+            if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'chartview'){
+              navigation = 'chart';
+            }else if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'mongochart'){
+              navigation = 'mongochart';
+            }else{
+              navigation = 'home';
+            }
+            if(navigation == 'home'){
+              this.notificationService.presentToastOnBottom("Path Does not exists, please connect to admin.");
+            }
+            this.router.navigateByUrl(navigation);
           }else{
-            navigation = 'home';
+            if(cardWithTab.card && cardWithTab.card.name){
+              this.headerTitle = cardWithTab.card.name;
+            }
+          this.card = cardWithTab;
           }
-          if(navigation == 'home'){
-            this.notificationService.presentToastOnBottom("Path Changed, please connect to admin.");
-          }
-          this.router.navigateByUrl(navigation);
+        }
+        this.popoverTabbing = cardWithTab?.popoverTabbing;
+        this.selectedIndex = cardWithTab?.selectedTabIndex;
+      }else{
+        let getStatus:any = this.authService.checkIdTokenStatus();
+        if(getStatus && getStatus.status){
+          this.notificationService.presentToastOnBottom("Permission denied !", "danger");
         }else{
-          if(cardWithTab.card && cardWithTab.card.name){
-            this.headerTitle = cardWithTab.card.name;
+          if(getStatus && getStatus.msg){
+            this.notificationService.presentToastOnBottom(getStatus.msg);
           }
-        this.card = cardWithTab;
+          this.authService.gotToSigninPage();
         }
       }
-      this.popoverTabbing = cardWithTab?.popoverTabbing;
-      this.selectedIndex = cardWithTab?.selectedTabIndex;
     }
     
     comingSoon() {
