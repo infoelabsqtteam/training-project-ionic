@@ -20,6 +20,7 @@ import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-de
 // import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
 import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common, GridCommonFunctionService, FileHandlerService } from '@core/web-core';
+import { Capacitor } from '@capacitor/core';
 
 interface User {
   id: number;
@@ -1991,7 +1992,7 @@ tinymceConfig = {}
         if(checkCustmizedValuValidation.status){
           if (this.dataSaveInProgress) {
             this.showNotify = true;
-            this.dataSaveInProgress = false;            
+            this.dataSaveInProgress = false;
             formValue['log'] = this.storageService.getUserLog();
             if(!formValue['refCode'] || formValue['refCode'] == '' || formValue['refCode'] == null){
               formValue['refCode'] = this.storageService.getRefCode();
@@ -1999,6 +2000,9 @@ tinymceConfig = {}
             if(!formValue['appId'] || formValue['appId'] == '' || formValue['appId'] == null){
               formValue['appId'] = this.storageService.getAppId();
               
+            }
+            if(!this.coreFunctionService.isNotBlank(formValue['source'])){
+              formValue['source'] = Capacitor.getPlatform();              
             }
             if (this.updateMode) {
               if(this.formName == 'cancel'){
