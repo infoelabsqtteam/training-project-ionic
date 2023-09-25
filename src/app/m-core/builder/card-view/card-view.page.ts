@@ -72,10 +72,18 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.renderer.setStyle(this.primaryheader['el'], 'webkitTransition', 'top 700ms');
     }
 
-    ngOnInit() {}
+    ngOnInit() {
+      console.log("ngCycle: ","ngOnInit");
+    }
 
     ngOnChanges(changes: SimpleChanges) {
-      // this.card;
+      console.log("ngCycle: ","ngOnChanges");
+    }
+    ionViewWillLeave(){
+      console.log("IonCycle: ","ionViewWillLeave");
+    }
+    ionViewDidLeave(){
+      console.log("IonCycle: ","ionViewDidLeave");
     }
     togglesearch(){      
       this.searching = !this.searching;
@@ -284,12 +292,14 @@ export class CardViewPage implements OnInit, OnDestroy {
     //   return await popover.present();
     // }
     popoverOutput(popoverdata:any){
-      if(popoverdata && popoverdata.name){ 
-        this.headerTitle = popoverdata.name;
-      }
+      // if(popoverdata && popoverdata.name){ 
+      //   this.headerTitle = popoverdata.name;
+      // }
       if(popoverdata && popoverdata.card){
+        this.headerTitle = popoverdata.card?.name;
         this.card = {
           "card":popoverdata.card,
+          "collectionFound":popoverdata.collectionFound,
           "popoverTabbing": this.popoverTabbing,
           "selectedTabIndex": popoverdata.selectedTabIndex,
           "tabs" : popoverdata.tabs
@@ -308,17 +318,17 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
     tabmenuClick(item:any,index:number){
       this.tabSwichingChanges();
-      if(item && item.name){
-        this.popoverOutput(item);
-      }
+      // if(item && item.name){
+      //   this.popoverOutput(item);
+      // }
       this.selectedIndex = index;
       this.carddata = [];
       this.createFormgroup = true;
-      const tab = this.popoverItems[index];
-      const moduleList = this.commonAppDataShareService.getModuleList();
-      const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
-      const card = moduleList[tabIndex];
-      this.card['card'] = card;
+      // const tab = this.popoverItems[index];
+      // const moduleList = this.commonAppDataShareService.getModuleList();
+      // const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
+      // const card = moduleList[tabIndex];
+      this.card['card'] = item.tabCard;
       this.card.selectedTabIndex = index;
       this.popoverOutput(this.card);
     } 

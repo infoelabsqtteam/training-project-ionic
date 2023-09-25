@@ -62,7 +62,7 @@
   <div  class="inlineFormGridSelectionButton">
       <ion-row class="">
         <ion-col>
-          <ion-button *ngIf="(gridselectionverticalbutton && grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="readonly"  (click)="select()" size="small" expand="block" >{{formInfo.updateMode == true ? 'Update' : 'Add'}}</ion-button>
+          <ion-button *ngIf="(gridselectionverticalbutton && grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="readonly"  (click)="selectGridData()" size="small" expand="block" >{{formInfo.updateMode == true ? 'Update' : 'Add'}}</ion-button>
           <ion-button *ngIf="(gridselectionverticalbutton && !grid_row_selection)" type="button" [disabled]="checkValidator()" color="appcolor" outline="true" size="small" expand="block"  (click)="selectGridData()" >{{ fieldButtonLabel(field)}}</ion-button >
         </ion-col>
         <ion-col>

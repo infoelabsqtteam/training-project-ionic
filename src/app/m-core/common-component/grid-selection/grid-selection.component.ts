@@ -26,7 +26,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   listOfGridFieldName:any =[]; 
   staticDataSubscriber:any;
   responseData:any;
-  copyStaticData:[] = [];
+  copyStaticData:any = [];
 
   editeMode:boolean=false;
   grid_row_selection:boolean = false;
@@ -74,12 +74,14 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   subscribe(){
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
+      this.reloadBtn = true;
       if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field) && data[this.field.ddn_field]){
         this.responseData = data[this.field.ddn_field];
+        this.reloadBtn = false;
       }else{
         this.responseData = [];
       }
-      this.copyStaticData = data;
+      this.copyStaticData[this.field.ddn_field] = data[this.field.ddn_field];
       this.setStaticData(data);
     })
   }
@@ -164,6 +166,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
           }        
           // this.setGridData = false;
         }else{
+          this.reloadBtn = false;
           this.nogridDdata=true;
         }
       }
@@ -313,10 +316,10 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   toggle(data:any,event:any, indx:any) {
     let index:any = -1;
-    if(data._id != undefined){
+    if(data && data._id != undefined){
       index = this.commonFunctionService.getIndexInArrayById(this.gridData,data._id);
       this.gridData[index] = data;
-    }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0 && data){
+    }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length > 0 && data){
       for (let i = 0; i < this.gridData.length; i++) {
           const row = this.gridData[i]; 
           for (let j = 0; j < this.field.matching_fields_for_grid_selection.length; j++) {
@@ -411,7 +414,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   updateSelectedData(data:any,index?:any){
     if(this.selectedData && this.selectedData.length > 0){
-      if(data && data.id){
+      if(data && (data.id || data._id)){
         this.selectedData.forEach((element:any, i:number) => {
           if(element._id == data._id) {
             element = data;

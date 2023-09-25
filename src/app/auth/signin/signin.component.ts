@@ -66,10 +66,49 @@ export class SigninComponent implements OnInit {
       }  
     });
   }
+  
   ionViewWillEnter(){
-    this.initializeApp();  
+    this.initializeApp();
+    this.getLogoPath();
     this.checkValues();
   }
+  ionViewDidEnter(){
+    // this.getLogoPath();
+    this.onLoadSubscriptions();
+  }
+  ionViewDidLeave(){
+    this.unsubscribed();
+  }
+  unsubscribed(){
+    if(this.authenticationMessage){
+      this.authenticationMessage.unsubscribe();
+    }
+    if(this.sessionSubscribe){
+      this.sessionSubscribe.unsubscribe();
+    }
+    if(this.resetSignin){
+      this.resetSignin.unsubscribe();
+    }
+    if(this.userInfoSubscribe){
+      this.userInfoSubscribe.unsubscribe();
+    }
+  }
+  ngOnInit() {
+    this.initForm();
+    // this.getLogoPath();
+  }
+  initForm(){
+    this.loginForm = this.formBuilder.group({
+      password: ['', [Validators.required]],
+      userId: ['', [Validators.required]],
+    });
+    if(!this.VerifyType){
+      this.loginForm.get('userId').setValidators([Validators.email,Validators.required]);
+    }else{
+      this.loginForm.get('userId').setValidators([Validators.required,Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]);
+    }
+  }
+
   async checkValues(){    
     let isClientCodeExist:any = this.storageService.getClientName();
     let isHostNameExist:any = this.storageService.getHostNameDinamically();
@@ -78,6 +117,8 @@ export class SigninComponent implements OnInit {
         this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
       }else if(!this.checkApplicationSetting() && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
         this.commonFunctionService.getApplicationAllSettings();
+      }else{        
+        this.storageService.removeKeyFromStorage("USER");
       }
     }else{
       this.router.navigateByUrl('/checkcompany');
@@ -162,42 +203,6 @@ export class SigninComponent implements OnInit {
         this.notificationService.presentToastOnTop(msg,color);
       }
     })
-  }
-  ionViewDidEnter(){
-    this.getLogoPath();
-    this.onLoadSubscriptions();
-  }
-  ionViewDidLeave(){
-    this.unsubscribed();
-  }
-  unsubscribed(){
-    if(this.authenticationMessage){
-      this.authenticationMessage.unsubscribe();
-    }
-    if(this.sessionSubscribe){
-      this.sessionSubscribe.unsubscribe();
-    }
-    if(this.resetSignin){
-      this.resetSignin.unsubscribe();
-    }
-    if(this.userInfoSubscribe){
-      this.userInfoSubscribe.unsubscribe();
-    }
-  }
-  ngOnInit() {
-    this.initForm();
-    // this.getLogoPath();
-  }
-  initForm(){
-    this.loginForm = this.formBuilder.group({
-      password: ['', [Validators.required]],
-      userId: ['', [Validators.required]],
-    });
-    if(!this.VerifyType){
-      this.loginForm.get('userId').setValidators([Validators.email,Validators.required]);
-    }else{
-      this.loginForm.get('userId').setValidators([Validators.required,Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]);
-    }
   }
   checkValidate(){
     return !this.loginForm.valid;

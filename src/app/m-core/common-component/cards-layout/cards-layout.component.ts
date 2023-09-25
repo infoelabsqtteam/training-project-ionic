@@ -126,6 +126,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   userTimeZone: any;
   userLocale:any;
   gpsAlertResult:any;
+  loaderCount:number = 0;
 
   constructor(
     private platform: Platform,
@@ -350,13 +351,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   onloadVariables(){
+    this.checkionEvents();
     this.nodatafound=false;
     this.gridButtons=[];
     this.currentPageCount = 1;    
     this.carddata=[];
-    this.checkionEvents();
     this.hasDetaildCard=false;
     this.selectedgriddataId = "";
+    this.addNewEnabled = false;
   }
   ngOnInit() {     
     // this.renderer.setStyle(this.cardViewContent['el'], 'webkitTransition', 'top 700ms');
@@ -414,16 +416,25 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   } 
   setCardAndTab(cardWithTab){
     if(cardWithTab && cardWithTab.card){
-      let card  = cardWithTab.card;
-      this.setCardDetails(card);
+      this.setCardDetails(cardWithTab.card);
     } 
     if(cardWithTab && cardWithTab.tabs && cardWithTab.tabs.length > 0){
       this.tabMenu = cardWithTab.tabs;
       this.selectedIndex = cardWithTab.selectedTabIndex;
       this.popoverMenu = cardWithTab.popoverTabbing;
-      // if(cardWithTab && cardWithTab.popoverTabbing){
+      if(cardWithTab && !cardWithTab.collectionFound){
+        const moduleList = this.commonAppDataShareService.getModuleList();
+        this.tabMenu.forEach((tab,i) => {
+          if(tab && tab['_id']){
+            const cardIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab['_id'],"_id");
+            this.tabMenu[i]['cardIndex'] = cardIndex;
+            this.tabMenu[i]['tabCard'] = moduleList[cardIndex];
+            this.tabMenu[i]['display'] = this.permissionService.checkPermission(this.tabMenu[i]['tabCard']['collection_name'],'view')
+          }
+        });
         this.popoverTabbing.emit(this.tabMenu);
-      // }
+        cardWithTab['collectionFound'] = true;
+      }
     }else{
       this.tabMenu = [];
       this.selectedIndex = -1;
@@ -439,15 +450,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }else{
         this.gridButtons = [];
       }
-      if(card.add_new){
-        if(this.detailPage){
-          this.addNewEnabled = false;
-        }else{
-          this.addNewEnabled = true;
-        }
-      }else{
-        this.addNewEnabled = false;
-      }
+      // if(card.add_new){
+      //   if(this.detailPage){
+      //     this.addNewEnabled = false;
+      //   }else{
+      //     this.addNewEnabled = true;
+      //   }
+      // }else{
+      //   this.addNewEnabled = false;
+      // }
       if(card.add_calling){
         if(this.detailPage){
           this.addCallingFeature = false;
@@ -456,16 +467,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       }else{
         this.addCallingFeature = false;
-      } 
-      // if(card.call_status){
-      //   if(this.detailPage){
-      //     this.callStatus = false;
-      //   }else{
-      //     this.callStatus = true;
-      //   }
-      // }else{
-      //   this.callStatus = false;
-      // }
+      }
       if (card.card_type !== '') {
         this.cardType = card.card_type.name;
       }
@@ -527,6 +529,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
         this.currentMenu['name'] = this.collectionname;
         this.dataShareServiceService.setCollectionName(card.collection_name);
+        this.addNewEnabled = this.permissionService.checkPermission(this.currentMenu.name, 'add');
+        if(this.addNewEnabled){
+          if(this.detailPage){
+            this.addNewEnabled = false;
+          }else{
+            this.addNewEnabled = true;
+          }
+        }
       }
       this.getGridData(this.collectionname, criteria, parentcard);
     }
@@ -720,8 +730,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       'data':data,
       'path':null
     }
-    if(payload.data && payload.data.value && !this.updateMode){      
-      await this.loaderService.showLoader("Loading...");
+    if(payload.data && payload.data.value && !this.updateMode){
+      let checkLoader = await this.loaderService.loadingCtrl.getTop();
+      if(!checkLoader){
+        await this.loaderService.showLoader("Loading...");
+      }
     }
     this.apiService.getDatabyCollectionName(payload);
   }
@@ -1390,10 +1403,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           }
           this.getGridData(this.collectionname,);
           // this.setCardDetails(this.card.card);
-        }else if ((saveFromDataRsponce.success == 'success' || saveFromDataRsponce.success != '' ) && this.updateMode) {
+        }else if (saveFromDataRsponce.success == 'success' && this.updateMode) {
           this.carddata[this.editedRowIndex] == saveFromDataRsponce.data;
-          if(saveFromDataRsponce.success != ''){
-            this.notificationService.showAlert(saveFromDataRsponce.success,'',['Dismiss']);
+          if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
+            this.notificationService.showAlert(saveFromDataRsponce.success_msg,'',['Dismiss']);
           }
         }
         this.apiService.ResetSaveResponce()

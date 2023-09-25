@@ -489,7 +489,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       // }
     }
     if(check != 0){
-      this.notificationService.presentToastOnBottom(validation.msg);
+      this.notificationService.presentToastOnBottom(validation.msg, "danger");
     }else{
       this.dismissModal(this.data,"onlyupdate"); 
     }

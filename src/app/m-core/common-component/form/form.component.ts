@@ -1996,13 +1996,12 @@ tinymceConfig = {}
             formValue['log'] = this.storageService.getUserLog();
             if(!formValue['refCode'] || formValue['refCode'] == '' || formValue['refCode'] == null){
               formValue['refCode'] = this.storageService.getRefCode();
-            } 
-            if(!formValue['appId'] || formValue['appId'] == '' || formValue['appId'] == null){
-              formValue['appId'] = this.storageService.getAppId();
-              
             }
-            if(!this.coreFunctionService.isNotBlank(formValue['source'])){
-              formValue['source'] = Capacitor.getPlatform();              
+            if(!formValue['appId'] || formValue['appId'] == '' || formValue['appId'] == null){
+              formValue['appId'] = this.storageService.getAppId();              
+            }
+            if(!this.coreFunctionService.isNotBlank(formValue['platForm'])){
+              formValue['platForm'] = Capacitor.getPlatform().toUpperCase();              
             }
             if (this.updateMode) {
               if(this.formName == 'cancel'){

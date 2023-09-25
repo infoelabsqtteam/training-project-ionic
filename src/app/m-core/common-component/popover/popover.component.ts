@@ -53,17 +53,17 @@ export class PopoverComponent implements OnInit {
   }
 
   tabmenuClick(item:any,index:number){
-    if(item && item.name){
-      this.popoverOutput.emit(item);
-    }
-    this.selectedIndex = index;
-    this.carddata = [];
-    this.createFormgroup = true;
-    const tab = this.tabMenu[index];
-    const moduleList = this.commonAppDataShareService.getModuleList();
-    const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
-    const card = moduleList[tabIndex];
-    this.card['card'] = card;
+    // if(item && item.name){
+    //   this.popoverOutput.emit(item);
+    // }
+    // this.selectedIndex = index;
+    // this.carddata = [];
+    // this.createFormgroup = true;
+    // const tab = this.tabMenu[index];
+    // const moduleList = this.commonAppDataShareService.getModuleList();
+    // const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
+    // const card = moduleList[tabIndex];
+    this.card['card'] = item.tabCard;
     this.card.selectedTabIndex = index;
     this.popoverOutput.emit(this.card);
   } 
