@@ -7,7 +7,6 @@ import { Subscription } from 'rxjs';
 import { AppStorageService, App_googleService, NotificationService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
-import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
 import { AndroidpermissionsService } from './service/androidpermissions.service';
 import { Title } from '@angular/platform-browser';
 import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService, MenuOrModuleCommonService, EnvService, CoreFunctionService, StorageTokenStatus } from '@core/web-core';
@@ -69,7 +68,6 @@ export class AppComponent implements OnInit, OnDestroy {
     private statusBar: StatusBar,
     private dataShareServiceService:DataShareServiceService,
     private app_googleService: App_googleService,
-    private nativeGeocoder: NativeGeocoder,
     private androidpermissionsService: AndroidpermissionsService,
     private apiService: ApiService,
     private dataShareService: DataShareService,
@@ -228,7 +226,8 @@ export class AppComponent implements OnInit, OnDestroy {
         this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(),'/home');
       }else{
         this.authService.redirectToSignPage();
-      }      
+        this.notificationService.presentToastOnBottom("Session Expired, Please login again.","info")
+      }
     }else{
       this.storageService.removeDataFormStorage("all");
       this.router.navigate(['/checkcompany']);

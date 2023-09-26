@@ -122,7 +122,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     private getCardDataByCollection(i:number) {
       const cardWithTab = this.menuOrModuleCommonService.getCard(i);
       this.collectionName = cardWithTab.card.collection_name;
-      if (this.permissionService.checkPermission(this.collectionName, 'view')) {
+      // if (this.permissionService.checkPermission(this.collectionName, 'view')) {
         if(cardWithTab && cardWithTab.card){
           if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
             let navigation = '';
@@ -138,25 +138,25 @@ export class CardViewPage implements OnInit, OnDestroy {
             }
             this.router.navigateByUrl(navigation);
           }else{
-            if(cardWithTab.card && cardWithTab.card.name){
-              this.headerTitle = cardWithTab.card.name;
-            }
-          this.card = cardWithTab;
+              if(cardWithTab.card && cardWithTab.card.name){
+                this.headerTitle = cardWithTab.card.name;
+              }
+            this.card = cardWithTab;
           }
         }
         this.popoverTabbing = cardWithTab?.popoverTabbing;
         this.selectedIndex = cardWithTab?.selectedTabIndex;
-      }else{
-        let getStatus:any = this.authService.checkIdTokenStatus();
-        if(getStatus && getStatus.status){
-          this.notificationService.presentToastOnBottom("Permission denied !", "danger");
-        }else{
-          if(getStatus && getStatus.msg){
-            this.notificationService.presentToastOnBottom(getStatus.msg);
-          }
-          this.authService.gotToSigninPage();
-        }
-      }
+      // }else{
+      //   let getStatus:any = this.authService.checkIdTokenStatus();
+      //   if(getStatus && getStatus.status){
+      //     this.notificationService.presentToastOnBottom("Permission denied !", "danger");
+      //   }else{
+      //     if(getStatus && getStatus.msg){
+      //       this.notificationService.presentToastOnBottom(getStatus.msg);
+      //     }
+      //     this.authService.gotToSigninPage();
+      //   }
+      // }
     }
     
     comingSoon() {

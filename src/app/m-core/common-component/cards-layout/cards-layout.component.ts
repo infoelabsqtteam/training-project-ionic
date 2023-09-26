@@ -13,7 +13,7 @@ import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
-import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService } from '@core/web-core';
+import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService } from '@core/web-core';
 
 @Component({
   selector: 'app-cards-layout',
@@ -126,7 +126,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   userTimeZone: any;
   userLocale:any;
   gpsAlertResult:any;
-  loaderCount:number = 0;
+  form:any;
 
   constructor(
     private platform: Platform,
@@ -153,7 +153,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private loaderService: LoaderService,
     private appPermissionService: AppPermissionService,
     private actionSheetController: ActionSheetController,
-    private coreFunctionService: CoreFunctionService
+    private coreFunctionService: CoreFunctionService,
+    private authService: AuthService
   ) 
   {
     
@@ -359,6 +360,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.hasDetaildCard=false;
     this.selectedgriddataId = "";
     this.addNewEnabled = false;
+    this.form = "";
   }
   ngOnInit() {     
     // this.renderer.setStyle(this.cardViewContent['el'], 'webkitTransition', 'top 700ms');
@@ -416,7 +418,20 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   } 
   setCardAndTab(cardWithTab){
     if(cardWithTab && cardWithTab.card){
-      this.setCardDetails(cardWithTab.card);
+      if (this.permissionService.checkPermission(cardWithTab.card.collection_name, 'view')) {
+        this.setCardDetails(cardWithTab.card);
+      }else{
+        this.card['viewPermission'] = false;
+        let getStatus:any = this.authService.checkIdTokenStatus();
+        if(getStatus && getStatus.status){
+          this.notificationService.presentToastOnBottom("Permission denied !", "danger");
+        }else{
+          if(getStatus && getStatus.msg){
+            this.notificationService.presentToastOnBottom(getStatus.msg);
+          }
+          this.authService.gotToSigninPage();
+        }
+      }
     } 
     if(cardWithTab && cardWithTab.tabs && cardWithTab.tabs.length > 0){
       this.tabMenu = cardWithTab.tabs;
@@ -521,6 +536,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       let collectioncriteria:any = await this.collectionSpecificCriteria(card);
       if(collectioncriteria && collectioncriteria.length > 0){
         criteria = this.setCriteria(criteria,collectioncriteria);
+      }
+      if(card.form){
+        this.form = card.form;
       }
       this.collectionname = card.collection_name;
       if(this.collectionname !=''){

@@ -7,6 +7,7 @@
 </ion-header> -->
 
 <ion-content class="">
+  <!-- error cards -->
   <div *ngIf="nodatafound && this.carddata=='' && this.carddata.length == 0" class="appFullWebkitHeight">
     <ion-card class="appFullWebkitHeight" style="display: flex;
     align-content: center;
@@ -20,6 +21,15 @@
       </ion-card-content>
     </ion-card>         
   </div>
+  <ion-card color="light" *ngIf="card['viewPermission'] == false">
+    <ion-card-header>
+      <ion-card-title>{{'Oh no, permission denied !'}}</ion-card-title>
+    </ion-card-header>      
+    <ion-card-content>
+        {{'You do not have permission to view the module.'}}
+    </ion-card-content>
+  </ion-card>
+  <!-- error cards end -->
   
   <!-- Types of Cards Start -->
  <ion-list class="contactlist" *ngIf="cardType == 'summary'">
@@ -323,7 +333,7 @@
     </ion-card>
   </ion-list>
   <!-- Types of Cards End -->
-  <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" *ngIf="addNewEnabled">
+  <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" *ngIf="addNewEnabled && form && form['default']">
     <ion-fab-button (click)="addNewForm()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>
   </ion-fab>
 

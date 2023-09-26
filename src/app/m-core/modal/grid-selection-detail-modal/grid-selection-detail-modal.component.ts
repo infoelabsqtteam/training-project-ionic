@@ -144,7 +144,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
         }
       });
       this.columnList = gridColumns;
-      // this.gridViewModalSelection.show();
     } else {
       this.notificationService.presentToastOnMiddle("Grid Columns are not available In This Field.","danger")
     }
@@ -214,7 +213,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
   closeModal(data?:any,remove?:any){
     this.data = '';
     this.dataShareService.setIsGridSelectionOpenOrNot(true);
-    // this.gridViewModalSelection.hide();
     this.dismissModal();
   }
   dismissModal(data?:any,remove?:any){
@@ -233,14 +231,16 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
   }
   async select(){
-    if(this.alreadyAdded){
-      // this.notificationService.presentToastOnBottom("Can't perform this action because this record already added");
-      this.dismissModal(this.data,false);
-    }else{
-      // if(this.checkValidator()){
-        this.notificationService.presentToastOnBottom("Record selected");
+    if(this.selectGridData(true)){
+      if(this.alreadyAdded){
+        // this.notificationService.presentToastOnBottom("Can't perform this action because this record already added");
         this.dismissModal(this.data,false);
-      // }
+      }else{
+        // if(this.checkValidator()){
+          this.notificationService.presentToastOnBottom("Record selected");
+          this.dismissModal(this.data,false);
+        // }
+      }
     }
   }
   remove(){
@@ -250,22 +250,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
       this.notificationService.presentToastOnBottom("Record removed");
       this.dismissModal(this.data,true);
     }
-  }
-  checkValidator(){
-    // if(this.data){
-    //   let selectedItem = 0;
-    //   this.Data['column'].forEach(element => {
-    //     if(element.selected  && selectedItem == 0){
-    //       selectedItem = 1;
-    //     }
-    //   });
-    //   if(selectedItem == 1){
-    //     return false;
-    //   }else{
-    //     return true;
-    //   }
-    // }
-    return false;
   }
 
   isDisable(field, object) {
@@ -304,12 +288,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     return check;
   }
   calculateNetAmount(data, fieldName, index:number){
-
     this.limsCalculationsService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
-  }
-  doSomething(ev: any) {
-    // this.selectedTab = ev.target.value;
-    console.log(ev);
   }
   setStaticData(staticDatas){
     if(Object.keys(staticDatas).length > 0) {
@@ -324,29 +303,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
       });
     }
   }
-  // setValue(column,i){
-  //   if(column.onchange_api_params && column.onchange_call_back_field){
-  //     this.changeDropdown(column.onchange_api_params, column.onchange_call_back_field, column.onchange_api_params_criteria, this.elements[i],i);
-  //   }
-  // }
-  // changeDropdown(params, callback, criteria, object,i) {    
-  //   const paramlist = params.split(";");
-  //   if(paramlist.length>1){
-      
-  //   }else{
-  //     const staticModal = []
-  //     const staticModalPayload = this.coreUtilityService.(params, callback, criteria, object);
-  //     // staticModalPayload['adkeys'] = {'index':i};
-  //     staticModal.push(staticModalPayload)      
-  //     if(params.indexOf("FORM_GROUP") >= 0){
-  //       staticModal[0]["data"]=object;
-  //     }
-  //     // this.store.dispatch(
-  //     //   new CusTemGenAction.GetStaticData(staticModal)
-  //     // )
-  //     this.apiService.getStatiData(staticModal);
-  //  }
-  // }
   getddnDisplayVal(val) {
     return this.commonFunctionService.getddnDisplayVal(val);
   }
@@ -452,7 +408,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
     this.setValue("",field, e);
   }
-  selectGridData() {
+  selectGridData(addOrupdate?:boolean) {
     // this.selectedData = [];
     // if (this.grid_row_selection == false) {
     //   this.selectedData = [...this.gridData];
@@ -490,8 +446,16 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
     if(check != 0){
       this.notificationService.presentToastOnBottom(validation.msg, "danger");
+      if(addOrupdate){
+        return false;
+      }
     }else{
-      this.dismissModal(this.data,"onlyupdate"); 
+      if(addOrupdate){
+        return addOrupdate;
+      }else{
+        this.dismissModal(this.data,"onlyupdate");
+
+      }
     }
   }
  

@@ -81,7 +81,6 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       }else{
         this.responseData = [];
       }
-      this.copyStaticData[this.field.ddn_field] = data[this.field.ddn_field];
       this.setStaticData(data);
     })
   }
@@ -124,8 +123,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
     else{
       this.gridData = [];
-    }
-   
+    }   
     if(this.field && this.field.grid_row_selection){
       this.grid_row_selection = true;
     }else{
@@ -140,6 +138,14 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   
   setStaticData(staticData) {
     if (staticData) {
+      if (staticData) {
+        staticData = staticData;
+        Object.keys(staticData).forEach(key => {     
+          if(staticData[key]){
+            this.copyStaticData[key] = JSON.parse(JSON.stringify(staticData[key]));
+          }
+        })
+      }
       if (this.field.ddn_field && staticData[this.field.ddn_field] && staticData[this.field.ddn_field] != null) {
         this.gridData = [];
         if (staticData[this.field.ddn_field] && staticData[this.field.ddn_field].length > 0) {
@@ -151,9 +157,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
             this.gridData.push(gridData);
           });
         }
-
         if (this.gridData && this.gridData.length > 0) {
-
           if (this.field.onchange_function && this.field.onchange_function_param != "") {
             switch (this.field.onchange_function_param) {
               case "calculateQquoteAmount":
@@ -163,8 +167,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
           }
           if(this.selecteData && this.selecteData.length > 0){
             this.updateSelectedDataInGridData(this.selecteData);            
-          }        
-          // this.setGridData = false;
+          }
         }else{
           this.reloadBtn = false;
           this.nogridDdata=true;

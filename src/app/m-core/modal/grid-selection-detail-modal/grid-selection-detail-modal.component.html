@@ -14,7 +14,7 @@
         <strong [innerHtml]="getValueForGrid(column,data)"></strong>
       </div>
       <div *ngIf="column.editable" class="enquerylist">
-        <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>        
+        <span [title]="column.label" class="detail-grid">{{column.label}} <ion-text color="danger" *ngIf="column.is_mandatory">*</ion-text><ion-text>&nbsp;:&nbsp;</ion-text></span>        
         <span *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
             <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly">
         </span>
@@ -62,12 +62,12 @@
   <div  class="inlineFormGridSelectionButton">
       <ion-row class="">
         <ion-col>
-          <ion-button *ngIf="(gridselectionverticalbutton && grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="readonly"  (click)="selectGridData()" size="small" expand="block" >{{formInfo.updateMode == true ? 'Update' : 'Add'}}</ion-button>
-          <ion-button *ngIf="(gridselectionverticalbutton && !grid_row_selection)" type="button" [disabled]="checkValidator()" color="appcolor" outline="true" size="small" expand="block"  (click)="selectGridData()" >{{ fieldButtonLabel(field)}}</ion-button >
+          <ion-button *ngIf="(gridselectionverticalbutton && grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="readonly"  (click)="select()" size="small" expand="block" >{{formInfo.updateMode == true ? 'Update' : 'Add'}}</ion-button>
+          <ion-button *ngIf="(gridselectionverticalbutton && !grid_row_selection)" type="button" [disabled]="" color="appcolor" outline="true" size="small" expand="block"  (click)="selectGridData()" >{{ fieldButtonLabel(field)}}</ion-button >
         </ion-col>
         <ion-col>
           <ion-button *ngIf="(gridselectionverticalbutton && grid_row_selection)" type="button" color="appcolor" [disabled]="readonly" (click)="remove()" size="small" expand="block" >Remove</ion-button>
-          <ion-button *ngIf="(gridselectionverticalbutton && !grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="checkValidator()" (click)="closeModal()" size="small" expand="block" >Cancel</ion-button>
+          <ion-button *ngIf="(gridselectionverticalbutton && !grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="" (click)="closeModal()" size="small" expand="block" >Cancel</ion-button>
         </ion-col>
       </ion-row>
       <!-- <div *ngIf="!grid_row_selection">
