@@ -12,7 +12,7 @@ export const environment = {
   verify_type : "email",
   app_Version : "@2023 E-Labs",
   privacy_policy: "",
-  app_share: "https://play.google.com/store/apps/details?id=com.tech.elabs.ai",
+  app_share: "",
   appCardMasterDataSize: 200,
   appHomePageLayout:"layout1",
   apiKey: "AIzaSyA--cLc1-rZJvuV18t0jxlzIbzxahuH-EQ",
