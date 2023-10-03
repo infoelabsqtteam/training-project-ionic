@@ -323,9 +323,9 @@ tinymceConfig = {}
   
     term:any={};
 
-    @HostListener('document:click') clickout() {
-      this.term = {};
-    }
+    // @HostListener('document:click') clickout() {
+    //   this.term = {};
+    // }
 
   constructor(
     public formBuilder: FormBuilder,
@@ -2801,16 +2801,16 @@ tinymceConfig = {}
         }  
       });
       // if(this.formFieldButtons.length > 0){
-      //   this.formFieldButtons.forEach(element => {
-      //     let fieldName = element.field_name;
-      //     let object = this.selectedRow[fieldName];
-      //     if(formValue[fieldName] != null && formValue[fieldName] != undefined){
-      //       if(element.field_name && element.field_name != ''){              
-      //         switch (element.type) {
-      //           case "dropdown":
-      //             let dropdownValue = object == null ? null : object;
-      //             this.templateForm.controls[element.field_name].setValue(dropdownValue);
-      //             break;
+        //   this.formFieldButtons.forEach(element => {
+          //     let fieldName = element.field_name;
+          //     let object = this.selectedRow[fieldName];
+          //     if(formValue[fieldName] != null && formValue[fieldName] != undefined){
+            //       if(element.field_name && element.field_name != ''){              
+              //         switch (element.type) {
+                //           case "dropdown":
+                  //             let dropdownValue = object == null ? null : object;
+                  //             this.templateForm.controls[element.field_name].setValue(dropdownValue);
+                  //             break;
       //           default:
       //             break;
       //         }
@@ -3256,6 +3256,8 @@ tinymceConfig = {}
     this.checkFormFieldAutfocus = true;
     this.filePreviewFields = [];
     this.nextFormUpdateMode=false;
+    this.focusFieldParent={};
+    this.term={};
   }
 
 
@@ -4055,7 +4057,8 @@ tinymceConfig = {}
     if (field.type == 'typeahead') {
       this.clearTypeaheadData();
     }
-
+    this.term = {};
+    
   }
 
   async openGridSelectionDetailModal(data:any, cardtype?:string) {
@@ -5849,8 +5852,8 @@ tinymceConfig = {}
     const previousFormIndex = this.multipleFormCollection.length - 1;
     const previousFormCollection = this.multipleFormCollection[previousFormIndex];
     const previousFormField = previousFormCollection.current_field;
-    // const currentFormValue = this.getFormValue(true)
-    const currentFormValue = JSON.parse(JSON.stringify(this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(true),false)));
+    let formValueWithCustomData = this.getFormValue(true);
+    const currentFormValue = JSON.parse(JSON.stringify(this.commonFunctionService.sanitizeObject(this.tableFields,formValueWithCustomData,false)));
     this.updateMode = false;
     const fieldName = previousFormField.field_name;
     delete currentFormValue[fieldName];    
