@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationService } from '@core/ionic-core';
-import { CustomvalidationService, AuthService, AuthDataShareService, EnvService } from '@core/web-core';
+import { CustomvalidationService, AuthService, AuthDataShareService, EnvService, StorageService } from '@core/web-core';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -18,6 +18,10 @@ export class SignupComponent implements OnInit {
   passwordNotMatch:boolean=false;
   confirmpassword = false;
   signUpErrorSubscribe: Subscription;
+  title = "";
+  logoPath = ''
+  adminEmail='';
+  template:string = "temp1";
 
   constructor(
     private authService: AuthService,
@@ -25,7 +29,8 @@ export class SignupComponent implements OnInit {
     private customValidationService: CustomvalidationService,
     private notificationService: NotificationService,
     private authDataShareService: AuthDataShareService,
-    private envService: EnvService
+    private envService: EnvService,
+    private storageService: StorageService
   ) { 
     this.signUpErrorSubscribe = this.authDataShareService.signUpResponse.subscribe(data =>{
       let color = "danger";
@@ -65,6 +70,7 @@ export class SignupComponent implements OnInit {
 
   ngOnInit() {
     this.initForm();
+    this.pageloded();
   }
   ngDestroy(){
     if(this.signUpErrorSubscribe){
@@ -76,9 +82,10 @@ export class SignupComponent implements OnInit {
     this.signUpForm = new FormGroup({
       name: new FormControl ('', [Validators.required]),
       email: new FormControl ('', [Validators.required, Validators.email]),
-      mobileNo: new FormControl ('', [Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]),
-      password: new FormControl ('', [Validators.required, Validators.minLength(6)]),
+      mobileNumber: new FormControl ('', [Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]),
+      password: new FormControl ('', [Validators.required, this.customValidationService.patternValidator()]),
       confpwd: new FormControl ('', [Validators.required]),
+      'admin': new FormControl(false),
     },{ validators: this.customValidationService.MatchPassword('password','confpwd') }
     );
   }
@@ -90,23 +97,22 @@ export class SignupComponent implements OnInit {
       this.notificationService.presentToastOnBottom("Please fill all * mark fields","danger");
       return;
     }
-    const email = this.signUpForm.value.email;
-    const password = this.signUpForm.value.password;
-    const name = this.signUpForm.value.name;
-    const mobile = this.signUpForm.value.mobileNo;
+    const payload = this.signUpForm.getRawValue();
     let userId = "";
     if(this.envService.getVerifyType() == "mobile"){
-      userId = mobile;
+      userId = payload['mobileNumber'];
     }else{
-     userId = email;
-    }
-    
+     userId = payload['email'];
+    }    
     const hostName = this.envService.getHostName('origin');
     const domain = hostName + "/#/verify";
-    const data = {email: email, password: password, name: name, mobileNumber: mobile, domain:"", userId: userId}
+    delete payload['confpwd'];
+    payload['domain'] = domain;
+    payload['userId'] = userId;
+    // const data = {email: email, password: password, name: name, mobileNumber: mobile, domain:"", userId: userId}
     //note: if autologin =true then set redirection= '/home', And if autologin =false then set redirection= '/signine'
-    const payload = { data:data, redirection:'/signin',"autologin":false};
-    this.authService.Signup(payload);
+    const payloadNew = { data:payload, redirection:'/signin',"autologin":false};
+    this.authService.Signup(payloadNew);
   }
 
   showtxtpass() {
@@ -123,6 +129,12 @@ export class SignupComponent implements OnInit {
       this.signUpForm.controls['confpwd'].setErrors({'invalid': true});
       this.passwordNotMatch = true;
     }
+  }
+  pageloded(){
+    this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
+    this.template = this.storageService.getTemplateName();
+    this.title = this.storageService.getPageTitle();
+    this.adminEmail = this.storageService.getAdminEmail();
   }
 
 
