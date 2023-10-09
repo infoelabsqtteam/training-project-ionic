@@ -1,12 +1,12 @@
-import { Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
-import { App_googleService, DataShareService, EnvService, NotificationService, PermissionService, CoreUtilityService, RestService, ApiService, StorageService } from '@core/ionic-core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
+import { App_googleService, NotificationService, AppPermissionService, AppStorageService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, ModalController, Platform } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
-import { Capacitor } from '@capacitor/core';
 import { GoogleMap, MapType } from '@capacitor/google-maps';
-import { map } from 'rxjs';
-import { DatePipe } from '@angular/common';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
+import { ApiService, CoreFunctionService, DataShareService, StorageService } from '@core/web-core';
+import { Subscription } from 'rxjs';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-gmap-view',
@@ -58,8 +58,8 @@ export class GmapViewComponent implements OnInit {
   //    {location: { lat: 41.8339037, lng: -87.8720468 }}
   // ];
   waypoints:any=[];
-  gridDataSubscription;
-  staticDataSubscription;
+  gridDataSubscription:Subscription;
+  staticDataSubscription:Subscription;
 
   //javascript GoogleMaps Variables
   googleMaps:any;
@@ -75,72 +75,106 @@ export class GmapViewComponent implements OnInit {
   currentPostionIconUrl:any = '../../../../assets/img/icons/current-location-1.png';
   destinationPostionIconUrl:any = '../../../../assets/img/icons/destination-location-1.png';
   googleAddress:any;
+  startBtn:boolean = false;
   reachBtn:boolean = false;
   leftBtn:boolean = false;
-  deliverBtn:boolean = false;
+  startBtnText:string = "";
   reachBtnText:string = "";
   leftBtnText:string = "";
+  startBtnSpinner:boolean = false;
   reachBtnSpinner:boolean = false;
   leftBtnSpinner:boolean = false;
+  appTitle:string;
+  userLocationDetails:any = {}
+  saveResponceSubscription:Subscription;
 
 
   constructor(
     private app_googleService : App_googleService,
     private notificationService: NotificationService,
     private alertCtrl: AlertController,
-    private permissionService: PermissionService,
+    private permissionService: AppPermissionService,
     private platform: Platform,
-    private envService: EnvService,
     private dataShareService: DataShareService,
     private renderer: Renderer2,
     private actionSheetController: ActionSheetController,
-    private restService: RestService,
     private apiService: ApiService,
-    private ngZone: NgZone,
-    private coreFunctionService: CoreUtilityService,
-    private datePipe: DatePipe,
-    private storageService: StorageService,
     private dataShareServiceService: DataShareServiceService,
-    private modalController: ModalController
-  ) {   
+    private modalController: ModalController,
+    private appStorageService: AppStorageService,
+    private storageService: StorageService,
+    private coreFunctionService: CoreFunctionService,
+    private datePipe: DatePipe,
+  ) {
+    this.appTitle = this.storageService.getPageTitle();
     this.currentPostionIconUrl = '../../../../assets/img/icons/current-location-1.png';
     this.destinationPostionIconUrl = '../../../../assets/img/icons/destination-location-1.png';
     this.isTracking = false;
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
-      this.setGridData(data);
+      // this.setGridData(data);
     })
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
-    })
+    });
+    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
+        this.setSaveResponce(responce);
+    });
 
   }
 
   ngOnInit() {
 
   }
-
   ionViewDidEnter(){
-    this.onload();
     this.checkPermissionandRequest();
+    this.onload();
   }
   ngonDestroy(){
+    this.unSubscribed();
+  }
+  ionViewDidLeave(){
+    this.unSubscribed();
+    this.resetVariables()
+  }
+  ionViewWillLeave(){
+  }
+  unSubscribed(){
     if(this.gridDataSubscription){
       this.gridDataSubscription.unsubscribe();
     }
     if(this.staticDataSubscription){
       this.staticDataSubscription.unsubscribe();
     }
+    if(this.saveResponceSubscription){
+      this.saveResponceSubscription.unsubscribe();
+    }
   }
 
   async onload(){
-    // this.googleMaps = JSON.parse(JSON.stringify(localStorage.getItem('JsGoogleMap')));
-    if(this.selectedRowData){      
+    if(this.selectedRowData){
       this.collectionCustomFunction(this.selectedRowData);      
     }else{
       // this.notificationService.presentToastOnBottom("Something went wrong.");
     }
+    this.setCurrentAndDestination();
   }
-
+  setCurrentAndDestination(){    
+    if(this.additionalData?.destinationAddress && this.additionalData?.destinationAddress?.formatted_address){
+      this.destinationLocationData['heading'] = this.additionalData?.destinationAddress?.formatted_address;
+    }else if(this.selectedRowData && this.selectedRowData.customerAddress){
+      this.destinationLocationData['heading'] = this.selectedRowData.customerAddress;
+    }else{
+      this.destinationLocationData['heading'] = "Destination Location";
+    }
+    if(this.additionalData && this.additionalData.currentLatLngDetails && this.additionalData.currentLatLngDetails.formatted_address){
+      this.userLocationDetails['heading'] = this.additionalData.currentLatLngDetails.formatted_address;
+    }
+    if(this.additionalData && this.additionalData.currentLatLng && this.additionalData.currentLatLng.lat && this.additionalData?.destinationAddress && this.additionalData?.destinationAddress?.geometry.location){
+      this.destinationLatLng = this.additionalData?.destinationAddress?.geometry.location;
+      this.currentLatLng = this.additionalData.currentLatLng;
+      this.loadMap();
+    }
+  }
   async collectionCustomFunction(selectedrowdata:any){
     let collectionName:any ='';
     if(this.additionalData && this.additionalData.collectionName){
@@ -152,50 +186,46 @@ export class GmapViewComponent implements OnInit {
         if(selectedrowdata.name){
           this.SelectedItemName = selectedrowdata.name;
         }
-        if(selectedrowdata.leftDateTime ==null){
-          this.leftBtn = false;
+        if(this.coreFunctionService.isNotBlank(selectedrowdata.trackStartDateTime)){
+          this.startBtn = true;
         }else{
-          this.leftBtn = true;
-        }        
-        if(this.leftBtn){
-          this.leftBtnText = "Delivered";
-        }else{
-          this.leftBtnText = "Left";
+          this.startBtn = false;
         }
-        if(selectedrowdata.reachDateTime ==null){
-          this.reachBtn = false;
+        if(this.startBtn){
+          this.startBtnText = "Started";
         }else{
+          this.startBtnText = "Start";
+        }
+        if(this.coreFunctionService.isNotBlank(selectedrowdata.reachDateTime)){
           this.reachBtn = true;
+        }else{
+          this.reachBtn = false;
         }
         if(this.reachBtn){
           this.reachBtnText = "Reached";
         }else{
           this.reachBtnText = "Reach";
         }
-        if(this.additionalData?.destinationAddress && this.additionalData?.destinationAddress?.formatted_address){
-          this.destinationLocationData['heading'] = this.additionalData?.destinationAddress?.formatted_address;
-        }else if(selectedrowdata && selectedrowdata.customerAddress){
-          this.destinationLocationData['heading'] = selectedrowdata.customerAddress;
+        if(this.coreFunctionService.isNotBlank(selectedrowdata.leftDateTime)){
+          this.leftBtn = true;
         }else{
-          this.destinationLocationData['heading'] = "Destination Location";
+          this.leftBtn = false;
         }
-        if(this.additionalData && this.additionalData.currentLatLng && this.additionalData.currentLatLng.lat && this.additionalData?.destinationAddress && this.additionalData?.destinationAddress?.geometry.location){
-          this.destinationLatLng = this.additionalData?.destinationAddress?.geometry.location;
-          this.currentLatLng = this.additionalData.currentLatLng;
-          this.loadMap();
+        if(this.leftBtn){
+          this.leftBtnText = "Completed";
+        }else{
+          this.leftBtnText = "Return";
         }
         // this.createMap(this.center);
         break;
       default: 
         // this.notificationService.presentToast("error ");
-    }
-
-      
+    }      
   }
 
   async checkPermissionandRequest(){
     if (this.platform.is('hybrid')) {
-      let permResult = await this.app_googleService.checkGPSPermission();
+      let permResult = await this.app_googleService.checkGeolocationPermission();
       if(!permResult){
         this.enableGPSandgetCoordinates();
       }
@@ -229,9 +259,6 @@ export class GmapViewComponent implements OnInit {
   }
   async requestPermissions() {
     const permResult = await this.permissionService.checkAppPermission("ACCESS_FINE_LOCATION");
-    console.log('ACCESS_FINE_LOCATION: ', permResult);
-    let geopermResult = await this.app_googleService.requestLocationPermission();
-    console.log("geopermResult: ", geopermResult);
     if(permResult){
       if(this.platform.is('hybrid')) {
         this.gpsEnableAlert();
@@ -252,12 +279,11 @@ export class GmapViewComponent implements OnInit {
       }
     }
   }
-
   async gpsEnableAlert(){     
       const alert = await this.alertCtrl.create({
         cssClass: 'my-gps-class',
         header: 'Please Enable GPS !',
-        message: 'ITC collects Your location data to serve you better service',
+        message: this.appTitle + ' collects Your location data to serve you better service',
         buttons: [
           {
             text: 'No, thanks',
@@ -275,10 +301,9 @@ export class GmapViewComponent implements OnInit {
   
     await alert.present();
   }
-
   async enableGPSandgetCoordinates(enableGPS?:any){
     if(this.platform.is('hybrid')){
-      enableGPS = await this.app_googleService.checkGPSPermission();
+      enableGPS = await this.app_googleService.checkGeolocationPermission();
       if(enableGPS){
         this.canUseGPS = true;
         this.positionOptions['enableHighAccuracy'] = enableGPS;   
@@ -353,55 +378,83 @@ export class GmapViewComponent implements OnInit {
     this.waypoints = [];
     this.destinationLocationMarkerId = '';
     this.currentLocationMarkerId = '';
+    this.selectedRowData = {};
   }
-  async customButtonClick(buttonName?:any){
-    const isGpsEnable = await this.app_googleService.checkGPSPermission();
+  async customButtonClick(buttonName?:any,confirmation?:boolean){
+    const isGpsEnable = await this.app_googleService.checkGeolocationPermission();
     if(isGpsEnable){
-      if(buttonName == "reach"){
+      let currentposition:any = await this.app_googleService.getUserLocation();
+      if(buttonName == "start"){
+        // if(confirmation){
+          this.startBtn = true;
+          this.startBtnSpinner = true;
+        // }else{
+        //   await this.presentConfirmationActionSheet(buttonName,'').then( data => {
+        //     console.log(data)
+        //   })
+        // }
+      }else if(buttonName == "reach"){
         this.reachBtn = true;
         this.reachBtnSpinner = true;
       }else if(buttonName == "left"){
         this.leftBtn = true;
         this.leftBtnSpinner = true;
-      }else if(buttonName == "deliver"){
-        this.deliverBtn = true;
       }
-      let currentposition:any = await this.app_googleService.getUserLocation();
-      if(currentposition && currentposition.lat !=null && currentposition.lng !=null){
+      if(currentposition && currentposition.lat != null && currentposition.lng != null){
         let currentlatlng: any = {
           'latitude': currentposition.lat,
           'longitude': currentposition.lng,
         }
+        let currentlatlngdetails:any = await this.app_googleService.getAddressFromLatLong(this.currentLatLng.lat,this.currentLatLng.lng);
+        let currentAddress = currentlatlngdetails[0];
+        let locationData = {
+          'latitude' : currentposition.lat,
+          'longitude' : currentposition.lng,
+          'address' : currentAddress.formatted_address,
+          'date' : JSON.parse(JSON.stringify(new Date())),
+          'time' : this.datePipe.transform(new Date(),'shortTime'),
+          'placeId' : currentAddress.place_id
+        }
+        if(buttonName == "start"){
+          this.selectedRowData['trackingStatus'] = "PROGRESS";
+          this.selectedRowData['trackStartDateTime'] = JSON.parse(JSON.stringify(new Date()));
+          this.selectedRowData['trackStartTime'] = this.datePipe.transform(new Date(),'shortTime');          
+          this.selectedRowData['trackStartLocation'] = locationData;
+          this.selectedRowData['customerAddressDetail'] = {
+            'latitude': this.additionalData.destinationAddress?.geometry?.location.lat,
+            'longitude': this.additionalData.destinationAddress?.geometry?.location.lat,
+            'placeId': this.additionalData.destinationAddress?.place_id
+          };          
+          this.startBtn = false;
+          this.startBtnSpinner = false;
+        }
         if(buttonName == "reach"){
           this.selectedRowData['reachDateTime'] = JSON.parse(JSON.stringify(new Date()));
-          this.selectedRowData['reachTime'] = await this.dataShareServiceService.getCurrentTime(new Date()); 
-          this.selectedRowData['reachLocation'] = currentlatlng;
+          this.selectedRowData['reachTime'] = this.datePipe.transform(new Date(),'shortTime'); 
+          this.selectedRowData['reachLocation'] = locationData;
           this.selectedRowData['trackingStatus'] = "REACHED";
           this.reachBtn = false;
-          this.reachBtnSpinner=false;
+          this.reachBtnSpinner = false;
+          if(confirmation){
+            this.selectedRowData['validationStatus'] = "Not Reached";
+          }
         }else if(buttonName == "left"){
           this.selectedRowData['leftDateTime'] = JSON.parse(JSON.stringify(new Date()));
-          this.selectedRowData['leftTime'] = await this.dataShareServiceService.getCurrentTime(new Date()); 
-          this.selectedRowData['leftLocation'] = currentlatlng;
-          this.selectedRowData['trackingStatus'] = "DELIVERED";
+          this.selectedRowData['leftTime'] = this.datePipe.transform(new Date(),'shortTime'); 
+          this.selectedRowData['leftLocation'] = locationData;
+          this.selectedRowData['trackingStatus'] = "COMPLETED";
           this.leftBtn = false;
           this.leftBtnSpinner = false;
-          await this.clearWatch();
-          this.dismissModal(this.selectedRowData,"delivered");
-        }else if(buttonName == "deliver"){
-          this.selectedRowData['deliverDateTime'] = JSON.parse(JSON.stringify(new Date()));
-          this.selectedRowData['deliverLocation'] = currentlatlng;
+          // await this.clearWatch();
         }
         
-        this.collectionCustomFunction(this.selectedRowData);      
+        this.collectionCustomFunction(this.selectedRowData);
         this.saveData(this.selectedRowData);
 
       }else{
         if(!currentposition.gpsenable){
-          if(buttonName == "reach"){
-            this.reachBtn = false;
-            this.reachBtnSpinner = false;
-          }else if(buttonName == "left")
+          this.reachBtn = false;
+          this.reachBtnSpinner = false;
           this.leftBtn = false;
           this.leftBtnSpinner = false;
         }
@@ -453,7 +506,7 @@ export class GmapViewComponent implements OnInit {
       this.newMap = await GoogleMap.create({
         id: 'google-map'+"-"+this.selectedRowData.recordId,
         element: this.mapRef.nativeElement,
-        apiKey: this.envService.getGoogleMapApiKey(),
+        apiKey: this.appStorageService.getGoogleMapApiKey(),
         config: {
           center: data,
           zoom: 15,
@@ -515,7 +568,7 @@ export class GmapViewComponent implements OnInit {
   }
   
   async getCurrentLocation() {
-    const enableGPS = await this.app_googleService.checkGPSPermission();
+    const enableGPS = await this.app_googleService.checkGeolocationPermission();
     if(enableGPS){
       if(this.platform.is("hybrid")){
         const currentLatLng = await this.app_googleService.getUserLocation();
@@ -565,8 +618,6 @@ export class GmapViewComponent implements OnInit {
         }
 
       }
-    }else{
-      this.gpsEnableAlert();
     }
   }
   async addMarkerOnCurrentLocation(CurrentPostionlatLng){
@@ -636,20 +687,20 @@ export class GmapViewComponent implements OnInit {
     }
   }
 
-  getCall(selectedData){
-    let crList:any = [];
-    const cr = "_id;eq;" + selectedData._id + ";STATIC";
-    crList.push(cr);
+  // getCall(selectedData){
+  //   let crList:any = [];
+  //   const cr = "_id;eq;" + selectedData._id + ";STATIC";
+  //   crList.push(cr);
 
-    let data = this.restService.getPaylodWithCriteria('location_tracker','',crList,'');
-    data['pageNo'] = 0;
-    data['pageSize'] = 50;
-    let payload = {
-      'data':data,
-      'path':"null"
-    }
-    this.apiService.getGridData(payload);
-  }
+  //   let data = this.coreUtilityService.getPaylodWithCriteria('location_tracker','',crList,'');
+  //   data['pageNo'] = 0;
+  //   data['pageSize'] = 50;
+  //   let payload = {
+  //     'data':data,
+  //     'path':"null"
+  //   }
+  //   this.apiService.getGridData(payload);
+  // }
 
   // JS Google Map Func.
   async loadMap(){
@@ -783,6 +834,15 @@ export class GmapViewComponent implements OnInit {
       infowindow.open(this.map, this.destinationLocationMarkerId);
     });
   }
+  openMapLink(){    
+    let origin = "&origin=" + this.currentLatLng.lat + "," + this.currentLatLng.lng;
+    let destination = "&destination=" + this.destinationLatLng.lat + "," + this.destinationLatLng.lng;
+    const url = 'https://www.google.com/maps/dir/?api=1'+ origin + destination +'&travelmode=driving'+ ',13z?hl=en-US&amp;gl=US';
+    const a = document.createElement('a');
+    a.click();
+    window.open(url,"_blank")
+    a.remove();
+  }
   ongoogleMapOriginMarkerClick(){
     let markerHeading = "";
     if(this.directionsData && this.directionsData.start_address){
@@ -799,6 +859,95 @@ export class GmapViewComponent implements OnInit {
     });
   }
   //End JS Google Map Func.
+
+  setSaveResponce(saveFromDataRsponce){
+    if (saveFromDataRsponce) {
+      if (saveFromDataRsponce.success && saveFromDataRsponce.success != '' && saveFromDataRsponce.data) {
+        if (saveFromDataRsponce.success == 'success' && !this.additionalData.updateMode) {          
+          // let card:any;
+          // let criteria:any = [];
+          // if(this.card && this.card.card){
+          //   card = this.card.card;
+          // }
+          // if(card && card.api_params_criteria && card.api_params_criteria.length > 0){
+          //   card.api_params_criteria.forEach(element => {
+          //     criteria.push(element);
+          //   });
+          // }
+          // this.getGridData(this.collectionname,);
+          // this.setCardDetails(this.card.card);
+        }else if ((saveFromDataRsponce.success == 'success' || saveFromDataRsponce.success_msg != '' ) && this.additionalData.updateMode) {
+          this.selectedRowData == saveFromDataRsponce.data;
+          let status = saveFromDataRsponce.data.trackingStatus;
+          if(status == 'PROGRESS' || status == "REACHED" || status == 'DELIVERED' || status == 'COMPLETED'){
+            if(saveFromDataRsponce.success_msg != '' && saveFromDataRsponce.success_msg != undefined){
+              this.notificationService.showAlert(saveFromDataRsponce.success_msg,"Location saved",['Dismiss']);
+            }else{
+              this.notificationService.showAlert("Your Current Location Saved","Location saved",['Dismiss']);
+            }
+          }
+          if(status == 'COMPLETED'){            
+            this.dismissModal(saveFromDataRsponce.data,"completed");
+          }
+        }
+      }else if(saveFromDataRsponce && saveFromDataRsponce.error){
+        if(saveFromDataRsponce.error == "Your Current Location Not Matched with Destination Location, Do you Still want to save ?"){
+          // let isOpen = await this.actionSheetController.getTop();
+          // if(!isOpen){
+            this.presentConfirmationActionSheet('reach',saveFromDataRsponce.error);
+          // }
+        }else{
+          this.notificationService.showAlert(saveFromDataRsponce.error,"Alert",['Dismiss']);
+        }
+        this.apiService.ResetSaveResponce();
+      }
+    }
+  }
+  async presentConfirmationActionSheet(btnName,errorMsg) {
+    let dynamicActionName ='';
+    if(btnName == "start"){
+      dynamicActionName = 'Start';
+    }else if(btnName == 'reach'){
+      dynamicActionName = 'Reach';
+    }else{
+      dynamicActionName = btnName;
+    }
+    const actionSheet = await this.actionSheetController.create({
+      header: "Are You Sure ?",
+      subHeader: errorMsg,
+      buttons: [{
+        text: dynamicActionName ? dynamicActionName : 'Save',
+        role: 'confirm',
+        icon: 'location',
+        handler: () => {
+          // this.customButtonClick(btnName,true);
+          console.log('Confirm clicked');
+        }
+      },
+      {
+        text: 'Cancel',
+        icon: 'close',
+        role: 'cancel',
+        handler: () => {
+            // this.collectionCustomFunction(this.selectedRowData);
+            console.log('Cancel clicked');
+        }
+      }]
+    });
+  
+    await actionSheet.present();
+    const result = await actionSheet.onDidDismiss();
+    if(result.role == 'confirm'){
+      this.customButtonClick(btnName,true);
+    }else{
+      this.selectedRowData['reachDateTime'] = '';
+      this.selectedRowData['reachTime'] = ''; 
+      this.selectedRowData['reachLocation'] = {};
+      this.selectedRowData['trackingStatus'] = "Assigned";
+      this.collectionCustomFunction(this.selectedRowData);
+    }
+    console.log("action result : ", result)
+  }
 
   // Testing Functions and sample example
   addDestinationMarker(location){

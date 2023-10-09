@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { AuthService, EnvService } from '@core/ionic-core';
+import { NotificationService } from '@core/ionic-core';
+import { StorageService, AuthService, AuthDataShareService, CoreFunctionService } from '@core/web-core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-verify-otp',
@@ -12,14 +14,38 @@ export class VerifyOtpComponent implements OnInit {
 
   OtpVarify: FormGroup;
   isVerify:boolean = false;
+  logoPath:string = '';
+  imageTitle:string = '';
+  appTitle:string = '';
+  OtpErrorSubscribe: Subscription;
 
 
   constructor(
     private routers: ActivatedRoute,
     private authService:AuthService,
-    private envService:EnvService,
     private formBuilder: FormBuilder,
-  ) { }
+    private storageService: StorageService,
+    private coreFunctionService: CoreFunctionService,
+    private authDataShareService: AuthDataShareService,
+    private notificationService: NotificationService
+  ) { 
+    this.OtpErrorSubscribe = this.authDataShareService.otpResponse.subscribe(data =>{
+      let color = "danger";
+      let msg = data.msg;
+      if(data && data.status == 'success'){
+        color = 'success';
+        msg = data.msg;
+        this.notificationService.presentToastOnTop(msg,color);
+        if(data && data.appAutologin){
+          this.authService.Signin(this.authDataShareService.getOtpAutoLogin());
+        }else{
+          this.authService.redirectToSignPage();
+        }
+      }else{
+        this.notificationService.presentToastOnTop(data.msg, color);
+      }
+    });
+  }
 
   ngOnInit() {
     this.initForm();
@@ -40,7 +66,7 @@ export class VerifyOtpComponent implements OnInit {
       username: ['', [Validators.required]],
       verifyCode: ['', [Validators.required]]
     });
-    if(this.envService.getVerifyType() == "mobile"){
+    if(this.storageService.getVerifyType() == "mobile"){
       this.isVerify = true;
     }else{
       this.isVerify = false;
@@ -52,7 +78,7 @@ export class VerifyOtpComponent implements OnInit {
     const user = value['username'];
     const code = value['verifyCode'];
     const data = {"user":user,"code":code}
-    const payload = {data:data, redirection:'/auth/signine'};
+    const payload = {data:data, redirection:'/signin', autologin:false};
     this.authService.userVarify(payload);
   }
 
@@ -60,6 +86,13 @@ export class VerifyOtpComponent implements OnInit {
   resendCode() {
     // this.resetPwd = true;
     // this.authService.forgetPass(this.username);
+  }  
+  async getLogoPath(){
+    if(this.coreFunctionService.isNotBlank(this.storageService.getApplicationSetting())){
+      this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
+      this.imageTitle = this.storageService.getPageTitle();
+      this.appTitle = this.storageService.getPageTitle();
+    }
   }
 
 }

@@ -7,6 +7,7 @@
 </ion-header> -->
 
 <ion-content class="">
+  <!-- error cards -->
   <div *ngIf="nodatafound && this.carddata=='' && this.carddata.length == 0" class="appFullWebkitHeight">
     <ion-card class="appFullWebkitHeight" style="display: flex;
     align-content: center;
@@ -20,6 +21,17 @@
       </ion-card-content>
     </ion-card>         
   </div>
+  <ion-card color="light" *ngIf="card['viewPermission'] == false">
+    <ion-card-header>
+      <ion-card-title>{{'Oh no, permission denied !'}}</ion-card-title>
+    </ion-card-header>      
+    <ion-card-content>
+        {{'You do not have permission to view the module.'}}
+    </ion-card-content>
+  </ion-card>
+  <!-- error cards end -->
+  
+  <!-- Types of Cards Start -->
  <ion-list class="contactlist" *ngIf="cardType == 'summary'">
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="cardlist">
@@ -28,7 +40,7 @@
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
-              <div class="ion-text-end status_button" *ngIf="column.type == 'button' && getValueForGrid(column,card)">
+              <div class="ion-text-end status_button button-size" *ngIf="column.type == 'button' && getValueForGrid(column,card)">
                 <div *ngIf="card.quotation_status">
                   <ion-button [ngClass]="card.quotation_status ? 'status_' + card.quotation_status : 'default-status'" *ngIf="column.type == 'button' && card.quotation_status" [innerHTML]="getValueForGrid(column,card)">
                   </ion-button>
@@ -62,25 +74,23 @@
           </ion-row>
         </ion-item>
         
-        <ion-item-options side="start">
-          <ion-item-option *ngIf="addCallingFeature" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
+        <ion-item-options side="start" *ngIf="addCallingFeature || (gridButtons && gridButtons.length > 0)">
+          <ion-item-option color="success" *ngIf="addCallingFeature" class="call" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
+          <div class="ion-display-flex" *ngFor="let btn of gridButtons">
+            <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
+              <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
+              <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+            </ion-item-option>
+          </div>
         </ion-item-options>
-        
         <ion-item-options side="end" *ngIf="gridButtons || addNewEnabled">
-          <ion-item-option *ngFor="let btn of gridButtons">
-            <span class="material-symbols-outlined" (click)="gridButtonAction(card,i,btn)">{{btn.field_class}}</span>
-          </ion-item-option>
-          <ion-item-option *ngIf="addNewEnabled && gridButtons.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
-          
-          <!-- <ion-item-option *ngIf="addNewEnabled || enableEditOnly">
-            <ion-icon slot="icon-only" name="pencil"  (click)="gridButtonAction(card, i, 'update')"></ion-icon>
-          </ion-item-option> -->
-          <!-- <ion-item-option *ngIf="enableReviewOnly">
-            <ion-icon slot="icon-only" name="eye-outline" (click)="editedRow(card, i)"></ion-icon>
-          </ion-item-option> -->
-          <!-- <ion-item-option *ngIf="downloadReport" (click)="gridButtonAction(card, i, 'download_report')"><ion-icon  slot="icon-only" name="download-outline"></ion-icon></ion-item-option>
-          <ion-item-option *ngIf="downloadPdfBtn" (click)="gridButtonAction(card, i, 'download')"><ion-icon  slot="icon-only" name="download-outline"></ion-icon></ion-item-option> -->
-
+          <div class="ion-display-flex" *ngFor="let btn of gridButtons">
+            <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : btn.onclick['action_name'] == 'google_tracking_start' ? 'success' : ''}}" [ngClass]="!btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="!btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
+              <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
+              <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
+            </ion-item-option>
+          </div>
+          <ion-item-option *ngIf="addNewEnabled && gridButtons.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>  
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -121,73 +131,209 @@
       <!-- <ion-item lines="none" slot="header" color="">
         <ion-label>{{card.recordName}}</ion-label>
       </ion-item> -->
-      <ion-list class="contactlist" *ngIf="cardType == 'trackOnMap'">
-        <ion-item-sliding class="ion-padding-default mapcardRecord" *ngFor="let card of carddata; index as i">
-          <!-- <ion-card class="ion-margin-horizontal-0 ion-margin-vertical-0"> -->
-            <!-- <ion-card-content class="ion-padding-top-default ion-padding-bottom-default">         -->
-            <ion-item class="cardlist">
-              <ion-row class="ion-align-items-center w-100">
-                <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding" (click)="modaldetailCardButton(column,card)">
-                  <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
-                  <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
-                  <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
-                  <div class="ion-text-end status_button" *ngIf="column.type == 'button' && getValueForGrid(column,card)">
-                    <div *ngIf="card.quotation_status">
-                      <ion-button [ngClass]="card.quotation_status ? 'status_' + card.quotation_status : 'default-status'" *ngIf="column.type == 'button' && card.quotation_status" [innerHTML]="getValueForGrid(column,card)">
-                      </ion-button>
-                    </div>
-                    <div *ngIf="card.order_status">
-                      <ion-button [ngClass]="card.order_status ? 'status_' + card.order_status : 'default-status'" *ngIf="column.type == 'button' && card.order_status" [innerHTML]="getValueForGrid(column,card)">
-                      </ion-button>
-                    </div>
-                    <div *ngIf="card.invoicing_status">
-                      <ion-button [ngClass]="card.invoicing_status ? 'status_' + card.invoicing_status : 'default-status'" *ngIf="column.type == 'button' && card.invoicing_status" [innerHTML]="getValueForGrid(column,card)">
-                      </ion-button>
-                    </div>
-                    <div *ngIf="card.status && !card.quotation_status && !card.order_status && !card.invoicing_status">
-                      <ion-button [ngClass]="card.status ? 'status_' + card.status : 'default-status'" *ngIf="column.type == 'button' && card.status" [innerHTML]="getValueForGrid(column,card)">
-                      </ion-button>
-                    </div>
-                    <div *ngIf="column.class_name">
-                      <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'  && !card.status && !card.quotation_status && !card.order_status && !card.invoicing_status" [innerHTML]="getValueForGrid(column,card)" size="small" class="globalBtn"></ion-button>
-                    </div>
-                  </div>
-                  <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
-                  <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'file'" [innerHTML]="getValueForGrid(column,card)"></p>
-                  <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'time'" [innerHTML]="getValueForGrid(column,card)"></p>
-                  <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'boolean'" [innerHTML]="getValueForGrid(column,card)"></p>
-                  <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'icon'" [innerHTML]="getValueForGrid(column,card)"></p>
-                  <!-- <div class="ion-text-end status_button" *ngIf="column.type == 'apibutton'">
-                    <ion-button [ngClass]="column.class_name ? 'status_' + column.class_name : 'default-status'" *ngIf="column.type == 'apibutton'" [innerHTML]="getValueForGrid(column,card)" (click)="onClickApiButton(column.apiName,card)">
+      <ion-list class="contactlist trackOnMap" *ngIf="cardType == 'trackOnMap'">
+        <ion-item-sliding class="mapcardRecord" *ngFor="let card of carddata; index as i">
+          <ion-item class="cardlist">
+            <ion-row class="ion-align-items-center w-100">
+              <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding" (click)="modaldetailCardButton(column,card)" [ngClass]="getValueForGrid(column,card) == '' ? 'ion-hide' : ''">
+                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
+                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
+                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
+                <div class="ion-text-end status_button button-size" *ngIf="column.type == 'button' && getValueForGrid(column,card)">
+                  <div *ngIf="card.quotation_status">
+                    <ion-button [ngClass]="card.quotation_status ? 'status_' + card.quotation_status : 'default-status'" *ngIf="column.type == 'button' && card.quotation_status" [innerHTML]="getValueForGrid(column,card)">
                     </ion-button>
-                  </div> -->
-                </ion-col>
-                <!-- <ion-col size="12">
-                  <ion-button shape="round" size="small" expand="block" color="primary" (click)="startTracking(card,i)" [disabled]="(card.trackingStatus == 'DELIVERED') ? true : false">Start</ion-button>
-                </ion-col>
-                <ion-col size="12">
-                  <ion-button *ngFor="let btn of gridButtons" shape="round" size="small" expand="block" color="primary" (click)="gridButtonAction(card,i,btn)" [disabled]="(card.trackingStatus == 'DELIVERED' || card.trackingStatus == 'PROGRESS') ? true : false">{{btn.field_name == 'cancel' ? 'Reject' : btn.label}}</ion-button>
-                </ion-col> -->
-              </ion-row>
-              <!-- <ion-row *ngIf="card?.deliveredItemImages && card.deliveredItemImages.length == 0">
-                <ion-col><ion-button expand="block" size="small" fill="outline">View</ion-button></ion-col>
-                <ion-col><ion-button shape="round" size="small" expand="block" color="primary" (click)="gridButtonAction(card,i,btn)" *ngIf="card.status == 'DELIVERED'">Upload</ion-button></ion-col>
-              </ion-row> -->
-            </ion-item>
-            <!-- </ion-card-content> -->
-          <!-- </ion-card> -->
+                  </div>
+                  <div *ngIf="card.order_status">
+                    <ion-button [ngClass]="card.order_status ? 'status_' + card.order_status : 'default-status'" *ngIf="column.type == 'button' && card.order_status" [innerHTML]="getValueForGrid(column,card)">
+                    </ion-button>
+                  </div>
+                  <div *ngIf="card.invoicing_status">
+                    <ion-button [ngClass]="card.invoicing_status ? 'status_' + card.invoicing_status : 'default-status'" *ngIf="column.type == 'button' && card.invoicing_status" [innerHTML]="getValueForGrid(column,card)">
+                    </ion-button>
+                  </div>
+                  <div *ngIf="card.status && !card.quotation_status && !card.order_status && !card.invoicing_status">
+                    <ion-button [ngClass]="card.status ? 'status_' + card.status : 'default-status'" *ngIf="column.type == 'button' && card.status" [innerHTML]="getValueForGrid(column,card)">
+                    </ion-button>
+                  </div>
+                  <div *ngIf="column.class_name">
+                    <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'  && !card.status && !card.quotation_status && !card.order_status && !card.invoicing_status" [innerHTML]="getValueForGrid(column,card)" size="small" class="globalBtn"></ion-button>
+                  </div>
+                </div>
+                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
+                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'file'" [innerHTML]="getValueForGrid(column,card)"></p>
+                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'time'" [innerHTML]="getValueForGrid(column,card)"></p>
+                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'boolean'" [innerHTML]="getValueForGrid(column,card)"></p>
+                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'icon'" [innerHTML]="getValueForGrid(column,card)"></p>
+                <!-- <div class="ion-text-end status_button" *ngIf="column.type == 'apibutton'">
+                  <ion-button [ngClass]="column.class_name ? 'status_' + column.class_name : 'default-status'" *ngIf="column.type == 'apibutton'" [innerHTML]="getValueForGrid(column,card)" (click)="onClickApiButton(column.apiName,card)">
+                  </ion-button>
+                </div> -->
+              </ion-col>
+              <!-- <ion-col size="12">
+                <ion-button shape="round" size="small" expand="block" color="primary" (click)="startTracking(card,i)" [disabled]="(card.trackingStatus == 'DELIVERED') ? true : false">Start</ion-button>
+              </ion-col>
+              <ion-col size="12">
+                <ion-button *ngFor="let btn of gridButtons" shape="round" size="small" expand="block" color="primary" (click)="gridButtonAction(card,i,btn)" [disabled]="(card.trackingStatus == 'DELIVERED' || card.trackingStatus == 'PROGRESS') ? true : false">{{btn.field_name == 'cancel' ? 'Reject' : btn.label}}</ion-button>
+              </ion-col> -->
+            </ion-row>
+            <!-- <ion-row *ngIf="card?.deliveredItemImages && card.deliveredItemImages.length == 0">
+              <ion-col><ion-button expand="block" size="small" fill="outline">View</ion-button></ion-col>
+              <ion-col><ion-button shape="round" size="small" expand="block" color="primary" (click)="gridButtonAction(card,i,btn)" *ngIf="card.status == 'DELIVERED'">Upload</ion-button></ion-col>
+            </ion-row> -->
+          </ion-item>
+          <ion-item-options side="start" *ngIf="addCallingFeature || (gridButtons && gridButtons.length > 0)">
+            <ion-item-option *ngIf="addCallingFeature" class="call" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
+            <div class="ion-display-flex" *ngFor="let btn of gridButtons">
+              <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
+                <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
+                <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+              </ion-item-option>
+            </div>
+          </ion-item-options>
           <ion-item-options side="end" *ngIf="gridButtons || addNewEnabled">
-            <ion-item-option *ngFor="let btn of gridButtons">
-              <span class="material-symbols-outlined" (click)="gridButtonAction(card,i,btn)">{{btn.field_class}}</span>
-            </ion-item-option>
+            <div class="ion-display-flex" *ngFor="let btn of gridButtons">
+              <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : btn.onclick['action_name'] == 'google_tracking_start' ? 'success' : ''}}" [ngClass]="!btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="!btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
+                <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
+                <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
+              </ion-item-option>
+            </div>
             <ion-item-option *ngIf="addNewEnabled && gridButtons.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>  
           </ion-item-options>
         </ion-item-sliding>
       </ion-list>
     <!-- </ion-accordion>
   </ion-accordion-group> -->
+  
+  <!-- <ion-list class="contactlist trackOnMap" *ngIf="cardType == 'trackOnMap'">
+    <ion-item-sliding class="mapcardRecord" *ngFor="let card of carddata; index as i">
+      <ion-item class="cardlist">
+        <ion-row class="ion-align-items-center w-100">
+          <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding" (click)="modaldetailCardButton(column,card)">
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
+            <div class="ion-text-end status_button" *ngIf="column.type == 'button' && getValueForGrid(column,card)">
+              <div *ngIf="card.quotation_status">
+                <ion-button [ngClass]="card.quotation_status ? 'status_' + card.quotation_status : 'default-status'" *ngIf="column.type == 'button' && card.quotation_status" [innerHTML]="getValueForGrid(column,card)">
+                </ion-button>
+              </div>
+              <div *ngIf="card.order_status">
+                <ion-button [ngClass]="card.order_status ? 'status_' + card.order_status : 'default-status'" *ngIf="column.type == 'button' && card.order_status" [innerHTML]="getValueForGrid(column,card)">
+                </ion-button>
+              </div>
+              <div *ngIf="card.invoicing_status">
+                <ion-button [ngClass]="card.invoicing_status ? 'status_' + card.invoicing_status : 'default-status'" *ngIf="column.type == 'button' && card.invoicing_status" [innerHTML]="getValueForGrid(column,card)">
+                </ion-button>
+              </div>
+              <div *ngIf="card.status && !card.quotation_status && !card.order_status && !card.invoicing_status">
+                <ion-button [ngClass]="card.status ? 'status_' + card.status : 'default-status'" *ngIf="column.type == 'button' && card.status" [innerHTML]="getValueForGrid(column,card)">
+                </ion-button>
+              </div>
+              <div *ngIf="column.class_name">
+                <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'  && !card.status && !card.quotation_status && !card.order_status && !card.invoicing_status" [innerHTML]="getValueForGrid(column,card)" size="small" class="globalBtn"></ion-button>
+              </div>
+            </div>
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'file'" [innerHTML]="getValueForGrid(column,card)"></p>
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'time'" [innerHTML]="getValueForGrid(column,card)"></p>
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'boolean'" [innerHTML]="getValueForGrid(column,card)"></p>
+            <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'icon'" [innerHTML]="getValueForGrid(column,card)"></p>
+          </ion-col>
+        </ion-row>
+      </ion-item>
+      <ion-row>
+        <ion-col>
+        <ion-button class="call" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon>
+        </ion-button>
+        </ion-col>
+        <ion-col *ngFor="let btn of gridButtons">
+        <ion-button color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" (click)="gridButtonAction(card,i,btn)">
+          <span [ngClass]=" " class="material-symbols-outlined" >{{btn.field_class}}</span>
+          <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+        </ion-button>
+        </ion-col>
+      </ion-row>
+      <ion-item-options side="start" *ngIf="addCallingFeature || (gridButtons && gridButtons.length > 0)">
+        <ion-item-option *ngIf="addCallingFeature" class="call" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
+        <div class="ion-display-flex" *ngFor="let btn of gridButtons">
+          <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
+            <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
+            <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+          </ion-item-option>
+        </div>
+      </ion-item-options>
+      <ion-item-options side="end" *ngIf="gridButtons || addNewEnabled">
+        <div class="ion-display-flex" *ngFor="let btn of gridButtons">
+          <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : btn.onclick['action_name'] == 'google_tracking_start' ? 'success' : ''}}" [ngClass]="!btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="!btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
+            <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
+            <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
+          </ion-item-option>
+        </div>
+        <ion-item-option *ngIf="addNewEnabled && gridButtons.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>  
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list> -->
 
-  <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" *ngIf="addNewEnabled">
+  <ion-list class="commonCss" *ngIf="cardType == 'trackingStartOrEnd'">
+    <ion-card class="cardBgColor trackingStartOrEndCard" *ngFor="let card of carddata; index as i">
+      <ion-card-content>
+        <!-- <ion-item class="" lines="none"> -->
+          <ion-row class="w-100">
+            <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding" (click)="modaldetailCardButton(column,card)" [ngClass]="getValueForGrid(column,card) == undefined ? 'ion-hide' : 'ion-display'">
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <div class="ion-text-end status_button button-size" *ngIf="column.type == 'button' && getValueForGrid(column,card)">
+                <div *ngIf="card.quotation_status">
+                  <ion-button [ngClass]="card.quotation_status ? 'status_' + card.quotation_status : 'default-status'" *ngIf="column.type == 'button' && card.quotation_status" [innerHTML]="getValueForGrid(column,card)">
+                  </ion-button>
+                </div>
+                <div *ngIf="card.order_status">
+                  <ion-button [ngClass]="card.order_status ? 'status_' + card.order_status : 'default-status'" *ngIf="column.type == 'button' && card.order_status" [innerHTML]="getValueForGrid(column,card)">
+                  </ion-button>
+                </div>
+                <div *ngIf="card.invoicing_status">
+                  <ion-button [ngClass]="card.invoicing_status ? 'status_' + card.invoicing_status : 'default-status'" *ngIf="column.type == 'button' && card.invoicing_status" [innerHTML]="getValueForGrid(column,card)">
+                  </ion-button>
+                </div>
+                <div *ngIf="card.status && !card.quotation_status && !card.order_status && !card.invoicing_status">
+                  <ion-button [ngClass]="card.status ? 'status_' + card.status : 'default-status'" *ngIf="column.type == 'button' && card.status" [innerHTML]="getValueForGrid(column,card)">
+                  </ion-button>
+                </div>
+                <div *ngIf="column.class_name">
+                  <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'  && !card.status && !card.quotation_status && !card.order_status && !card.invoicing_status" [innerHTML]="getValueForGrid(column,card)" class="globalBtn"></ion-button>
+                </div>
+              </div>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'file'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'time'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'boolean'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'icon'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <!-- <div class="ion-text-end status_button" *ngIf="column.type == 'apibutton'">
+                <ion-button [ngClass]="column.class_name ? 'status_' + column.class_name : 'default-status'" *ngIf="column.type == 'apibutton'" [innerHTML]="getValueForGrid(column,card)" (click)="onClickApiButton(column.apiName,card)">
+                </ion-button>
+              </div> -->
+            </ion-col>
+          </ion-row>
+        <!-- </ion-item> -->
+      </ion-card-content>
+      <ion-grid *ngIf="gridButtons && gridButtons.length > 0">
+        <ion-row>
+          <ion-col class="" *ngFor="let btn of gridButtons">
+            <ion-button expand="{{gridButtons.length == 1 ? 'block' : ''}}" shape="" fill="outline" size="small" color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" (click)="gridButtonAction(card,i,btn)">
+              <!-- <ion-icon slot="start" name="star"></ion-icon> -->
+              <span [ngClass]=" "  class="material-symbols-outlined" >{{btn.field_class}}</span>
+              {{btn.label}}
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>     
+        
+    </ion-card>
+  </ion-list>
+  <!-- Types of Cards End -->
+  <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" *ngIf="addNewEnabled && form && form['default']">
     <ion-fab-button (click)="addNewForm()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>
   </ion-fab>
 
@@ -195,7 +341,7 @@
     <ion-img src="../../../assets/nodatafound.png"></ion-img>
   </div>
 
-  <ion-infinite-scroll threshold="5%" (ionInfinite)="loadData($event)" *ngIf="loadMoreData">
+  <ion-infinite-scroll threshold="5%" (ionInfinite)="loadData($event)" *ngIf="loadMoreData && this.carddata && this.carddata.length > 0">
     <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Hang on loading data...">      
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
@@ -208,6 +354,5 @@
       refreshingText="Refreshing...">
     </ion-refresher-content>
   </ion-refresher>
-  <!-- <app-gmap-view (mapOutPutData)="mapOutPutData($event)"></app-gmap-view> -->
 
 </ion-content>

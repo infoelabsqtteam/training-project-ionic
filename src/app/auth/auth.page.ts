@@ -1,14 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
-import { LoadingController, AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular';
 import { Observable } from 'rxjs';
 
 
 import * as appConstants from '../shared/app.constants';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { logging } from 'selenium-webdriver';
-import { CoreUtilityService,StorageService,EndPoint, AuthService, AuthResponseData } from '@core/ionic-core';
+import { AuthResponseData, NotificationService } from '@core/ionic-core';
 
 
 
@@ -29,13 +27,9 @@ export class AuthPage implements OnInit {
   otpSent: boolean = false;
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
-    private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
     private http: HttpClient,
-    private storageService: StorageService,
-    private coreUtilService:CoreUtilityService
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit() { }
@@ -47,16 +41,14 @@ export class AuthPage implements OnInit {
       if (resp.hasOwnProperty("Status") && resp['Status'] == "Success") {
         this.otpSent = true;
         this.loginObj.sessionId = resp['Details'];
-        this.storageService.presentToast('Otp Sent !!');
+        this.notificationService.presentToastOnBottom('Otp Sent !!', 'succeess');
       } else {
-
       }
     },
       (err: HttpErrorResponse) => {
         console.log(err.error);
       }
     )
-
   }
   verifyOtp() {
     const api = appConstants.verifyOtpApi + this.loginObj.sessionId + "/" + this.loginObj.otp_input;
@@ -64,10 +56,9 @@ export class AuthPage implements OnInit {
       if (resp.hasOwnProperty("Status") && resp['Status'] == "Success") {
         this.otpSent = true;
         this.loginObj.sessionId = resp['Details'];
-        this.storageService.presentToast('Otp Matched !!');
+        this.notificationService.presentToastOnBottom('Otp Matched !!', 'succeess');
         const obj = JSON.stringify({ authenticated: true, mobileNo: this.loginObj.mobileNo });
-        this.storageService.setObject('userData', obj);
-        this.coreUtilService.gotoPage('/home');
+        // this.storageService.setObject('userData', obj);
       } else {
 
       }
@@ -82,42 +73,10 @@ export class AuthPage implements OnInit {
 
   authenticate(email: string, password: string, name: string, mobile: string) {
     this.isLoading = true;
-    
-    // this.loadingCtrl
-    //   .create({ keyboardClose: true, message: 'Logging in...' })
-    //   .then(loadingEl => {
-    //     loadingEl.present();
          let authObs: Observable<AuthResponseData>;
     if (this.isLogin) {
-      //  authObs = this.authService.login(email, password);
-       this.authService.login(email, password,'/home');
      } else {
-      //  authObs = this.authService.signup(email, password,name,mobile);
-      //  this.authService.signup(email, password, name, mobile);
      }
-
-      //   authObs.subscribe(
-      //     resData => {
-      //       console.log(resData);
-      //       this.isLoading = false;
-      //       loadingEl.dismiss();
-      //       this.router.navigateByUrl('/places/tabs/discover');
-      //     },
-      //     errRes => {
-      //       loadingEl.dismiss();
-      //       const code = errRes.error.error.message;
-      //       let message = 'Could not sign you up, please try again.';
-      //       if (code === 'EMAIL_EXISTS') {
-      //         message = 'This email address exists already!';
-      //       } else if (code === 'EMAIL_NOT_FOUND') {
-      //         message = 'E-Mail address could not be found.';
-      //       } else if (code === 'INVALID_PASSWORD') {
-      //         message = 'This password is not correct.';
-      //       }
-      //       this.showAlert(message);
-      //     }
-      //   );
-      // });
   }
 
   onSwitchAuthMode() {
@@ -137,7 +96,7 @@ export class AuthPage implements OnInit {
      this.isResetPass = false;
      let email = form.value.email;
    
-       this.authService.forgetPass(email);   
+      //  this.authService.forgetPass(email);   
   }
   onSavePassword(form: NgForm){
     let otp = form.value.veriCode;

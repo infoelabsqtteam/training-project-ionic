@@ -1,15 +1,17 @@
 import { Component, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { AlertController, Platform } from '@ionic/angular';
+import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
-import { AuthService, StorageService, StorageTokenStatus,App_googleService, RestService, ApiService, DataShareService, EnvService, NotificationService, CommonDataShareService, CoreUtilityService, CoreFunctionService } from '@core/ionic-core';
+import { AppStorageService, App_googleService, NotificationService } from '@core/ionic-core';
 import { StatusBar } from '@ionic-native/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
-import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
 import { AndroidpermissionsService } from './service/androidpermissions.service';
 import { Title } from '@angular/platform-browser';
+import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService, MenuOrModuleCommonService, EnvService, CoreFunctionService, StorageTokenStatus } from '@core/web-core';
+import { App } from '@capacitor/app';
+import { Share } from '@capacitor/share';
 
  
 @Component({ 
@@ -18,7 +20,6 @@ import { Title } from '@angular/platform-browser';
 })
 export class AppComponent implements OnInit, OnDestroy {
   private authSub: Subscription;
-  cardListSubscription:any;
   userData: any;
   userInfo: any={};
   web_site:string='';
@@ -46,69 +47,95 @@ export class AppComponent implements OnInit, OnDestroy {
   disconnectSubscription: any;
   connectSubscription: any;
   networkAlert:any;
-  gridDataSubscription:any;
+  gridDataSubscription: Subscription;
   appCardMasterDataSize:number;
 
   @Output() collection_name = new EventEmitter<string>();
 
   selectedIndex= -1;
-  themeSettingSubscription:any;
-  applicationSettingSubscription:any;
+  themeSettingSubscription: Subscription;
+  applicationSettingSubscription: Subscription;
   favIcon: HTMLLinkElement = document.querySelector('#favIcon');
   themeName:any = '';
-  clinetNameSubscription:any;
+  clinetNameSubscription: Subscription;
+  loginAndLogoutResponce: Subscription;
 
   constructor(
     private platform: Platform,
     private authService: AuthService,
-    private storageService:StorageService,
+    private storageService: StorageService,
     private router: Router,
     private statusBar: StatusBar,
     private dataShareServiceService:DataShareServiceService,
     private app_googleService: App_googleService,
-    private nativeGeocoder:NativeGeocoder,
     private androidpermissionsService: AndroidpermissionsService,
-    private alertController: AlertController,
-    private restService: RestService,
     private apiService: ApiService,
     private dataShareService: DataShareService,
-    private envService: EnvService,
     private notificationService: NotificationService,
-    private commonDataShareService: CommonDataShareService,
-    private coreUtilityService: CoreUtilityService,
+    private commonAppDataShareService: CommonAppDataShareService,
     private titleService:Title,
-    private coreFunctionService: CoreFunctionService
+    private coreFunctionService: CoreFunctionService,
+    private commonFunctionService: CommonFunctionService,
+    private authDataShareService: AuthDataShareService,
+    private menuOrModuleCommonService: MenuOrModuleCommonService,    
+    private envService: EnvService,
+    private appStorageService: AppStorageService
 
   ) {
     
+    this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
+    
     this.initializeApp();
-
-    this.clinetNameSubscription = this.dataShareService.setClientName.subscribe(
-        data =>{
-          if(data){
-            this.appSettings();
-          }
-        });
+    
     // this.web_site = appConstants.siteName;
-    this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
-    this.app_Version  = this.envService.getAppVersion();
+    let newdate = new Date().getFullYear()
+    this.app_Version  = newdate +"@" + this.envService.getAppName();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
       if(data && data.data && data.data.length > 0){
         // this.cardList = data.data;
-        this.cardList = this.coreUtilityService.getUserAutherisedCards(data.data);
+        this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(data.data);
       }else{
         console.log("Something went wrong, please try again later");
       }
     });
+    if(this.dataShareService.themeSetting != undefined){
+      this.themeSettingSubscription = this.dataShareService.themeSetting.subscribe(
+        data =>{
+          const themeSetting = data;
+          if(themeSetting && themeSetting.length > 0) {
+            const settingObj = themeSetting[0];
+            this.storageService.setThemeSetting(settingObj);
+            this.envService.setThemeSetting(settingObj);
+            this.dataShareService.resetThemeSetting([]);            
+          }
+        })
+    }
+    if(this.dataShareService.applicationSetting != undefined){
+      this.applicationSettingSubscription = this.dataShareService.applicationSetting.subscribe(
+        data =>{
+          const applicationSetting = data;
+          if(applicationSetting && applicationSetting.length > 0) {
+            const settingObj = applicationSetting[0];
+            this.storageService.setApplicationSetting(settingObj);
+            this.envService.setApplicationSetting();
+            this.loadPage();
+            if(this.coreFunctionService.isNotBlank(this.storageService.getClientName()) && !this.checkIdTokenStatus()){
+              this.authService.redirectToSignPage();
+            }
+            this.dataShareService.subscribeTemeSetting("setting");
+            this.dataShareService.resetApplicationSetting([]);
+          }
+        })
+    } 
     
-    this.cardListSubscription = this.dataShareService.settingData.subscribe(data =>{      
+    this.loginAndLogoutResponce = this.authDataShareService.settingData.subscribe(data =>{      
       if(data == "logged_in"){
-        this.userInfo = this.storageService.getUserInfo();
+        this.userInfo = this.storageService.GetUserInfo();
         this.showSidebarMenu = true;
       }else if(data == "logged_out"){
-        this.storageService.removeCapKeyFromStorage('authData');
         this.isClientCodeExist();
         this.resetVariables();
+        this.notificationService.presentToastOnTop('Logout successful',"secondary");
       }    
     });
     
@@ -118,6 +145,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   initializeApp() {
     this.platform.ready().then(() => {
+      let platForm = Capacitor.getPlatform();
+      // this.storageService.setPlatForm(platForm);
       window.addEventListener('offline', () => {
         this.androidpermissionsService.internetExceptionError();
       });
@@ -149,8 +178,8 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
-    if (this.cardListSubscription) {
-      this.cardListSubscription.unsubscribe();
+    if (this.loginAndLogoutResponce) {
+      this.loginAndLogoutResponce.unsubscribe();
     }
   }
 
@@ -171,90 +200,37 @@ export class AppComponent implements OnInit, OnDestroy {
           this.redirectToHomePageWithStorage();
         }
       }      
-   })
-    
-    // if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-    //   // this.getGridData();
-    //   this.authService.getUserPermission(false,'/home');
-    //   this.router.navigateByUrl('/home');  
-    // } 
-    // else{
-    //   console.log("Token Not active");
-    //   this.router.navigateByUrl('/auth/signine');
-    // }
-    
-    // this.authService._user_info.subscribe(resp => {
-    //   if(resp!== null){
-    //     this.dataShareServiceService.setUserDetails(resp);
-    //     this.userInfo = this.dataShareServiceService.getUserDetails();
-    //   }
-    //   else{
-    //     this.userInfo = {};
-    //   }
-    // })
+    })
   }
   isClientCodeExist(){
       const clientCode = this.storageService.getClientName();
       if(this.coreFunctionService.isNotBlank(clientCode)){
-        this.authService.redirectToSignInPage();
+        // this.authService.appLogout();
       }else{            
-        this.authService.navigateByUrl("auth/verifyCompany");
+        this.router.navigateByUrl("/checkcompany");
       }
   }
-  async appSettings(){
-     this.restService.getApplicationAllSettings();
-     await this.themeandApplicationSetting();
-  }
-  async themeandApplicationSetting(){
-    if(this.dataShareService.themeSetting != undefined){
-      this.themeSettingSubscription = this.dataShareService.themeSetting.subscribe(
-        data =>{
-          const themeSetting = data;
-          if(themeSetting && themeSetting.length > 0) {
-            const settingObj = themeSetting[0];
-            this.storageService.setThemeSetting(settingObj);
-            this.envService.setThemeSetting(settingObj);
-            this.dataShareService.resetThemeSetting([]);            
-          }
-        })
-    }
-    if(this.dataShareService.applicationSetting != undefined){
-      this.applicationSettingSubscription = this.dataShareService.applicationSetting.subscribe(
-        data =>{
-          const applicationSetting = data;
-          if(applicationSetting && applicationSetting.length > 0) {
-            const settingObj = applicationSetting[0];
-            this.storageService.setApplicationSetting(settingObj);
-            this.envService.setApplicationSetting();
-            this.loadPage();
-            this.dataShareService.subscribeTemeSetting("setting");
-            this.dataShareService.resetApplicationSetting([]);
-          }
-        })
-    }
-  }
   redirectToHomePage(){
-    //this.storageService.removeDataFormStorage();
     this.redirectToHomePageWithStorage();
   }
-  async redirectToHomePageWithStorage(){
-    let checkComapanyCode:any = await this.storageService.getClientName();
+  redirectToHomePageWithStorage(){
+    let checkComapanyCode:any = this.storageService.getClientName();
     if(this.coreFunctionService.isNotBlank(checkComapanyCode)){
       if(!this.checkApplicationSetting()){
-        this.restService.getApplicationAllSettings();
+        this.commonFunctionService.getApplicationAllSettings();
       }else{
         this.loadPage();
       }
       if(this.checkIdTokenStatus()){
-        this.authService.getUserPermission(false,'/home');
-        this.router.navigateByUrl('/home');  
-        // this.authApiService.redirectionWithMenuType();
+        this.showSidebarMenu = true;
+        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(),'/home');
       }else{
-        this.authService.redirectToSignInPage();
-      }      
+        this.authService.redirectToSignPage();
+        this.notificationService.presentToastOnBottom("Session Expired, Please login again.","info")
+      }
     }else{
-        this.storageService.removeDataFormStorage();
-        this.authService.navigateByUrl("auth/verifyCompany");
+      this.storageService.removeDataFormStorage("all");
+      this.router.navigate(['/checkcompany']);
     }
   }
   checkIdTokenStatus(){
@@ -270,51 +246,21 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     return tokenStatus;
   }
-  
-  async getCurrentLocation(){
-    try{
-      const coordinates = await this.app_googleService.getUserLocation();
-      this.coords = coordinates;
-      console.log("coords:", this.coords);
-      this.latitude = this.coords.lat;
-      this.dataShareServiceService.setCurrentLatitude(this.latitude);
-      this.longitude = this.coords.lng;
-      this.dataShareServiceService.setCurrentLongitude(this.longitude);
 
-      let options: NativeGeocoderOptions = {
-        useLocale: true,
-        maxResults: 1
-      };
-        this.nativeGeocoder.reverseGeocode(this.latitude, this.longitude, options)
-      .then((result: NativeGeocoderResult[]) =>{
-         this.result = (JSON.stringify(result[0]));
-         console.log(this.result);
-         
-      })
-      .catch((error: any) => console.log(error));
-
-    }catch(e) {
-      // this.notificationService.showAlert("GPS is unable to locate you.", 'Enable GPS',['OK']);
-      console.log('Error getting location: ', e);
-    }
-  }
-
-  forwardLocation(inputaddress){
-    let options: NativeGeocoderOptions = {
-      useLocale: false,
-      maxResults: 1
-    };
-    this.nativeGeocoder.forwardGeocode(inputaddress, options)
-      .then((result: NativeGeocoderResult[]) => console.log('The coordinates are latitude=' + result[0].latitude + ' and longitude=' + result[0].longitude  ))
-      .catch((error: any) => console.log(error));
-  }
+  // forwardLocation(inputaddress){
+  //   let options: NativeGeocoderOptions = {
+  //     useLocale: false,
+  //     maxResults: 1
+  //   };
+  //   this.nativeGeocoder.forwardGeocode(inputaddress, options)
+  //     .then((result: NativeGeocoderResult[]) => console.log('The coordinates are latitude=' + result[0].latitude + ' and longitude=' + result[0].longitude  ))
+  //     .catch((error: any) => console.log(error));
+  // }
   
   
-  ionViewWillEnter() {
-    //this.commonFunctionService.getCurrentAddress();
-  }
+  ionViewWillEnter() {}
   onLogout() {
-    this.authService.logout();
+    this.authService.Logout('');
   }
   
   resetVariables(){
@@ -328,7 +274,7 @@ export class AppComponent implements OnInit, OnDestroy {
       criteriaList = criteria;
     }
     const params = 'card_master';
-    let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
+    let data = this.commonFunctionService.getPaylodWithCriteria(params,'',criteria,{});
     data['pageNo'] = 0;
     data['pageSize'] = this.appCardMasterDataSize;
     let payload = {
@@ -339,14 +285,13 @@ export class AppComponent implements OnInit, OnDestroy {
   } 
 
   showCardTemplate(card:any, index:number){    
-    const moduleList = this.commonDataShareService.getModuleList();
-    const cardclickedindex = this.coreUtilityService.getIndexInArrayById(moduleList,card._id,"_id"); 
-    this.commonDataShareService.setModuleIndex(cardclickedindex);
+    const moduleList = this.commonAppDataShareService.getModuleList();
+    const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
+    this.commonAppDataShareService.setModuleIndex(cardclickedindex);
     const selectedcard = moduleList[cardclickedindex];
     this.router.navigate(['card-view']);
     this.dataShareServiceService.setcardData(selectedcard);
   }
-
   comingSoon() {
     this.notificationService.presentToastOnBottom('Comming Soon...',"primary");
   }
@@ -360,12 +305,27 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     return exists;
   }
-
   loadPage(){
     this.favIcon.href = this.storageService.getLogoPath() + "favicon.ico";
     this.titleService.setTitle(this.storageService.getPageTitle());
     this.themeName = this.storageService.getPageThmem();
-    this.authService.navigateByUrl('auth/signine');
+  }
+  async shareApp(){
+    let appInfo:any = {};
+    if(Capacitor.isNativePlatform()){
+      appInfo = await App.getInfo();
+    }else{
+      appInfo = {
+        'name': this.storageService.getClientCodeEnviorment().appName,
+        'id' : this.storageService.getClientCodeEnviorment().appId
+      }
+    }
+    await Share.share({
+      title: appInfo.name,
+      text: 'E-Labs Mobile application is perfect companion for your next generation E-Labs LIMS.',
+      url: 'https://play.google.com/store/apps/details?id='+ appInfo.id,
+      dialogTitle: 'Share with friends',
+    });
   }
 
 }

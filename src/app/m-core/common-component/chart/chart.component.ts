@@ -1,7 +1,7 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { ApiService, DataShareService, RestService } from '@core/ionic-core';
+import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
+import { ApiService, CommonFunctionService, DataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-chart',
@@ -41,11 +41,10 @@ export class ChartComponent implements OnInit{
   headertitle:any;
 
   constructor(
-    private restService: RestService,
     private apiService:ApiService,
     private dataShareService:DataShareService,
-    private modalController: ModalController
-
+    private modalController: ModalController,
+    private commonFunctionService: CommonFunctionService
   ) {
     this.headertitle = "Charts";
     this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
@@ -54,9 +53,7 @@ export class ChartComponent implements OnInit{
       }
     })
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
-      if(data && data !=''){
-        this.setStaticData(data);
-      }
+      this.setStaticData(data);
     })
     this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
       if(data && data !=''){
@@ -67,20 +64,6 @@ export class ChartComponent implements OnInit{
 
    ionViewWillEnter(){}
    ionViewDidEnter(){}
-
-  //  onLoadSubscribe(){
-  //   this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
-  //     this.setGridData(data);
-  //     console.log("setGridData: ",data);
-  //   })
-  //   this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
-  //     this.setStaticData(data);
-  //     console.log("setStaticData: ",data);
-  //   })
-  //   this.dashletDataSubscription = this.dataShareService.dashletData.subscribe(data =>{
-  //     this.setDashLetData(data);
-  //   }) 
-  //  }
   
    setChartData(chartData:any){
     if (chartData) {
@@ -184,21 +167,23 @@ export class ChartComponent implements OnInit{
   setStaticData(staticData?:any){
     if (staticData) {
       this.staticData = staticData;
-      Object.keys(this.staticData).forEach(key => {        
-        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+      Object.keys(this.staticData).forEach(key => {
+        if(this.staticData[key]){         
+          this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+        }
       }) 
     }
   }
 
   getDataForGrid(Criteria?:any){    
-    const data = this.restService.getPaylodWithCriteria('dashlet_master','',Criteria,'');
+    const data = this.commonFunctionService.getPaylodWithCriteria('dashlet_master','',Criteria,'');
     data['pageNo'] = this.pageNumber - 1;
     data['pageSize'] = this.itemNumOfGrid; 
     const getFilterData = {
       data: data,
       path: null
     }
-    this.apiService.getDashletMaster(getFilterData);
+    this.apiService.getDashletMster(getFilterData);
   }
   getPage(page: number,criteria?:any) {
     let Criteria:any = [];
@@ -210,7 +195,7 @@ export class ChartComponent implements OnInit{
     this.checkGetDashletData = true;
   }
   getChartList(){
-    const payload = this.restService.getPaylodWithCriteria('dashlet_master','chart_list',[],'');
+    const payload = this.commonFunctionService.getPaylodWithCriteria('dashlet_master','chart_list',[],'');
     this.apiService.getStatiData([payload]);
   }
 

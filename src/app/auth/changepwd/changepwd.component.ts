@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, EnvService, NotificationService, StorageService } from '@core/ionic-core';
+import { NotificationService } from '@core/ionic-core';
+import { EnvService, AuthService, AuthDataShareService } from '@core/web-core';
 // import { ErrorMessageComponent } from 'src/app/component/error-message/error-message.component';
 
 @Component({
@@ -33,21 +34,35 @@ export class ChangepwdComponent implements OnInit {
   newpwd: any;
   passwordNotMatch: boolean;
   userInfo :any;
+  changepwdSubscribe:any;
 
   constructor(
     private router: Router,
-    private storageService:StorageService,
     private authService: AuthService,
     private notificationService:NotificationService,
     private formBuilder:FormBuilder,
-    private envService:EnvService,
-    // private errorMessage:ErrorMessageComponent
+    private envService: EnvService,
+    private authDataShareService: AuthDataShareService
   ) { 
     if(this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true;
     }else{
      this.VerifyType = false;
     }
+    this.changepwdSubscribe = this.authDataShareService.createPwd.subscribe(data =>{
+      let color = 'danger';
+      let msg = data.msg;
+      if(data && data.status == "success"){
+        color = 'success';
+        if(data.msg === "Your Password has been updates successfully"){
+          msg = 'Password changed successfully, please relogin';
+          this.authService.Logout("");
+        }
+      }
+      if(msg != ''){
+        this.notificationService.presentToastOnBottom(msg,color);
+      }
+    })
   }
 
   ngOnInit() {
@@ -93,9 +108,8 @@ export class ChangepwdComponent implements OnInit {
      const oldpwd = this.changepwdform.value.oldpwd;
      const newpwd = this.changepwdform.value.newpwd;
      const confirmpwd= this.changepwdform.value.confpwd;
-    if(newpwd==confirmpwd)
-    { 
-      const payload =  {currentPassword: oldpwd, newPassword: newpwd, confirmNewPassword: confirmpwd };
+    if(newpwd==confirmpwd){ 
+      const payload =  {currentPassword:oldpwd, newPassword:newpwd, confirmNewPassword:confirmpwd };
        this.authService.changePassword(payload);
     }
     else{
@@ -130,25 +144,25 @@ export class ChangepwdComponent implements OnInit {
   
 
   autoFillUserInfo(){
-    this.authService._user_info.subscribe(resp => {
-      this.userInfo = resp;      
-      this.username = this.userInfo.mobile1;
-      if(this.username != undefined && this.username != ''){
-        this.fForm.get('userId').setValue(this.username);
-      } 
-    })
+    // this.authService._user_info.subscribe(resp => {
+    //   this.userInfo = resp;      
+    //   this.username = this.userInfo.mobile1;
+    //   if(this.username != undefined && this.username != ''){
+    //     this.fForm.get('userId').setValue(this.username);
+    //   } 
+    // })
   }
 
   onResetPwd() {
     if (this.fForm.invalid) {
       return;
     }
-    this.authService.forgetPass(this.username);
+    // this.authService.forgetPass(this.username);
     this.resetPwd = false;
   }
 
   resendCode() {
-    this.authService.forgetPass(this.username);
+    // this.authService.forgetPass(this.username);
   }
   
   onVerifyPwd() {
@@ -158,7 +172,7 @@ export class ChangepwdComponent implements OnInit {
     const code = this.vForm.value.verifyCode;
     const password = this.vForm.value.password;
     const payload = { userId: this.username, code: code, newPassword: password };
-    this.authService.saveNewPassword(payload);   
+    // this.authService.saveNewPassword(payload);   
   }
   
   get f() {return this.fForm.controls;}

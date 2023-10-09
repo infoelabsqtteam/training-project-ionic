@@ -5,7 +5,9 @@
 </ion-header> -->
 <ion-content class="loginpage">
   <div class="logintitle"><h4>Verify Mobile Number</h4></div>
-  <div class="loginlogo"> <img src="../../../assets/medicea_img/signinlogo.jpeg"></div>
+  <div class="loginlogo">
+    <ion-img src="{{logoPath}}" alt="{{imageTitle}}" (ionError)="getLogoPath()"></ion-img>
+  </div>
   <div class="login">
       <form [formGroup]="OtpVarify">
         <div class="formgroup">

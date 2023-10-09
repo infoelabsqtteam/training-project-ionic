@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { CommonDataShareService, CoreUtilityService, DataShareService, ApiService, RestService, NotificationService } from '@core/ionic-core';
+import { NotificationService } from '@core/ionic-core';
+import { ApiService, CommonFunctionService } from '@core/web-core';
 import { ModalController } from '@ionic/angular';
 
 
@@ -31,10 +32,9 @@ export class ModalComponent implements OnInit {
 
   constructor(
     private formBuilder: FormBuilder,
-    private restService:RestService,
     private apiService:ApiService,
-    private coreUtilityService: CoreUtilityService,
     private notificationService: NotificationService,
+    private commonFunctionService: CommonFunctionService,
     private modalController: ModalController
   ) {
   }
@@ -81,7 +81,7 @@ export class ModalComponent implements OnInit {
             element['adkey'] = {'totalRows':this.data.length};
           });          
         }
-        const staticModalGroup = this.restService.commanApiPayload(this.gridColumns,[],[]);
+        const staticModalGroup = this.commonFunctionService.commanApiPayload(this.gridColumns,[],[]);
         if (staticModalGroup.length > 0) {
           // this.store.dispatch(
           //   new CusTemGenAction.GetStaticData(staticModalGroup)
@@ -168,10 +168,10 @@ export class ModalComponent implements OnInit {
   }
 
   getddnDisplayVal(val) {
-    return this.coreUtilityService.getddnDisplayVal(val);    
+    return this.commonFunctionService.getddnDisplayVal(val);    
   }
   getValueForGrid(field,object){
-    return this.coreUtilityService.getValueForGrid(field,object);
+    return this.commonFunctionService.getValueForGrid(field,object);
   }
   getGridColumnWidth(column){
     if(column.width){
@@ -307,7 +307,7 @@ export class ModalComponent implements OnInit {
       
     }else{
       const staticModal = []
-      const staticModalPayload = this.restService.getPaylodWithCriteria(params, callback, criteria, object);
+      const staticModalPayload = this.commonFunctionService.getPaylodWithCriteria(params, callback, criteria, object);
       staticModalPayload['adkeys'] = {'index':i};
       staticModal.push(staticModalPayload)      
       if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){

@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { LoadingController, AlertController, Platform } from '@ionic/angular';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { AuthService, StorageService,LoaderService, CoreUtilityService, NotificationService, EnvService } from '@core/ionic-core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { DataShareServiceService } from 'src/app/service/data-share-service.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { NotificationService } from '@core/ionic-core';
+import { AuthDataShareService, AuthService, EnvService, StorageService } from '@core/web-core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-forget-password',
@@ -12,6 +10,7 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
   styleUrls: ['./forget-password.component.scss'],
 })
 export class ForgetPasswordComponent implements OnInit {
+
   fForm: FormGroup;
   confirmpassword = false;
   newpassword = false;
@@ -20,44 +19,76 @@ export class ForgetPasswordComponent implements OnInit {
   resetPwd: boolean = true;
   newpwd: any;
   passwordNotMatch: boolean;
-
   VerifyType : boolean = false;
+  forGotSubscription:Subscription;
+  resetPassSubscription:Subscription;
+  title = "";
+  template:string = "temp1";
+  logoPath = '';
+  forgetPasswordImage = 'assets/img/icons/forget-password.svg';
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
-    private loadingCtrl: LoadingController,
-    private loaderService: LoaderService,
     private formBuilder: FormBuilder,
-    private alertCtrl: AlertController,
-    private http: HttpClient,
-    private storageService: StorageService,
-    private coreUtilService: CoreUtilityService,
-    private notificationService:NotificationService,
-    private platform: Platform,
     private envService:EnvService,
-    private dataShareService: DataShareServiceService,
+    private authService: AuthService,
+    private authDataShareService: AuthDataShareService,
+    private storageService: StorageService,
+    private notificationService: NotificationService
   ) { 
     if(this.envService.getVerifyType() == "mobile"){
-      this.VerifyType = true;
+      this.VerifyType = true; 
     }else{
      this.VerifyType = false;
-    }
-    // this.appNameSubscription = this.dataShareService.appName.subscribe(data =>{
-    //   this.setAppName(data);
-    // })
-    // this.pageloded();
+    }    
+    this.forGotSubscription = this.authDataShareService.forgot.subscribe(data =>{
+      let color = 'danger';
+      let msg = data.msg;
+      if(data && data.status == "success"){
+        if(data.msg === "Reset password is successful, notification with a verification code has been sent to your registered user id"){
+          msg = 'Verification code has been sent to your registered UserId';
+        }else{ 
+          msg = data.msg;
+        }
+        color = 'success';
+        this.resetPwd = false;
+      }else{
+        if(data && data.status == "error" && msg == "UserId Entered is not correct"){
+          msg = "Invalid UserId, please enter registered UserId"
+        }
+      }
+      if(msg != ''){
+        this.notificationService.presentToastOnBottom(msg,color);
+      }
+    })
+    this.resetPassSubscription = this.authDataShareService.resetPass.subscribe(data =>{
+      let color = 'danger';
+      let msg = data.msg;
+      if(data && data.msg != '' && data.status == "success") {
+        color = 'success';
+        this.gobackandreset();
+        this.fForm.reset();
+      }
+      if(msg != ''){
+        this.notificationService.presentToastOnBottom(msg,color);
+      }
+      if(data && data.status == 'success') {
+        this.authService.redirectToSignPage();
+      }
+    })
   }
 
   ngOnInit() {
     this.initForm();
-    // this.pageloded();
+    this.pageloded();
   }
-  // setAppName(data){
-  //   if (data.appName && data.appName.hasOwnProperty("appName")) {
-  //     this.appName = data.appName["appName"]
-  //   }
-  // }
+  ngOnDestroy(){
+    if(this.forGotSubscription){
+      this.forGotSubscription.unsubscribe();
+    }
+    if(this.resetPassSubscription){
+      this.resetPassSubscription.unsubscribe();
+    }
+  }
 
   initForm() {
     this.username = "";
@@ -83,12 +114,11 @@ export class ForgetPasswordComponent implements OnInit {
       return;
     }
     this.username = this.fForm.value.userId;
-    this.authService.forgetPass(this.username);
-    this.resetPwd = false;
+    this.authService.TryForgotPassword(this.username);
   }
 
   resendCode() {
-    this.authService.forgetPass(this.username);
+    this.authService.TryForgotPassword(this.username);
   }
   
   onVerifyPwd() {
@@ -98,15 +128,15 @@ export class ForgetPasswordComponent implements OnInit {
     const code = this.vForm.value.verifyCode;
     const password = this.vForm.value.password;
     const payload = { userId: this.username, code: code, newPassword: password };
-    this.authService.saveNewPassword(payload);   
+    this.authService.SaveNewPassword(payload);
   }
   get f() {return this.fForm.controls;}
   get r() {return this.vForm.controls;}
 
   pageloded(){
-    // this.logoPath = this.envService.getLogoPath() + "logo-signin.png";
-    // this.template = this.envService.getTemplateName();
-    // this.title = this.envService.getHostKeyValue('title');
+    this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
+    this.template = this.storageService.getTemplateName();
+    this.title = this.envService.getHostKeyValue('title');
   }
 
   shownewpass() {

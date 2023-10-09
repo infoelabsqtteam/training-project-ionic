@@ -1,10 +1,11 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
-import { AuthService, DataShareService, EnvService, LoaderService, NotificationService, StorageService } from '@core/ionic-core';
+import { LoaderService, NotificationService } from '@core/ionic-core';
 import { AlertController, IonInput, IonRouterOutlet, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
+import { EnvService, DataShareService, StorageService, CommonFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-verify-company',
@@ -22,16 +23,14 @@ export class VerifyCompanyComponent implements OnInit {
   constructor(    
     private formBuilder: FormBuilder,
     private envService: EnvService,
-    private authService: AuthService,
     private dataShareService: DataShareService,
     private storageService: StorageService,
-    private router: Router,
-    private routerOutlet: IonRouterOutlet,
     private _location: Location,
     private platform: Platform,
     private alertController: AlertController,
     private notificationService: NotificationService,
-    private loaderService: LoaderService
+    private loaderService: LoaderService,
+    private commonFunctionService: CommonFunctionService
   ) { }
 
   ionViewWillEnter(){
@@ -49,7 +48,7 @@ export class VerifyCompanyComponent implements OnInit {
   exitTheApp(){ 
     this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
       console.log('Back press handler!');
-      if (this._location.isCurrentPathEqualTo('/auth/verifyCompany')) {
+      if (this._location.isCurrentPathEqualTo('/checkcompany')) {
         let isloaderOpen:any = this.loaderService.loadingCtrl.getTop();
         if(isloaderOpen){
           this.loaderService.hideLoader();
@@ -69,7 +68,7 @@ export class VerifyCompanyComponent implements OnInit {
   }
   async onload(){
     // let keyList = await this.storageService.getKetList();
-    await this.storageService.clearCapStorage();
+    await this.storageService.removeDataFormStorage();
     this.storageService.removeDataFormStorage();
   }
   showExitConfirm() {
@@ -112,11 +111,11 @@ export class VerifyCompanyComponent implements OnInit {
   verifyCompanyCode(){
     let clientCode:string = this.cCodeForm.value.code;
     let isClientExist = this.envService.checkClientExistOrNot(clientCode);
-    if(isClientExist){
-      this.loaderService.showLoader("Please wait while we are setting up the App for you.");    
+    if(isClientExist || clientCode === "localhost"){
+      this.storageService.removeDataFormStorage('all');
+      this.loaderService.showLoader("Please wait while we are setting up the App for you.");
       this.storageService.setClientNAme(clientCode);
-      this.dataShareService.subscribeClientName(clientCode);
-      // this.authService.navigateByUrl('auth/signine');
+      this.commonFunctionService.getApplicationAllSettings();
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
     }

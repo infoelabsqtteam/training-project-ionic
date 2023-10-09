@@ -2,7 +2,7 @@
   <ng-template> -->
     <ion-content>
       <ion-list>
-        <ion-item lines="none" *ngFor="let item of tabMenu; let i = index" (click)="tabmenuClick(item,i)">
+        <ion-item lines="none" *ngFor="let item of tabMenu; let i = index" [ngClass]="!item.display ? 'ion-hide' : 'ion-show'" (click)="tabmenuClick(item,i)">
           <ion-label>{{item.name}}</ion-label>
         </ion-item>
       </ion-list>

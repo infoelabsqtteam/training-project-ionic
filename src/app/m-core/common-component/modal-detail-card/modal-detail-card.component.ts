@@ -1,9 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CommonDataShareService, CoreUtilityService, DataShareService, RestService, NotificationService, ApiService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
-import { element } from 'protractor';
-import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalComponent } from '../../modal/modal.component';
+import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService, CommonAppDataShareService } from '@core/web-core';
+import { ModelService } from '@core/ionic-core';
+import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
 
 @Component({
   selector: 'app-modal-detail-card',
@@ -31,13 +31,12 @@ export class ModalDetailCardComponent implements OnInit {
   
   constructor(
     private modalController: ModalController,
-    private dataShareServiceService: DataShareServiceService,
-    private coreUtilityService: CoreUtilityService,
-    private commonDataShareService: CommonDataShareService,
-    private restService:RestService,
-    private notificationService: NotificationService,
+    private dataShareService: DataShareService,
+    private commonAppDataShareService: CommonAppDataShareService,
     private apiService: ApiService,
-    private dataShareService: DataShareService
+    private commonFunctionService: CommonFunctionService,
+    private menuOrModuleCommonService: MenuOrModuleCommonService,
+    private modelService: ModelService
     ) {
       this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
         if(data && data.gridColumns){
@@ -67,30 +66,30 @@ export class ModalDetailCardComponent implements OnInit {
   }
   
   getChildData(){
-    let module = this.coreUtilityService.getModuleBySelectedIndex();
+    let module = this.menuOrModuleCommonService.getModuleBySelectedIndex();
     let tabDetail:any = '';
     // this.childData = this.dataShareServiceService.getchildCardData();
     let index:any = this.selected_tab_index;
-    const moduleList = this.commonDataShareService.getModuleList();
+    const moduleList = this.commonAppDataShareService.getModuleList();
     if(index != -1){      
       let tabs:any = module.tab_menu;
       if(tabs && tabs.length > 0){
       let tab:any = tabs[index];
-      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id");
+      const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id");
       tabDetail = moduleList[tabIndex];
       }
     }
     let child_card = {};
     if(tabDetail != ''){
       if(tabDetail && tabDetail.child_card){
-        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");
+        const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");
         child_card = moduleList[tabIndex]; 
       }else if(tabDetail.child_card == null && tabDetail.grid){
         child_card = tabDetail
       }
     }else{
       if(module && module.child_card){
-        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,module.child_card._id,"_id");
+        const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,module.child_card._id,"_id");
         child_card = moduleList[tabIndex]; 
       }else{
         child_card = module;
@@ -143,7 +142,7 @@ export class ModalDetailCardComponent implements OnInit {
   }
   
   getValueForGrid(field,object){
-    return this.coreUtilityService.getValueForGrid(field,object);
+    return this.commonFunctionService.getValueForGrid(field,object);
   }
   
   dismissModal(){
@@ -158,7 +157,7 @@ export class ModalDetailCardComponent implements OnInit {
 
   clickOnGridElement(field, object, i) {
     let value={};
-    value['data'] = this.coreUtilityService.getObjectValue(field.field_name, object);
+    value['data'] = this.commonFunctionService.getObjectValue(field.field_name, object);
     if(value['data']!){
       console.log('Data available in ' + field.field_label);
     }else{
@@ -199,7 +198,7 @@ export class ModalDetailCardComponent implements OnInit {
         if (value['data'] && value['data'] != '') {
           this.selectedViewRowIndex = -1;
           this.viewColumnName = '';
-          //this.viewModal('fileview-grid-modal', value, field, i, field.field_name,editemode);
+          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode);
         };
         break;
       case "download_file":
@@ -213,7 +212,7 @@ export class ModalDetailCardComponent implements OnInit {
             "data":data
           }
         }
-        this.restService.download_file(payload);
+        this.commonFunctionService.download_file(payload);
         break;
       default: return;
     }
@@ -237,11 +236,37 @@ export class ModalDetailCardComponent implements OnInit {
     });
     return await modal.present();
   }
-
+  async viewFileModal(component:any, value, field, i,field_name,editemode){    
+    let objectData:any = {
+      'data' : value,
+      'field' : field,
+      'index' : i,
+      'field_name': field_name,
+      'editemode' : editemode
+    }
+    // this.modelService.openModal(component,objectData).then((data:any) => {
+    //   if(data && data.role == 'closed'){
+    //     console.log("ModalIs",data.role);
+    //   }
+    // });
+    const modal = await this.modalController.create({
+      component: FileViewsModalComponent,
+      cssClass: 'file-info-modal',
+      componentProps: {
+        "objectData": objectData,      
+      },
+    });
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss()
+      .then((data) => {
+          console.log("File Download Modal closed " , data.role);                
+    });
+    return await modal.present();
+  }
   getChildGridFieldsbyId(childrGridId:string){
       const params = "grid";
       const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
-      const payload = this.restService.getPaylodWithCriteria(params, '', criteria, {});
+      const payload = this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, {});
       this.apiService.GetChildGrid(payload);
   }
 

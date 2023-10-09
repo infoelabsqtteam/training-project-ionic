@@ -1,5 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonDataShareService, CoreUtilityService, StorageService,} from '@core/ionic-core';
+import { NotificationService,} from '@core/ionic-core';
+import { CommonAppDataShareService, CommonFunctionService } from '@core/web-core';
+import { MenuOrModuleCommonService } from '@core/web-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
@@ -25,10 +27,11 @@ export class QuotationDetailsPage implements OnInit, OnDestroy {
   
   constructor(
     private dataShareServiceService:DataShareServiceService,
-    private coreUtilityService :CoreUtilityService,
-    private commonDataShareService:CommonDataShareService,
+    private commonAppDataShareService:CommonAppDataShareService,
     private callNumber: CallNumber,
-    private storageService: StorageService
+    private commonFunctionService: CommonFunctionService,
+    private menuOrModuleCommonService: MenuOrModuleCommonService,
+    private notificationService: NotificationService
   ) { 
     
   }
@@ -45,26 +48,26 @@ export class QuotationDetailsPage implements OnInit, OnDestroy {
   }
 
   getChildData(){
-    let module = this.coreUtilityService.getModuleBySelectedIndex();
+    let module = this.menuOrModuleCommonService.getModuleBySelectedIndex();
     let tabDetail:any = '';
     this.childData = this.dataShareServiceService.getchildCardData();
     let index:any = this.childData.selected_tab_index;
-    const moduleList = this.commonDataShareService.getModuleList();
+    const moduleList = this.commonAppDataShareService.getModuleList();
     if(index != -1){      
       let tabs:any = module.tab_menu;
       let tab:any = tabs[index];
-      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id");
+      const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id");
       tabDetail = moduleList[tabIndex];
     }
     let child_card = {};
     if(tabDetail != ''){
       if(tabDetail && tabDetail.child_card){
-        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");        
+        const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");        
         child_card = moduleList[tabIndex]; 
       }
     }else{
       if(module && module.child_card){
-        const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,module.child_card._id,"_id");        
+        const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,module.child_card._id,"_id");        
         child_card = moduleList[tabIndex]; 
       }else{
         child_card = module;
@@ -82,8 +85,8 @@ export class QuotationDetailsPage implements OnInit, OnDestroy {
     this.childColumns = card.fields;
     if(card.tab_menu && card.tab_menu.length > 0){
       this.tabMenu = card.tab_menu;
-      const moduleList = this.commonDataShareService.getModuleList();
-      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,this.tabMenu[0]._id,"_id");        
+      const moduleList = this.commonAppDataShareService.getModuleList();
+      const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,this.tabMenu[0]._id,"_id");        
       const cardChild = moduleList[tabIndex]; 
       this.card = {
         "tabs":this.tabMenu,
@@ -104,7 +107,7 @@ export class QuotationDetailsPage implements OnInit, OnDestroy {
   }
 
   getValueForGrid(field,object){
-    return this.coreUtilityService.getValueForGrid(field,object);
+    return this.commonFunctionService.getValueForGrid(field,object);
   }
 
   // extra code added below for error ressolve
@@ -145,7 +148,7 @@ export class QuotationDetailsPage implements OnInit, OnDestroy {
   }
 
   private getCardDataByCollection(i) {
-    const cardWithTab = this.coreUtilityService.getCard(i); 
+    const cardWithTab = this.menuOrModuleCommonService.getCard(i); 
     if(cardWithTab && cardWithTab.card){
       this.card = cardWithTab
       ;
@@ -155,7 +158,7 @@ export class QuotationDetailsPage implements OnInit, OnDestroy {
   async detailCardButton(column, data){}
 
   comingSoon() {
-    this.storageService.presentToast('Comming Soon...');
+    this.notificationService.presentToastOnBottom('Comming Soon...');
   }
 
 }

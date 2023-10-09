@@ -1,11 +1,9 @@
 import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2} from '@angular/core';
-import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
-import { Platform, ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
-import { filter } from 'rxjs';
+import { NotificationService } from '@core/ionic-core';
+import { ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { FormBuilder, FormGroup} from '@angular/forms';
-import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Router } from '@angular/router';
-import { PopoverComponent } from '../../common-component/popover/popover.component';
+import { CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, AuthService } from '@core/web-core';
 
 @Component({
   selector: 'app-card-view',
@@ -54,16 +52,17 @@ export class CardViewPage implements OnInit, OnDestroy {
   nestedCardSubscribe:any;
   
     constructor(
-      private storageService: StorageService,
-      private coreUtilityService :CoreUtilityService,
-      private commonDataShareService:CommonDataShareService,
-      private restService:RestService,
-      private apiService:ApiService,
+      private commonAppDataShareService:CommonAppDataShareService,
       private formBuilder: FormBuilder,
       public modalController: ModalController,
       private router:Router,
       public popoverController: PopoverController,
       public renderer: Renderer2,
+      private commonFunctionService: CommonFunctionService,
+      private menuOrModuleCommonService: MenuOrModuleCommonService,
+      private notificationService: NotificationService,
+      private permissionService: PermissionService,
+      private authService: AuthService,
       @Optional() private readonly routerOutlet?: IonRouterOutlet,
     ){}
   
@@ -73,10 +72,18 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.renderer.setStyle(this.primaryheader['el'], 'webkitTransition', 'top 700ms');
     }
 
-    ngOnInit() {}
+    ngOnInit() {
+      console.log("ngCycle: ","ngOnInit");
+    }
 
     ngOnChanges(changes: SimpleChanges) {
-      // this.card;
+      console.log("ngCycle: ","ngOnChanges");
+    }
+    ionViewWillLeave(){
+      console.log("IonCycle: ","ionViewWillLeave");
+    }
+    ionViewDidLeave(){
+      console.log("IonCycle: ","ionViewDidLeave");
     }
     togglesearch(){      
       this.searching = !this.searching;
@@ -104,7 +111,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     load(){
       this.carddata = [];
       this.data = {};
-      const index = this.commonDataShareService.getSelectdTabIndex();
+      const index = this.commonAppDataShareService.getSelectdTabIndex();
       this.getCardDataByCollection(index);
     }
   
@@ -113,38 +120,50 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
   
     private getCardDataByCollection(i:number) {
-      const cardWithTab = this.coreUtilityService.getCard(i);
+      const cardWithTab = this.menuOrModuleCommonService.getCard(i);
       this.collectionName = cardWithTab.card.collection_name;
-      if(cardWithTab && cardWithTab.card){
-        if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
-          let navigation = '';
-          if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'chartview'){
-            navigation = 'chart';
-          }else if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'mongochart'){
-            navigation = 'mongochart';
+      // if (this.permissionService.checkPermission(this.collectionName, 'view')) {
+        if(cardWithTab && cardWithTab.card){
+          if(cardWithTab.card && cardWithTab.card.card_type && cardWithTab.card.chart_view){
+            let navigation = '';
+            if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'chartview'){
+              navigation = 'chart';
+            }else if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'mongochart'){
+              navigation = 'mongochart';
+            }else{
+              navigation = 'home';
+            }
+            if(navigation == 'home'){
+              this.notificationService.presentToastOnBottom("Path Does not exists, please connect to admin.");
+            }
+            this.router.navigateByUrl(navigation);
           }else{
-            navigation = 'home';
+              if(cardWithTab.card && cardWithTab.card.name){
+                this.headerTitle = cardWithTab.card.name;
+              }
+            this.card = cardWithTab;
           }
-          if(navigation == 'home'){
-            this.storageService.presentToast("Path Changed, please connect to admin.");
-          }
-          this.router.navigateByUrl(navigation);
-        }else{
-          if(cardWithTab.card && cardWithTab.card.name){
-            this.headerTitle = cardWithTab.card.name;
-          }
-        this.card = cardWithTab;
         }
-      }
-      this.popoverTabbing = cardWithTab?.popoverTabbing;
-      this.selectedIndex = cardWithTab?.selectedTabIndex;
+        this.popoverTabbing = cardWithTab?.popoverTabbing;
+        this.selectedIndex = cardWithTab?.selectedTabIndex;
+      // }else{
+      //   let getStatus:any = this.authService.checkIdTokenStatus();
+      //   if(getStatus && getStatus.status){
+      //     this.notificationService.presentToastOnBottom("Permission denied !", "danger");
+      //   }else{
+      //     if(getStatus && getStatus.msg){
+      //       this.notificationService.presentToastOnBottom(getStatus.msg);
+      //     }
+      //     this.authService.gotToSigninPage();
+      //   }
+      // }
     }
     
     comingSoon() {
-      this.storageService.presentToast('Comming Soon...');
+      this.notificationService.presentToastOnBottom('Comming Soon...');
     }
     async goBack(){
-      const multipleCardCollection = this.commonDataShareService.getMultipleCardCollection();
+      const multipleCardCollection = this.commonAppDataShareService.getMultipleCardCollection();
       let previousCollectiondData:any = {};
       let multiCardLength = multipleCardCollection.length;
       const lastIndex = multipleCardCollection.length - 1;
@@ -155,11 +174,11 @@ export class CardViewPage implements OnInit, OnDestroy {
         previousCollectiondData = multipleCardCollection[lastIndex];
         if(previousCollectiondData){          
           this.card = previousCollectiondData.card;
-          this.commonDataShareService.setModuleIndex(previousCollectiondData.module_index);
+          this.commonAppDataShareService.setModuleIndex(previousCollectiondData.module_index);
         }
         multipleCardCollection.splice(lastIndex,1);
-        this.commonDataShareService.setMultipleCardCollection(multipleCardCollection);
-        this.commonDataShareService.setNestedCard(previousCollectiondData);
+        this.commonAppDataShareService.setMultipleCardCollection(multipleCardCollection);
+        this.commonAppDataShareService.setNestedCard(previousCollectiondData);
         this.router.navigateByUrl('card-view');
       }else{
         this.router.navigateByUrl('home');
@@ -177,7 +196,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       this.popoverMenu = false;
       this.popoverTabbing = false;
       this.popoverItems = [];
-      this.commonDataShareService.setSelectedTabIndex(-1);
+      this.commonAppDataShareService.setSelectedTabIndex(-1);
       this.selectedgriddataId = "";
       this.searchcardvalue = "";
       this.selectedSearchCardField = {};
@@ -222,7 +241,7 @@ export class CardViewPage implements OnInit, OnDestroy {
             case "abcd":
               break;
             default:
-              this.coreUtilityService.createFormControl(forControl, element, '', "text");
+              this.commonFunctionService.createFormControl(forControl, element, '', "text");
               break;
           }
         });
@@ -273,12 +292,14 @@ export class CardViewPage implements OnInit, OnDestroy {
     //   return await popover.present();
     // }
     popoverOutput(popoverdata:any){
-      if(popoverdata && popoverdata.name){ 
-        this.headerTitle = popoverdata.name;
-      }
+      // if(popoverdata && popoverdata.name){ 
+      //   this.headerTitle = popoverdata.name;
+      // }
       if(popoverdata && popoverdata.card){
+        this.headerTitle = popoverdata.card?.name;
         this.card = {
           "card":popoverdata.card,
+          "collectionFound":popoverdata.collectionFound,
           "popoverTabbing": this.popoverTabbing,
           "selectedTabIndex": popoverdata.selectedTabIndex,
           "tabs" : popoverdata.tabs
@@ -297,17 +318,17 @@ export class CardViewPage implements OnInit, OnDestroy {
     }
     tabmenuClick(item:any,index:number){
       this.tabSwichingChanges();
-      if(item && item.name){
-        this.popoverOutput(item);
-      }
+      // if(item && item.name){
+      //   this.popoverOutput(item);
+      // }
       this.selectedIndex = index;
       this.carddata = [];
       this.createFormgroup = true;
-      const tab = this.popoverItems[index];
-      const moduleList = this.commonDataShareService.getModuleList();
-      const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id"); 
-      const card = moduleList[tabIndex];
-      this.card['card'] = card;
+      // const tab = this.popoverItems[index];
+      // const moduleList = this.commonAppDataShareService.getModuleList();
+      // const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
+      // const card = moduleList[tabIndex];
+      this.card['card'] = item.tabCard;
       this.card.selectedTabIndex = index;
       this.popoverOutput(this.card);
     } 

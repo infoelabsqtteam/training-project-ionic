@@ -1,11 +1,8 @@
 import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
-import { EnvService, StorageService, ApiService, RestService, CoreUtilityService, DataShareService, CommonDataShareService } from '@core/ionic-core';
-import { Platform, ModalController, IonRouterOutlet} from '@ionic/angular';
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { DataShareServiceService } from 'src/app/service/data-share-service.service';
-import { filter } from 'rxjs';
-import { FormBuilder, FormGroup} from '@angular/forms';
-import { CallNumber } from '@ionic-native/call-number/ngx';
+import { NotificationService } from '@core/ionic-core';
+import { ModalController, IonRouterOutlet} from '@ionic/angular';
+import { FormGroup} from '@angular/forms';
+import { CommonAppDataShareService, MenuOrModuleCommonService } from '@core/web-core';
 
 @Component({
   selector: 'app-quotation',
@@ -19,7 +16,6 @@ export class QuotationPage implements OnInit, OnDestroy {
   cardList: any = [];
   selectedIndex= -1;
   tabMenu: any = [];
-  // cardListSubscription:any;
   columnList: any = [];
   carddata: any;
   cardtitle: any;
@@ -29,28 +25,14 @@ export class QuotationPage implements OnInit, OnDestroy {
   filterForm: FormGroup;
   createFormgroup: boolean = true;
   collectionname: any;
-
   card:any={};
-  data :any ={};
-
-  // new var
-  // gridDataSubscription: any;
-  
+  data :any ={};  
   
   constructor(
-    private platform: Platform,
-    private envService: EnvService,
-    private storageService: StorageService,
-    private router: Router,
-    private dataShareServiceService:DataShareServiceService,
-    private formBuilder: FormBuilder,
-    private callNumber: CallNumber,
-    private apiService:ApiService,
-    private restService:RestService,
-    private coreUtilityService :CoreUtilityService,
-    private dataShareService: DataShareService,
-    private commonDataShareService:CommonDataShareService,
+    private commonAppDataShareService:CommonAppDataShareService,
     public modalController: ModalController,
+    private menuOrModuleCommonService: MenuOrModuleCommonService,
+    private notificationService: NotificationService,
     @Optional() private readonly routerOutlet?: IonRouterOutlet,
   ) 
   {
@@ -65,14 +47,14 @@ export class QuotationPage implements OnInit, OnDestroy {
     // this.router.events.pipe(
     //   filter((event: RouterEvent) => event instanceof NavigationEnd)
     // ).subscribe(() => {
-    //   const index = this.commonDataShareService.getSelectdTabIndex();
+    //   const index = this.commonAppDataShareService.getSelectdTabIndex();
     //   this.getCardDataByCollection(index);      
     // });
   }
 
   load(){
     this.carddata = [];
-    const index = this.commonDataShareService.getSelectdTabIndex();
+    const index = this.commonAppDataShareService.getSelectdTabIndex();
     this.getCardDataByCollection(index);
   }
   
@@ -91,7 +73,7 @@ export class QuotationPage implements OnInit, OnDestroy {
   }
 
   private getCardDataByCollection(i) {
-    const cardWithTab = this.coreUtilityService.getCard(i); 
+    const cardWithTab = this.menuOrModuleCommonService.getCard(i); 
     if(cardWithTab && cardWithTab.card){
       this.card = cardWithTab
       ;
@@ -99,7 +81,7 @@ export class QuotationPage implements OnInit, OnDestroy {
   }  
   
   comingSoon() {
-    this.storageService.presentToast('Comming Soon...');
+    this.notificationService.presentToast('Comming Soon...');
   }  
 
 }

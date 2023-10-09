@@ -27,7 +27,8 @@ import { HomePageModule } from './home/home.module';
 import { McoreModule } from './m-core/m-core.module';
 import { LocationAccuracy } from '@ionic-native/location-accuracy/ngx';
 import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
-// import { MyLibModule } from '@core/web-core';
+import { MyLibModule } from '@core/web-core';
+import { AuthModule } from './auth/auth.module';
 
  
 
@@ -46,7 +47,9 @@ import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
         IonicCoreModule.forRoot(environment),
         AppRoutingModule,
         ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
-        McoreModule
+        McoreModule,
+        AuthModule,
+        MyLibModule.forRoot(environment)
     ],
     providers: [
         StatusBar,

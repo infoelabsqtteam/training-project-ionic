@@ -1,153 +1,259 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { LoadingController, AlertController, Platform } from '@ionic/angular';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { AuthService, StorageService,LoaderService, CoreUtilityService, NotificationService } from '@core/ionic-core';
+import { AlertController, Platform, IonRouterOutlet } from '@ionic/angular';
+import {  NotificationService } from '@core/ionic-core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { IonLoaderService } from 'src/app/service/ion-loader.service';
+import { App } from '@capacitor/app';
+import { Location } from '@angular/common';
+import { AuthDataShareService, AuthService, CommonFunctionService, CoreFunctionService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
 
 @Component({
-  selector: 'app-signin',
+  selector: 'app-signine',
   templateUrl: './signin.component.html',
-  styleUrls: ['./signin.component.scss'],
+  styleUrls: ['./signin.component.scss']
 })
 export class SigninComponent implements OnInit {
-  time: BehaviorSubject<String> = new BehaviorSubject("00:00");
-  timer: number;
-  interval;
-  isLoading = false;
-  isLogin = true;
-  isForget = false;
-  isResetPass = false;
-  isSavePass = false;
-  private username: string;
-  cognitoIdToken;
-  loginObj: any = {};
-  otpSent: boolean = false;
-  otpForm: FormGroup;
-  otpVerifyForm: FormGroup;
-  backbutton: any;
-  subscription: Subscription;
-  resendOtp: boolean = false;
+
+
+  loginForm: FormGroup;
+  showpassword = false;
+  VerifyType : boolean = false;
+  // showicon = false;
+  isExitAlertOpen:boolean = false;
+  logoPath:string = '';
+  imageTitle:string = '';
+  appTitle:string = '';
+  authenticationMessage: Subscription;
+  resetSignin:any;
+  userInfoSubscribe:any;
+  sessionSubscribe:any;
+  signinReponseData:any;
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private loadingCtrl: LoadingController,
-    private loaderService: LoaderService,
     private formBuilder: FormBuilder,
-    private alertCtrl: AlertController,
-    private http: HttpClient,
+    private alertController: AlertController,
     private storageService: StorageService,
-    private coreUtilService: CoreUtilityService,
+    private coreFunctionService: CoreFunctionService,
     private notificationService:NotificationService,
-    private platform: Platform
-  ) {
-
+    private platform: Platform,
+    private ionLoaderService: IonLoaderService,
+    private envService: EnvService,
+    private routerOutlet: IonRouterOutlet,
+    private _location: Location,
+    private authDataShareService: AuthDataShareService,
+    private commonFunctionService: CommonFunctionService
+  ) { 
+    this.initializeApp();
+    
   }
 
-  ngOnInit() {
-    this.otpForm = this.formBuilder.group({
-      mobileNo: ['', [Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$")]],
-    });
-    this.otpVerifyForm = this.formBuilder.group({
-      otp_input: ['', [Validators.required, Validators.minLength(6)]],
-    });
-  }
-  ionViewWillEnter() {
-    this.otpSent = false;
-  }
-
-
-  get f() { return this.otpForm.controls; }
-  get v() { return this.otpVerifyForm.controls; }
-
-  sendOtp() {
-    let mobileNo = String(this.loginObj.mobileNo);
-    if (mobileNo.startsWith("+91")) {
-      this.loginObj.mobileNo = mobileNo;
-    } else {
-      this.loginObj.mobileNo = "+91" + mobileNo;
-    }
-    this.startWatching();    
-    this.authService.signinOtp({ username: this.loginObj.mobileNo }).subscribe(resp => {
-      this.loaderService.hideLoader();
-      console.log(resp);
-      if (resp.hasOwnProperty("success")) {
-        this.authService._otpRresponse.next(resp['success'].session);
-        this.otpSent = true;
-        this.startTimer(3);
-      } else if (resp.hasOwnProperty('error')) {
-        this.notificationService.showAlert(resp['message'], 'Authentication Failed',['Okay']);
+  initializeApp() {
+    this.platform.ready().then(() => {});
+    this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+      let isloaderOpen:any = this.ionLoaderService.loadingController.getTop();
+      if(isloaderOpen){
+        this.ionLoaderService.hideLoader();
       }
-    },
-      (err: HttpErrorResponse) => {
-        this.loaderService.hideLoader();
-        // loadingEl.dismiss();
-        this.notificationService.showAlert(err['message'], 'Authentication Failed',['Okay']);
-        this.loginObj = {};
-        console.log(err.error);
-        console.log(err.name);
-        console.log(err.message);
-        console.log(err.status);
-      });
-
+      if(this.isExitAlertOpen){
+        this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
+      }else{
+        this.showExitConfirm();
+        // processNextHandler();
+      }  
+    });
   }
+  
+  ionViewWillEnter(){
+    this.initializeApp();
+    this.getLogoPath();
+    this.checkValues();
+  }
+  ionViewDidEnter(){
+    // this.getLogoPath();
+    this.onLoadSubscriptions();
+  }
+  ionViewDidLeave(){
+    this.unsubscribed();
+  }
+  unsubscribed(){
+    if(this.authenticationMessage){
+      this.authenticationMessage.unsubscribe();
+    }
+    if(this.sessionSubscribe){
+      this.sessionSubscribe.unsubscribe();
+    }
+    if(this.resetSignin){
+      this.resetSignin.unsubscribe();
+    }
+    if(this.userInfoSubscribe){
+      this.userInfoSubscribe.unsubscribe();
+    }
+  }
+  ngOnInit() {
+    this.initForm();
+    // this.getLogoPath();
+  }
+  initForm(){
+    this.loginForm = this.formBuilder.group({
+      password: ['', [Validators.required]],
+      userId: ['', [Validators.required]],
+    });
+    if(!this.VerifyType){
+      this.loginForm.get('userId').setValidators([Validators.email,Validators.required]);
+    }else{
+      this.loginForm.get('userId').setValidators([Validators.required,Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]);
+    }
+  }
+
+  async checkValues(){    
+    let isClientCodeExist:any = this.storageService.getClientName();
+    let isHostNameExist:any = this.storageService.getHostNameDinamically();
+    if(this.coreFunctionService.isNotBlank(isClientCodeExist)){
+      if(this.checkIdTokenStatus()){
+        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
+      }else if(!this.checkApplicationSetting() && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
+        this.commonFunctionService.getApplicationAllSettings();
+      }else{        
+        this.storageService.removeKeyFromStorage("USER");
+      }
+    }else{
+      this.router.navigateByUrl('/checkcompany');
+    }
+  }
+  showExitConfirm() {
+    this.isExitAlertOpen = true;
+    this.alertController.create({
+      header: 'App termination',
+      message: 'Do you want to close the app?',
+      backdropDismiss: false,
+      buttons: [{
+        text: 'Stay',
+        role: 'cancel',
+        cssClass: 'primary',
+        handler: () => {
+          this.isExitAlertOpen = false;
+          console.log('Application exit prevented!');
+        }
+      }, {
+        text: 'Exit',
+        cssClass: 'danger',
+        handler: () => {
+          this.isExitAlertOpen = false;
+          App.exitApp();
+        }
+      }]
+    })
+      .then(alert => {
+        alert.present();
+      });
+  }
+  checkIdTokenStatus(){
+    let tokenStatus = false;
+    if (this.storageService != null && this.storageService.GetIdToken() != null) {      
+      if(this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE){
+        tokenStatus = true;           
+      }else{
+        tokenStatus = false; 
+      }
+    }else{
+      tokenStatus = false; 
+    }
+    return tokenStatus;
+  }
+  onLoadSubscriptions(){    
+    if(this.storageService.getVerifyType() == 'mobile' || this.envService.getVerifyType() == "mobile"){
+      this.VerifyType = true;
+    }else{
+     this.VerifyType = false;
+    }
+    this.userInfoSubscribe = this.authDataShareService.userInfo.subscribe(data =>{ 
+      let color = 'danger';
+      if(data && data.msg){
+        this.notificationService.presentToastOnTop(data.msg, color);
+      }    
+    });
+    this.resetSignin = this.authDataShareService.settingData.subscribe(data =>{      
+      if(data == "logged_in"){
+        this.ionLoaderService.hideLoader();
+        this.notificationService.presentToastOnTop(this.signinReponseData.msg,'success');
+        this.loginForm.reset();
+      }
+      this.signinReponseData = '';
+    });
+    this.sessionSubscribe = this.authDataShareService.sessionexpired.subscribe(data =>{      
+      let color = 'danger';
+      if(data && data.msg && data.status == 'success'){
+        this.notificationService.presentToastOnTop(data.msg, color);
+      }    
+    });
+    this.authenticationMessage = this.authDataShareService.signinResponse.subscribe(data => {
+      let msg = data.msg;
+      let color = "danger";
+      if(data && data.status == 'success'){
+        this.ionLoaderService.showLoader("Checking Permissions..");
+        color = 'success';
+        this.signinReponseData = data;
+        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
+      }
+      if(msg != '' && data.status != 'success'){
+        this.notificationService.presentToastOnTop(msg,color);
+      }
+    })
+  }
+  checkValidate(){
+    return !this.loginForm.valid;
+  }
+
+  get f() { return this.loginForm.controls; }
+
   onSubmit() {
-    // stop here if form is invalid
-    if (this.otpForm.invalid) {
+    if (this.loginForm.invalid) {
       return;
     }
-    let loginObj = this.otpForm.value;
-    this.loginObj.mobileNo = loginObj.mobileNo;
-    this.sendOtp();
-    this.otpForm.reset();
+    let loginObj = this.loginForm.value; 
+    let payload = { userId: loginObj.userId, password: loginObj.password }
+    this.authService.Signin(payload);
   }
-  verifyOtp() {
-    if (this.otpVerifyForm.invalid) {
-      return;
+  showtxtpass() {
+    this.showpassword = !this.showpassword;
+  }
+  comingSoon() {
+    this.notificationService.presentToastOnBottom('Comming Soon...');
+  }
+  changeCode(){
+    this.storageService.removeDataFormStorage('all');
+    this.router.navigateByUrl('/checkcompany');
+    this.resetVariables();
+  }
+  resetVariables(){
+    this.logoPath = '';
+    this.imageTitle = '';
+    this.appTitle = '';
+  }
+  async getLogoPath(){
+    if(this.coreFunctionService.isNotBlank(this.storageService.getApplicationSetting())){
+      this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
+      this.imageTitle = this.storageService.getPageTitle();
+      this.appTitle = this.storageService.getPageTitle();
+      let loader:any = await this.ionLoaderService.loadingController.getTop();
+      if(loader){
+        this.ionLoaderService.hideLoader();
+      }
     }
-    let obj = { username: this.loginObj.mobileNo, verif_code: this.otpVerifyForm.value.otp_input };
-    this.authService.verifyOtp(obj,'/home');
-    this.otpVerifyForm.reset();
   }
-  goBackToOtp() {
-    this.otpSent = false;
-  }
-  startTimer(duration: number) {
-    clearInterval(this.interval);
-    this.timer = duration * 60;
-    this.interval = setInterval(() => {
-      this.updateTimerValue();
-    }, 1000)
-  }
-
-  updateTimerValue() {
-    let minutes: any = this.timer / 60;
-    let seconds: any = this.timer % 60;
-
-    minutes = String('0' + Math.floor(minutes)).slice(-2);
-    seconds = String('0' + Math.floor(seconds)).slice(-2);
-
-    const text = `${minutes} : ${seconds}`;
-    this.time.next(text);
-    --this.timer;
-    if (this.timer < 0) {
-      this.resendOtp = true;
-      clearInterval(this.interval);
+  checkApplicationSetting(){
+    let exists = false;
+    let applicationSetting = this.storageService.getApplicationSetting();
+    if(applicationSetting){
+      exists = true;
+    }else{
+      exists = false;
     }
+    return exists;
+  }
 
-  }
-  startWatching() {
-    console.log("start watching");
-    this.coreUtilService.startWatching()
-      .then((res: any) => {
-        const otp = String(res.Message).substr(4, 6);
-        this.otpVerifyForm.controls['otp_input'].setValue(Number(otp));
-      })
-      .catch((error: any) => {
-        //alert(JSON.stringify(error));
-        console.log(error)
-      });
-  }
 }

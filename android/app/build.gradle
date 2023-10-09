@@ -7,15 +7,15 @@ def getMyVersionCode = { ->
 
 // get version name from the specified property argument `-PversionName` during the build call
 def getMyVersionName = { ->
-    return project.hasProperty('versionName') ? versionName : "1.0"
+    return project.hasProperty('versionName') ? versionName : "1.0.0"
 }
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.tech.elabs.ionic"
+        applicationId "com.tech.elabs.ai"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        targetSdkVersion 33
         versionCode getMyVersionCode()
         versionName getMyVersionName()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -33,10 +33,10 @@ android {
                 keyAlias System.getenv()["CM_KEY_ALIAS"]
                 keyPassword System.getenv()["CM_KEY_PASSWORD"]
             } else {
-                storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-                storePassword System.getenv()['CM_KEYSTORE_PASSWORD']
-                keyAlias System.getenv()['CM_KEY_ALIAS_USERNAME']
-                keyPassword System.getenv()['CM_KEY_ALIAS_PASSWORD']
+              storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+              storePassword System.getenv()['CM_KEYSTORE_PASSWORD']
+              keyAlias System.getenv()['CM_KEY_ALIAS_USERNAME']
+              keyPassword System.getenv()['CM_KEY_ALIAS_PASSWORD']
             }
         }
     }

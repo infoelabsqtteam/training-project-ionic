@@ -1,5 +1,5 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { App_googleService, NotificationService, PermissionService } from '@core/ionic-core';
+import { App_googleService, NotificationService, AppPermissionService } from '@core/ionic-core';
 import { AlertController, Platform } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
 import { CallbackID, Capacitor } from '@capacitor/core';
@@ -26,7 +26,7 @@ export class TrackLocationPage implements OnInit {
     private app_googleService : App_googleService,
     private notificationService: NotificationService,
     private alertCtrl: AlertController,
-    private permissionService: PermissionService,
+    private permissionService: AppPermissionService,
     private zone: NgZone,
     private platform: Platform
   ) { }

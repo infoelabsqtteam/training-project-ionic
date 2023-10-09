@@ -1,10 +1,9 @@
 import { Component, OnInit, AfterViewInit, Input, SimpleChanges } from '@angular/core';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
-import { Subscription } from 'rxjs';
-// import { ChartService, ApiService, DataShareService, CommonFunctionService } from '@core/web-core';
-import { RestService, StorageService, ChartService, DataShareService, ApiService } from '@core/ionic-core';
+import { ModelService, DownloadService } from '@core/ionic-core';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
-import { ModalController } from '@ionic/angular';
+import { ModalController, isPlatform } from '@ionic/angular';
+import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService } from '@core/web-core';
 
 @Component({
   selector: 'app-mongodb-chart',
@@ -24,23 +23,22 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
   headertitle:string='Charts';
   noOfItems:any = [6,9,12,15,18,21,24];  
   staticData: any = {};
-  copyStaticData:any={};
   staticDataSubscription:any;
 
   constructor(
     private dataShareService:DataShareService,
-    private storageService:StorageService,
+    private storageService: StorageService,
     private apiService:ApiService,
     private chartService:ChartService,
-    private restService: RestService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private modelService: ModelService,
+    private commonFunctionService: CommonFunctionService,
+    private downloadService: DownloadService
   ) {
       // this.getMongoChartList([]);
       // this.accessToken = this.storageService.GetIdToken();
       this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
-        if(data && data !=''){
           this.setStaticData(data);
-        }
       })
       this.gridDataSubscription = this.dataShareService.mongoDbChartList.subscribe(data =>{
         const chartData = data.data;
@@ -83,14 +81,14 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
   }
 
   getMongoChartList(Criteria){
-    const data = this.restService.getPaylodWithCriteria('mongo_dashlet_master','',Criteria,'');
+    const data = this.commonFunctionService.getPaylodWithCriteria('mongo_dashlet_master','',Criteria,'');
       data['pageNo'] = this.pageNumber - 1;
       data['pageSize'] = this.itemNumOfGrid; 
       const getFilterData = {
         data: data,
         path: null
       }
-      this.apiService.getMongoDashletMaster(getFilterData);
+      this.apiService.getMongoDashletMster(getFilterData);
   }
   populateMongodbChart(){
     if(this.accessToken != "" && this.accessToken != null){      
@@ -129,15 +127,20 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     }
   }
   getChartList(){
-    const payload = this.restService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
+    const payload = this.commonFunctionService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
     this.apiService.getStatiData([payload]);
   }
-  setStaticData(staticData?:any){
-    if (staticData) {
-      this.staticData = staticData;
-      Object.keys(this.staticData).forEach(key => {        
-        this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
-      }) 
+  setStaticData(staticDatas){
+    if(Object.keys(staticDatas).length > 0) {
+      Object.keys(staticDatas).forEach(key => {  
+        let staticData = {};
+        staticData[key] = staticDatas[key];  
+        if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
+          if(staticData[key]) { 
+            this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
+          }
+        } 
+      });
     }
   }
   filterModel(data:any,filter:any,index:number){
@@ -147,9 +150,17 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
       'filter':filter,
       'index' : index
     }
-    this.chartFilterModal(object);
+    // this.chartFilterModal(object);
+    this.openModal(ChartFilterComponent,object);
     // this.modelService.open('chart-filter',object);
     
+  }
+  openModal(component:any, objectData:object){
+    this.modelService.openModal(component,objectData).then((data:any) => {
+      if(data && data.role == 'closed'){
+        console.log("ModalIs",data.role);
+      }
+    });
   }
   async chartFilterModal(data:any){
     // this.showfilter = true;
@@ -173,10 +184,15 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
         })
     return await modal.present();
   }
-  download(object){
+  async download(object){
     let chartId = object.chartId;
     let chart = this.createdChartList[chartId];    
-    this.chartService.getDownloadData(chart,object);
+    let blobData:any = await this.chartService.getDownloadData(chart,object);
+    if(isPlatform('hybrid')){
+      this.downloadService.downloadBlobData(blobData.url, blobData.name)
+    }else{
+      this.chartService.downlodBlobData(blobData.url, blobData.name)
+    }
   }  
   changeTheme(object,value){
     let chartId = object.chartId;

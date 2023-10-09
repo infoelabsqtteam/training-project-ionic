@@ -1,10 +1,11 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { ApiService, AuthService, CommonDataShareService, DataShareService, EnvService, NotificationService, RestService, StorageService, StorageTokenStatus, CoreUtilityService, CoreFunctionService } from '@core/ionic-core';
+import { AppStorageService, NotificationService } from '@core/ionic-core';
 import { Platform, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { App } from '@capacitor/app';
+import { ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService, StorageService, MenuOrModuleCommonService } from '@core/web-core';
 
 
 @Component({
@@ -20,7 +21,6 @@ export class HomePage implements OnInit, OnDestroy {
 
   // get local data of card
   private authSub: Subscription;
-  // cardListSubscription;
   private previousAuthState = false;
   userData: any;
   userInfo: any={};
@@ -50,11 +50,11 @@ export class HomePage implements OnInit, OnDestroy {
   @Output() collection_name = new EventEmitter<string>();
   plt: any;
   pdfObj: any;
-  gridDataSubscription:any;
+  gridDataSubscription:Subscription;
   notification: boolean=false;
   cardMasterList:any;
   userAuthModules:any;
-  cardListSubscription:any;
+  // cardListSubscription:Subscription;
   appCardMasterDataSize:number;  
   ionEvent:any;
   isExitAlertOpen:boolean = false;
@@ -64,19 +64,17 @@ export class HomePage implements OnInit, OnDestroy {
 
   constructor(
     private platform: Platform,
-    private authService: AuthService,
-    private storageService:StorageService,
+    private storageService: StorageService,
     private router: Router,
     private _location: Location,
     public alertController: AlertController,
-    private envService: EnvService,
     private dataShareService:DataShareService,
     private apiService:ApiService,
-    private restService:RestService,
-    private commonDataShareService:CommonDataShareService,
+    private commonAppDataShareService:CommonAppDataShareService,
     private notificationService: NotificationService,
-    private coreUtilityService: CoreUtilityService,
-    private coreFunctionService: CoreFunctionService
+    private commonFunctionService: CommonFunctionService,
+    private menuOrModuleCommonService: MenuOrModuleCommonService,
+    private appStorageService: AppStorageService
   ) 
   {
     this.initializeApp();
@@ -86,35 +84,28 @@ export class HomePage implements OnInit, OnDestroy {
       'assets/img/home/banner3.jpg',
       'assets/img/home/banner4.jpg'
     ];
-    this.homePageLayout = this.envService.getAppHomePageLayout();
-    this.web_site_name = this.envService.getWebSiteName();
-    this.appCardMasterDataSize = this.envService.getAppCardMasterDataSize();
+    this.homePageLayout = this.appStorageService.getAppHomePageLayout();
+    this.web_site_name = this.appStorageService.getWebSiteName();
+    this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
       if(data && data.data && data.data.length > 0){
         this.cardMasterList = data.data;
-        this.commonDataShareService.setModuleList(this.cardMasterList);
-        this.cardList = this.coreUtilityService.getUserAutherisedCards(this.cardMasterList);
+        this.commonAppDataShareService.setModuleList(this.cardMasterList);
+        this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(this.cardMasterList);
         if(this.cardList == null){
           this.errorTitle = "No module assign";
-          this.errorMessage = "Permission error, No module found!";
-          this.notificationService.presentToastOnBottom("You don't have permission or assign any module.","danger")
+          this.errorMessage = "Permission denied, No module found!";
+          this.notificationService.presentToastOnBottom("You don't have any permission or assign module.","danger")
         }
       }else{
         if(this.myInput && this.myInput.length > 0 ){
-          this.errorTitle = "No matching element found";
+          this.errorTitle = "No matching module found";
           this.errorMessage = "Try again by adjusting your search value!";
           this.cardList = [];
         }else{
           this.errorTitle = "No module assign";
-          this.errorMessage = "Permission error, No module found!";
+          this.errorMessage = "Permission denied, No module found!";
         }
-      }
-    });
-    this.cardListSubscription = this.dataShareService.settingData.subscribe((data:any) =>{
-      if(data == "logged_out"){
-        this.cardList = [];
-      }else if(data == "logged_in"){
-        this.getGridData();
       }
     });
 
@@ -149,9 +140,6 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   unsubscribeVariabbles(){
-    if (this.cardListSubscription) {
-      this.cardListSubscription.unsubscribe();
-    }
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
@@ -163,22 +151,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    if(this.coreFunctionService.isNotBlank(this.storageService.getClientName())){
-      if (this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE) {
-        this.authService.getUserPermission(false,'/home');
-        // this.router.navigateByUrl('/home');
-        this.getGridData();
-      }else {
-        this.router.navigateByUrl('auth/signine');
-      }
-      // this.authService._user_info.subscribe(resp => {
-      //   this.userInfo = resp;
-        
-      // })
-    }else{
-      this.storageService.removeDataFormStorage();
-      this.router.navigateByUrl('/auth/verifyCompany');
-    }
+    this.getGridData();
   }
   resetVariables(){
     this.cardList = [];
@@ -190,7 +163,7 @@ export class HomePage implements OnInit, OnDestroy {
       criteriaList = criteria;
     }
     const params = 'card_master';
-    let data = this.restService.getPaylodWithCriteria(params,'',criteria,{});
+    let data = this.commonFunctionService.getPaylodWithCriteria(params,'',criteria,{});
     data['pageNo'] = 0;
     data['pageSize'] = this.appCardMasterDataSize;
     let payload = {
@@ -201,13 +174,15 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   showCardTemplate(card:any, index:number){
-    const moduleList = this.commonDataShareService.getModuleList();
-    const cardclickedindex = this.coreUtilityService.getIndexInArrayById(moduleList,card._id,"_id"); 
-    this.commonDataShareService.setModuleIndex(cardclickedindex);
-    if(card['userAutherisedModule'] && card['userAutherisedModule']['name']){
+    const moduleList = this.commonAppDataShareService.getModuleList();
+    const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
+    this.commonAppDataShareService.setModuleIndex(cardclickedindex);
+    if(card['userAutherisedModule'] && card['userAutherisedModule']['name'] && card['userAutherisedModule']['_id']){
       this.storageService.setModule(card['userAutherisedModule']['name']);
+      this.router.navigate(['card-view']);
+    }else{
+      this.notificationService.presentToastOnBottom("Clicked module does not autherised to you","danger");
     }
-    this.router.navigate(['card-view']); 
   }
 
   showExitConfirm() {
@@ -237,23 +212,16 @@ export class HomePage implements OnInit, OnDestroy {
         alert.present();
       });
   }
-
   
   // search module below
   search() {
     const criteria = "name;stwic;"+this.myInput+";STATIC";
     this.getGridData([criteria]);
-  } 
-
-  openSearch(){
-    console.log("function open searchbar");
-  }
-  
+  }  
   comingSoon() {
     this.notificationService.presentToastOnBottom('Comming Soon...','danger');
   }
-
-  // Pull from Top for Do refreshing or update card list 
+  // Pull from Top to Do refreshing or update card list 
   doRefresh(event:any) {
     // if(this.refreshlist){
       this.ionEvent = event;

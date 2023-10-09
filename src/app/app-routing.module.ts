@@ -1,34 +1,35 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { AuthGuard } from './auth/auth.guard';
+import { AuthGuard } from '@core/web-core';
+// import { AuthGuard } from './auth/auth.guard';
 import { TabsPage } from '../app/tabs/tabs.page';
 
 const routes: Routes = [
   // { path: '', redirectTo: 'places', pathMatch: 'full' },
   { path: 'm-core', loadChildren: () => import('./m-core/m-core.module').then(m => m.McoreModule) },
-  { path: 'auth', loadChildren: () => import('./auth/auth.module').then(m => m.AuthPageModule) },
+  { path: 'auth', loadChildren: () => import('./auth/auth.module').then(m => m.AuthModule) },
   { path: '', loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule) },
   
   { path: '', component: TabsPage, children: [
     {
       path: 'home', children: [
-        { path: '', loadChildren: () => import('./home/home.module').then(m => m.HomePageModule), canLoad: [AuthGuard] }
+        { path: '', loadChildren: () => import('./home/home.module').then(m => m.HomePageModule), canActivate: [AuthGuard] }
       ]
     },
     {
       path: 'crm/quotation', children: [
-        { path: '', loadChildren: () => import('./crm/quotation/quotation.module').then(m => m.QuotationPageModule), canLoad: [AuthGuard] }
+        { path: '', loadChildren: () => import('./crm/quotation/quotation.module').then(m => m.QuotationPageModule), canActivate: [AuthGuard] }
       ]
     },
     {
       path: 'crm/quotation-details', children: [
-        { path: '', loadChildren: () => import('./crm/quotation-details/quotation-details.module').then(m => m.QuotationDetailsPageModule), canLoad: [AuthGuard] }
+        { path: '', loadChildren: () => import('./crm/quotation-details/quotation-details.module').then(m => m.QuotationDetailsPageModule), canActivate: [AuthGuard] }
       ]
     },
     {
       path: 'crm/contact-details', children: [
-        { path: '', loadChildren: () => import('./crm/contact-details/contact-details.module').then(m => m.ContactDetailsPageModule), canLoad: [AuthGuard] }
+        { path: '', loadChildren: () => import('./crm/contact-details/contact-details.module').then(m => m.ContactDetailsPageModule), canActivate: [AuthGuard] }
       ]
     },
     

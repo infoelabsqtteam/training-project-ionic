@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { ApiService, CommonDataShareService, CoreUtilityService, RestService } from '@core/ionic-core';
+import { ApiService, CommonAppDataShareService, CommonFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-popover',
@@ -33,10 +33,8 @@ export class PopoverComponent implements OnInit {
   }
 
   constructor(
-    private coreUtilityService :CoreUtilityService,
-    private apiService:ApiService,
-    private restService:RestService,
-    private commonDataShareService:CommonDataShareService
+    private commonAppDataShareService:CommonAppDataShareService,
+    private commonFunctionService: CommonFunctionService
     ) {
 
   }
@@ -55,17 +53,17 @@ export class PopoverComponent implements OnInit {
   }
 
   tabmenuClick(item:any,index:number){
-    if(item && item.name){
-      this.popoverOutput.emit(item);
-    }
-    this.selectedIndex = index;
-    this.carddata = [];
-    this.createFormgroup = true;
-    const tab = this.tabMenu[index];
-    const moduleList = this.commonDataShareService.getModuleList();
-    const tabIndex = this.coreUtilityService.getIndexInArrayById(moduleList,tab._id,"_id"); 
-    const card = moduleList[tabIndex];
-    this.card['card'] = card;
+    // if(item && item.name){
+    //   this.popoverOutput.emit(item);
+    // }
+    // this.selectedIndex = index;
+    // this.carddata = [];
+    // this.createFormgroup = true;
+    // const tab = this.tabMenu[index];
+    // const moduleList = this.commonAppDataShareService.getModuleList();
+    // const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
+    // const card = moduleList[tabIndex];
+    this.card['card'] = item.tabCard;
     this.card.selectedTabIndex = index;
     this.popoverOutput.emit(this.card);
   } 

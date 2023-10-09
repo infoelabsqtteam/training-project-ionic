@@ -1,14 +1,15 @@
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
+import { Capacitor } from '@capacitor/core';
 
 export const environment = {
   production: false,
   baseUrl: 'https://omoknow.com/rest/',
-  serverhost: "http://localhost:8104/rest/",
-  // serverhost: "",
+  serverhost: "http://localhost:8104",
+  // serverhost: "https://uatserveritclabs.e-labs.ai",
   mediceaHost: "http://pcp.medicea.in/rest/",
-  appId: "com.tech.elabs.ionic",
+  appId: "com.tech.elabs.ai",
   appName: "E-Labs",
   appPlatformName: "E-Labs",
   web_site: "",
@@ -16,11 +17,12 @@ export const environment = {
   verify_type : "email",
   app_Version : "@2023 E-Labs",
   privacy_policy: "",
-  app_share: "https://play.google.com/store/apps/details?id=com.tech.elabs.ionic",
+  app_share: "",
   appCardMasterDataSize: 200,
   appHomePageLayout:"layout1",
   apiKey: "AIzaSyA--cLc1-rZJvuV18t0jxlzIbzxahuH-EQ",
-  googleMapsApiKey: "AIzaSyAlvBSDoXj5p3D1Qdnee_j_cF8jIGo5pz8"
+  googleMapsApiKey: "AIzaSyAlvBSDoXj5p3D1Qdnee_j_cF8jIGo5pz8",
+  plateformName: Capacitor.getPlatform() == "web" ? "android" : Capacitor.getPlatform()
 };
 
 /*

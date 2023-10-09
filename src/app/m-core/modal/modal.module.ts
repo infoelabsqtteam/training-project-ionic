@@ -12,6 +12,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { GoogleChartsModule } from 'angular-google-charts';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ModalComponent } from './modal.component';
+import { FileViewsModalComponent } from './file-views-modal/file-views-modal.component';
 
 const modal =[
   ModalComponent,
@@ -19,7 +20,8 @@ const modal =[
   GridSelectionModalComponent,
   GridSelectionDetailModalComponent,
   CallDataRecordFormComponent,
-  ChartFilterComponent
+  ChartFilterComponent,
+  FileViewsModalComponent
 ]
 
 @NgModule({

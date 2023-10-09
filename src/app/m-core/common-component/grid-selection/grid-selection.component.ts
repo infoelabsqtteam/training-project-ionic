@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { ApiService, CoreFunctionService, CoreUtilityService, DataShareService, NotificationService, RestService, StorageService } from '@core/ionic-core';
+import { AppDataShareService, NotificationService, AppStorageService } from '@core/ionic-core';
 import { AlertController, ModalController } from '@ionic/angular';
-import { Subscriber, Subscription } from 'rxjs';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
+import { ApiService, DataShareService, LimsCalculationsService, CommonFunctionService, CoreFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-grid-selection',
@@ -16,6 +16,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   @Input() modal: any;
   @Output() selectedTabAgain = new EventEmitter<any>();
   @Output() gridSelectionResponce = new EventEmitter<any>();
+  
 
   selecteData:any=[];
   selectedData:any = [];
@@ -25,7 +26,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   listOfGridFieldName:any =[]; 
   staticDataSubscriber:any;
   responseData:any;
-  copyStaticData:[] = [];
+  copyStaticData:any = [];
 
   editeMode:boolean=false;
   grid_row_selection:boolean = false;
@@ -46,19 +47,18 @@ export class GridSelectionComponent implements OnInit, OnChanges {
 
   constructor(    
     private modalController: ModalController,
-    private coreUtilityService: CoreUtilityService,
-    private restService:RestService,
-    private apiService:ApiService,
     private notificationService:NotificationService,
     private dataShareService:DataShareService,
-    private storageService: StorageService,
-    private alertController: AlertController,
-    private coreFunctionService: CoreFunctionService
+    private coreFunctionService: CoreFunctionService,
+    private appDataShareService: AppDataShareService,
+    private limsCalculationsService: LimsCalculationsService,
+    private commonFunctionService: CommonFunctionService
+
   ) { }
   
 
   ngOnInit() {
-    this.samePageGridSelection = this.dataShareService.getgridselectioncheckvalue();    
+    this.samePageGridSelection = this.appDataShareService.getgridselectioncheckvalue();    
     if(this.Data?.updateMode && this.Data.updateMode){  
       this.selectedTab = "added";
       this.updateMode = this.Data.updateMode;
@@ -74,12 +74,13 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   subscribe(){
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
+      this.reloadBtn = true;
       if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field) && data[this.field.ddn_field]){
         this.responseData = data[this.field.ddn_field];
+        this.reloadBtn = false;
       }else{
         this.responseData = [];
       }
-      this.copyStaticData = data;
       this.setStaticData(data);
     })
   }
@@ -122,8 +123,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
     else{
       this.gridData = [];
-    }
-   
+    }   
     if(this.field && this.field.grid_row_selection){
       this.grid_row_selection = true;
     }else{
@@ -136,69 +136,93 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }    
   }
   
-  setStaticData(staticData){
-    if(staticData){
-      if(this.field.ddn_field && staticData[this.field.ddn_field] && staticData[this.field.ddn_field] != null){
+  setStaticData(staticData) {
+    if (staticData) {
+      if (staticData) {
+        staticData = staticData;
+        Object.keys(staticData).forEach(key => {     
+          if(staticData[key]){
+            this.copyStaticData[key] = JSON.parse(JSON.stringify(staticData[key]));
+          }
+        })
+      }
+      if (this.field.ddn_field && staticData[this.field.ddn_field] && staticData[this.field.ddn_field] != null) {
         this.gridData = [];
-        if(staticData[this.field.ddn_field] && staticData[this.field.ddn_field].length>0){
+        if (staticData[this.field.ddn_field] && staticData[this.field.ddn_field].length > 0) {
           staticData[this.field.ddn_field].forEach(element => {
             const gridData = JSON.parse(JSON.stringify(element))
-            if(gridData.selected && this.selecteData.length < 0){
+            if (gridData.selected && this.selecteData.length < 0) {
               gridData.selected = false;
             }
             this.gridData.push(gridData);
           });
         }
-       
-        if(this.gridData && this.gridData.length > 0){
-
-          if(this.field.onchange_function && this.field.onchange_function_param != ""){
-            switch(this.field.onchange_function_param){
+        if (this.gridData && this.gridData.length > 0) {
+          if (this.field.onchange_function && this.field.onchange_function_param != "") {
+            switch (this.field.onchange_function_param) {
               case "calculateQquoteAmount":
-                this.gridData = this.coreUtilityService.calculateAutoEffRate(this.gridData);
+                this.gridData = this.limsCalculationsService.calculateAutoEffRate(this.gridData);
                 break;
             }
           }
-          
-          this.selecteData.forEach(element => {
-            this.gridData.forEach((row, i) => {
-              if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0){
-                var validity = true;
-                this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
-                  if(this.coreUtilityService.getObjectValue(matchcriteria,element) == this.coreUtilityService.getObjectValue(matchcriteria,row)){
-                    validity = validity && true;
-                  }
-                  else{
-                    validity = validity && false;
-                  }
-                });
-                if(validity == true){
-                  this.gridData[i]= element
-                const grid_data = JSON.parse(JSON.stringify(this.gridData[i]))
-                grid_data.selected = true;
-                this.gridData[i] = grid_data;
-                }
-              }
-              else{
-                 if(this.coreUtilityService.getObjectValue("_id",element) == this.coreUtilityService.getObjectValue('_id',row)){
-                  this.gridData[i]= element
-                  const grid_data = JSON.parse(JSON.stringify(this.gridData[i]))
-                  grid_data.selected = true;
-                  this.gridData[i] = grid_data;
-                }
-              }
-            });
-          });  
-          //this.getSelectedData();        
+          if(this.selecteData && this.selecteData.length > 0){
+            this.updateSelectedDataInGridData(this.selecteData);            
+          }
         }else{
+          this.reloadBtn = false;
           this.nogridDdata=true;
         }
-      }        
+      }
     }
+  }
+  
+  
+  updateSelectedDataInGridData(selecteData){
+    if(selecteData && selecteData.length > 0){
+      selecteData.forEach(element => {
+        for (let i = 0; i < this.gridData.length; i++) {
+          const row = this.gridData[i];
+          if (this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length > 0) {
+            var validity = true;
+            for (let index = 0; index < this.field.matching_fields_for_grid_selection.length; index++) {
+              const matchcriteria = this.field.matching_fields_for_grid_selection[index];
+              if (this.commonFunctionService.getObjectValue(matchcriteria, element) == this.commonFunctionService.getObjectValue(matchcriteria, row)) {
+                validity = validity && true;
+              }
+              else {
+                validity = validity && false;
+                break;
+              }
+            };
+            if (validity == true) {
+              this.updateRowData(element,i);
+              break;
+            }
+          }
+          else {
+            if (this.commonFunctionService.getObjectValue("_id", element) == this.commonFunctionService.getObjectValue('_id', row)) {
+              this.updateRowData(element,i);
+              break;
+            }
+          }
+        };
+      });  
+    }
+  }
+  updateRowData(element,i){
+    this.gridData[i] = element
+    const grid_data = JSON.parse(JSON.stringify(this.gridData[i]));
+    grid_data.selected = true;
+    // if(this.editableGridColumns.length > 0){
+    //   this.editableGridColumns.forEach(column => {
+    //     grid_data[column.field_name] = element[column.field_name];
+    //   });
+    // }
+    this.gridData[i] = grid_data;
   }
 
   getValueForGrid(field, object) {
-    return this.coreUtilityService.getValueForGrid(field, object);
+    return this.commonFunctionService.getValueForGrid(field, object);
   }
   isDisable(field, object) {
     const updateMode = false;
@@ -214,7 +238,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       return true;
     }
     if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-      return this.coreUtilityService.isDisable(field.etc_fields, updateMode, object);
+      return this.commonFunctionService.isDisable(field.etc_fields, updateMode, object);
     }   
     return false;
   }
@@ -226,7 +250,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
         condition = this.field.disableRowIf;
       }
       if(condition != ''){
-        if(this.coreUtilityService.checkDisableRowIf(condition,data)){
+        if(this.commonFunctionService.checkDisableRowIf(condition,data)){
           check = true;
         }else{
           check = false;
@@ -239,13 +263,13 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     const data = this.selectedData[index];
     const condition = field.disableRowIf;
     if(condition){
-      return !this.coreUtilityService.checkDisableRowIf(condition,data);
+      return !this.commonFunctionService.checkDisableRowIf(condition,data);
     }
     return true;    
   }
   calculateNetAmount(data, fieldName, index){
 
-    this.coreUtilityService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
+    this.limsCalculationsService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
   }
 
   async addremoveparticipant(data,index){
@@ -273,7 +297,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
           "Data": {"value":data,"column":this.field.gridColumns,"field":this.field,"alreadyAdded": alreadyAdded,"parentObject":this.parentObject},
           "index": index,
           "childCardType" : "demo1",
-          "formInfo" : {"InlineformGridSelection" : this.dataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""}          
+          "formInfo" : {"InlineformGridSelection" : this.appDataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""}          
         },
         swipeToClose: false
       });
@@ -295,15 +319,15 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   toggle(data:any,event:any, indx:any) {
     let index:any = -1;
-    if(data._id != undefined){
-      index = this.coreUtilityService.getIndexInArrayById(this.gridData,data._id);
+    if(data && data._id != undefined){
+      index = this.commonFunctionService.getIndexInArrayById(this.gridData,data._id);
       this.gridData[index] = data;
-    }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0 && data){
+    }else if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length > 0 && data){
       for (let i = 0; i < this.gridData.length; i++) {
           const row = this.gridData[i]; 
           for (let j = 0; j < this.field.matching_fields_for_grid_selection.length; j++) {
             const matchcriteria = this.field.matching_fields_for_grid_selection[j];          
-            if(this.coreUtilityService.getObjectValue(matchcriteria,data) == this.coreUtilityService.getObjectValue(matchcriteria,row)){
+            if(this.commonFunctionService.getObjectValue(matchcriteria,data) == this.commonFunctionService.getObjectValue(matchcriteria,row)){
               index = i;
               this.gridData[index] = data;
               break;
@@ -346,7 +370,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
   }
   getFirstCharOfString(char:any){
-    return this.coreUtilityService.getFirstCharOfString(char);
+    return this.commonFunctionService.getFirstCharOfString(char);
   }
   
   getName(object:any){
@@ -364,7 +388,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     if(field_name == ""){
       field_name = columns[0].field_name;
     }
-    let value = this.coreUtilityService.getObjectValue(field_name,object);
+    let value = this.commonFunctionService.getObjectValue(field_name,object);
     return value;
   }
 
@@ -393,7 +417,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   updateSelectedData(data:any,index?:any){
     if(this.selectedData && this.selectedData.length > 0){
-      if(data && data.id){
+      if(data && (data.id || data._id)){
         this.selectedData.forEach((element:any, i:number) => {
           if(element._id == data._id) {
             element = data;

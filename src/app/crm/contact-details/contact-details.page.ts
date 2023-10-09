@@ -1,15 +1,15 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-import { CoreUtilityService, EnvService, StorageService } from '@core/ionic-core';
+import { Router } from '@angular/router';
+import { AppStorageService, NotificationService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
-import { ModalController, PopoverController } from '@ionic/angular';
+import { PopoverController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { SocialOptionComponent } from '../social-option/social-option.component';
-import { SmsRetriever } from '@ionic-native/sms-retriever'
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
+import { CommonFunctionService, EnvService, StorageService } from '@core/web-core';
 
 @Component({
   selector: 'app-contact-details',
@@ -51,32 +51,21 @@ export class ContactDetailsPage implements OnInit {
   childCardType: string = "";
   childTabMenu: any=[];
 
-  // enquirydata = [
-  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
-  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
-  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
-  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
-  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
-  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
-  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'},
-  //   {'enquiry': 'Tirupati Life Science', 'location': 'Panchkula/Haryana', 'enqno': 'ENQ-15', 'enqdate': 'ENQ-15'}
-  // ]
-
   constructor(
-    public popoverController: PopoverController, 
-    private modalController: ModalController,
+    public popoverController: PopoverController,
     private dataShareServiceService:DataShareServiceService,
     private envService: EnvService,
     private http: HttpClient,
     private storageService: StorageService,
     private router: Router,
-    private currencyPipe: CurrencyPipe,
     private callNumber: CallNumber,
     private formBuilder: FormBuilder,
     private datePipe: DatePipe,
     private CurrencyPipe: CurrencyPipe,
     private ionLoaderService: IonLoaderService,
-    private coreUtilityService :CoreUtilityService,
+    private commonFunctionService:CommonFunctionService,
+    private appStorageService: AppStorageService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -173,7 +162,7 @@ export class ContactDetailsPage implements OnInit {
   }
 
   commonFunction(data:any) {
-    this.storageService.getObject('authData').then(async (val) => {
+    this.appStorageService.getObject('authData').then(async (val) => {
       if (val && val.idToken != null) {
         var header = {
           headers: new HttpHeaders()
@@ -243,7 +232,7 @@ export class ContactDetailsPage implements OnInit {
             break;
 
           default:
-            this.createFormControl(forControl, element, '', "text");
+            this.commonFunctionService.createFormControl(forControl, element, '', "text");
             break;
         }
       });
@@ -256,29 +245,29 @@ export class ContactDetailsPage implements OnInit {
     this.getcardData(this.collectionname);
   }
 
-  createFormControl(forControl, field, object, type) {
-    let disabled = field.is_disabled ? true : ((field.disable_if != undefined && field.disable_if != '') ? true : false);
-    switch (type) {
-      case "list":
-        forControl[field.field_name] = this.formBuilder.array(object, this.validator(field))
-        break;
-      case "text":
-        switch (field.type) {
-          case "gst_number":
-            forControl[field.field_name] = new FormControl({ value: object, disabled: disabled },this.validator(field))
-            break;    
-          default:
-            forControl[field.field_name] = new FormControl({ value: object, disabled: disabled }, this.validator(field))
-            break;
-        }
-        break;
-      case "group":
-        forControl[field.field_name] = this.formBuilder.group(object)
-        break;
-      default:
-        break;
-    }
-  }
+  // createFormControl(forControl, field, object, type) {
+  //   let disabled = field.is_disabled ? true : ((field.disable_if != undefined && field.disable_if != '') ? true : false);
+  //   switch (type) {
+  //     case "list":
+  //       forControl[field.field_name] = this.formBuilder.array(object, this.validator(field))
+  //       break;
+  //     case "text":
+  //       switch (field.type) {
+  //         case "gst_number":
+  //           forControl[field.field_name] = new FormControl({ value: object, disabled: disabled },this.validator(field))
+  //           break;    
+  //         default:
+  //           forControl[field.field_name] = new FormControl({ value: object, disabled: disabled }, this.validator(field))
+  //           break;
+  //       }
+  //       break;
+  //     case "group":
+  //       forControl[field.field_name] = this.formBuilder.group(object)
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // }
 
   validator(field) {
     const validator = []
@@ -375,7 +364,7 @@ export class ContactDetailsPage implements OnInit {
   }
 
   getcardData(collection_name:any){
-    this.storageService.getObject('authData').then(async (val) => {
+    this.appStorageService.getObject('authData').then(async (val) => {
       if (val && val.idToken != null) {
         var header = {
           headers: new HttpHeaders()
@@ -499,7 +488,7 @@ export class ContactDetailsPage implements OnInit {
                 filterList.push(
                   {
                     "fName": element.field_name,
-                    "fValue": this.coreUtilityService.dateFormat(formValue.value[element.field_name]),
+                    "fValue": this.commonFunctionService.dateFormat(formValue.value[element.field_name]),
                     "operator": "eq"
                   }
                 )
@@ -516,7 +505,7 @@ export class ContactDetailsPage implements OnInit {
                 filterList.push(
                   {
                     "fName": element.field_name,
-                    "fValue": this.coreUtilityService.dateFormat(formValue.value[element.field_name].start),
+                    "fValue": this.commonFunctionService.dateFormat(formValue.value[element.field_name].start),
                     "operator": "gte"
                   }
                 ) 
@@ -531,7 +520,7 @@ export class ContactDetailsPage implements OnInit {
                 filterList.push(
                   {
                     "fName": element.field_name,
-                    "fValue": this.coreUtilityService.dateFormat(formValue.value[element.field_name].end),
+                    "fValue": this.commonFunctionService.dateFormat(formValue.value[element.field_name].end),
                     "operator": "lte"
                   }
                 )
@@ -543,7 +532,7 @@ export class ContactDetailsPage implements OnInit {
         }
       });
       if(criteria && criteria.length > 0){
-        const crList = this.getCriteriaList(criteria,formValue.getRawValue());
+        const crList = this.commonFunctionService.getCriteriaList(criteria,formValue.getRawValue());
         if(crList && crList.length > 0){
           crList.forEach(element => {
             filterList.push(element);
@@ -557,26 +546,26 @@ export class ContactDetailsPage implements OnInit {
     return Array.isArray(obj)
   }
 
-  getCriteriaList(criteria,object){
-    const crList = [];    
-    criteria.forEach(element => {
-      const criteria = element.split(";");
-      const fValue = criteria[2]
-      let fvalue ='';
-      if(criteria[3] && criteria[3] == 'STATIC'){
-        fvalue = fValue;
-      }else{
-        fvalue = this.getObjectValue(fValue, object)
-      }
-      const list = {
-        "fName": criteria[0],
-        "fValue": fvalue,
-        "operator": criteria[1]
-      }
-      crList.push(list);
-    });
-    return crList;
-  }
+  // getCriteriaList(criteria,object){
+  //   const crList = [];    
+  //   criteria.forEach(element => {
+  //     const criteria = element.split(";");
+  //     const fValue = criteria[2]
+  //     let fvalue ='';
+  //     if(criteria[3] && criteria[3] == 'STATIC'){
+  //       fvalue = fValue;
+  //     }else{
+  //       fvalue = this.getObjectValue(fValue, object)
+  //     }
+  //     const list = {
+  //       "fName": criteria[0],
+  //       "fValue": fvalue,
+  //       "operator": criteria[1]
+  //     }
+  //     crList.push(list);
+  //   });
+  //   return crList;
+  // }
 
   getObjectValue(field, object) {
     let result = object;
@@ -608,7 +597,7 @@ export class ContactDetailsPage implements OnInit {
   }
 
   comingSoon() {
-    this.storageService.presentToast('Comming Soon...');
+    this.notificationService.presentToast('Comming Soon...');
   }
 
 }

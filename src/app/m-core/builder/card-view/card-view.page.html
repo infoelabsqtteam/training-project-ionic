@@ -22,7 +22,7 @@
   <ion-toolbar class="segmentTabMenu" *ngIf="!this.popoverTabbing && popoverItems && popoverItems.length > 0">
     <div class="menutab">
       <ion-segment [scrollable]="true" >
-        <ion-segment-button *ngFor="let tabItem of popoverItems; let i = index" (click)="tabmenuClick(tabItem,i)" [class.segment-button-checked]="selectedIndex == i" [ngClass]="" value="{{tabItem.name}}">
+        <ion-segment-button *ngFor="let tabItem of popoverItems; let i = index" (click)="tabmenuClick(tabItem,i)" [class.segment-button-checked]="selectedIndex == i" [ngClass]="!tabItem.display ? 'ion-hide' : 'ion-show'" value="{{tabItem.name}}">
           <ion-label class="ion-margin-vertical-0">{{tabItem.name}}</ion-label>
         </ion-segment-button>
       </ion-segment>

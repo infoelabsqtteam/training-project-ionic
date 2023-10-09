@@ -12,9 +12,9 @@
     <p class="enquerylist" *ngFor="let column of childColumns; index as j">
       <span [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.field_label">{{column.field_label}}</span>
       <span [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.label">{{column.label}}</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime' || column.type == 'info'" (click)="clickOnGridElement(column,childDataValue,j)" [innerHTML]="getValueForGrid(column,childDataValue)"></strong>
+      <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime' || column.type == 'info' || column.type == 'file'" (click)="clickOnGridElement(column,childDataValue,j)" [innerHTML]="getValueForGrid(column,childDataValue)"></strong>
 
-      <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button' || column.type == 'iconbutton'" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,childDataValue)"></ion-button>
+      <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="(column.type == 'button' || column.type == 'iconbutton') && getValueForGrid(column,childDataValue)" color="medium" fill="outline" size="small" [innerHTML]="getValueForGrid(column,childDataValue)"></ion-button>
     </p>
   </div>
 
