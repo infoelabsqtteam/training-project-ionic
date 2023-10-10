@@ -72,7 +72,7 @@ export class SignupComponent implements OnInit {
     this.initForm();
     this.pageloded();
   }
-  ngDestroy(){
+  ngOnDestroy(){
     if(this.signUpErrorSubscribe){
       this.signUpErrorSubscribe.unsubscribe();
     }
