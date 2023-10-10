@@ -234,7 +234,7 @@ tinymceConfig = {}
   custmizedFormValue: any = {};
   multipleFormCollection:any=[];
   donotResetFieldLists:any={};
-  typeAheadData: string[] = [];
+  typeAheadData: any = [];
   treeViewData: any = {};
   curFileUploadField:any={}
   curFileUploadFieldparentfield:any={};
@@ -1423,9 +1423,9 @@ tinymceConfig = {}
   // compareFn(e1: User, e2: User): boolean {
   //   return e1 && e2 ? e1.id === e2.id : e1 === e2;
   // }
-  getddnDisplayVal(val) {
-    return this.commonFunctionService.getddnDisplayVal(val);    
-  }
+  // getddnDisplayVal(val) {
+  //   return this.commonFunctionService.getddnDisplayVal(val);    
+  // }
   take_action_on_click(action_button){
     let api='';
     this.currentActionButton=action_button;
@@ -5314,28 +5314,28 @@ tinymceConfig = {}
     this.currentTreeViewFieldParent = {};
   }
 
-  getNumberOfSelectedRecord(field){
-    if (!this.custmizedFormValue[field.field_name]){
-      this.custmizedFormValue[field.field_name] = [];
-    }else{
-      if(this.custmizedFormValue[field.field_name] && this.custmizedFormValue[field.field_name].length > 0){
-        return "( "+this.custmizedFormValue[field.field_name].length+" )";
-      }else{
-        return '';
-      }
-    }
-  }
-  getNumberOfSelectedFile(field){
-    if (!this.dataListForUpload[field.field_name]){
-      this.dataListForUpload[field.field_name] = [];
-    }else{
-      if(this.dataListForUpload[field.field_name] && this.dataListForUpload[field.field_name].length > 0){
-        return "( "+this.dataListForUpload[field.field_name].length+" )";
-      }else{
-        return '';
-      }
-    }
-  }
+  // getNumberOfSelectedRecord(field){
+  //   if (!this.custmizedFormValue[field.field_name]){
+  //     this.custmizedFormValue[field.field_name] = [];
+  //   }else{
+  //     if(this.custmizedFormValue[field.field_name] && this.custmizedFormValue[field.field_name].length > 0){
+  //       return "( "+this.custmizedFormValue[field.field_name].length+" )";
+  //     }else{
+  //       return '';
+  //     }
+  //   }
+  // }
+  // getNumberOfSelectedFile(field){
+  //   if (!this.dataListForUpload[field.field_name]){
+  //     this.dataListForUpload[field.field_name] = [];
+  //   }else{
+  //     if(this.dataListForUpload[field.field_name] && this.dataListForUpload[field.field_name].length > 0){
+  //       return "( "+this.dataListForUpload[field.field_name].length+" )";
+  //     }else{
+  //       return '';
+  //     }
+  //   }
+  // }
   checkCustmizedFormValueData(parent,chield){
     let check = false;
     if(parent != '' && parent != undefined && parent != null){
@@ -5647,7 +5647,7 @@ tinymceConfig = {}
         return returnClass
       }
   }
-  // getColSize(field){
+// getColSize(field){
   //   let size:any = 12;
   //   if(field.type != 'typeahead' && field.type != 'dropdown'){
   //     if(field.field_class && field.field_class != ''){
@@ -6214,7 +6214,7 @@ tinymceConfig = {}
     }
     this.setValue("",field, "", e);
   }
-  // getTitlecase(value){
+// getTitlecase(value){
   //   return this.coreUtilityService.getTitlecase(value);
   // }
   
