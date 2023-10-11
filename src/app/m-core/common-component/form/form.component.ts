@@ -5190,6 +5190,7 @@ tinymceConfig = {}
     }
     this.samePageGridSelection = this.appDataShareService.getgridselectioncheckvalue();
     if(this.samePageGridSelection){
+      this.apiService.ResetStaticData(field.field_name);
       this.curTreeViewField = field;      
       this.samePageGridSelectionData = gridModalData;
     }else{
