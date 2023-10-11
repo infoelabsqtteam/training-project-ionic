@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationService } from '@core/ionic-core';
-import { EnvService, AuthService, AuthDataShareService } from '@core/web-core';
+import { EnvService, AuthService, AuthDataShareService, CustomvalidationService } from '@core/web-core';
 // import { ErrorMessageComponent } from 'src/app/component/error-message/error-message.component';
 
 @Component({
@@ -42,7 +42,8 @@ export class ChangepwdComponent implements OnInit {
     private notificationService:NotificationService,
     private formBuilder:FormBuilder,
     private envService: EnvService,
-    private authDataShareService: AuthDataShareService
+    private authDataShareService: AuthDataShareService,
+    private customValidationService: CustomvalidationService
   ) { 
     if(this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true;
@@ -83,13 +84,13 @@ export class ChangepwdComponent implements OnInit {
       });
       this.vForm = this.formBuilder.group({
         'verifyCode': ['', [Validators.required]],
-        'newpwd': ['', [Validators.required]],
+        'newpwd': ['', [Validators.required, this.customValidationService.patternValidator()]],
         'confpwd': ['', [Validators.required]],
       });
     }else{
       this.changepwdform = this.formBuilder.group({
         'oldpwd': ['', [Validators.required]],
-        'newpwd': ['', [Validators.required]],
+        'newpwd': ['', [Validators.required, this.customValidationService.patternValidator()]],
         'confpwd': ['', [Validators.required]],
       });
     }
@@ -172,7 +173,7 @@ export class ChangepwdComponent implements OnInit {
     const code = this.vForm.value.verifyCode;
     const password = this.vForm.value.password;
     const payload = { userId: this.username, code: code, newPassword: password };
-    // this.authService.saveNewPassword(payload);   
+    // this.authService.SaveNewPassword(payload);   
   }
   
   get f() {return this.fForm.controls;}

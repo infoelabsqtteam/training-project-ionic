@@ -76,10 +76,10 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
       this.reloadBtn = true;
       if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field) && data[this.field.ddn_field]){
-        this.responseData = data[this.field.ddn_field];
+        this.responseData[this.field.ddn_field] = data[this.field.ddn_field];
         this.reloadBtn = false;
       }else{
-        this.responseData = [];
+        this.responseData = {};
       }
       this.setStaticData(data);
     })

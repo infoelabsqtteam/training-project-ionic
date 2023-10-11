@@ -16,38 +16,38 @@
       <div *ngIf="column.editable" class="enquerylist">
         <span [title]="column.label" class="detail-grid">{{column.label}} <ion-text color="danger" *ngIf="column.is_mandatory">*</ion-text><ion-text>&nbsp;:&nbsp;</ion-text></span>        
         <span *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
-            <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly">
+            <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
         </span>
         <span *ngIf="column.type.toLowerCase() == 'textarea'" class="editable-input-wrapper">
-          <input type="text" class="form-control form-control-sm d-inline mr-2" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly">
+          <input type="text" class="form-control form-control-sm d-inline mr-2" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
         </span>
         <span *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
-          <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly">
+          <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
         </span>
         <span *ngIf="column.type.toLowerCase() == 'boolean'" class="editable-input-wrapper" >
-            <ion-checkbox [(ngModel)]="data[column.field_name]" [ngclass]="column.field_class" class="ion-margin-end" [disabled]="isDisable(column,data)" [disabled]="readonly"></ion-checkbox>            
+            <ion-checkbox [(ngModel)]="data[column.field_name]" [ngclass]="column.field_class" class="ion-margin-end" [disabled]="isDisable(column,data)" [disabled]="readonly" [id]="column._id+'_'+column.field_name"></ion-checkbox>            
         </span>        
         <span *ngIf="column.type.toLowerCase() == 'dropdown'" class="editable-input-wrapper">
-            <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly" class="ion-border_bottom ion-padding-end" (ionCancel)="clearDropdownField($event, column)" cancel-text="Clear" (ionDismiss)="$event.stopPropagation()" (ionFocus)="selectionFocus(column)">
-              <ion-select-option *ngFor="let staticValue of staticData[column.ddn_field]" [value]="staticValue" [innerHtml]="getddnDisplayVal(staticValue)"></ion-select-option>
+            <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly" class="ion-border_bottom ion-padding-end" (ionCancel)="clearDropdownField($event, column)" cancel-text="Clear" (ionDismiss)="$event.stopPropagation()" (ionFocus)="selectionFocus(column)" [id]="column._id+'_'+column.field_name">
+              <ion-select-option *ngFor="let staticValue of staticData[column.ddn_field]" [value]="staticValue">{{ staticValue.name ? staticValue.name : staticValue }}</ion-select-option>
             </ion-select>
         </span>        
         <span *ngIf="column.type.toLowerCase() == 'userinput_chips'" class="editable-input-wrapper userInputChips">         
-          <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
-            <ion-label>{{getddnDisplayVal(item)}}</ion-label>
+          <ion-chip  *ngFor="let item of data[column.field_name]; let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
+            <ion-label>{{ item.name ? item.name : item }}</ion-label>
             <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
           </ion-chip>
-          <ng-select [bindLabel]="'column.name'" [(ngModel)]="userInputChipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)" (change)="searchTypeaheadData(column,data,$event)" (blur)="setValue(userInputChipsData,column,data)" (keyup.enter)="setValue($event,column,data)"  [disabled]="isDisable(column,data)" [readonly]="readonly" enterkeyhint="done">
-            <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
+          <ng-select [bindLabel]="'column.name'" [addTag]="true" #chipsInput [(ngModel)]="userInputChipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)" (change)="setValue($event,column,data,i,chipsInput,'change')" (keyup.enter)="setValue($event,column,data,i,chipsInput,'keyupenter')" (close)="resetVariables()" [disabled]="isDisable(column,data)" [readonly]="readonly" enterkeyhint="done" [id]="column._id+'_'+column.field_name">
+            <ng-option *ngFor="let option of typeAheadData" [value]="option">{{ option.name ? option.name : option }}</ng-option>
           </ng-select>
         </span>
         <span *ngIf="column.type.toLowerCase() == 'chips'" class="editable-input-wrapper chips">         
-          <ion-chip  *ngFor="let item of custmizedFormValueData(data,column); let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
-            <ion-label>{{getddnDisplayVal(item)}}</ion-label>
+          <ion-chip  *ngFor="let item of data[column.field_name]; let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
+            <ion-label>{{item.name ? item.name : item}}</ion-label>
             <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
           </ion-chip>
-          <ng-select [bindLabel]="'column.name'" [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)" (change)="setValue($event,column,data)" [disabled]="isDisable(column,data)" [readonly]="readonly" enterkeyhint="done">
-            <ng-option *ngFor="let option of typeAheadData" [value]="option" [innerHtml]="getddnDisplayVal(option)"></ng-option>
+          <ng-select [bindLabel]="'column.name'" #typeheadchips [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)" (change)="setValue($event,column,data,i,typeheadchips)" (close)="resetVariables()" [disabled]="isDisable(column,data)" [readonly]="readonly" enterkeyhint="enter" [id]="column._id+'_'+column.field_name">
+            <ng-option *ngFor="let option of typeAheadData" [value]="option">{{ option.name ? option.name : option }}</ng-option>
           </ng-select>          
         </span>
       </div>

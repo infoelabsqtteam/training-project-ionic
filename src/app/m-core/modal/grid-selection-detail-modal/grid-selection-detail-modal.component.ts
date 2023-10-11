@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { NotificationService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService } from '@core/web-core';
@@ -15,6 +15,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
   @Input() index: number;
   @Input() modal: any;
   @Input() formInfo:any;
+  @ViewChild('chipsInput',{ read: ElementRef,static: false }) chipsInput: ElementRef<HTMLInputElement>;
+  @ViewChild('typeheadchips',{read:ElementRef}) typeheadchips: ElementRef<HTMLInputElement>;
 
   cardType:any;
   columnList :any = [];
@@ -303,9 +305,9 @@ export class GridSelectionDetailModalComponent implements OnInit {
       });
     }
   }
-  getddnDisplayVal(val) {
-    return this.commonFunctionService.getddnDisplayVal(val);
-  }
+  // getddnDisplayVal(val) {
+  //   return this.commonFunctionService.getddnDisplayVal(val);
+  // }
   searchTypeaheadData(field, currentObject,chipsInputValue) {
     this.typeaheadObjectWithtext = currentObject;
     this.addedDataInList = this.typeaheadObjectWithtext[field.field_name];
@@ -332,43 +334,79 @@ export class GridSelectionDetailModalComponent implements OnInit {
       this.typeAheadData = [];
     }
   }
-  setValue(option:any,field,data) {
-    if(option != null && option != "" && option.key !=""){
-      const alreadyAddedList = data[field.field_name];
-      if ((option.keyCode == 13 || option.keyCode == 9) && option.target.value !="" && option.target.value != undefined){
-        if(this.commonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option.target.value,alreadyAddedList)){
-          this.notificationService.presentToastOnBottom( option.target.value + ' Already Added');
-        }else{
-          if(data[field.field_name] == null) {
-            data[field.field_name] = [];
-          }else{
-            data[field.field_name].push(option.target.value);
-            option.target.value = "";
-          }
-        }
-        // option.target.value = "";
-      }else if(option.target && option.target.value ==""){
-        this.notificationService.presentToastOnBottom( "Please enter any " + field.label);
-      }else{
-        if(option !=""){
-          if(this.commonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
-            this.notificationService.presentToastOnBottom( option.name + ' Already Added');
-          }else{
-            if(data[field.field_name] == null) data[field.field_name] = [];
-            data[field.field_name].push(option); 
-          }
-          this.userInputChipsData = "";
-          this.chipsData = {};
-          this.typeAheadData = [];
-        }
+  setValue(option:any,field,data,index,chipsInput,eventFire?:any) {
+    let inputSelectValue:any;
+    const alreadyAddedList = data[field.field_name];
+    if(option != null && option != ""){
+      if ((option.keyCode == 13 || option.keyCode == 9) || this.coreFunctionService.isNotBlank(option.target.value)){
+        inputSelectValue = option.target.value;
+      }else if(this.coreFunctionService.isNotBlank(option.label)){
+        inputSelectValue = option.label;
+      }else if(typeof option == 'string' || this.coreFunctionService.isNotBlank(option['_id'])){
+        inputSelectValue = option
       }
-    }      
-  }  
-  custmizedFormValueData(data, fieldName) {
-    if (data && data[fieldName.field_name] && data[fieldName.field_name].length > 0) {
-      return data[fieldName.field_name];
     }
+    if(inputSelectValue){
+      if(this.commonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
+        if(typeof option == 'string'){
+          this.notificationService.presentToastOnBottom( option + ' Already Added');
+        }else{
+          this.notificationService.presentToastOnBottom( option.name + ' Already Added');
+        }
+      }else{
+        if(data[field.field_name] == null) data[field.field_name] = [];
+        data[field.field_name].push(inputSelectValue); 
+      }
+      if(option?.target?.value){
+        option.target.value = '';
+      }      
+      if(chipsInput && chipsInput.element && this.chipsInput.nativeElement){
+        this.chipsInput.nativeElement.value = '';
+        let ngInput = <HTMLInputElement>document.getElementById(field._id+'_'+field.field_name);
+        ngInput.value = '';
+      }
+      if(this.userInputChipsData.label ){
+        this.userInputChipsData.label = "";        
+      }
+      this.userInputChipsData = "";
+      this.chipsData = {};
+      this.typeAheadData = [];
+    }
+    //   if(option != null && option != "" && option.key !=""){
+    //   if ((option.keyCode == 13 || option.keyCode == 9) && option.target.value !="" && option.target.value != undefined){
+    //     if(this.commonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option.target.value,alreadyAddedList)){
+    //       this.notificationService.presentToastOnBottom( option.target.value + ' Already Added');
+    //     }else{
+    //       if(data[field.field_name] == null) {
+    //         data[field.field_name] = [];
+    //       }else{
+    //         data[field.field_name].push(option.target.value);
+    //         option.target.value = "";
+    //       }
+    //     }
+    //   // option.target.value = "";
+    //   }else if(option.target && option.target.value ==""){
+    //     this.notificationService.presentToastOnBottom( "Please enter any " + field.label);
+    //   }else{
+    //     if(option !=""){
+    //       if(this.commonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
+    //         this.notificationService.presentToastOnBottom( option.name + ' Already Added');
+    //       }else{
+    //         if(data[field.field_name] == null) data[field.field_name] = [];
+    //         data[field.field_name].push(option); 
+    //       }
+    //       this.userInputChipsData = "";
+    //       this.chipsData = {};
+    //       this.typeAheadData = [];
+    //     }
+    //   }
+    // }
   }
+  // custmizedFormValueData(data, fieldName) {
+  //   if (data && data[fieldName.field_name] && data[fieldName.field_name].length > 0) {
+  //     return data[fieldName.field_name];
+  //   }
+  // }
   removeItem(data:any,column:any,i:number){
     this.commonFunctionService.removeItem(data,column,i);
   }
@@ -401,12 +439,10 @@ export class GridSelectionDetailModalComponent implements OnInit {
     };
   }
   clearDropdownField(e:any,field:any){
-    if(e.target.value && e.target.value.name){      
-      e.target.value = "";
-    }else{
+    if(e?.target.value || e?.target?.value.name){      
       e.target.value = "";
     }
-    this.setValue("",field, e);
+    this.setValue(e,field,'','','',"clearDropDown");
   }
   selectGridData(addOrupdate?:boolean) {
     // this.selectedData = [];
