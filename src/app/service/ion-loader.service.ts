@@ -1,5 +1,5 @@
 import { Injectable, EventEmitter } from '@angular/core';
-import { LoadingController } from '@ionic/angular';
+import { LoadingController, LoadingOptions } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +27,6 @@ export class IonLoaderService {
       response.present();
     });
   }
-
   // Dismiss loader
   async hideLoader() {
     await this.loadingController.dismiss().then((response) => {
@@ -36,7 +35,6 @@ export class IonLoaderService {
       console.log('Error occured : ', err);
     });
   }
-
   // Auto hide show loader
   async autohideLoader(msg: String) {
     let message;
@@ -58,8 +56,7 @@ export class IonLoaderService {
         console.log('Loader dismissed', response);
       });
     });
-  }   
-
+  }
   // Custom style + hide on tap loader
   async customLoader() {
     this.loadingController.create({
@@ -71,7 +68,6 @@ export class IonLoaderService {
       res.present();
     });
   }
-
   //
   async showImageLoader(msg: string) {
     let message = "";
@@ -89,9 +85,19 @@ export class IonLoaderService {
       backdropDismiss:true,
       translucent: true,
     });
-
     loading.present();
-
+  }
+  // new function
+  public async showLoading(
+    opts?: LoadingOptions
+  ): Promise<HTMLIonLoadingElement> {
+    const defaultOpts: LoadingOptions = {
+      message: 'Please wait...',
+    };
+    opts = { ...defaultOpts, ...opts };
+    const loading = await this.loadingController.create(opts);
+    await loading.present();
+    return loading;
   }
 
 }

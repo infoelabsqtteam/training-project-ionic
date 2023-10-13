@@ -1,11 +1,16 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, NgZone, OnInit, ViewChild } from '@angular/core';
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
 import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
-
 import { HttpClient } from '@angular/common/http';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CameraService, ApiImage } from 'src/app/service/camera-service/camera.service';
 import { finalize } from 'rxjs';
+import { Barcode, BarcodeFormat, BarcodeScanner, LensFacing } from '@capacitor-mlkit/barcode-scanning';
+import { FormGroup, FormControl } from '@angular/forms';
+import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
+import { FilePicker } from '@capawesome/capacitor-file-picker';
+import { BarcodeScanningComponent } from 'src/app/m-core/modal/barcode-scanning/barcode-scanning.component';
+import { NotificationService } from '@core/ionic-core';
 
 
 const IMAGE_DIR = 'stored-images';
@@ -23,18 +28,39 @@ export interface LocalFile {
 })
 export class ImageUploadPage implements OnInit {
 
+  /* --------Image upload variables------------------------------------------- */
   images: ApiImage[] = [];
   files: LocalFile[] = [];
   selectedphotos:any= [];
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
+
+  /* --------Image upload variables End------------------------------------------- */
   
+  /* --------BarCode Scanning Variables------------------------------------------- */
+  public readonly barcodeFormat = BarcodeFormat;
+  public readonly lensFacing = LensFacing;
+
+  public formGroup = new FormGroup({
+    formats: new FormControl([]),
+    lensFacing: new FormControl(LensFacing.Back),
+    // googleBarcodeScannerModuleInstallState: new FormControl(0),
+    // googleBarcodeScannerModuleInstallProgress: new FormControl(0),
+  });
+  public barcodes: Barcode[] = [];
+  public isSupported = false;
+  public isPermissionGranted = false;
+  // ngZone: any;
+  /* --------BarCode Scanning Variables End------------------------------------------- */
  
   constructor(
     private cameraService: CameraService, 
     private plt: Platform, 
     private actionSheetCtrl: ActionSheetController,
     private loadingCtrl: LoadingController,
-    private http: HttpClient
+    private http: HttpClient,
+    private popoverModalService: PopoverModalService,    
+    private readonly ngZone: NgZone,
+    private notificationService: NotificationService
   ) 
     {
       this.loadFiles();
@@ -43,6 +69,8 @@ export class ImageUploadPage implements OnInit {
   }
 
   ngOnInit(){
+    // barcode Scanner Initialize
+    this.checkBarcodeScannerSupportedorNot();
   }
  
   // method 2
@@ -276,7 +304,7 @@ export class ImageUploadPage implements OnInit {
       },
       {
         text: 'Choose From Photos',
-        icon: 'image',
+        icon: 'images',
         handler: () => {
           // this.addImage(CameraSource.Photos);
           // this.selectImage(CameraSource.Photos);
@@ -377,6 +405,82 @@ export class ImageUploadPage implements OnInit {
  
     const blob = new Blob(byteArrays, { type: contentType });
     return blob;
+  }
+  /*----BarCode Functions------------------------------------------------------------------------- */
+  checkBarcodeScannerSupportedorNot(){
+    BarcodeScanner.isSupported().then((result) => {
+      this.isSupported = result.supported;
+    }).catch((error) => {
+      console.log(error);
+    });
+    BarcodeScanner.checkPermissions().then((result) => {
+      this.isPermissionGranted = result.camera === 'granted' || result.camera === 'limited';
+    }).catch((error) => {
+      console.log(error);
+      this.presentAlert();
+    });
+    BarcodeScanner.removeAllListeners().then(() => {
+      BarcodeScanner.addListener(
+        'barcodeScanned',
+        (event) => {
+          this.ngZone.run(() => {
+            console.log('barcodeScanned', event);
+            // const { state, progress } = event;
+            // this.formGroup.patchValue({
+            //   googleBarcodeScannerModuleInstallState: state,
+            //   googleBarcodeScannerModuleInstallProgress: progress,
+            // });
+          });
+        }
+      );
+    });
+  }
+  async startScan(): Promise<void> {
+    const formats = this.formGroup.get('formats')?.value || [];
+    const lensFacing =
+      this.formGroup.get('lensFacing')?.value || LensFacing.Back;
+    const modal = await this.popoverModalService.showModal({
+      component: BarcodeScanningComponent,
+      // Set `visibility` to `visible` to show the modal (see `src/theme/variables.scss`)
+      cssClass: 'barcode-scanning-modal',
+      showBackdrop: false,
+      componentProps: {
+        formats: formats,
+        lensFacing: lensFacing,
+      },
+    });
+    modal.onDidDismiss().then((result) => {
+      const barcode: Barcode | undefined = result.data?.barcode;
+      if (barcode) {
+        this.barcodes = [barcode];
+      }
+    });
+  }
+
+  async readBarcodeFromImage(): Promise<void> {
+    const { files } = await FilePicker.pickImages({ multiple: false });
+    const path = files[0]?.path;
+    if (!path) {
+      return;
+    }
+    const formats = this.formGroup.get('formats')?.value || [];
+    const { barcodes } = await BarcodeScanner.readBarcodesFromImage({
+      path,
+      formats,
+    });
+    this.barcodes = barcodes;
+  }
+  async openSettings(): Promise<void> {
+    await BarcodeScanner.openSettings();
+  }
+  async requestPermissions(): Promise<void> {
+    await BarcodeScanner.requestPermissions();
+  }
+  async presentAlert(): Promise<void> {
+    let openSetting:any = await this.notificationService.confirmAlert('Permission denied','Please grant camera permission to use the barcode scanner.');
+    if(openSetting){
+      this.openSettings();
+    }
   }
 
 }
