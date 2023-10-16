@@ -140,7 +140,7 @@
       <ion-fab-button (click)="selectImageSource()">
         <ion-icon name="camera"></ion-icon>
       </ion-fab-button>
-      <ion-fab-button *ngIf="isSupported" (click)="startScan()">
+      <ion-fab-button *ngIf="isSupported" (click)="checkCameraPermissionToSacn()">
         <ion-icon name="scan"></ion-icon>
       </ion-fab-button>
       <ion-fab-button *ngIf="isSupported" (click)="readBarcodeFromImage()">

@@ -410,16 +410,46 @@ export class ImageUploadPage implements OnInit {
   checkBarcodeScannerSupportedorNot(){
     BarcodeScanner.isSupported().then((result) => {
       this.isSupported = result.supported;
-    }).catch((error) => {
-      console.log(error);
+    }).catch(err => {
+      console.log('checkBarcodeScannerSupportedorNot Error', err);
     });
-    BarcodeScanner.checkPermissions().then((result) => {
-      this.isPermissionGranted = result.camera === 'granted' || result.camera === 'limited';
-    }).catch((error) => {
-      console.log(error);
-      this.presentAlert();
-    });
+  }
+  checkCameraPermissionToSacn(){
+    if(this.isSupported){
+      BarcodeScanner.checkPermissions().then((result) => {
+        if(result.camera === 'granted' || result.camera === 'limited'){
+          this.isPermissionGranted = true;
+          // this.removeAllBarCodeListeners();
+          BarcodeScanner.removeAllListeners().then(() => {
+            console.log("removeAllListeners");
+            this.startScan();
+          });          
+        }else{
+          if(result.camera === 'denied'){
+            this.presentsettingAlert();
+          }
+          this.isPermissionGranted = false;
+        }
+      }).catch(err => {
+        console.log('checkCameraPermissionToSacn Error', err);
+      });
+    }else{
+      let alertOpt = {
+        'header': "Alert",
+        'message':"Your device doesn't support barcode scanning.",
+        'buttons' : [
+          {
+            text: 'Dismiss',
+            role: 'cancel',
+          }
+        ]
+      }
+      this.popoverModalService.showErrorAlert(alertOpt);
+    }
+  }
+  removeAllBarCodeListeners(){
     BarcodeScanner.removeAllListeners().then(() => {
+      console.log("removeAllListeners")
       BarcodeScanner.addListener(
         'barcodeScanned',
         (event) => {
@@ -476,9 +506,9 @@ export class ImageUploadPage implements OnInit {
   async requestPermissions(): Promise<void> {
     await BarcodeScanner.requestPermissions();
   }
-  async presentAlert(): Promise<void> {
-    let openSetting:any = await this.notificationService.confirmAlert('Permission denied','Please grant camera permission to use the barcode scanner.');
-    if(openSetting){
+  async presentsettingAlert(): Promise<void> {
+    let openSetting:any = await this.notificationService.confirmAlert('Permission denied','Please grant camera permission to use the barcode scanner. And try again.');
+    if(openSetting == "confirm"){
       this.openSettings();
     }
   }
