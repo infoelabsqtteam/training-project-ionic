@@ -130,6 +130,8 @@ export class CardViewPage implements OnInit, OnDestroy {
               navigation = 'chart';
             }else if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'mongochart'){
               navigation = 'mongochart';
+            }else if(cardWithTab.card.card_type && cardWithTab.card.card_type.name == 'scanner'){
+              navigation = 'scanner';
             }else{
               navigation = 'home';
             }

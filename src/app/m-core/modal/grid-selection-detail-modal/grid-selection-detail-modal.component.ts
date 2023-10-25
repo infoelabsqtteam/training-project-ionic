@@ -338,7 +338,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     let inputSelectValue:any;
     const alreadyAddedList = data[field.field_name];
     if(option != null && option != ""){
-      if ((option.keyCode == 13 || option.keyCode == 9) || this.coreFunctionService.isNotBlank(option.target.value)){
+      if ((option.keyCode == 13 || option.keyCode == 9) || (option && option?.target?.value != '' && option?.target?.value != undefined)){
         inputSelectValue = option.target.value;
       }else if(this.coreFunctionService.isNotBlank(option.label)){
         inputSelectValue = option.label;

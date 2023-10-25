@@ -1,0 +1,16 @@
+<ion-header class="menutab">
+  <ion-toolbar>
+    <ion-title>Scanning</ion-title>
+    <ion-buttons slot="start" (click)="goBack()"><ion-button><ion-icon name="arrow-back"></ion-icon></ion-button></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<div>
+  <ion-row class="ion-justify-content-center scacannerBtn" *ngIf="isBarCodeScannerSupported">
+      <ion-col size="4">          
+        <ion-button shape="round" size="large" (click)="checkCameraPermissionToSacn()">
+            <ion-icon slot="start" name="scan"></ion-icon>
+            Scan
+        </ion-button>
+      </ion-col>
+  </ion-row>  
+</div>

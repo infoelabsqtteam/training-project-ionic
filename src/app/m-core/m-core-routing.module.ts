@@ -6,6 +6,7 @@ import { ChartComponent } from './common-component/chart/chart.component';
 import { FormComponent } from './common-component/form/form.component';
 import { MCoreComponent } from './m-core.component';
 import { MongodbChartComponent } from './common-component/mongodb-chart/mongodb-chart.component';
+import { MyScannerComponent } from './scanner/scanner.component';
 
 const routs : Routes = [
         {
@@ -16,7 +17,8 @@ const routs : Routes = [
                 {path:'card-view',loadChildren: () => import('../m-core/builder/card-view/card-view.module').then(m => m.CardViewPageModule)},
                 {path:'card-detail-view',loadChildren: () => import('../m-core/builder/card-detail-view/card-detail-view.module').then(m => m.CardDetailViewPageModule)},
                 {path:'chart', component:ChartComponent},
-                {path:'mongochart', component:MongodbChartComponent},
+                {path:'mongochart', component:MongodbChartComponent}, 
+                {path:'scanner', component: MyScannerComponent}
             ],
             runGuardsAndResolvers: 'always'
         },
