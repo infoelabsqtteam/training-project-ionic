@@ -6,11 +6,14 @@ import { Capacitor } from '@capacitor/core';
 import { BarcodeScanningComponent } from '../modal/barcode-scanning/barcode-scanning.component';
 import { Subject, Subscription } from 'rxjs';
 import { ApiService, CommonFunctionService, CoreFunctionService, DataShareService, StorageService } from '@core/web-core';
-import { AppPermissionService, App_googleService, NotificationService } from '@core/ionic-core';
-import { ActionSheetController, AlertController, IonModal, ModalController, isPlatform } from '@ionic/angular';
+import { AppPermissionService, AppStorageService, App_googleService, NotificationService } from '@core/ionic-core';
+import { ActionSheetController, AlertController, IonModal, ModalController, Platform, isPlatform } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { OverlayEventDetail } from '@ionic/core/components';
 import { DataModalComponent } from './data-modal/data-modal.component';
+import { Location } from '@angular/common';
+import { App } from '@capacitor/app';
+import { CustomStaticFormComponent } from './custom-static-form/custom-static-form.component';
 
 @Component({
   selector: 'my-scanner',
@@ -65,6 +68,21 @@ export class MyScannerComponent implements OnInit {
   collectionname:any;
   gridRealTimeDataSubscription:Subscription;
   ConfirmScannedResult: string;
+  banner_img:any = [
+    'assets/img/home/banner1.jpg',
+    'assets/img/home/banner2.jpg',
+    'assets/img/home/banner3.jpg',
+    'assets/img/home/banner4.jpg'
+  ];
+  userType:string = 'customer';
+  selectedTab:String;
+  isExitAlertOpen:boolean = false;
+  gridDataSubscription:Subscription;
+  appCardMasterDataSize:number = 200;
+  cardList: any = [];
+  errorTitle:String = '';
+  errorMessage:String = '';
+  headerTitle:String = '';
 
   constructor(
     private popoverModalService: PopoverModalService,
@@ -80,22 +98,110 @@ export class MyScannerComponent implements OnInit {
     private router: Router,
     private actionSheetCtrl: ActionSheetController,
     private commonFunctionService: CommonFunctionService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private platform: Platform,
+    private _location: Location,
+    private appStorageService: AppStorageService
   ) { 
+    this.initializeApp();    
+    this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
+
     this.gridRealTimeDataSubscription = this.dataShareService.gridRunningData.subscribe(data =>{
       this.updateRunningData(data.data);
-    })
+    });
+
+    this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
+      if(data && data.data && data.data.length > 0){
+        this.cardList = data.data;
+        // this.commonAppDataShareService.setModuleList(this.cardMasterList);
+        // this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(this.cardMasterList);
+      }else{
+        this.cardList = [];
+        if(this.userType == 'employee'){
+          this.errorTitle = "No Daily Visits Found !";
+          this.errorMessage = "Please Scan QR to View Visits.";
+        }else{
+          if(this.userType == 'customer' && this.collectionname == 'customer_complaint'){
+            this.errorTitle = "No Complaints Found !";
+            this.errorMessage = "There are no complaints available at the moment. Please raise !";            
+          }else{
+            this.errorTitle = "No Requestes Found !";
+            this.errorMessage = "There are no requestes available at the moment. Please raise !";
+          }
+        }
+      }
+    });
+  }
+  initializeApp() {
+    this.platform.ready().then(() => {});
+
+    this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+      console.log('Back press handler!');
+      if(this.isExitAlertOpen){
+        this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
+      }else{
+        if(this._location.isCurrentPathEqualTo('/scanner')){
+          this.showExitConfirm();
+          // processNextHandler();
+        }
+      }
+    });
   }
 
+  ionViewDidEnter(){
+    this.onLoad();
+  }
+  ionViewDidLeave(){
+    this.unsubscribeVariable();
+  }
+  
   ngOnInit() {
-    this.checkBarcodeScannerSupportedorNot();
-    this.isModalOpen = false;
-    this.checkCameraPermissionToSacn();
+    // this.onLoad();
+  }
+  onLoad(){
+    let user = this.storageService.GetUserInfo();
+    this.selectedTab = 'tab1';
+    if(user && user.type != ''){
+      this.userType = user.type;
+      if(this.userType == 'employee'){
+        this.headerTitle = "Scanner";
+        this.collectionname = "daily_scan_visit";
+        this.checkBarcodeScannerSupportedorNot();
+        this.isModalOpen = false;
+        this.checkCameraPermissionToSacn();        
+      }else{
+        if(this.userType == 'customer'){
+          if(this.selectedTab == 'tab1'){
+            this.headerTitle = 'Complaint Service';
+            this.collectionname = 'customer_complaint';
+          }else{
+            this.collectionname = 'customer_requests';
+            this.headerTitle = 'Request Service';
+          }
+        }
+      }
+      if(this.collectionname != '') this.getGridData();
+    }else{
+      console.log("UserType Not defined !");
+    }
   }
   ngOnDestroy(){    
     if(this.gridRealTimeDataSubscription){
       this.gridRealTimeDataSubscription.unsubscribe();
     }
+    this.unsubscribeVariable();
+  }
+
+  unsubscribeVariable(){
+    if (this.gridDataSubscription) {
+      this.gridDataSubscription.unsubscribe();
+    }
+    this.resetVariables();
+  }
+  resetVariables(){
+    this.cardList = [];
+    this.collectionname = '';
+    this.userType = '';
     this.isModalOpen = false;
   }
   saveCallSubscribe(){
@@ -117,7 +223,7 @@ export class MyScannerComponent implements OnInit {
           //     criteria.push(element);
           //   });
           // }
-            // this.getGridData(this.collectionname,);
+            this.getGridData();
             this.onlySuccessAlert(saveFromDataRsponce.data);
           // this.setCardDetails(this.card.card);
         }
@@ -214,14 +320,14 @@ export class MyScannerComponent implements OnInit {
       this.currentLatLng = {};
     }
   }  
-  unsubscribedSavecall(){    
+  unsubscribeSavecall(){    
     if(this.saveResponceSubscription){
       this.saveResponceSubscription.unsubscribe();
     }
   }
   goBack(){
       this.router.navigateByUrl('home');
-      // this.resetVariables();
+      this.resetVariables();
   } 
 
   /*----BarCode Functions------------------------------------------------------------------------- */
@@ -445,11 +551,11 @@ export class MyScannerComponent implements OnInit {
       data['platForm'] = Capacitor.getPlatform().toUpperCase();
     }
     let user = this.storageService.GetUserInfo();
-    if(user && user.type == "customer"){
-      this.collectionname = "daily_scan_visit";
-    }else{
-      this.collectionname = "daily_scan_visit";
-    }
+    // if(user && user.type == "employee"){
+    //   this.collectionname = "daily_scan_visit";
+    // }else{
+    //   this.collectionname = "daily_scan_visit";
+    // }
     const saveFromData = {
       'curTemp': this.collectionname,
       'data': data
@@ -477,16 +583,14 @@ export class MyScannerComponent implements OnInit {
         if(typeof successData.customer == "object"){
           alertMsg += `${successData.customer.name}` + ' scanned successfully !';
         }else{
-          alertMsg += `${successData.customer}` + ' scanned successfully !';
+          alertMsg += 'Data scanned successfully !';
         }
       }
-    }else{      
-      if( successData && successData.name){
-        if(typeof successData.name == "object"){
-          alertMsg += `${successData.name.name}` + 'added successfully !';
-        }else{
-          alertMsg += `${successData.name}` + 'added successfully !';
-        }
+    }else{
+      if(this.collectionname == 'customer_complaint'){
+        alertMsg += 'Complaint raised successfully !';
+      }else{
+        alertMsg += 'Request raised successfully !';
       }
     }
     let alertOpt = {
@@ -499,10 +603,137 @@ export class MyScannerComponent implements OnInit {
         }
       ]
     }
-    // this.popoverModalService.showAlert(alertOpt);
-    this.notificationService.presentToastOnMiddle(alertMsg,"success");
-    this.unsubscribedSavecall();
+    this.popoverModalService.showAlert(alertOpt);
+    // this.notificationService.presentToastOnMiddle(alertMsg,"success");
+    this.unsubscribeSavecall();
   }
   /*-------BarCode Functions End--------------*/
+  // merging both scenerios
+  segmentChanged(ev: any) {
+    this.selectedTab = ev.target.value;
+    if(this.userType == 'customer'){
+      if(this.selectedTab == 'tab1'){
+        this.headerTitle = 'Complaint Service';
+        this.collectionname = 'customer_complaint';
+      }else{
+        this.collectionname = 'customer_requests';
+        this.headerTitle = 'Request Service';
+      }
+    }else{
+      if(this.selectedTab == 'tab1'){
+        this.headerTitle = 'Scanner';
+        this.collectionname = '';
+      }else if(this.selectedTab == 'tab2'){
+        this.headerTitle = 'Daily Visits';
+        this.collectionname = 'daily_scan_visit';
+      }
+    }
+    if(this.collectionname != '') this.getGridData();
+  }
+  getGridData(criteria?){
+    let criteriaList = [];
+    if(criteria){
+      criteriaList = criteria;
+    }
+    // const params = 'card_master';
+    let data = this.commonFunctionService.getPaylodWithCriteria(this.collectionname,'',criteria,{});
+    data['pageNo'] = 0;
+    data['pageSize'] = this.appCardMasterDataSize;
+    let payload = {
+      'data':data,
+      'path':null
+    }
+    this.apiService.getGridData(payload);
+  }
+
+  showExitConfirm() {
+    this.isExitAlertOpen = true;
+    this.alertController.create({
+      header: 'App termination',
+      message: 'Do you want to close the app?',
+      backdropDismiss: false,
+      buttons: [{
+        text: 'Stay',
+        role: 'cancel',
+        cssClass: 'primary',
+        handler: () => {
+          this.isExitAlertOpen = false;
+          console.log('Application exit prevented!');
+        }
+      }, {
+        text: 'Exit',
+        cssClass: 'danger',
+        handler: () => {
+          this.isExitAlertOpen = false;
+          App.exitApp();
+        }
+      }]
+    })
+      .then(alert => {
+        alert.present();
+      });
+  }
+
+  // Pull from Top to Do refreshing or update card list 
+  doRefresh(event:any) {
+    console.log('Begin doRefresh async operation');
+    setTimeout(() => {
+      event.target.complete();
+      this.getGridData();
+      (event.target as HTMLIonRefresherElement).complete();
+    }, 2000);
+  }
+
+  async addNewForm(item?:any){
+    let ndata = {
+      "userType":this.userType,
+      "collectionName": this.collectionname,
+    };
+    const modal = await this.modalCtrl.create({
+      component: CustomStaticFormComponent,
+      cssClass: 'my-data-modal-css',
+      componentProps: { 
+        "data": ndata,
+      },
+      showBackdrop:true,
+      backdropDismiss:false,
+      // initialBreakpoint : 1,
+      // breakpoints : [0.75, 1],
+      // backdropBreakpoint : 0.75
+    });
+    modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+
+    if (role === 'confirm') {
+      this.saveCallSubscribe();
+      this.prepareSaveData(data);
+    }
+    
+  }
+  prepareSaveData(data: any){
+    if(this.collectionname == 'customer_requests' || this.collectionname == 'customer_complaint'){
+      data['customer'] = this.storageService.GetUserReference();
+    }else{
+
+    }
+    data['log'] = this.storageService.getUserLog();
+    if(!data['refCode'] || data['refCode'] == '' || data['refCode'] == null){
+      data['refCode'] = this.storageService.getRefCode();
+    }
+    if(!data['appId'] || data['appId'] == '' || data['appId'] == null){
+      data['appId'] = this.storageService.getAppId();
+    }
+    if(!this.coreFunctionService.isNotBlank(data['platForm'])){
+      data['platForm'] = Capacitor.getPlatform().toUpperCase();
+    }
+
+    const saveFromData = {
+      'curTemp': this.collectionname,
+      'data': data
+    }
+
+    this.apiService.SaveFormData(saveFromData);
+  }
 
 }

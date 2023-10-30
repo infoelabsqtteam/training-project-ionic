@@ -43,7 +43,7 @@
     "@capacitor/status-bar": "4.0.1",
     "@capawesome/capacitor-file-picker": "^0.6.3",
     "@core/ionic-core": "^1.1.9",
-    "@core/web-core": "^1.0.39",
+    "@core/web-core": "^1.0.47",
     "@ionic-native/android-permissions": "^5.35.0",
     "@ionic-native/call-number": "^5.34.0",
     "@ionic-native/camera": "^5.34.0",

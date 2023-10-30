@@ -557,5 +557,13 @@ height: 200px;
 border: 6px solid #ffffff;
 box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
 }
-.scacannerBtn{height: 100%;align-items: self-end;}
+.scannerBtn{height: 60vh;
+    align-items: flex-end;
+    display: flex;
+    justify-content: center;}
+@media screen and (min-width:420px){
+    .scannerBtn{
+        height: 55vh;
+    }
+}
   /*** Barcode Scanning css End * -------------------------------------------*/

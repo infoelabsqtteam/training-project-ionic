@@ -177,6 +177,14 @@ export class SigninComponent implements OnInit {
     this.resetSignin = this.authDataShareService.settingData.subscribe(data =>{      
       if(data == "logged_in"){
         this.ionLoaderService.hideLoader();
+        let user = this.storageService.GetUserInfo();
+        if(user && user['type'] != ''){
+          if(user['type'] == 'employee'){
+            this.router.navigate(['/scanner']);
+          }else{
+            this.router.navigate(['/scanner']);
+          }
+        }
         this.notificationService.presentToastOnTop(this.signinReponseData.msg,'success');
         this.loginForm.reset();
       }
