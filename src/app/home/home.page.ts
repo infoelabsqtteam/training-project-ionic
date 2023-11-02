@@ -5,7 +5,7 @@ import { Platform, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { App } from '@capacitor/app';
-import { ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService, StorageService, MenuOrModuleCommonService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService, StorageService, MenuOrModuleCommonService, ApiCallService } from '@core/web-core';
 
 
 @Component({
@@ -54,7 +54,6 @@ export class HomePage implements OnInit, OnDestroy {
   notification: boolean=false;
   cardMasterList:any;
   userAuthModules:any;
-  // cardListSubscription:Subscription;
   appCardMasterDataSize:number;  
   ionEvent:any;
   isExitAlertOpen:boolean = false;
@@ -74,7 +73,8 @@ export class HomePage implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
-    private appStorageService: AppStorageService
+    private appStorageService: AppStorageService,
+    private apiCallService: ApiCallService
   ) 
   {
     this.initializeApp();
@@ -88,29 +88,53 @@ export class HomePage implements OnInit, OnDestroy {
     this.web_site_name = this.appStorageService.getWebSiteName();
     this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
     this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
-      if(data && data.data && data.data.length > 0){
-        this.cardMasterList = data.data;
-        this.commonAppDataShareService.setModuleList(this.cardMasterList);
-        this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(this.cardMasterList);
-        if(this.cardList == null){
-          this.errorTitle = "No module assign";
-          this.errorMessage = "Permission denied, No module found!";
-          this.notificationService.presentToastOnBottom("You don't have any permission or assign module.","danger")
-        }
-      }else{
-        if(this.myInput && this.myInput.length > 0 ){
-          this.errorTitle = "No matching module found";
-          this.errorMessage = "Try again by adjusting your search value!";
-          this.cardList = [];
-        }else{
-          this.errorTitle = "No module assign";
-          this.errorMessage = "Permission denied, No module found!";
-        }
-      }
+      this.griddataResponse(data);
     });
 
   }
+  
+  // Angular LifeCycle Function Handling End -----------------------
+  ngOnInit() {
+    this.getGridData();
+  }
+  ngOnDestroy(): void {
+    this.unsubscribeVariabbles();
+  }
+  // Angular LifeCycle Function Handling End -----------------------
 
+  // Subscribed Variable Function Handling Start-------------------
+  griddataResponse(data){
+    if(data && data.data && data.data.length > 0){
+      this.cardMasterList = data.data;
+      this.commonAppDataShareService.setModuleList(this.cardMasterList);
+      this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(this.cardMasterList);
+      if(this.cardList == null){
+        this.errorTitle = "No module assign";
+        this.errorMessage = "Permission denied, No module found!";
+        this.notificationService.presentToastOnBottom("You don't have any permission or assign module.","danger")
+      }
+    }else{
+      if(this.myInput && this.myInput.length > 0 ){
+        this.errorTitle = "No matching module found";
+        this.errorMessage = "Try again by adjusting your search value!";
+        this.cardList = [];
+      }else{
+        this.errorTitle = "No module assign";
+        this.errorMessage = "Permission denied, No module found!";
+      }
+    }
+  }
+  // Subscribed Variable Function Handling End-------------------
+
+  // UnSubscribed Variable Function Handling Start-------------------
+  unsubscribeVariabbles(){
+    if (this.gridDataSubscription) {
+      this.gridDataSubscription.unsubscribe();
+    }
+  }
+  // UnSubscribed Variable Function Handling Start-------------------
+
+  // Hardware Button Click Functions Handling Start-------------  
   initializeApp() {
     this.platform.ready().then(() => {});
 
@@ -138,53 +162,6 @@ export class HomePage implements OnInit, OnDestroy {
     // });
 
   }
-
-  unsubscribeVariabbles(){
-    if (this.gridDataSubscription) {
-      this.gridDataSubscription.unsubscribe();
-    }
-  }
-
-  ngOnDestroy(): void {
-    // this.resetVariables();
-    this.unsubscribeVariabbles();
-  }
-
-  ngOnInit() {
-    this.getGridData();
-  }
-  resetVariables(){
-    this.cardList = [];
-  }
-
-  getGridData(criteria?){
-    let criteriaList = [];
-    if(criteria){
-      criteriaList = criteria;
-    }
-    const params = 'card_master';
-    let data = this.commonFunctionService.getPaylodWithCriteria(params,'',criteria,{});
-    data['pageNo'] = 0;
-    data['pageSize'] = this.appCardMasterDataSize;
-    let payload = {
-      'data':data,
-      'path':null
-    }
-    this.apiService.getGridData(payload);
-  }
-
-  showCardTemplate(card:any, index:number){
-    const moduleList = this.commonAppDataShareService.getModuleList();
-    const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
-    this.commonAppDataShareService.setModuleIndex(cardclickedindex);
-    if(card['userAutherisedModule'] && card['userAutherisedModule']['name'] && card['userAutherisedModule']['_id']){
-      this.storageService.setModule(card['userAutherisedModule']['name']);
-      this.router.navigate(['card-view']);
-    }else{
-      this.notificationService.presentToastOnBottom("Clicked module does not autherised to you","danger");
-    }
-  }
-
   showExitConfirm() {
     this.isExitAlertOpen = true;
     this.alertController.create({
@@ -212,16 +189,48 @@ export class HomePage implements OnInit, OnDestroy {
         alert.present();
       });
   }
-  
-  // search module below
-  search() {
-    const criteria = "name;stwic;"+this.myInput+";STATIC";
-    this.getGridData([criteria]);
-  }  
+  // Hardware Button Click Functions Handling End------------- 
+
+  // Click Functions Handling Start-------------------- 
+  getGridData(criteria?){
+    let criteriaList = [];
+    if(criteria){
+      criteriaList = criteria;
+    }
+    const params = 'card_master';
+    let data = this.apiCallService.getPaylodWithCriteria(params,'',criteria,{});
+    data['pageNo'] = 0;
+    data['pageSize'] = this.appCardMasterDataSize;
+    let payload = {
+      'data':data,
+      'path':null
+    }
+    this.apiService.getGridData(payload);
+  }
+  showCardTemplate(card:any, index:number){
+    const moduleList = this.commonAppDataShareService.getModuleList();
+    const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
+    this.commonAppDataShareService.setModuleIndex(cardclickedindex);
+    if(card['userAutherisedModule'] && card['userAutherisedModule']['name'] && card['userAutherisedModule']['_id']){
+      this.storageService.setModule(card['userAutherisedModule']['name']);
+      this.router.navigate(['card-view']);
+    }else{
+      this.notificationService.presentToastOnBottom("Clicked module does not autherised to you","danger");
+    }
+  }
   comingSoon() {
     this.notificationService.presentToastOnBottom('Comming Soon...','danger');
   }
-  // Pull from Top to Do refreshing or update card list 
+  // Click Functions Handling End-------------------- 
+  
+  // search Module Function Handling Start--------------
+  search() {
+    const criteria = "name;stwic;"+this.myInput+";STATIC";
+    this.getGridData([criteria]);
+  }
+  // search Module Function Handling End--------------
+  
+  // Ionic Event Handling Function Start-----Pull from Top to Do refreshing or update card list 
   doRefresh(event:any) {
     // if(this.refreshlist){
       this.ionEvent = event;
@@ -237,6 +246,13 @@ export class HomePage implements OnInit, OnDestroy {
     //   console.log("Top refresh feature disable.");
     // }
   }
+  // Ionic Event Handling Function End--------------
+
+
+  // NOt In used  
+  // resetVariables(){
+  //   this.cardList = [];
+  // }
  
   
 }

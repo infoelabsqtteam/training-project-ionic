@@ -1,8 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ModalComponent } from '../../modal/modal.component';
-import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService, CommonAppDataShareService } from '@core/web-core';
-import { ModelService } from '@core/ionic-core';
+import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService, CommonAppDataShareService, GridCommonFunctionService, ApiCallService } from '@core/web-core';
 import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
 
 @Component({
@@ -28,6 +27,8 @@ export class ModalDetailCardComponent implements OnInit {
   childgridsubscription :any;
   childGridFields:any;
   childgridIds:any;
+  tabMenu:any =[];
+  selectedIndex:any =-1;
   
   constructor(
     private modalController: ModalController,
@@ -36,123 +37,48 @@ export class ModalDetailCardComponent implements OnInit {
     private apiService: ApiService,
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
-    private modelService: ModelService
-    ) {
-      this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
-        if(data && data.gridColumns){
-          this.childColumns = data.gridColumns;
-        }else{
-          this.childgridIds.forEach((field,i) => {
-            if(field['Id'] == data['_id']){
-              this.childgridIds[i]['childgridfields'] = data.fields;
-              this.childGridFields[field.field_name] = data.fields;
-            }
-          });
-          // this.childGridFields = data;
-        }
-      })
-     }
+    private gridCommonFunctionService: GridCommonFunctionService,
+    private apiCallService: ApiCallService
+  ) {
+    this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
+      if(data && data.gridColumns){
+        this.childColumns = data.gridColumns;
+      }else{
+        this.childgridIds.forEach((field,i) => {
+          if(field['Id'] == data['_id']){
+            this.childgridIds[i]['childgridfields'] = data.fields;
+            this.childGridFields[field.field_name] = data.fields;
+          }
+        });
+        // this.childGridFields = data;
+      }
+    })
+  }
 
-    
+  // Ionic LifeCycle Function Handling Start--------------------
+  ionViewWillEnter(){ 
+  }
+  ionViewDidEnter(){ 
+  }
+  // Ionic LifeCycle Function Handling End--------------------
+
+  // Angular LifeCycle Function Handling Start--------------------
   ngOnInit() {
     this.getChildData();
     // if(this.childCardType && this.childCardType.name !=''){
     //   this.cardType = this.childCardType.name
     // }
   }
-  ionViewWillEnter(){ 
-  }
-  ionViewDidEnter(){ 
-  }
-  
-  getChildData(){
-    let module = this.menuOrModuleCommonService.getModuleBySelectedIndex();
-    let tabDetail:any = '';
-    // this.childData = this.dataShareServiceService.getchildCardData();
-    let index:any = this.selected_tab_index;
-    const moduleList = this.commonAppDataShareService.getModuleList();
-    if(index != -1){      
-      let tabs:any = module.tab_menu;
-      if(tabs && tabs.length > 0){
-      let tab:any = tabs[index];
-      const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id");
-      tabDetail = moduleList[tabIndex];
-      }
-    }
-    let child_card = {};
-    if(tabDetail != ''){
-      if(tabDetail && tabDetail.child_card){
-        const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");
-        child_card = moduleList[tabIndex]; 
-      }else if(tabDetail.child_card == null && tabDetail.grid){
-        child_card = tabDetail
-      }
-    }else{
-      if(module && module.child_card){
-        const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,module.child_card._id,"_id");
-        child_card = moduleList[tabIndex]; 
-      }else{
-        child_card = module;
-      }      
-    }
-    this.childDataValue = this.childData;    
-    if(this.childDataValue && this.childDataValue.name){
-      this.childDataTitle = this.childDataValue.name;
-    }
-    this.setCard(child_card);
-    
-  }
-  tabMenu:any =[];
-  selectedIndex:any =-1;
-  setCard(card){
-    if (card.card_type !== '') {
-      this.cardType = card.card_type.name;
-    }
-    if(card.grid == null && card.fields){
-      this.childColumns = card.fields;
-    }else if(card.grid && card.grid['_id']){
-      this.cardType = "detail1"
-      this.childColumns.forEach((element:any, i) => {
-        if(element.type){
-          element.type = element.type.toLowerCase();
-          this.childColumns[i]=element;
-        }
-      });
-    }
-    if(card.tab_menu && card.tab_menu.length > 0){
-      this.tabMenu = card.tab_menu;
-      this.selectedIndex = 0;
-    }
-    if(this.childColumns && this.childColumns.length > 0) this.checkGridChild(this.childColumns);
-  }
-  checkGridChild(childColumns){
-    this.childgridIds=[];
-    this.childGridFields={};
-    childColumns.forEach(field => {
-      if(field && field.grid && field.grid['_id'] && field.type.toLowerCase() == "info"){
-        this.childgridIds.push({'field_name':field.field_name,'Id':field.grid['_id']});
-        this.childGridFields[field.field_name];
-      }
-    });
-    if(this.childgridIds.length > 0){
-      this.childgridIds.forEach(element => {
-        this.getChildGridFieldsbyId(element['Id']);
-      });
-    }
-  }
-  
-  getValueForGrid(field,object){
-    return this.commonFunctionService.getValueForGrid(field,object);
-  }
-  
-  dismissModal(){
-    this.modal?.offsetParent.dismiss({'dismissed': true},"backClicked");
-  }
-
   ngOnDestroy() {
     if(this.childgridsubscription){
       this.childgridsubscription.unsubscribe();
     }
+  }
+  // Angular LifeCycle Function Handling Start--------------------
+  
+  // Click Functions Handling Start------------
+  dismissModal(){
+    this.modal?.offsetParent.dismiss({'dismissed': true},"backClicked");
   }
 
   clickOnGridElement(field, object, i) {
@@ -218,7 +144,85 @@ export class ModalDetailCardComponent implements OnInit {
     }
 
   }
+  // Click Functions Handling End------------
 
+  // need to sort below Functions Handling Start---------
+  getChildData(){
+    let module = this.menuOrModuleCommonService.getModuleBySelectedIndex();
+    let tabDetail:any = '';
+    // this.childData = this.dataShareServiceService.getchildCardData();
+    let index:any = this.selected_tab_index;
+    const moduleList = this.commonAppDataShareService.getModuleList();
+    if(index != -1){      
+      let tabs:any = module.tab_menu;
+      if(tabs && tabs.length > 0){
+      let tab:any = tabs[index];
+      const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id");
+      tabDetail = moduleList[tabIndex];
+      }
+    }
+    let child_card = {};
+    if(tabDetail != ''){
+      if(tabDetail && tabDetail.child_card){
+        const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");
+        child_card = moduleList[tabIndex]; 
+      }else if(tabDetail.child_card == null && tabDetail.grid){
+        child_card = tabDetail
+      }
+    }else{
+      if(module && module.child_card){
+        const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,module.child_card._id,"_id");
+        child_card = moduleList[tabIndex]; 
+      }else{
+        child_card = module;
+      }      
+    }
+    this.childDataValue = this.childData;    
+    if(this.childDataValue && this.childDataValue.name){
+      this.childDataTitle = this.childDataValue.name;
+    }
+    this.setCard(child_card);
+    
+  }
+  setCard(card){
+    if (card.card_type !== '') {
+      this.cardType = card.card_type.name;
+    }
+    if(card.grid == null && card.fields){
+      this.childColumns = card.fields;
+    }else if(card.grid && card.grid['_id']){
+      this.cardType = "detail1"
+      this.childColumns.forEach((element:any, i) => {
+        if(element.type){
+          element.type = element.type.toLowerCase();
+          this.childColumns[i]=element;
+        }
+      });
+    }
+    if(card.tab_menu && card.tab_menu.length > 0){
+      this.tabMenu = card.tab_menu;
+      this.selectedIndex = 0;
+    }
+    if(this.childColumns && this.childColumns.length > 0) this.checkGridChild(this.childColumns);
+  }
+  checkGridChild(childColumns){
+    this.childgridIds=[];
+    this.childGridFields={};
+    childColumns.forEach(field => {
+      if(field && field.grid && field.grid['_id'] && field.type.toLowerCase() == "info"){
+        this.childgridIds.push({'field_name':field.field_name,'Id':field.grid['_id']});
+        this.childGridFields[field.field_name];
+      }
+    });
+    if(this.childgridIds.length > 0){
+      this.childgridIds.forEach(element => {
+        this.getChildGridFieldsbyId(element['Id']);
+      });
+    }
+  }  
+  getValueForGrid(field,object){
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
+  }
   async viewModal(value:any, field:any, i:number, field_name:any, editemode){
     const modal = await this.modalController.create({
       component: ModalComponent,
@@ -266,7 +270,7 @@ export class ModalDetailCardComponent implements OnInit {
   getChildGridFieldsbyId(childrGridId:string){
       const params = "grid";
       const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
-      const payload = this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, {});
+      const payload = this.apiCallService.getPaylodWithCriteria(params, '', criteria, {});
       this.apiService.GetChildGrid(payload);
   }
 

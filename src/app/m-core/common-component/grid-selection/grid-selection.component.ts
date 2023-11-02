@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { AppDataShareService, NotificationService, AppStorageService } from '@core/ionic-core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AppDataShareService, NotificationService } from '@core/ionic-core';
+import { ModalController } from '@ionic/angular';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
-import { ApiService, DataShareService, LimsCalculationsService, CommonFunctionService, CoreFunctionService } from '@core/web-core';
+import { DataShareService, LimsCalculationsService, CommonFunctionService, CoreFunctionService, CheckIfService, GridCommonFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-grid-selection',
@@ -52,8 +52,9 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     private coreFunctionService: CoreFunctionService,
     private appDataShareService: AppDataShareService,
     private limsCalculationsService: LimsCalculationsService,
-    private commonFunctionService: CommonFunctionService
-
+    private commonFunctionService: CommonFunctionService,
+    private gridCommonFunctionService: GridCommonFunctionService,
+    private checkIfService: CheckIfService
   ) { }
   
 
@@ -222,7 +223,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
 
   getValueForGrid(field, object) {
-    return this.commonFunctionService.getValueForGrid(field, object);
+    return this.gridCommonFunctionService.getValueForGrid(field, object);
   }
   isDisable(field, object) {
     const updateMode = false;
@@ -238,7 +239,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       return true;
     }
     if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-      return this.commonFunctionService.isDisable(field.etc_fields, updateMode, object);
+      return this.checkIfService.isDisable(field.etc_fields, updateMode, object);
     }   
     return false;
   }
@@ -250,7 +251,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
         condition = this.field.disableRowIf;
       }
       if(condition != ''){
-        if(this.commonFunctionService.checkDisableRowIf(condition,data)){
+        if(this.checkIfService.checkDisableRowIf(condition,data)){
           check = true;
         }else{
           check = false;
@@ -263,7 +264,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     const data = this.selectedData[index];
     const condition = field.disableRowIf;
     if(condition){
-      return !this.commonFunctionService.checkDisableRowIf(condition,data);
+      return !this.checkIfService.checkDisableRowIf(condition,data);
     }
     return true;    
   }

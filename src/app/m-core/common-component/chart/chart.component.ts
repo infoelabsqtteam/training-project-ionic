@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
-import { ApiService, CommonFunctionService, DataShareService } from '@core/web-core';
+import { ApiCallService, ApiService, CommonFunctionService, DataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-chart',
@@ -44,7 +44,7 @@ export class ChartComponent implements OnInit{
     private apiService:ApiService,
     private dataShareService:DataShareService,
     private modalController: ModalController,
-    private commonFunctionService: CommonFunctionService
+    private apiCallService: ApiCallService
   ) {
     this.headertitle = "Charts";
     this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
@@ -62,15 +62,12 @@ export class ChartComponent implements OnInit{
     }) 
    }
 
-   ionViewWillEnter(){}
-   ionViewDidEnter(){}
+  // Ionic LifeCycle Function Handling Start--------------------
+  ionViewWillEnter(){}
+  ionViewDidEnter(){}
+  // Ionic LifeCycle Function Handling End--------------------
   
-   setChartData(chartData:any){
-    if (chartData) {
-       console.log(chartData);
-    }
-  }
-  
+  // Angular LifeCycle Function Handling Start--------------------
   ngAfterViewInit(){ }
 
   ngOnInit() {
@@ -78,7 +75,6 @@ export class ChartComponent implements OnInit{
     this.getChartList();    
   }
 
-  
   ngOnChanges(changes: SimpleChanges) {
     if(this.isShow){
       this.getPage(1)
@@ -98,7 +94,36 @@ export class ChartComponent implements OnInit{
       this.dashletDataSubscription.unsubscribe();
     }
   }
+  // Angular LifeCycle Function Handling End--------------------
 
+  // Subscribed Variable Functions Handling Start-------------
+  setGridData(gridData?:any){
+    if (gridData.data && gridData.data.length > 0) {
+      this.elements = JSON.parse(JSON.stringify(gridData.data));
+      this.total = gridData.data_size;
+      this.filteredDashboardData = JSON.parse(JSON.stringify(this.elements));
+      if(this.checkGetDashletData && this.elements.length > 0){
+        this.checkGetDashletData = false;
+        if(this.elements.length > 0){
+          this.getDashletData(this.elements);
+        }            
+      }          
+    } else {
+      this.elements = [];
+    }
+  }
+
+  setStaticData(staticData?:any){
+    if (staticData) {
+      this.staticData = staticData;
+      Object.keys(this.staticData).forEach(key => {
+        if(this.staticData[key]){         
+          this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
+        }
+      }) 
+    }
+  }
+  
   setDashLetData(dashletData:any){
     const dashlet = Object.keys(dashletData)
     if (dashletData && dashlet.length > 0) {
@@ -116,23 +141,53 @@ export class ChartComponent implements OnInit{
       });
     }
   }
+  // Subscribed Variable Functions Handling End-------------
 
-  setGridData(gridData?:any){
-    if (gridData.data && gridData.data.length > 0) {
-      this.elements = JSON.parse(JSON.stringify(gridData.data));
-      this.total = gridData.data_size;
-      this.filteredDashboardData = JSON.parse(JSON.stringify(this.elements));
-      if(this.checkGetDashletData && this.elements.length > 0){
-        this.checkGetDashletData = false;
-        if(this.elements.length > 0){
-          this.getDashletData(this.elements);
-        }            
-      }          
-    } else {
-      this.elements = [];
+  // Click FUnctions Handling Start---------
+  filterchart() {    
+    if(this.filterValue && this.filterValue.length > 0 && this.filterValue.length <= this.itemNumOfGrid) {
+      this.clickFilter = true;
+      let value = "";
+      this.filterValue.forEach((element,i) => {
+        if((this.filterValue.length - 1) == i){
+          value = value + element;
+        }else{
+          value = value + element + ":";
+        }
+      });
+      let cr = "_id;in;"+value+";STATIC";
+      this.getPage(1,[cr]);
+    }    
+  }
+  resetFilter(){
+    this.filterValue = [];
+    if(this.clickFilter){
+      this.clickFilter = false;
+      this.checkFilter();
     }
   }
+  async chartmodel(data:any, filter:any, index:number){
+    this.showfilter = true;
+    const modal = await this.modalController.create({
+      component: ChartFilterComponent,
+      cssClass: 'my-custom-modal-css',
+      componentProps: { 
+        'dashboardItem' : data,
+        'dashletData' : this.dashletData,
+        'filter':filter,
+        'selectedIndex': index,
+        'staticData': this.staticData
+      },
+      showBackdrop:true,
+      backdropDismiss:false,
+    });
+    modal.componentProps.modal = modal;
+    
+    return await modal.present();
+  }
+  // Click FUnctions Handling End---------
 
+  // Dependency Functions Handling Start ------------------
   getDashletData(elements:any){
     if(elements && elements.length > 0){
       let payloads = [];
@@ -163,20 +218,8 @@ export class ChartComponent implements OnInit{
       }      
     }
   }
-
-  setStaticData(staticData?:any){
-    if (staticData) {
-      this.staticData = staticData;
-      Object.keys(this.staticData).forEach(key => {
-        if(this.staticData[key]){         
-          this.copyStaticData[key] = JSON.parse(JSON.stringify(this.staticData[key]));
-        }
-      }) 
-    }
-  }
-
   getDataForGrid(Criteria?:any){    
-    const data = this.commonFunctionService.getPaylodWithCriteria('dashlet_master','',Criteria,'');
+    const data = this.apiCallService.getPaylodWithCriteria('dashlet_master','',Criteria,'');
     data['pageNo'] = this.pageNumber - 1;
     data['pageSize'] = this.itemNumOfGrid; 
     const getFilterData = {
@@ -195,65 +238,37 @@ export class ChartComponent implements OnInit{
     this.checkGetDashletData = true;
   }
   getChartList(){
-    const payload = this.commonFunctionService.getPaylodWithCriteria('dashlet_master','chart_list',[],'');
+    const payload = this.apiCallService.getPaylodWithCriteria('dashlet_master','chart_list',[],'');
     this.apiService.getStatiData([payload]);
   }
+  // Dependency Functions Handling End ------------------
 
-  filterchart() {    
-    if(this.filterValue && this.filterValue.length > 0 && this.filterValue.length <= this.itemNumOfGrid) {
-      this.clickFilter = true;
-      let value = "";
-      this.filterValue.forEach((element,i) => {
-        if((this.filterValue.length - 1) == i){
-          value = value + element;
-        }else{
-          value = value + element + ":";
-        }
-      });
-      let cr = "_id;in;"+value+";STATIC";
-      this.getPage(1,[cr]);
-    }    
-  }
+  // Ionic Event Functions Handling Start ------------------
   checkFilter(){
     if(this.filterValue && this.filterValue.length == 0){
       this.getPage(1)
     }
   }
-  resetFilter(){
-    this.filterValue = [];
-    if(this.clickFilter){
-      this.clickFilter = false;
-      this.checkFilter();
-    }
-  }
   selectNoOfItem(){
     this.getPage(1);
   }
-  onKey(value:any){
-    this.copyStaticData['chart_list'] = this.search(value)
-  }
-  search(value: string) { 
-    let filter = value.toLowerCase();
-    return this.staticData['chart_list'].filter(option => option.name.toLowerCase().startsWith(filter));
-  }
+  // Ionic Event Functions Handling End ------------------
 
-  async chartmodel(data:any, filter:any, index:number){
-    this.showfilter = true;
-    const modal = await this.modalController.create({
-      component: ChartFilterComponent,
-      cssClass: 'my-custom-modal-css',
-      componentProps: { 
-        'dashboardItem' : data,
-        'dashletData' : this.dashletData,
-        'filter':filter,
-        'selectedIndex': index,
-        'staticData': this.staticData
-      },
-      showBackdrop:true,
-      backdropDismiss:false,
-    });
-    modal.componentProps.modal = modal;
-    
-    return await modal.present();
-  }
+  // NOt in used Functions -----------
+  
+  // setChartData(chartData:any){
+  //   if (chartData) {
+  //      console.log(chartData);
+  //   }
+  // }  
+  
+  // onKey(value:any){
+  //   this.copyStaticData['chart_list'] = this.search(value)
+  // }
+  // search(value: string) { 
+  //   let filter = value.toLowerCase();
+  //   return this.staticData['chart_list'].filter(option => option.name.toLowerCase().startsWith(filter));
+  // }
+
+  
 }

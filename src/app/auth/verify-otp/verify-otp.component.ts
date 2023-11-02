@@ -30,23 +30,11 @@ export class VerifyOtpComponent implements OnInit {
     private notificationService: NotificationService
   ) { 
     this.OtpErrorSubscribe = this.authDataShareService.otpResponse.subscribe(data =>{
-      let color = "danger";
-      let msg = data.msg;
-      if(data && data.status == 'success'){
-        color = 'success';
-        msg = data.msg;
-        this.notificationService.presentToastOnTop(msg,color);
-        if(data && data.appAutologin){
-          this.authService.Signin(this.authDataShareService.getOtpAutoLogin());
-        }else{
-          this.authService.redirectToSignPage();
-        }
-      }else{
-        this.notificationService.presentToastOnTop(data.msg, color);
-      }
+      this.otpResponse(data);
     });
   }
-
+  
+  // Angular LifeCycle Function Handling Start--------------------
   ngOnInit() {
     this.initForm();
     this.routers.paramMap.subscribe(params => {
@@ -60,7 +48,28 @@ export class VerifyOtpComponent implements OnInit {
       }    
     });
   }
+  // Angular LifeCycle Function Handling End--------------------
 
+  // Subscribed Variable Function Handling Start-------------------
+  otpResponse(data){
+    let color = "danger";
+    let msg = data.msg;
+    if(data && data.status == 'success'){
+      color = 'success';
+      msg = data.msg;
+      this.notificationService.presentToastOnTop(msg,color);
+      if(data && data.appAutologin){
+        this.authService.Signin(this.authDataShareService.getOtpAutoLogin());
+      }else{
+        this.authService.redirectToSignPage();
+      }
+    }else{
+      this.notificationService.presentToastOnTop(data.msg, color);
+    }
+  }
+  // Subscribed Variable Function Handling End-------------------
+
+  // Form Creation Function Handling Start--------------
   initForm(){
     this.OtpVarify = this.formBuilder.group({
       username: ['', [Validators.required]],
@@ -72,7 +81,9 @@ export class VerifyOtpComponent implements OnInit {
       this.isVerify = false;
     }
   }
+  // Form Creation Function Handling End--------------
 
+  // Click Function Handling Start-------------------------
   onVerifyAccWithOtp() { 
     const value  = this.OtpVarify.getRawValue(); 
     const user = value['username'];
@@ -81,12 +92,11 @@ export class VerifyOtpComponent implements OnInit {
     const payload = {data:data, redirection:'/signin', autologin:false};
     this.authService.userVarify(payload);
   }
+  // Click Function Handling End----------------
 
+  // Dependancy Function Handling Start-------------------
   get f() { return this.OtpVarify.controls; }
-  resendCode() {
-    // this.resetPwd = true;
-    // this.authService.forgetPass(this.username);
-  }  
+   
   async getLogoPath(){
     if(this.coreFunctionService.isNotBlank(this.storageService.getApplicationSetting())){
       this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
@@ -94,5 +104,12 @@ export class VerifyOtpComponent implements OnInit {
       this.appTitle = this.storageService.getPageTitle();
     }
   }
+  // Dependancy Function Handling End-------------------
+
+  // NOt In use but call in html, need to use this function  
+  resendCode() {
+  //   // this.resetPwd = true;
+  //   // this.authService.forgetPass(this.username);
+  } 
 
 }

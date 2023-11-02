@@ -33,41 +33,11 @@ export class SignupComponent implements OnInit {
     private storageService: StorageService
   ) { 
     this.signUpErrorSubscribe = this.authDataShareService.signUpResponse.subscribe(data =>{
-      let color = "danger";
-      let msg = data.msg;
-      if(data && data.status == 'success'){
-        this.signUpForm.reset();
-        color = 'success';        
-        if(data && data.autoLogin){
-          this.notificationService.presentToastOnTop(data.msg,color);
-          this.authService.Signin(data.payload);
-        }else{
-          if(this.envService.getVerifyType() == 'mobile'){
-            this.notificationService.presentToastOnTop(msg,color);
-            this.authDataShareService.setOtpAutoLogin(data.payload);
-            this.router.navigate(['otp_varify'+'/'+data?.payload?.userId]);
-          }else{
-            if(data.appPresentAlert){
-              let header = '';
-              if(msg == 'A verification link has been sent to your email account. please click on the link to verify your email and continue the registration process.'){
-                header = 'Successfully Registered';
-              }else if(msg == 'OTP has been sent to your registered Mobile no.'){
-                header = 'OTP sent successfully';
-              }
-              this.notificationService.showAlert(msg, header, ['Dismiss']);
-            }else{
-              this.notificationService.presentToastOnTop(msg,color);
-            }
-            this.authService.redirectToSignPage();
-          }
-        }
-        
-      }else{
-        this.notificationService.presentToastOnTop(data.msg, color);
-      }
+      this.signupResponse(data);
     }) 
   }
 
+  // Angular LifeCycle Function Handling Start--------------------
   ngOnInit() {
     this.initForm();
     this.pageloded();
@@ -77,7 +47,9 @@ export class SignupComponent implements OnInit {
       this.signUpErrorSubscribe.unsubscribe();
     }
   }
-
+  // Angular LifeCycle Function Handling End--------------------
+  
+  // Form Creation Function Handling start--------------
   initForm(){
     this.signUpForm = new FormGroup({
       name: new FormControl ('', [Validators.required]),
@@ -89,9 +61,46 @@ export class SignupComponent implements OnInit {
     },{ validators: this.customValidationService.MatchPassword('password','confpwd') }
     );
   }
+  // Form Creation Function Handling End--------------
 
-  get f() { return this.signUpForm.controls; }
+  // Subscribed Variable Function Handling Start-------------------
+  signupResponse(data){
+    let color = "danger";
+    let msg = data.msg;
+    if(data && data.status == 'success'){
+      this.signUpForm.reset();
+      color = 'success';
+      if(data && data.autoLogin){
+        this.notificationService.presentToastOnTop(data.msg,color);
+        this.authService.Signin(data.payload);
+      }else{
+        if(this.envService.getVerifyType() == 'mobile'){
+          this.notificationService.presentToastOnTop(msg,color);
+          this.authDataShareService.setOtpAutoLogin(data.payload);
+          this.router.navigate(['otp_varify'+'/'+data?.payload?.userId]);
+        }else{
+          if(data.appPresentAlert){
+            let header = '';
+            if(msg == 'A verification link has been sent to your email account. please click on the link to verify your email and continue the registration process.'){
+              header = 'Successfully Registered';
+            }else if(msg == 'OTP has been sent to your registered Mobile no.'){
+              header = 'OTP sent successfully';
+            }
+            this.notificationService.showAlert(msg, header, ['Dismiss']);
+          }else{
+            this.notificationService.presentToastOnTop(msg,color);
+          }
+          this.authService.redirectToSignPage();
+        }
+      }
+      
+    }else{
+      this.notificationService.presentToastOnTop(data.msg, color);
+    }
+  }
+  // Subscribed Variable Function Handling End-------------------
 
+  // Click Functions Handling Start--------------------
   onSubmit() {    
     if (this.signUpForm.invalid) {
       this.notificationService.presentToastOnBottom("Please fill all * mark fields","danger");
@@ -121,21 +130,29 @@ export class SignupComponent implements OnInit {
   showconfirmpass() {
     this.confirmpassword = !this.confirmpassword;
   }
-  passwordmismatch(){
-    if((this.signUpForm.value.password === this.signUpForm.value.confpwd)){
-      this.signUpForm.controls['confpwd'].setErrors(null);
-      this.passwordNotMatch = false;
-    }else{
-      this.signUpForm.controls['confpwd'].setErrors({'invalid': true});
-      this.passwordNotMatch = true;
-    }
-  }
+  // Click Functions Handling End--------------------
+
+  // Dependency Functions Handling Start -------------------
+  get f() { return this.signUpForm.controls; }
+  
   pageloded(){
     this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
     this.template = this.storageService.getTemplateName();
     this.title = this.storageService.getPageTitle();
     this.adminEmail = this.storageService.getAdminEmail();
   }
+  // Dependency Functions Handling End -------------------
+
+  // NOt In use
+  // passwordmismatch(){
+  //   if((this.signUpForm.value.password === this.signUpForm.value.confpwd)){
+  //     this.signUpForm.controls['confpwd'].setErrors(null);
+  //     this.passwordNotMatch = false;
+  //   }else{
+  //     this.signUpForm.controls['confpwd'].setErrors({'invalid': true});
+  //     this.passwordNotMatch = true;
+  //   }
+  // }
 
 
 }

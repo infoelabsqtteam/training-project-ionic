@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationService } from '@core/ionic-core';
-import { EnvService, AuthService, AuthDataShareService, CustomvalidationService } from '@core/web-core';
+import { EnvService, AuthService, AuthDataShareService, CustomvalidationService, StorageService } from '@core/web-core';
 // import { ErrorMessageComponent } from 'src/app/component/error-message/error-message.component';
 
 @Component({
@@ -43,7 +43,8 @@ export class ChangepwdComponent implements OnInit {
     private formBuilder:FormBuilder,
     private envService: EnvService,
     private authDataShareService: AuthDataShareService,
-    private customValidationService: CustomvalidationService
+    private customValidationService: CustomvalidationService,
+    private storageService: StorageService
   ) { 
     if(this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true;
@@ -65,7 +66,8 @@ export class ChangepwdComponent implements OnInit {
       }
     })
   }
-
+  
+  // Angular LifeCycle Function Handling Start--------------------
   ngOnInit() {
     this.initForm();
 
@@ -74,9 +76,9 @@ export class ChangepwdComponent implements OnInit {
       this.autoFillUserInfo();
     }
   }
+  // Angular LifeCycle Function Handling End--------------------
 
-  // FOR OLD and NEW password Functianallity uncomment below code----------------
-
+  // Form Creation Function Handling start--------------
   initForm() {
     if(this.VerifyType == true){
       this.fForm = this.formBuilder.group({
@@ -95,13 +97,12 @@ export class ChangepwdComponent implements OnInit {
       });
     }
   }
+  // Form Creation Function Handling End--------------
 
-  onChangePwd(){
-      return !this.changepwdform.invalid;
+  // Click Functions Handling Start--------------------  
+  homenavigate(){
+    this.router.navigate(['/home'])
   }
-  
-  get c() {return this.changepwdform.controls;}
-
   onSubmit(){
     if (this.changepwdform.invalid) {
       return;
@@ -117,7 +118,55 @@ export class ChangepwdComponent implements OnInit {
       this.passwordNotMatch = false;
     }
   }
+  showoldpass() {
+    this.oldpassword = !this.oldpassword;
+  }
+  shownewpass() {
+    this.newpassword = !this.newpassword;
+  }
+  showconfirmpass() {
+    this.confirmpassword = !this.confirmpassword;
+  }
+  onChangePwd(){
+    return !this.changepwdform.invalid;
+  }
+  onResetPwd() {
+    if (this.fForm.invalid) {
+      return;
+    }
+    // this.authService.forgetPass(this.username);
+    this.resetPwd = false;
+  }
+  resendCode() {
+    // this.authService.forgetPass(this.username);
+  }  
+  onVerifyPwd() {
+    if (this.vForm.invalid) {
+      return;
+    }
+    const code = this.vForm.value.verifyCode;
+    const password = this.vForm.value.password;
+    const payload = { userId: this.username, code: code, newPassword: password };
+    this.authService.SaveNewPassword(payload);  
+  }
+  // Click Functions Handling End--------------------
 
+  // Dependency Function Handling Start -------------------
+  get c() {return this.changepwdform.controls;}  
+  get f() {return this.fForm.controls;}
+  get r() {return this.vForm.controls;}
+  autoFillUserInfo(){
+    // this.authService._user_info.subscribe(resp => {
+      this.userInfo = this.storageService.GetUserInfo;      
+      this.username = this.userInfo.mobile1;
+      if(this.username != undefined && this.username != ''){
+        this.fForm.get('userId').setValue(this.username);
+      } 
+    // })
+  }
+  // Dependency Function Handling End -------------------
+
+  // Ion Change Functions Handling Start --------------------
   oldpasswordmismatch(){
     if(this.changepwdform.value.newpwd === this.changepwdform.value.confpwd){ 
       this.changepwdform.controls['confpwd'].setErrors(null);;
@@ -127,66 +176,6 @@ export class ChangepwdComponent implements OnInit {
       this.passwordNotMatch = true;
     }
   }
-
-  showoldpass() {
-    this.oldpassword = !this.oldpassword;
-  }
-
-  // shownewpass() {
-  //   this.newpassword = !this.newpassword;
-  // }
-
-  // showconfirmpass() {
-  //   this.confirmpassword = !this.confirmpassword;
-  // }
-
-  ////////////////////------------------------------------------------------------------------
-  // FOR OTP Functianallity uncomment below code
-  
-
-  autoFillUserInfo(){
-    // this.authService._user_info.subscribe(resp => {
-    //   this.userInfo = resp;      
-    //   this.username = this.userInfo.mobile1;
-    //   if(this.username != undefined && this.username != ''){
-    //     this.fForm.get('userId').setValue(this.username);
-    //   } 
-    // })
-  }
-
-  onResetPwd() {
-    if (this.fForm.invalid) {
-      return;
-    }
-    // this.authService.forgetPass(this.username);
-    this.resetPwd = false;
-  }
-
-  resendCode() {
-    // this.authService.forgetPass(this.username);
-  }
-  
-  onVerifyPwd() {
-    if (this.vForm.invalid) {
-      return;
-    }
-    const code = this.vForm.value.verifyCode;
-    const password = this.vForm.value.password;
-    const payload = { userId: this.username, code: code, newPassword: password };
-    // this.authService.SaveNewPassword(payload);   
-  }
-  
-  get f() {return this.fForm.controls;}
-  get r() {return this.vForm.controls;}
-  
-  shownewpass() {
-    this.newpassword = !this.newpassword;
-  }
-
-  showconfirmpass() {
-    this.confirmpassword = !this.confirmpassword;
-  }
-
   passwordmismatch(){
     if(this.vForm.value.password === this.vForm.value.confpwd){ 
       this.vForm.controls['confpwd'].setErrors(null);;
@@ -196,9 +185,15 @@ export class ChangepwdComponent implements OnInit {
       this.passwordNotMatch = true;
     }
   }
-  
-  homenavigate(){
-    this.router.navigate(['/home'])
-  }
+  // Ion Change Functions Handling End --------------------   
+
+  // NOt In use Functions------------------
+  // shownewpass() {
+  //   this.newpassword = !this.newpassword;
+  // }
+
+  // showconfirmpass() {
+  //   this.confirmpassword = !this.confirmpassword;
+  // }
 
 }

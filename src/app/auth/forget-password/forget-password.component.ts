@@ -42,42 +42,14 @@ export class ForgetPasswordComponent implements OnInit {
      this.VerifyType = false;
     }    
     this.forGotSubscription = this.authDataShareService.forgot.subscribe(data =>{
-      let color = 'danger';
-      let msg = data.msg;
-      if(data && data.status == "success"){
-        if(data.msg === "Reset password is successful, notification with a verification code has been sent to your registered user id"){
-          msg = 'Verification code has been sent to your registered UserId';
-        }else{ 
-          msg = data.msg;
-        }
-        color = 'success';
-        this.resetPwd = false;
-      }else{
-        if(data && data.status == "error" && msg == "UserId Entered is not correct"){
-          msg = "Invalid UserId, please enter registered UserId"
-        }
-      }
-      if(msg != ''){
-        this.notificationService.presentToastOnBottom(msg,color);
-      }
+      this.forgotPasswordResponse(data);
     })
     this.resetPassSubscription = this.authDataShareService.resetPass.subscribe(data =>{
-      let color = 'danger';
-      let msg = data.msg;
-      if(data && data.msg != '' && data.status == "success") {
-        color = 'success';
-        this.gobackandreset();
-        this.fForm.reset();
-      }
-      if(msg != ''){
-        this.notificationService.presentToastOnBottom(msg,color);
-      }
-      if(data && data.status == 'success') {
-        this.authService.redirectToSignPage();
-      }
+      this.resetPasswordResponse(data);
     })
   }
 
+  // Angular LifeCycle Functions Handling Start---------
   ngOnInit() {
     this.initForm();
     this.pageloded();
@@ -90,7 +62,9 @@ export class ForgetPasswordComponent implements OnInit {
       this.resetPassSubscription.unsubscribe();
     }
   }
+  // Angular LifeCycle Functions Handling End----------
 
+  // Form Creation Function Handling start--------------
   initForm() {
     this.username = "";
     this.fForm = new FormGroup({
@@ -110,7 +84,47 @@ export class ForgetPasswordComponent implements OnInit {
       'confpwd': new FormControl('', [Validators.required]),
     });
   }
+  // Form Creation Function Handling End--------------
 
+  // Subscribed Variable Function Handling Start-------------------
+  forgotPasswordResponse(data){
+    let color = 'danger';
+      let msg = data.msg;
+      if(data && data.status == "success"){
+        if(data.msg === "Reset password is successful, notification with a verification code has been sent to your registered user id"){
+          msg = 'Verification code has been sent to your registered UserId';
+        }else{ 
+          msg = data.msg;
+        }
+        color = 'success';
+        this.resetPwd = false;
+      }else{
+        if(data && data.status == "error" && msg == "UserId Entered is not correct"){
+          msg = "Invalid UserId, please enter registered UserId"
+        }
+      }
+      if(msg != ''){
+        this.notificationService.presentToastOnBottom(msg,color);
+      }
+  }
+  resetPasswordResponse(data){
+    let color = 'danger';
+      let msg = data.msg;
+      if(data && data.msg != '' && data.status == "success") {
+        color = 'success';
+        this.gobackandreset();
+        this.fForm.reset();
+      }
+      if(msg != ''){
+        this.notificationService.presentToastOnBottom(msg,color);
+      }
+      if(data && data.status == 'success') {
+        this.authService.redirectToSignPage();
+      }
+  }
+  // Subscribed Variable Function Handling End-------------------
+
+  // Click Functions Handling Start--------------------
   onResetPwd() {
     if (this.fForm.invalid) {
       return;
@@ -120,11 +134,9 @@ export class ForgetPasswordComponent implements OnInit {
     let payload = {userId:this.username,admin:admin};
     this.authService.TryForgotPassword(payload);
   }
-
   resendCode() {
     this.authService.TryForgotPassword(this.username);
-  }
-  
+  }  
   onVerifyPwd() {
     if (this.vForm.invalid) {
       return;
@@ -134,23 +146,19 @@ export class ForgetPasswordComponent implements OnInit {
     const payload = { userId: this.username, code: code, newPassword: password };
     this.authService.SaveNewPassword(payload);
   }
-  get f() {return this.fForm.controls;}
-  get r() {return this.vForm.controls;}
-
-  pageloded(){
-    this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
-    this.template = this.storageService.getTemplateName();
-    this.title = this.envService.getHostKeyValue('title');
-    this.adminEmail = this.storageService.getAdminEmail();
-  }
-
   shownewpass() {
     this.newpassword = !this.newpassword;
   }
   showconfirmpass() {
     this.confirmpassword = !this.confirmpassword;
   }
+  gobackandreset(){
+    this.resetPwd=!this.resetPwd;
+    this.vForm.reset();
+  }
+  // Click Functions Handling End--------------------
 
+  // IonChange Function Handling Start--------------
   passwordmismatch(){
     if((this.vForm.value.password === this.vForm.value.confpwd)){
       this.vForm.controls['confpwd'].setErrors(null);;
@@ -160,9 +168,17 @@ export class ForgetPasswordComponent implements OnInit {
       this.passwordNotMatch = true;
     }
   }
-  gobackandreset(){
-    this.resetPwd=!this.resetPwd;
-    this.vForm.reset();
+  // IonChange Function Handling End--------------
+  
+  // Dependency Function Handling Start -------------------
+  pageloded(){
+    this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
+    this.template = this.storageService.getTemplateName();
+    this.title = this.envService.getHostKeyValue('title');
+    this.adminEmail = this.storageService.getAdminEmail();
   }
+  get f() {return this.fForm.controls;}
+  get r() {return this.vForm.controls;}
+  // Dependency Function Handling End ------------------- 
     
 }

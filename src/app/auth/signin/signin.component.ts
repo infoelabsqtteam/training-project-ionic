@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, Platform, IonRouterOutlet } from '@ionic/angular';
+import { AlertController, Platform } from '@ionic/angular';
 import {  NotificationService } from '@core/ionic-core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
 import { App } from '@capacitor/app';
-import { Location } from '@angular/common';
-import { AuthDataShareService, AuthService, CommonFunctionService, CoreFunctionService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
+import { ApiCallService, AuthDataShareService, AuthService, CoreFunctionService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
 
 @Component({
   selector: 'app-signine',
@@ -20,7 +19,6 @@ export class SigninComponent implements OnInit {
   loginForm: FormGroup;
   showpassword = false;
   VerifyType : boolean = false;
-  // showicon = false;
   isExitAlertOpen:boolean = false;
   logoPath:string = '';
   imageTitle:string = '';
@@ -42,61 +40,39 @@ export class SigninComponent implements OnInit {
     private platform: Platform,
     private ionLoaderService: IonLoaderService,
     private envService: EnvService,
-    private routerOutlet: IonRouterOutlet,
-    private _location: Location,
     private authDataShareService: AuthDataShareService,
-    private commonFunctionService: CommonFunctionService
+    private apiCallService: ApiCallService
   ) { 
-    this.initializeApp();
-    
+    this.initializeApp();    
   }
 
-  initializeApp() {
-    this.platform.ready().then(() => {});
-    this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
-      let isloaderOpen:any = this.ionLoaderService.loadingController.getTop();
-      if(isloaderOpen){
-        this.ionLoaderService.hideLoader();
-      }
-      if(this.isExitAlertOpen){
-        this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
-      }else{
-        this.showExitConfirm();
-        // processNextHandler();
-      }  
-    });
-  }
-  
+  // Ionic LifeCycle Function Handling Start--------------------
   ionViewWillEnter(){
     this.initializeApp();
     this.getLogoPath();
     this.checkValues();
   }
   ionViewDidEnter(){
-    // this.getLogoPath();
     this.onLoadSubscriptions();
+  }
+  ionViewWillLeave(){
+    console.log('leaving');
   }
   ionViewDidLeave(){
     this.unsubscribed();
   }
-  unsubscribed(){
-    if(this.authenticationMessage){
-      this.authenticationMessage.unsubscribe();
-    }
-    if(this.sessionSubscribe){
-      this.sessionSubscribe.unsubscribe();
-    }
-    if(this.resetSignin){
-      this.resetSignin.unsubscribe();
-    }
-    if(this.userInfoSubscribe){
-      this.userInfoSubscribe.unsubscribe();
-    }
-  }
+  // Ionic LifeCycle Function Handling End -----------------------
+  
+  // Angular LifeCycle Function Handling Start--------------------
   ngOnInit() {
     this.initForm();
-    // this.getLogoPath();
   }
+  ngOnDestroy(){
+    
+  }
+  // Angular LifeCycle Function Handling End--------------------
+  
+  // Form Creation Function Handling start--------------
   initForm(){
     if(this.storageService.getVerifyType() == 'mobile' || this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true;
@@ -111,22 +87,117 @@ export class SigninComponent implements OnInit {
       this.loginForm.get('userId').setValidators([Validators.required,Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]);
     }
   }
+  // Form Creation Function Handling End--------------
 
-  async checkValues(){    
-    let isClientCodeExist:any = this.storageService.getClientName();
-    let isHostNameExist:any = this.storageService.getHostNameDinamically();
-    if(this.coreFunctionService.isNotBlank(isClientCodeExist)){
-      if(this.checkIdTokenStatus()){
-        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
-      }else if(!this.checkApplicationSetting() && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
-        this.commonFunctionService.getApplicationAllSettings();
-      }else{        
-        this.storageService.removeKeyFromStorage("USER");
+  // subscribe Varibale rather than Constructor start-------- 
+  initializeApp() {
+    this.platform.ready().then(() => {});
+    this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+      let isloaderOpen:any = this.ionLoaderService.loadingController.getTop();
+      if(isloaderOpen){
+        this.ionLoaderService.hideLoader();
       }
-    }else{
-      this.router.navigateByUrl('/checkcompany');
+      if(this.isExitAlertOpen){
+        this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
+      }else{
+        this.showExitConfirm();
+        // processNextHandler();
+      }  
+    });
+  } 
+  onLoadSubscriptions(){
+    this.userInfoSubscribe = this.authDataShareService.userInfo.subscribe(data =>{ 
+      let color = 'danger';
+      if(data && data.msg){
+        this.notificationService.presentToastOnTop(data.msg, color);
+      }    
+    });
+    this.resetSignin = this.authDataShareService.settingData.subscribe(data =>{      
+      if(data == "logged_in"){
+        this.ionLoaderService.hideLoader();
+        this.notificationService.presentToastOnTop(this.signinReponseData.msg,'success');
+        this.loginForm.reset();
+      }
+      this.signinReponseData = '';
+    });
+    this.sessionSubscribe = this.authDataShareService.sessionexpired.subscribe(data =>{      
+      let color = 'danger';
+      if(data && data.msg && data.status == 'success'){
+        this.notificationService.presentToastOnTop(data.msg, color);
+      }    
+    });
+    this.authenticationMessage = this.authDataShareService.signinResponse.subscribe(data => {
+      this.signinResponse(data);
+    })
+  }
+  // subscribe Varibale rather than Constructor End----------
+  
+  // Subscribed Variable Function Handling Start-------------------
+  signinResponse(res){
+    let msg = res.msg;
+    let color = "danger";
+    if(res && res.message && res.message == 'reset'){
+      this.notificationService.presentToast('info', 'Password expired !!!');
+      this.router.navigate(['createpwd']);
+    }else if(res && res.message && res.message == 'notify'){
+      // if(res.msg != '' && res.status != 'success') {
+      //   this.notificationService.presentToastOnTop(msg,color);
+      // }
+      if(res.status == 'success') {
+        this.ionLoaderService.showLoader("Checking Permissions..");
+        color = 'success';
+        this.signinReponseData = res;
+        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
+      }
+    }else if(res && res.status == 'success'){
+      this.ionLoaderService.showLoader("Checking Permissions..");
+      color = 'success';
+      this.signinReponseData = res;
+      this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
+    }
+    if(msg != '' && res.status != 'success'){
+      this.notificationService.presentToastOnTop(msg,color);
     }
   }
+  // Subscribed Variable Function Handling End--------------------
+
+  // Unsubscribe Variables Start--------------------  
+  unsubscribed(){
+    if(this.authenticationMessage){
+      this.authenticationMessage.unsubscribe();
+    }
+    if(this.sessionSubscribe){
+      this.sessionSubscribe.unsubscribe();
+    }
+    if(this.resetSignin){
+      this.resetSignin.unsubscribe();
+    }
+    if(this.userInfoSubscribe){
+      this.userInfoSubscribe.unsubscribe();
+    }
+  }
+  // Unsubscribe Variables End--------------------
+
+  // Click Functions Handling Start--------------------
+  onSubmit() {
+    if (this.loginForm.invalid) {
+      return;
+    }
+    let loginObj = this.loginForm.value; 
+    let payload = { userId: loginObj.userId, password: loginObj.password }
+    this.authService.Signin(payload);
+  }
+  changeCode(){
+    this.storageService.removeDataFormStorage('all');
+    this.router.navigateByUrl('/checkcompany');
+    this.resetVariables();
+  }
+  showtxtpass() {
+    this.showpassword = !this.showpassword;
+  }
+  // Click Functions Handling End--------------------
+
+  // Hardware Button Click Functions Handling Start-------------  
   showExitConfirm() {
     this.isExitAlertOpen = true;
     this.alertController.create({
@@ -153,6 +224,35 @@ export class SigninComponent implements OnInit {
       .then(alert => {
         alert.present();
       });
+  }  
+  // Hardware Button Click Functions Handling End-------------
+
+  // Dependency Functions Handling Start -------------------
+  async checkValues(){    
+    let isClientCodeExist:any = this.storageService.getClientName();
+    let isHostNameExist:any = this.storageService.getHostNameDinamically();
+    if(this.coreFunctionService.isNotBlank(isClientCodeExist)){
+      if(this.checkIdTokenStatus()){
+        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
+      }else if(!this.checkApplicationSetting() && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
+        this.apiCallService.getApplicationAllSettings();
+      }else{        
+        this.storageService.removeKeyFromStorage("USER");
+      }
+    }else{
+      this.router.navigateByUrl('/checkcompany');
+    }
+  }
+  async getLogoPath(){
+    if(this.coreFunctionService.isNotBlank(this.storageService.getApplicationSetting())){
+      this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
+      this.imageTitle = this.storageService.getPageTitle();
+      this.appTitle = this.storageService.getPageTitle();
+      let loader:any = await this.ionLoaderService.loadingController.getTop();
+      if(loader){
+        this.ionLoaderService.hideLoader();
+      }
+    }
   }
   checkIdTokenStatus(){
     let tokenStatus = false;
@@ -167,86 +267,10 @@ export class SigninComponent implements OnInit {
     }
     return tokenStatus;
   }
-  onLoadSubscriptions(){
-    this.userInfoSubscribe = this.authDataShareService.userInfo.subscribe(data =>{ 
-      let color = 'danger';
-      if(data && data.msg){
-        this.notificationService.presentToastOnTop(data.msg, color);
-      }    
-    });
-    this.resetSignin = this.authDataShareService.settingData.subscribe(data =>{      
-      if(data == "logged_in"){
-        this.ionLoaderService.hideLoader();
-        this.notificationService.presentToastOnTop(this.signinReponseData.msg,'success');
-        this.loginForm.reset();
-      }
-      this.signinReponseData = '';
-    });
-    this.sessionSubscribe = this.authDataShareService.sessionexpired.subscribe(data =>{      
-      let color = 'danger';
-      if(data && data.msg && data.status == 'success'){
-        this.notificationService.presentToastOnTop(data.msg, color);
-      }    
-    });
-    this.authenticationMessage = this.authDataShareService.signinResponse.subscribe(data => {
-      let msg = data.msg;
-      let color = "danger";
-      if(data && data.message && data.message == 'reset'){
-        this.notificationService.presentToast('info', 'Password expired !!!');
-        this.router.navigate(['createpwd']);
-      }else if(data && data.message && data.message == 'notify'){
-
-      }else if(data && data.status == 'success'){
-        this.ionLoaderService.showLoader("Checking Permissions..");
-        color = 'success';
-        this.signinReponseData = data;
-        this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
-      }
-      if(msg != '' && data.status != 'success'){
-        this.notificationService.presentToastOnTop(msg,color);
-      }
-    })
-  }
-  checkValidate(){
-    return !this.loginForm.valid;
-  }
-
-  get f() { return this.loginForm.controls; }
-
-  onSubmit() {
-    if (this.loginForm.invalid) {
-      return;
-    }
-    let loginObj = this.loginForm.value; 
-    let payload = { userId: loginObj.userId, password: loginObj.password }
-    this.authService.Signin(payload);
-  }
-  showtxtpass() {
-    this.showpassword = !this.showpassword;
-  }
-  comingSoon() {
-    this.notificationService.presentToastOnBottom('Comming Soon...');
-  }
-  changeCode(){
-    this.storageService.removeDataFormStorage('all');
-    this.router.navigateByUrl('/checkcompany');
-    this.resetVariables();
-  }
   resetVariables(){
     this.logoPath = '';
     this.imageTitle = '';
     this.appTitle = '';
-  }
-  async getLogoPath(){
-    if(this.coreFunctionService.isNotBlank(this.storageService.getApplicationSetting())){
-      this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
-      this.imageTitle = this.storageService.getPageTitle();
-      this.appTitle = this.storageService.getPageTitle();
-      let loader:any = await this.ionLoaderService.loadingController.getTop();
-      if(loader){
-        this.ionLoaderService.hideLoader();
-      }
-    }
   }
   checkApplicationSetting(){
     let exists = false;
@@ -258,5 +282,15 @@ export class SigninComponent implements OnInit {
     }
     return exists;
   }
+  checkValidate(){
+    return !this.loginForm.valid;
+  }
+  get f() { return this.loginForm.controls; }
+  // Dependency Functions Handling Start -------------------
+  
+  // NOt in Use Functions--------------  
+  // comingSoon() {
+  //   this.notificationService.presentToastOnBottom('Comming Soon...');
+  // }
 
 }

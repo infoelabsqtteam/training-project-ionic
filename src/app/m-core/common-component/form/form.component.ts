@@ -19,7 +19,7 @@ import { AndroidpermissionsService } from 'src/app/service/androidpermissions.se
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 // import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
-import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common, GridCommonFunctionService, FileHandlerService } from '@core/web-core';
+import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common, GridCommonFunctionService, FileHandlerService, ApiCallService, FormCreationService, CheckIfService } from '@core/web-core';
 import { Capacitor } from '@capacitor/core';
 
 interface User {
@@ -355,7 +355,10 @@ tinymceConfig = {}
     private appDataShareService: AppDataShareService,
     private appPermissionService: AppPermissionService,
     private gridCommonFunctionService: GridCommonFunctionService,
-    private fileHandlerService: FileHandlerService
+    private fileHandlerService: FileHandlerService,
+    private apiCallService: ApiCallService,
+    private formCreationService: FormCreationService,
+    private checkIfService: CheckIfService
     ) {
 
       // this.mapsApiLoaded();
@@ -541,7 +544,7 @@ tinymceConfig = {}
   private getNextFormById(id: string) {
     const params = "form";
     const criteria = ["_id;eq;" + id + ";STATIC"];
-    const payload = this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, {});
+    const payload = this.apiCallService.getPaylodWithCriteria(params, '', criteria, {});
     this.apiService.GetNestedForm(payload);
   }
   updateRunningData(data:any){
@@ -763,7 +766,7 @@ tinymceConfig = {}
           this.close();
         }else{
           //this.commonFunctionService.getStaticData();
-          const payload = this.commonFunctionService.commanApiPayload([],this.tableFields,this.formFieldButtons,this.getFormValue(false));
+          const payload = this.apiCallService.commanApiPayload([],this.tableFields,this.formFieldButtons,this.getFormValue(false));
           this.apiService.getStatiData(payload);
         }
         // if(this.isStepper){
@@ -875,16 +878,16 @@ tinymceConfig = {}
         if(!element.hideOnMobile){
           if(element.type == 'pdf_view'){
             const object = this.elements[this.selectedRowIndex];
-            staticModalGroup.push(this.commonFunctionService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,object))
+            staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,object))
           } 
           if(element.field_name && element.field_name != ''){             
             switch (element.type) {
               case "list_of_checkbox":
-                this.commonFunctionService.createFormControl(forControl, element, [], "list")
+                this.formCreationService.createFormControl(forControl, element, [], "list")
                 this.checkBoxFieldListValue.push(element);
                 break;
               case "checkbox":
-                this.commonFunctionService.createFormControl(forControl, element, false, "checkbox")
+                this.formCreationService.createFormControl(forControl, element, false, "checkbox")
                 break;
               case "date":
                 let currentYear = new Date().getFullYear();
@@ -933,7 +936,7 @@ tinymceConfig = {}
                   element['minDate'] = minDateToday;
                   element['maxDate'] = maxDateFromToday;
                 }
-                this.commonFunctionService.createFormControl(forControl, element, '', "text")
+                this.formCreationService.createFormControl(forControl, element, '', "text")
                 break; 
               case "daterange":
                 const date_range = {};
@@ -944,10 +947,10 @@ tinymceConfig = {}
                 if (element.list_of_dates.length > 0) {
                   list_of_dates.forEach((data) => {
                     
-                    this.commonFunctionService.createFormControl(date_range, data, '', "text")
+                    this.formCreationService.createFormControl(date_range, data, '', "text")
                   });
                 }
-                this.commonFunctionService.createFormControl(forControl, element, date_range, "group")                                    
+                this.formCreationService.createFormControl(forControl, element, date_range, "group")                                    
                 break;            
               case "list_of_fields":
               case "group_of_fields":
@@ -993,11 +996,11 @@ tinymceConfig = {}
                         }
                         switch (data.type) {
                           case "list_of_checkbox":
-                            this.commonFunctionService.createFormControl(list_of_fields, modifyData, [], "list")
+                            this.formCreationService.createFormControl(list_of_fields, modifyData, [], "list")
                             this.checkBoxFieldListValue.push(modifyData);
                             break;
                           case "checkbox":
-                              this.commonFunctionService.createFormControl(list_of_fields, modifyData, false, "checkbox")
+                              this.formCreationService.createFormControl(list_of_fields, modifyData, false, "checkbox")
                               break;
                           case "date":
                             let currentYear = new Date().getFullYear();
@@ -1037,17 +1040,17 @@ tinymceConfig = {}
                               data['minDate'] = minDateToday;
                               data['maxDate'] = maxDateFromToday;
                             }                        
-                            this.commonFunctionService.createFormControl(list_of_fields, modifyData, '', "text")
+                            this.formCreationService.createFormControl(list_of_fields, modifyData, '', "text")
                             break;                         
                           default:
-                            this.commonFunctionService.createFormControl(list_of_fields, modifyData, '', "text")
+                            this.formCreationService.createFormControl(list_of_fields, modifyData, '', "text")
                             break;
                         } 
                       }                 
                     }
                   }
                 }
-                this.commonFunctionService.createFormControl(forControl, element, list_of_fields, "group"); 
+                this.formCreationService.createFormControl(forControl, element, list_of_fields, "group"); 
                 if(element.type == 'list_of_fields'){
                   this.list_of_fields.push(element);
                 }               
@@ -1076,14 +1079,14 @@ tinymceConfig = {}
                         if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != ""){
                           this.calculationFieldList.push(element);
                         }
-                        this.commonFunctionService.createFormControl(stepper_of_fields, modifyData, '', "text")
+                        this.formCreationService.createFormControl(stepper_of_fields, modifyData, '', "text")
                         if(data.tree_view_object && data.tree_view_object.field_name != ""){
                           let treeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));                
                           treeModifyData.is_mandatory=false;
-                          this.commonFunctionService.createFormControl(stepper_of_fields, treeModifyData , '', "text")
+                          this.formCreationService.createFormControl(stepper_of_fields, treeModifyData , '', "text")
                         }
                       });
-                      this.commonFunctionService.createFormControl(forControl, step, stepper_of_fields, "group")
+                      this.formCreationService.createFormControl(forControl, step, stepper_of_fields, "group")
                     } 
                   }); 
                   this.isStepper = true;
@@ -1091,11 +1094,11 @@ tinymceConfig = {}
                 break;
               case "pdf_view" : 
                 const object = this.elements[this.selectedRowIndex];
-                staticModalGroup.push(this.commonFunctionService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,object))
+                staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,object))
               break;
               case "input_with_uploadfile":
                 element.is_disabled = true;
-                this.commonFunctionService.createFormControl(forControl, element, '', "text")
+                this.formCreationService.createFormControl(forControl, element, '', "text")
                 break;
               case "grid_selection":
                   if(element && element.gridColumns && element.gridColumns.length > 0){
@@ -1116,15 +1119,15 @@ tinymceConfig = {}
                     element['fieldIndex'] = index;
                   }
                   element['showButton'] = this.checkGridSelectionButtonCondition(element,'add');
-                  this.commonFunctionService.createFormControl(forControl, element, '', "text");
+                  this.formCreationService.createFormControl(forControl, element, '', "text");
                 break;
               case "gmap":
               case "gmapview": 
                 this.requestLocationPermission();
-                this.commonFunctionService.createFormControl(forControl, element, '', "text");
+                this.formCreationService.createFormControl(forControl, element, '', "text");
                 break;
               default:
-                this.commonFunctionService.createFormControl(forControl, element, '', "text");
+                this.formCreationService.createFormControl(forControl, element, '', "text");
                 break;
             }
             
@@ -1132,7 +1135,7 @@ tinymceConfig = {}
             if(element.tree_view_object && element.tree_view_object.field_name != ""){
               let treeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));                
               treeModifyData.is_mandatory=false;
-              this.commonFunctionService.createFormControl(forControl, treeModifyData , '', "text")
+              this.formCreationService.createFormControl(forControl, treeModifyData , '', "text")
             }
           }
           //show if handling
@@ -1168,7 +1171,7 @@ tinymceConfig = {}
           if(element.field_name && element.field_name != ''){              
             switch (element.type) {
               case "dropdown":
-                this.commonFunctionService.createFormControl(forControl, element, '', "text")
+                this.formCreationService.createFormControl(forControl, element, '', "text")
                 break;
               default:
                 break;
@@ -1235,7 +1238,7 @@ tinymceConfig = {}
           if(element.field_name == 'account'){
             this.templateForm.get('account').setValue(account);
             if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
-              payload = this.commonFunctionService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.getFormValue(true)) 
+              payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.getFormValue(true)) 
               if(element.onchange_api_params.indexOf("FORM_GROUP") >= 0 || element.onchange_api_params.indexOf("QTMP") >= 0){
                 payload["data"]=this.getFormValue(true);
               } 
@@ -1245,7 +1248,7 @@ tinymceConfig = {}
           if(element.field_name == 'contact'){
             this.templateForm.get('contact').setValue(contact);
             if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) { 
-              payload = this.commonFunctionService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.getFormValue(true)) 
+              payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.getFormValue(true)) 
               if(element.onchange_api_params.indexOf("FORM_GROUP") >= 0 || element.onchange_api_params.indexOf("QTMP") >= 0){
                 payload["data"]=this.getFormValue(true);
               }                  
@@ -1258,7 +1261,7 @@ tinymceConfig = {}
                 if(data.field_name == 'account'){
                   this.templateForm.get(stepData.field_name).get('account').setValue(account);
                   if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) { 
-                    payload = this.commonFunctionService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.getFormValue(true)) 
+                    payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.getFormValue(true)) 
                     if(data.onchange_api_params.indexOf("FORM_GROUP") >= 0 || data.onchange_api_params.indexOf("QTMP") >= 0){
                       payload["data"]=this.getFormValue(true);
                     }  
@@ -1267,7 +1270,7 @@ tinymceConfig = {}
                 }
                 if(data.field_name == 'contact'){
                   if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) { 
-                    payload = this.commonFunctionService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.getFormValue(true)) 
+                    payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.getFormValue(true)) 
                     if(data.onchange_api_params.indexOf("FORM_GROUP") >= 0 || data.onchange_api_params.indexOf("QTMP") >= 0){
                       payload["data"]=this.getFormValue(true);
                     }  
@@ -1287,7 +1290,7 @@ tinymceConfig = {}
           let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
           formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
         }
-        let staticModalG = this.commonFunctionService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
+        let staticModalG = this.apiCallService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
         if(staticModalG && staticModalG.length > 0){
           staticModalG.forEach(element => {
             staticModalGroup.push(element);
@@ -1317,7 +1320,7 @@ tinymceConfig = {}
           if(this.form.api_params_criteria && this.form.api_params_criteria != null){
             criteria=this.form.api_params_criteria
           }
-          staticModal.push(this.commonFunctionService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,this.getFormValue(false)))
+          staticModal.push(this.apiCallService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,this.getFormValue(false)))
           
         }
         if(staticModal.length > 0){
@@ -1543,7 +1546,7 @@ tinymceConfig = {}
       }
 
       let list = [];
-      list.push(this.commonFunctionService.getPaylodWithCriteria(tableField.api_params,tableField.call_back_field,tableField.api_params_criteria,this.getFormValue(false)));
+      list.push(this.apiCallService.getPaylodWithCriteria(tableField.api_params,tableField.call_back_field,tableField.api_params_criteria,this.getFormValue(false)));
        payload['data'] = list;
       this.apiService.DynamicApiCall(payload);
       this.saveCallSubscribe();
@@ -1897,24 +1900,24 @@ tinymceConfig = {}
             this.tableFields.forEach(element => {            
               if(element.field_name == key){                
                 Object.keys(this.dataListForUpload[key]).forEach(child =>{
-                  selectedRow[key][child] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[key][child]);
+                  selectedRow[key][child] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key][child]);
                 })
               }
             });          
           }else{
-              selectedRow[key] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[key]);
+              selectedRow[key] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key]);
           }
         } else {
           if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
             this.tableFields.forEach(element => {
               if(element.field_name == key){                
                 Object.keys(this.dataListForUpload[key]).forEach(child =>{
-                  modifyFormValue[key][child] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[key][child]);
+                  modifyFormValue[key][child] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key][child]);
                 })
               }
             });          
           }else{
-            modifyFormValue[key] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[key]);
+            modifyFormValue[key] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key]);
           }       
           
         }
@@ -1988,7 +1991,7 @@ tinymceConfig = {}
     if(hasPermission){
       let gridSelectionValidation:any = this.checkGridSelectionMendetory(); 
       if(this.isFormValid() && gridSelectionValidation.status){
-        let checkCustmizedValuValidation = this.commonFunctionService.checkCustmizedValuValidation(this.tableFields,formValue);
+        let checkCustmizedValuValidation = this.checkIfService.checkCustmizedValuValidation(this.tableFields,formValue);
         if(checkCustmizedValuValidation.status){
           if (this.dataSaveInProgress) {
             this.showNotify = true;
@@ -2198,7 +2201,7 @@ tinymceConfig = {}
             const checkCLTFN = element.onchange_api_params.indexOf('CLTFN')
             if(checkFormGroup == -1 && checkCLTFN == -1){
 
-              const payload = this.commonFunctionService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, formValueWithCustomData)
+              const payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, formValueWithCustomData)
               if(element.onchange_api_params.indexOf('QTMP') >= 0){
                 if(element && element.formValueAsObjectForQtmp){
                   payload["data"]=formValue;
@@ -2219,7 +2222,7 @@ tinymceConfig = {}
                         const checkFormGroup = data.onchange_call_back_field.indexOf("FORM_GROUP");
                         if(checkFormGroup == -1){
               
-                          const payload = this.commonFunctionService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, formValueWithCustomData)
+                          const payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, formValueWithCustomData)
                           if(data.onchange_api_params.indexOf('QTMP') >= 0){
                             if(element && element.formValueAsObjectForQtmp){
                                payload["data"]=formValue;
@@ -2233,7 +2236,7 @@ tinymceConfig = {}
                       if(data.tree_view_object && data.tree_view_object.field_name != ""){
                         let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
                         if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
-                          staticModal.push(this.commonFunctionService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
+                          staticModal.push(this.apiCallService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
                         }
                       }
                     });
@@ -2245,12 +2248,12 @@ tinymceConfig = {}
           if(element.tree_view_object && element.tree_view_object.field_name != ""){
             let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
             if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
-              staticModal.push(this.commonFunctionService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
+              staticModal.push(this.apiCallService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
             }
           }
         }
         if(element.type && element.type == 'pdf_view'){
-          staticModal.push(this.commonFunctionService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,formValueWithCustomData))
+          staticModal.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,formValueWithCustomData))
         }
       });
     }
@@ -2262,7 +2265,7 @@ tinymceConfig = {}
       let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
       formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
     }
-    let staticModalG = this.commonFunctionService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
+    let staticModalG = this.apiCallService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
     if(staticModalG && staticModalG.length > 0){
       staticModalG.forEach(element => {
         staticModal.push(element);
@@ -2273,7 +2276,7 @@ tinymceConfig = {}
     //   if(this.tab.api_params_criteria && this.tab.api_params_criteria != null){
     //     criteria=this.tab.api_params_criteria
     //   }
-    //   staticModal.push(this.commonFunctionService.getPaylodWithCriteria(this.tab.api_params,this.tab.call_back_field,criteria,{}))
+    //   staticModal.push(this.apiCallService.getPaylodWithCriteria(this.tab.api_params,this.tab.call_back_field,criteria,{}))
       
     // }
     if(this.form && this.form.api_params && this.form.api_params != null && this.form.api_params != "" && this.form.api_params != undefined){         
@@ -2287,7 +2290,7 @@ tinymceConfig = {}
       if(this.editedRowIndex > -1){
         formDataObject = formValue;
       }
-      staticModal.push(this.commonFunctionService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,formDataObject))      
+      staticModal.push(this.apiCallService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,formDataObject))      
     }
     this.callStaticData(staticModal);
   }
@@ -2428,7 +2431,7 @@ tinymceConfig = {}
                 case "input_with_uploadfile":
                   if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
                     this.dataListForUpload[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
-                    const value = this.commonFunctionService.modifyFileSetValue(formValue[element.field_name]);
+                    const value = this.fileHandlerService.modifyFileSetValue(formValue[element.field_name]);
                     this.templateForm.controls[element.field_name].setValue(value);
                   }
                   break;
@@ -3331,7 +3334,7 @@ tinymceConfig = {}
     const payload = [];
     const params = field.api_params;
     const criteria = field.api_params_criteria;
-    payload.push(this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, objectValue, field.data_template));
+    payload.push(this.apiCallService.getPaylodWithCriteria(params, '', criteria, objectValue, field.data_template));
     this.apiService.GetTypeaheadData(payload);    
   }
   clearTypeaheadData() {
@@ -3448,7 +3451,7 @@ tinymceConfig = {}
               if(primaryCriteriaList && primaryCriteriaList.length > 0){
                 for (let index = 0; index < primaryCriteriaList.length; index++) {
                   const cri = primaryCriteriaList[index];
-                  alreadyExist = this.commonFunctionService.checkIfCondition(cri,element,field.type);
+                  alreadyExist = this.checkIfService.checkIfCondition(cri,element,field.type);
                   if(alreadyExist){
                     const crList = cri.split("#");
                     switch (crList[1]) {
@@ -3841,7 +3844,7 @@ tinymceConfig = {}
               }
               if(this.dataListForUpload[keyName]){
                 Object.keys(this.dataListForUpload[keyName]).forEach(childkey => {                  
-                  updateCustmizedValue[this.listOfFieldsUpdateIndex][childkey] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
+                  updateCustmizedValue[this.listOfFieldsUpdateIndex][childkey] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
                 })
               }
               if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
@@ -3893,7 +3896,7 @@ tinymceConfig = {}
               }
               if(this.dataListForUpload[keyName]){
                 Object.keys(this.dataListForUpload[keyName]).forEach(childkey => {                 
-                  listOfFieldData[childkey] = this.commonFunctionService.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
+                  listOfFieldData[childkey] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[keyName][childkey]);
                 })
               }
               if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
@@ -4292,8 +4295,8 @@ tinymceConfig = {}
   }
 
   private getDataForNextForm(reqParams,reqCriteria) {    
-    const request = this.commonFunctionService.getDataForGrid(1, {}, { 'name': reqParams }, [], {}, '');
-    const crList = this.commonFunctionService.getCriteriaList(reqCriteria, {});
+    const request = this.apiCallService.getDataForGrid(1, {}, { 'name': reqParams }, [], {}, '');
+    const crList = this.apiCallService.getCriteriaList(reqCriteria, {});
     request.data.crList = crList;
     this.apiService.getNextFormData(request);
   }
@@ -4385,8 +4388,8 @@ tinymceConfig = {}
         const params = child.api_params;
         if(params && params != ''){
           const criteria = ["_id;eq;"+fieldValue._id+";STATIC"]
-          const crList = this.commonFunctionService.getCriteriaList(criteria,{});
-          const payload = this.commonFunctionService.getDataForGrid(1,{},{'name':params},[],{},'');
+          const crList = this.apiCallService.getCriteriaList(criteria,{});
+          const payload = this.apiCallService.getDataForGrid(1,{},{'name':params},[],{},'');
           payload.data.crList = crList;
           this.apiService.getGridData(payload);
           this.updateAddNew = true;
@@ -4440,7 +4443,7 @@ tinymceConfig = {}
         this.updateDataOnFormField(calculatedCost);
       }
       else{
-        staticModal.push(this.checkQtmpApi(params,field,this.commonFunctionService.getPaylodWithCriteria(params, callback, criteria, completeObject, data_template))); 
+        staticModal.push(this.checkQtmpApi(params,field,this.apiCallService.getPaylodWithCriteria(params, callback, criteria, completeObject, data_template))); 
         // staticModal.push(this.coreUtilityService.getPaylodWithCriteria(params, callback, criteria, object))      
         // if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
         //   if(field && field.formValueAsObjectForQtmp){
@@ -4740,7 +4743,7 @@ tinymceConfig = {}
                     });
                   }
                   let criteria = crList[0]+"#"+crList[1]+"#"+value;
-                  check = this.commonFunctionService.checkIfCondition(criteria,object);
+                  check = this.checkIfService.checkIfCondition(criteria,object);
                   if(!check){
                     break;
                   } 
@@ -4866,14 +4869,14 @@ tinymceConfig = {}
     if(this.curFileUploadFieldparentfield != ''){
       const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield); 
       if(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] && this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name].length > 0){
-        let fileName = this.commonFunctionService.modifyFileSetValue(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]);        
+        let fileName = this.fileHandlerService.modifyFileSetValue(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]);        
         this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue(fileName);
       }else{
         this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue('');
       }
     }else{    
       if(this.dataListForUpload[this.curFileUploadField.field_name] && this.dataListForUpload[this.curFileUploadField.field_name].length > 0){
-        let fileName = this.commonFunctionService.modifyFileSetValue(this.dataListForUpload[this.curFileUploadField.field_name]);
+        let fileName = this.fileHandlerService.modifyFileSetValue(this.dataListForUpload[this.curFileUploadField.field_name]);
         this.templateForm.get(this.curFileUploadField.field_name).setValue(fileName);
       }else{
         this.templateForm.get(this.curFileUploadField.field_name).setValue('');
@@ -4936,7 +4939,7 @@ tinymceConfig = {}
     const  formValue = this.getFormValue(true); 
     let tobedesabled;
     if(parent == ''){
-      tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
+      tobedesabled = this.checkIfService.isDisable(chield,this.updateMode,formValue)
       if(tobedesabled){
         if(!this.templateForm.get(chield.field_name).disabled){
           this.templateForm.get(chield.field_name).disable()
@@ -4947,7 +4950,7 @@ tinymceConfig = {}
         }        
       }
     }else{
-      tobedesabled = this.commonFunctionService.isDisable(chield,this.updateMode,formValue)
+      tobedesabled = this.checkIfService.isDisable(chield,this.updateMode,formValue)
       if(tobedesabled){
         this.templateForm.get(parent).get(chield.field_name).disable()
       }else{
@@ -5142,7 +5145,7 @@ tinymceConfig = {}
         object[key] = this.templateForm.getRawValue()[key];
       })
     }
-    const display = this.commonFunctionService.showIf(field,object);
+    const display = this.checkIfService.showIf(field,object);
     const modifiedField = JSON.parse(JSON.stringify(field));
     modifiedField['display'] = display; 
     field = modifiedField;
@@ -5289,7 +5292,7 @@ tinymceConfig = {}
     if(this.curTreeViewField && this.curTreeViewField.onchange_function_param && this.curTreeViewField.onchange_function_param != ''){
       if(this.curTreeViewField.onchange_function_param.indexOf('QTMP') >= 0){
         const staticModalGroup = []
-        staticModalGroup.push(this.commonFunctionService.getPaylodWithCriteria(this.curTreeViewField.onchange_function_param,'',[],this.getFormValue(true)));
+        staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(this.curTreeViewField.onchange_function_param,'',[],this.getFormValue(true)));
         //this.commonFunctionService.getStaticData(staticModalGroup);
         this.apiService.getStatiData(staticModalGroup);
       }
@@ -5690,7 +5693,7 @@ tinymceConfig = {}
       if(searchValue == undefined || searchValue == ''){
         searchValue = 'this.pageNo';
       }
-      correctIndex = this.gridCommonFunctionService.getCorrectIndex(object,index,field,data,searchValue);
+      correctIndex = this.commonFunctionService.getCorrectIndex(object,index,field,data,searchValue);
     }    
     this.storeFormDetails("",field,index); 
   }
@@ -6116,7 +6119,7 @@ tinymceConfig = {}
     if(field.api_params_criteria && field.api_params_criteria != ''){
       criteria =  field.api_params_criteria;
     }
-    let staticModalGroup = this.commonFunctionService.getPaylodWithCriteria(field.api_params, call_back_field, criteria, this.typeaheadObjectWithtext ? this.typeaheadObjectWithtext : {});
+    let staticModalGroup = this.apiCallService.getPaylodWithCriteria(field.api_params, call_back_field, criteria, this.typeaheadObjectWithtext ? this.typeaheadObjectWithtext : {});
     staticModal.push(staticModalGroup);
     this.apiService.GetTypeaheadData(staticModal);
 
@@ -6142,7 +6145,7 @@ tinymceConfig = {}
   //     return true;
   //   }
   //   if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-  //     return this.commonFunctionService.isDisable(field.etc_fields, updateMode, object);
+  //     return this.checkIfService.isDisable(field.etc_fields, updateMode, object);
   //   }   
   //   return false;
   // }
@@ -6154,7 +6157,7 @@ tinymceConfig = {}
         condition = this.tableFields.disableRowIf;
       }
       if(condition != ''){
-        if(this.commonFunctionService.checkDisableRowIf(condition,data)){
+        if(this.checkIfService.checkDisableRowIf(condition,data)){
           check = true;
         }else{
           check = false;
@@ -6167,7 +6170,7 @@ tinymceConfig = {}
     const data = this.commonFunctionService[field.field_name];
     const condition = field.disableRowIf;
     if(condition){
-      return !this.commonFunctionService.checkDisableRowIf(condition,data);
+      return !this.checkIfService.checkDisableRowIf(condition,data);
     }
     return true;    
   }
@@ -6250,7 +6253,7 @@ tinymceConfig = {}
     }
   }
   getValueForGrid(field,object){
-    return this.commonFunctionService.getValueForGrid(field,object);
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   }
 
   async delete(index:number,field:any,fieldName:string){
@@ -6327,7 +6330,7 @@ tinymceConfig = {}
                         if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
                         if (!this.dataListForUpload[custmizedKey][data.field_name]) this.dataListForUpload[custmizedKey][data.field_name] = [];
                         this.dataListForUpload[custmizedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
-                        const value = this.commonFunctionService.modifyFileSetValue(object[data.field_name]);
+                        const value = this.fileHandlerService.modifyFileSetValue(object[data.field_name]);
                         this.templateForm.get(element.field_name).get(data.field_name).setValue(value);
                       }
                       break;
@@ -6432,7 +6435,7 @@ tinymceConfig = {}
       for (let index = 0; index < fieldValue.length; index++) {
         const value = fieldValue[index];
         formValue[parent] = value;
-        if(this.commonFunctionService.showIf(field,formValue)){
+        if(this.checkIfService.showIf(field,formValue)){
           check = 1;
           break;
         }        
@@ -6633,7 +6636,7 @@ tinymceConfig = {}
     const  formValue = this.getFormValue(true);   
     let tobedesabled;
     if(parent == ''){
-      tobedesabled = this.commonFunctionService.isMendetory(chield,formValue)
+      tobedesabled = this.checkIfService.isMendetory(chield,formValue)
       if(tobedesabled){
         if(this.templateFormControl[chield.field_name].status == 'VALID'){
           this.templateForm.get(chield.field_name).setValidators([Validators.required]);
@@ -6646,7 +6649,7 @@ tinymceConfig = {}
         }        
       }
     }else{
-      tobedesabled = this.commonFunctionService.isMendetory(chield,formValue)
+      tobedesabled = this.checkIfService.isMendetory(chield,formValue)
       if(tobedesabled){
         if(this.templateFormControl[parent][chield.field_name].status == 'VALID'){
           this.templateForm.get(parent).get(chield.field_name).setValidators([Validators.required]);
@@ -6689,7 +6692,7 @@ tinymceConfig = {}
       let api_params = field.onClickApiParams;
       let callBackfield = field.onClickCallBackField;
       let criteria = field.onClickApiParamsCriteria
-      const payload = this.commonFunctionService.getPaylodWithCriteria(api_params,callBackfield,criteria,this.getFormValue(false));
+      const payload = this.apiCallService.getPaylodWithCriteria(api_params,callBackfield,criteria,this.getFormValue(false));
       let payloads = [];
       payloads.push(this.checkQtmpApi(api_params,field,payload));
       this.apiService.getStatiData(payloads);
