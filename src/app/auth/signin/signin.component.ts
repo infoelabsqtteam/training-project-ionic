@@ -98,6 +98,9 @@ export class SigninComponent implements OnInit {
     // this.getLogoPath();
   }
   initForm(){
+    if(this.storageService.getVerifyType() == 'mobile' || this.envService.getVerifyType() == "mobile"){
+      this.VerifyType = true;
+    }
     this.loginForm = this.formBuilder.group({
       password: ['', [Validators.required]],
       userId: ['', [Validators.required]],
@@ -164,12 +167,7 @@ export class SigninComponent implements OnInit {
     }
     return tokenStatus;
   }
-  onLoadSubscriptions(){    
-    if(this.storageService.getVerifyType() == 'mobile' || this.envService.getVerifyType() == "mobile"){
-      this.VerifyType = true;
-    }else{
-     this.VerifyType = false;
-    }
+  onLoadSubscriptions(){
     this.userInfoSubscribe = this.authDataShareService.userInfo.subscribe(data =>{ 
       let color = 'danger';
       if(data && data.msg){
@@ -193,7 +191,12 @@ export class SigninComponent implements OnInit {
     this.authenticationMessage = this.authDataShareService.signinResponse.subscribe(data => {
       let msg = data.msg;
       let color = "danger";
-      if(data && data.status == 'success'){
+      if(data && data.message && data.message == 'reset'){
+        this.notificationService.presentToast('info', 'Password expired !!!');
+        this.router.navigate(['createpwd']);
+      }else if(data && data.message && data.message == 'notify'){
+
+      }else if(data && data.status == 'success'){
         this.ionLoaderService.showLoader("Checking Permissions..");
         color = 'success';
         this.signinReponseData = data;

@@ -226,7 +226,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(),'/home');
       }else{
         this.authService.redirectToSignPage();
-        this.notificationService.presentToastOnBottom("Session Expired, Please login again.","info")
+        this.notificationService.presentToastOnBottom("Session Expired, Please login again.","secondary")
       }
     }else{
       this.storageService.removeDataFormStorage("all");

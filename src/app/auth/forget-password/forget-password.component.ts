@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NotificationService } from '@core/ionic-core';
-import { AuthDataShareService, AuthService, EnvService, StorageService } from '@core/web-core';
+import { AuthDataShareService, AuthService, CustomvalidationService, EnvService, StorageService } from '@core/web-core';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -26,14 +26,15 @@ export class ForgetPasswordComponent implements OnInit {
   template:string = "temp1";
   logoPath = '';
   forgetPasswordImage = 'assets/img/icons/forget-password.svg';
+  adminEmail='';
 
   constructor(
-    private formBuilder: FormBuilder,
     private envService:EnvService,
     private authService: AuthService,
     private authDataShareService: AuthDataShareService,
     private storageService: StorageService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private customvalidationService: CustomvalidationService
   ) { 
     if(this.envService.getVerifyType() == "mobile"){
       this.VerifyType = true; 
@@ -92,8 +93,9 @@ export class ForgetPasswordComponent implements OnInit {
 
   initForm() {
     this.username = "";
-    this.fForm = this.formBuilder.group({
-      'userId': ['', [Validators.required]],
+    this.fForm = new FormGroup({
+      'userId': new FormControl('', [Validators.required]),
+      "admin": new FormControl(false)
     });
 
     if(!this.VerifyType){
@@ -102,10 +104,10 @@ export class ForgetPasswordComponent implements OnInit {
       this.fForm.get('userId').setValidators([Validators.required,Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]);
     }
 
-    this.vForm = this.formBuilder.group({
-      'verifyCode': ['', [Validators.required]],
-      'password': ['', [Validators.required]],
-      'confpwd': ['', [Validators.required]],
+    this.vForm = new FormGroup({
+      'verifyCode': new FormControl('', [Validators.required]),
+      'password': new FormControl('', [Validators.required,this.customvalidationService.patternValidator()]),
+      'confpwd': new FormControl('', [Validators.required]),
     });
   }
 
@@ -114,7 +116,9 @@ export class ForgetPasswordComponent implements OnInit {
       return;
     }
     this.username = this.fForm.value.userId;
-    this.authService.TryForgotPassword(this.username);
+    let admin = this.fForm.value.admin;
+    let payload = {userId:this.username,admin:admin};
+    this.authService.TryForgotPassword(payload);
   }
 
   resendCode() {
@@ -137,6 +141,7 @@ export class ForgetPasswordComponent implements OnInit {
     this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
     this.template = this.storageService.getTemplateName();
     this.title = this.envService.getHostKeyValue('title');
+    this.adminEmail = this.storageService.getAdminEmail();
   }
 
   shownewpass() {

@@ -234,7 +234,7 @@ tinymceConfig = {}
   custmizedFormValue: any = {};
   multipleFormCollection:any=[];
   donotResetFieldLists:any={};
-  typeAheadData: string[] = [];
+  typeAheadData: any = [];
   treeViewData: any = {};
   curFileUploadField:any={}
   curFileUploadFieldparentfield:any={};
@@ -323,9 +323,9 @@ tinymceConfig = {}
   
     term:any={};
 
-    @HostListener('document:click') clickout() {
-      this.term = {};
-    }
+    // @HostListener('document:click') clickout() {
+    //   this.term = {};
+    // }
 
   constructor(
     public formBuilder: FormBuilder,
@@ -1423,9 +1423,9 @@ tinymceConfig = {}
   // compareFn(e1: User, e2: User): boolean {
   //   return e1 && e2 ? e1.id === e2.id : e1 === e2;
   // }
-  getddnDisplayVal(val) {
-    return this.commonFunctionService.getddnDisplayVal(val);    
-  }
+  // getddnDisplayVal(val) {
+  //   return this.commonFunctionService.getddnDisplayVal(val);    
+  // }
   take_action_on_click(action_button){
     let api='';
     this.currentActionButton=action_button;
@@ -2801,16 +2801,16 @@ tinymceConfig = {}
         }  
       });
       // if(this.formFieldButtons.length > 0){
-      //   this.formFieldButtons.forEach(element => {
-      //     let fieldName = element.field_name;
-      //     let object = this.selectedRow[fieldName];
-      //     if(formValue[fieldName] != null && formValue[fieldName] != undefined){
-      //       if(element.field_name && element.field_name != ''){              
-      //         switch (element.type) {
-      //           case "dropdown":
-      //             let dropdownValue = object == null ? null : object;
-      //             this.templateForm.controls[element.field_name].setValue(dropdownValue);
-      //             break;
+        //   this.formFieldButtons.forEach(element => {
+          //     let fieldName = element.field_name;
+          //     let object = this.selectedRow[fieldName];
+          //     if(formValue[fieldName] != null && formValue[fieldName] != undefined){
+            //       if(element.field_name && element.field_name != ''){              
+              //         switch (element.type) {
+                //           case "dropdown":
+                  //             let dropdownValue = object == null ? null : object;
+                  //             this.templateForm.controls[element.field_name].setValue(dropdownValue);
+                  //             break;
       //           default:
       //             break;
       //         }
@@ -3256,6 +3256,8 @@ tinymceConfig = {}
     this.checkFormFieldAutfocus = true;
     this.filePreviewFields = [];
     this.nextFormUpdateMode=false;
+    this.focusFieldParent={};
+    this.term={};
   }
 
 
@@ -4055,7 +4057,8 @@ tinymceConfig = {}
     if (field.type == 'typeahead') {
       this.clearTypeaheadData();
     }
-
+    this.term = {};
+    
   }
 
   async openGridSelectionDetailModal(data:any, cardtype?:string) {
@@ -5187,6 +5190,7 @@ tinymceConfig = {}
     }
     this.samePageGridSelection = this.appDataShareService.getgridselectioncheckvalue();
     if(this.samePageGridSelection){
+      this.apiService.ResetStaticData(field.field_name);
       this.curTreeViewField = field;      
       this.samePageGridSelectionData = gridModalData;
     }else{
@@ -5311,28 +5315,28 @@ tinymceConfig = {}
     this.currentTreeViewFieldParent = {};
   }
 
-  getNumberOfSelectedRecord(field){
-    if (!this.custmizedFormValue[field.field_name]){
-      this.custmizedFormValue[field.field_name] = [];
-    }else{
-      if(this.custmizedFormValue[field.field_name] && this.custmizedFormValue[field.field_name].length > 0){
-        return "( "+this.custmizedFormValue[field.field_name].length+" )";
-      }else{
-        return '';
-      }
-    }
-  }
-  getNumberOfSelectedFile(field){
-    if (!this.dataListForUpload[field.field_name]){
-      this.dataListForUpload[field.field_name] = [];
-    }else{
-      if(this.dataListForUpload[field.field_name] && this.dataListForUpload[field.field_name].length > 0){
-        return "( "+this.dataListForUpload[field.field_name].length+" )";
-      }else{
-        return '';
-      }
-    }
-  }
+  // getNumberOfSelectedRecord(field){
+  //   if (!this.custmizedFormValue[field.field_name]){
+  //     this.custmizedFormValue[field.field_name] = [];
+  //   }else{
+  //     if(this.custmizedFormValue[field.field_name] && this.custmizedFormValue[field.field_name].length > 0){
+  //       return "( "+this.custmizedFormValue[field.field_name].length+" )";
+  //     }else{
+  //       return '';
+  //     }
+  //   }
+  // }
+  // getNumberOfSelectedFile(field){
+  //   if (!this.dataListForUpload[field.field_name]){
+  //     this.dataListForUpload[field.field_name] = [];
+  //   }else{
+  //     if(this.dataListForUpload[field.field_name] && this.dataListForUpload[field.field_name].length > 0){
+  //       return "( "+this.dataListForUpload[field.field_name].length+" )";
+  //     }else{
+  //       return '';
+  //     }
+  //   }
+  // }
   checkCustmizedFormValueData(parent,chield){
     let check = false;
     if(parent != '' && parent != undefined && parent != null){
@@ -5644,7 +5648,7 @@ tinymceConfig = {}
         return returnClass
       }
   }
-  // getColSize(field){
+// getColSize(field){
   //   let size:any = 12;
   //   if(field.type != 'typeahead' && field.type != 'dropdown'){
   //     if(field.field_class && field.field_class != ''){
@@ -5849,8 +5853,8 @@ tinymceConfig = {}
     const previousFormIndex = this.multipleFormCollection.length - 1;
     const previousFormCollection = this.multipleFormCollection[previousFormIndex];
     const previousFormField = previousFormCollection.current_field;
-    // const currentFormValue = this.getFormValue(true)
-    const currentFormValue = JSON.parse(JSON.stringify(this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(true),false)));
+    let formValueWithCustomData = this.getFormValue(true);
+    const currentFormValue = JSON.parse(JSON.stringify(this.commonFunctionService.sanitizeObject(this.tableFields,formValueWithCustomData,false)));
     this.updateMode = false;
     const fieldName = previousFormField.field_name;
     delete currentFormValue[fieldName];    
@@ -6211,7 +6215,7 @@ tinymceConfig = {}
     }
     this.setValue("",field, "", e);
   }
-  // getTitlecase(value){
+// getTitlecase(value){
   //   return this.coreUtilityService.getTitlecase(value);
   // }
   

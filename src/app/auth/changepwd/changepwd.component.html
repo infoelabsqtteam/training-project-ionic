@@ -17,7 +17,7 @@
       <form [formGroup]="changepwdform" (ngSubmit)="onSubmit()">          
           <div class="formgroup">
             <ion-item>
-              <ion-label position="floating">Old Password</ion-label>
+              <ion-label position="floating">Current Password</ion-label>
               <ion-input [type]="oldpassword ? 'text': 'password'" formControlName="oldpwd" placeholder="Old Password"></ion-input>
               <ion-icon [name]="oldpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="showoldpass()"></ion-icon>
               <ion-note slot="error" class="text-danger" *ngIf="c.oldpwd.invalid && (c.oldpwd.dirty || c.oldpwd.touched) && c.oldpwd.errors?.required">Password is required</ion-note>
@@ -26,15 +26,16 @@
           <div class="formgroup">
             <ion-item>
               <ion-label position="floating">New Password</ion-label>
-              <ion-input [type]="newpassword ? 'text': 'password'" formControlName="newpwd" placeholder="New Password"></ion-input>
+              <ion-input [type]="newpassword ? 'text': 'password'" formControlName="newpwd" placeholder="New Password" autocomplete="off" autocorrect="off" enterkeyhint="next"></ion-input>
               <ion-icon [name]="newpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="shownewpass()"></ion-icon>
               <ion-note slot="error" class="text-danger" *ngIf="c.newpwd.invalid && (c.newpwd.dirty || c.newpwd.touched) && c.newpwd.errors?.required">New Password is required</ion-note>
+              <ion-note slot="error" class="text-danger" *ngIf="c['newpwd'].touched && c['newpwd'].dirty && c['newpwd'].errors?.invalidPassword">{{c['newpwd'].errors.invalidPassword | titlecase}}</ion-note>
             </ion-item>
           </div>
           <div class="formgroup">
             <ion-item>
               <ion-label position="floating">Confirm Password</ion-label>
-              <ion-input [type]="confirmpassword ? 'text': 'password'" formControlName="confpwd" placeholder="Confirm Password" (ionChange)="oldpasswordmismatch()"></ion-input>
+              <ion-input [type]="confirmpassword ? 'text': 'password'" formControlName="confpwd" placeholder="Confirm Password" (ionChange)="oldpasswordmismatch()" autocomplete="off" autocorrect="off" enterkeyhint="next"></ion-input>
               <ion-icon [name]="confirmpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="showconfirmpass()"></ion-icon>
               <ion-note slot="error" class="text-danger" *ngIf="c.confpwd.invalid && (c.confpwd.dirty || c.confpwd.touched) && c.confpwd.errors?.required">Confirm Password is required</ion-note>
               <ion-note slot="error" class="text-danger" *ngIf="c.confpwd.invalid && (c.confpwd.dirty || c.confpwd.touched) && c.confpwd.errors?.invalid">Confirm password do not match</ion-note>
@@ -72,15 +73,16 @@
       <div class="formgroup">
         <ion-item>
           <ion-label position="floating">NEW PASSWORD</ion-label>
-          <ion-input [type]="newpassword ? 'text': 'password'"  placeholder="" formControlName="newpwd"></ion-input>
+          <ion-input [type]="newpassword ? 'text': 'password'"  placeholder="" formControlName="newpwd" autocomplete="off" autocorrect="off" enterkeyhint="next"></ion-input>
           <ion-icon [name]="newpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="shownewpass()"></ion-icon>
           <ion-note slot="error" class="text-danger" *ngIf="r.newpwd.invalid && (r.newpwd.dirty || r.newpwd.touched) && r.newpwd.errors?.required">Password is required</ion-note>
+          <ion-note slot="error" class="text-danger" *ngIf="r['newpwd'].touched && r['newpwd'].dirty && r['newpwd'].errors?.invalidPassword">{{r['newpwd'].errors.invalidPassword | titlecase}}</ion-note>
         </ion-item>
       </div>
       <div class="formgroup">
         <ion-item>
           <ion-label position="floating">CONFIRM PASSWORD</ion-label>
-          <ion-input [type]="confirmpassword ? 'text': 'password'" formControlName="confpwd" placeholder="" (ionChange)="passwordmismatch()"></ion-input>
+          <ion-input [type]="confirmpassword ? 'text': 'password'" formControlName="confpwd" placeholder="" (ionChange)="passwordmismatch()" autocomplete="off" autocorrect="off" enterkeyhint="next"></ion-input>
           <ion-icon [name]="confirmpassword ? 'eye' : 'eye-off' " class="showpassword" (click)="showconfirmpass()"></ion-icon>
           <ion-note slot="error" class="text-danger" *ngIf="r.confpwd.invalid && (r.confpwd.dirty || r.confpwd.touched) && r.confpwd.errors?.required">Confirm Password is required</ion-note>
           <ion-note slot="error" class="text-danger" *ngIf="r.confpwd.invalid && (r.confpwd.dirty || r.confpwd.touched) && r.confpwd.errors?.invalid">Confirm password do not match</ion-note>
