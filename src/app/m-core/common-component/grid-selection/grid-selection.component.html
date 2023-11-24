@@ -1,6 +1,6 @@
 <div class="pages" *ngIf="samePageGridSelection && (this.selectedData && this.selectedData.length > 0) || (this.gridData && this.gridData.length > 0)">
     <ion-segment class="grid_selection_tab" ngDefaultControl [(ngModel)]="selectedTab" color="appcolor">
-        <ion-segment-button value="new" *ngIf="this.gridData && this.gridData.length"><ion-label>All</ion-label></ion-segment-button>
+        <!-- <ion-segment-button value="new" *ngIf="this.gridData && this.gridData.length"><ion-label>All</ion-label></ion-segment-button> -->
         <ion-segment-button value="added" *ngIf="this.selectedData && this.selectedData.length > 0"><ion-label>Selected</ion-label></ion-segment-button>
     </ion-segment>
 

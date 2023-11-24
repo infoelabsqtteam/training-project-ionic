@@ -50,6 +50,41 @@
             <ng-option *ngFor="let option of typeAheadData" [value]="option">{{ option.name ? option.name : option }}</ng-option>
           </ng-select>          
         </span>
+
+        <div *ngIf="column.type == 'file'" class="camera_file_upload">
+          <ion-accordion-group expand="inset" class="ion-margin-horizontal-0 ion-margin-vertical-0" [value]="column._id+'_'+column.field_name">
+            <ion-accordion value="{{column._id+'_'+column.field_name}}">
+              <ion-item slot="header" color="light" line="inset">
+                <ion-label>{{ column.label | titlecase}} <ion-text *ngIf="column.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label>
+                <ion-button expand="round" slot="end" size="small" fill="outline" *ngIf="dataListForUpload[column.field_name] && dataListForUpload[column.field_name].length > 0" >{{ dataListForUpload[column.field_name].length > 0 ? dataListForUpload[column.field_name].length : '' }}</ion-button>
+                <ion-button expand="round" slot="end" size="small" fill="outline" [id]="column._id+'_'+column.field_name" (click)="selectImageSource('',column)" [formControlName]="column.field_name" [disabled]="column.is_disabled">
+                  <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
+                </ion-button>
+                
+              </ion-item>
+              <div class="ion-padding" slot="content" class="ion-padding-top">
+                <ion-item lines="none" class="ion-margin-bottom" *ngIf="!dataListForUpload[column.field_name] || (dataListForUpload[column.field_name] && dataListForUpload[column.field_name].length == 0)">
+                  <ion-label>No file uploaded, <ion-text>please upload</ion-text> <ion-text slot="error" class="text-danger">field is <strong>required</strong></ion-text></ion-label>
+                </ion-item>
+                <ion-list class="contactlist ion-margin-start ion-margin-end" *ngIf="dataListForUpload[column.field_name] && dataListForUpload[column.field_name].length > 0">
+                  <ion-item class="ion-margin-bottom" *ngFor="let file of dataListForUpload[column.field_name]; let i = index;">
+                  
+                    <ion-label *ngIf="(file.rollName && file.rollName != null) || (file.fileName && file.fileName != null)">{{file.fileName || file.rollName}}</ion-label>
+                    <ion-label *ngIf="(!file.rollName && file.rollName == null)">{{file._id}}</ion-label>
+                    <ion-button slot="end" class="" fill="clear" (click)="removeAttachedDataFromList(i,column.field_name)">
+                      <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
+                    </ion-button>
+                    <ion-button slot="end" class="" fill="clear" *ngIf="file && file._id" (click)="imageDownload(file)">
+                      <ion-icon slot="icon-only" name="download" color=""></ion-icon>
+                    </ion-button>
+                  </ion-item>
+                </ion-list> 
+              </div>
+            </ion-accordion>
+          </ion-accordion-group>
+        </div>
+
+
       </div>
     </div>
     <ion-card-content *ngIf="columnList.length == 0">

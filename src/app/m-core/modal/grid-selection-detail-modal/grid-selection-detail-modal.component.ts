@@ -1,7 +1,10 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { NotificationService } from '@core/ionic-core';
-import { ModalController } from '@ionic/angular';
-import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService } from '@core/web-core';
+import { ActionSheetController, ModalController, Platform } from '@ionic/angular';
+import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
+import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService, StorageService } from '@core/web-core';
+import { DatePipe } from '@angular/common';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 @Component({
   selector: 'app-grid-selection-detail-modal',
@@ -55,10 +58,14 @@ export class GridSelectionDetailModalComponent implements OnInit {
     private modalController: ModalController,
     private dataShareService: DataShareService,
     private apiService: ApiService,
+    private datePipe: DatePipe,
     private notificationService: NotificationService,
     private coreFunctionService: CoreFunctionService,
     private commonFunctionService: CommonFunctionService,
-    private limsCalculationsService: LimsCalculationsService
+    private limsCalculationsService: LimsCalculationsService,
+    private actionSheetCtrl: ActionSheetController,
+    private storageService: StorageService,
+    private plt: Platform,
   ) { 
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
@@ -493,6 +500,213 @@ export class GridSelectionDetailModalComponent implements OnInit {
 
       }
     }
+  }
+ 
+  dataListForUpload:any = {};
+  curFileUploadField:any={}
+  curFileUploadFieldparentfield:any={};
+  selectedphotos:any= [];
+  downloadClick='';
+
+  // camera upload files
+  async selectImageSource(parent,field) {
+    this.curFileUploadField = field;
+    this.curFileUploadFieldparentfield = parent;
+    const buttons = [
+      {
+        text: 'Take Photo',
+        icon: 'camera',
+        handler: () => {
+          this.selectImage(CameraSource.Camera);
+        }
+      },
+      {
+        text: 'Choose From Photos',
+        icon: 'images',
+        handler: () => {
+          this.selectMultipleImages();
+        }
+      }
+    ];
+ 
+    // Only allow file selection inside a browser
+    // if (!this.plt.is('hybrid')) {
+    //   buttons.push({
+    //     text: 'Choose a File',
+    //     icon: 'attach',
+    //     handler: () => {
+    //       this.fileInput.nativeElement.click();
+    //     }
+    //   });
+    // }
+ 
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Select Image Source',
+      buttons
+    });
+    await actionSheet.present();
+  }
+
+
+  async selectImage(source: CameraSource) {
+    const image = await Camera.getPhoto({
+      quality: 60,
+      allowEditing: false,
+      resultType: CameraResultType.Uri,
+      source: source,      
+      correctOrientation: true,
+      saveToGallery: true
+    });
+
+    console.log('Selected Image : ', image);
+    let arrayimages:any = []; 
+    arrayimages.push(image);
+    if (arrayimages && arrayimages.length > 0) {
+        this.saveImages(arrayimages)
+    }
+  }
+
+  async selectMultipleImages(){
+    
+    const multipleImagesOption:GalleryImageOptions = {
+      quality: 60,
+      limit: 0,     
+      correctOrientation: true,
+      presentationStyle: "popover"
+    } 
+    await Camera.pickImages(multipleImagesOption).then(res => {
+      let arrayimages = res.photos;
+      this.saveImages(arrayimages)
+    },
+    error => {
+         console.log(error)
+      });
+  }
+
+
+  async saveImages(photos) {
+    let base64Data:any;
+    let kbytes:any;
+    let fileName:any;
+    this.selectedphotos=[];
+    photos.forEach(async (img:any) => {
+      base64Data = await this.readAsBase64(img);
+      const dateTime = this.datePipe.transform(new Date(), 'yyyyMMdd') + "_" + this.datePipe.transform(new Date(), 'hhmmss');
+      fileName = "IMG_" + dateTime + '.'+ img.format;
+      this.selectedphotos.push({
+        fileData: base64Data,
+        fileName: fileName,
+        fileExtn:  img.format,
+        innerBucketPath: fileName,
+        // rollName: fileName,
+        log: this.storageService.getUserLog()
+      }) 
+      if(photos.length == this.selectedphotos.length){
+        this.setFile();
+      }     
+    });
+  }
+
+
+  async readAsBase64(photo: Photo) {
+    if (this.plt.is('hybrid')) {
+        const file = await Filesystem.readFile({
+            path: photo.path
+        }); 
+        return file.data;
+    }
+    else {
+        const response = await fetch(photo.webPath);
+        const blob = await response.blob();
+        return await this.convertBlobToBase64(blob);
+    }
+  }
+
+  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
+    const reader = new FileReader;
+    reader.onerror = reject;
+    reader.onload = () => {
+      let base64 = (<string>reader.result).split(',').pop();
+        resolve(base64);
+    }
+    reader.readAsDataURL(blob);
+});
+
+  setFile(){
+    let uploadData = [];
+    if(this.curFileUploadField){
+      if(this.curFileUploadFieldparentfield != ''){
+        const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
+        const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]
+        if(data && data.length > 0){
+          uploadData = data;
+        }        
+      }else{ 
+        const data = this.dataListForUpload[this.curFileUploadField.field_name];
+        if(data && data.length > 0){
+          uploadData = data;
+        } 
+      }
+    }
+    if(this.selectedphotos && this.selectedphotos.length > 0){
+      this.selectedphotos.forEach(element => {
+        uploadData.push(element);
+      });
+    }
+    if(uploadData && uploadData.length > 0){
+      this.fileUploadResponce(uploadData);    
+      this.notificationService.presentToastOnBottom("Image Added", "success");
+    }
+  }
+
+
+  fileUploadResponce(response) {
+    if(this.curFileUploadFieldparentfield != ''){
+      const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);            
+      if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
+      if (!this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]) this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] = [];
+      this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] = response;
+    }else{
+      if (!this.dataListForUpload[this.curFileUploadField.field_name]) this.dataListForUpload[this.curFileUploadField.field_name] = [];
+      this.dataListForUpload[this.curFileUploadField.field_name] = response;
+    }
+    
+    if(this.curFileUploadFieldparentfield != ''){
+      const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield); 
+      if(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] && this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name].length > 0){
+        let fileName = this.commonFunctionService.modifyFileSetValue(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]);        
+       // this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue(fileName);
+      }else{
+       // this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue('');
+      }
+    }else{    
+      if(this.dataListForUpload[this.curFileUploadField.field_name] && this.dataListForUpload[this.curFileUploadField.field_name].length > 0){
+        let fileName = this.commonFunctionService.modifyFileSetValue(this.dataListForUpload[this.curFileUploadField.field_name]);
+      //  this.templateForm.get(this.curFileUploadField.field_name).setValue(fileName);
+      }else{
+       // this.templateForm.get(this.curFileUploadField.field_name).setValue('');
+      }
+    }
+  }
+ 
+
+  async removeAttachedDataFromList(index:number,fieldName:any){
+    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
+    if(confirmDelete == "confirm"){
+      this.dataListForUpload[fieldName].splice(index,1)
+    }else{
+     // this.cancel();
+    }
+  }
+
+
+  imageDownload(img:any) {
+    this.downloadClick = img.rollName;
+    const payload = {
+      path: 'download',
+      data: img
+    }
+    this.apiService.DownloadFile(payload);
   }
  
 
