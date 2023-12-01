@@ -11,70 +11,69 @@
     <div class="" *ngFor="let column of columnList; let i = index" [ngClass]="column.display ? 'd-block':'d-none'">
       <div *ngIf="!column.editable" class="enquerylist ">
         <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>
-        <strong [innerHtml]="getValueForGrid(column,data)"></strong>
+        <strong [innerHtml]="getValueForGrid(column,modifiedGridData)"></strong>
       </div>
       <div *ngIf="column.editable" class="enquerylist">
-        <span [title]="column.label" class="detail-grid">{{column.label}} <ion-text color="danger" *ngIf="column.is_mandatory">*</ion-text><ion-text>&nbsp;:&nbsp;</ion-text></span>        
+        <span [title]="column.label" class="detail-grid" [ngClass]="column.type == 'file' ? 'ion-hide' : ''">{{column.label}} <ion-text color="danger" *ngIf="column.is_mandatory">*</ion-text><ion-text>&nbsp;:&nbsp;</ion-text></span>        
         <span *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
-            <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
+            <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(modifiedGridData,column, i)" [(ngModel)]="modifiedGridData[column.field_name]" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
         </span>
         <span *ngIf="column.type.toLowerCase() == 'textarea'" class="editable-input-wrapper">
-          <input type="text" class="form-control form-control-sm d-inline mr-2" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
+          <input type="text" class="form-control form-control-sm d-inline mr-2" [(ngModel)]="modifiedGridData[column.field_name]" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
         </span>
         <span *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
-          <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(data,column, i)"  [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
+          <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(modifiedGridData,column, i)"  [(ngModel)]="modifiedGridData[column.field_name]" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
         </span>
         <span *ngIf="column.type.toLowerCase() == 'boolean'" class="editable-input-wrapper" >
-            <ion-checkbox [(ngModel)]="data[column.field_name]" [ngclass]="column.field_class" class="ion-margin-end" [disabled]="isDisable(column,data)" [disabled]="readonly" [id]="column._id+'_'+column.field_name"></ion-checkbox>            
+            <ion-checkbox [(ngModel)]="modifiedGridData[column.field_name]" [ngclass]="column.field_class" class="ion-margin-end" [disabled]="isDisable(column,modifiedGridData)" [disabled]="readonly" [id]="column._id+'_'+column.field_name"></ion-checkbox>            
         </span>        
         <span *ngIf="column.type.toLowerCase() == 'dropdown'" class="editable-input-wrapper">
-            <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [selectedText]="data[column.field_name]" [(ngModel)]="data[column.field_name]" [disabled]="isDisable(column,data)" [readonly]="readonly" class="ion-border_bottom ion-padding-end" (ionCancel)="clearDropdownField($event, column)" cancel-text="Clear" (ionDismiss)="$event.stopPropagation()" (ionFocus)="selectionFocus(column)" [id]="column._id+'_'+column.field_name">
+            <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [selectedText]="modifiedGridData[column.field_name]" [(ngModel)]="modifiedGridData[column.field_name]" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" class="ion-border_bottom ion-padding-end" (ionCancel)="clearDropdownField($event, column)" cancel-text="Clear" (ionDismiss)="$event.stopPropagation()" (ionFocus)="selectionFocus(column)" [id]="column._id+'_'+column.field_name">
               <ion-select-option *ngFor="let staticValue of staticData[column.ddn_field]" [value]="staticValue">{{ staticValue.name ? staticValue.name : staticValue }}</ion-select-option>
             </ion-select>
         </span>        
         <span *ngIf="column.type.toLowerCase() == 'userinput_chips'" class="editable-input-wrapper userInputChips">         
-          <ion-chip  *ngFor="let item of data[column.field_name]; let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
+          <ion-chip  *ngFor="let item of modifiedGridData[column.field_name]; let i = index" [disabled]="isDisable(column,modifiedGridData)" [disabled]="readonly">
             <ion-label>{{ item.name ? item.name : item }}</ion-label>
-            <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
+            <ion-icon name="close-outline" (click)="removeItem(modifiedGridData,column,i)"></ion-icon>
           </ion-chip>
-          <ng-select [bindLabel]="'column.name'" [addTag]="true" #chipsInput [(ngModel)]="userInputChipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)" (change)="setValue($event,column,data,i,chipsInput,'change')" (keyup.enter)="setValue($event,column,data,i,chipsInput,'keyupenter')" (close)="resetVariables()" [disabled]="isDisable(column,data)" [readonly]="readonly" enterkeyhint="done" [id]="column._id+'_'+column.field_name">
+          <ng-select [bindLabel]="'column.name'" [addTag]="true" #chipsInput [(ngModel)]="userInputChipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,modifiedGridData,$event)" (change)="setValue($event,column,modifiedGridData,i,chipsInput,'change')" (keyup.enter)="setValue($event,column,modifiedGridData,i,chipsInput,'keyupenter')" (close)="resetVariables()" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" enterkeyhint="done" [id]="column._id+'_'+column.field_name">
             <ng-option *ngFor="let option of typeAheadData" [value]="option">{{ option.name ? option.name : option }}</ng-option>
           </ng-select>
         </span>
         <span *ngIf="column.type.toLowerCase() == 'chips'" class="editable-input-wrapper chips">         
-          <ion-chip  *ngFor="let item of data[column.field_name]; let i = index" [disabled]="isDisable(column,data)" [disabled]="readonly">
+          <ion-chip  *ngFor="let item of modifiedGridData[column.field_name]; let i = index" [disabled]="isDisable(column,modifiedGridData)" [disabled]="readonly">
             <ion-label>{{item.name ? item.name : item}}</ion-label>
-            <ion-icon name="close-outline" (click)="removeItem(data,column,i)"></ion-icon>
+            <ion-icon name="close-outline" (click)="removeItem(modifiedGridData,column,i)"></ion-icon>
           </ion-chip>
-          <ng-select [bindLabel]="'column.name'" #typeheadchips [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,data,$event)" (change)="setValue($event,column,data,i,typeheadchips)" (close)="resetVariables()" [disabled]="isDisable(column,data)" [readonly]="readonly" enterkeyhint="enter" [id]="column._id+'_'+column.field_name">
+          <ng-select [bindLabel]="'column.name'" #typeheadchips [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,modifiedGridData,$event)" (change)="setValue($event,column,modifiedGridData,i,typeheadchips)" (close)="resetVariables()" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" enterkeyhint="enter" [id]="column._id+'_'+column.field_name">
             <ng-option *ngFor="let option of typeAheadData" [value]="option">{{ option.name ? option.name : option }}</ng-option>
           </ng-select>          
         </span>
 
-        <div *ngIf="column.type == 'file'" class="camera_file_upload">
+        <div *ngIf="column.type == 'file'" class="camera_file_upload" style="width:100%;">
+          <div class="ion-margin-bottom-default" style="width: 50%;">{{ column.label | titlecase}} :<ion-text *ngIf="column.is_mandatory" class="ng-star-inserted"> *</ion-text></div>
           <ion-accordion-group expand="inset" class="ion-margin-horizontal-0 ion-margin-vertical-0" [value]="column._id+'_'+column.field_name">
             <ion-accordion value="{{column._id+'_'+column.field_name}}">
               <ion-item slot="header" color="light" line="inset">
-                <ion-label>{{ column.label | titlecase}} <ion-text *ngIf="column.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label>
-                <ion-button expand="round" slot="end" size="small" fill="outline" *ngIf="dataListForUpload[column.field_name] && dataListForUpload[column.field_name].length > 0" >{{ dataListForUpload[column.field_name].length > 0 ? dataListForUpload[column.field_name].length : '' }}</ion-button>
-                <ion-button expand="round" slot="end" size="small" fill="outline" [id]="column._id+'_'+column.field_name" (click)="selectImageSource('',column)" [formControlName]="column.field_name" [disabled]="column.is_disabled">
+                <!-- <ion-label>{{ column.label | titlecase}} <ion-text *ngIf="column.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label> -->
+                <ion-button expand="round" slot="" size="small" fill="outline" *ngIf="modifiedGridData[column.field_name] && modifiedGridData[column.field_name].length > 0" >{{ modifiedGridData[column.field_name].length > 0 ? modifiedGridData[column.field_name].length : '' }}</ion-button>
+                <ion-button expand="round" slot="start" size="small" fill="outline" [id]="column._id+'_'+column.field_name" (click)="selectImageSource('',column)" [formControlName]="column.field_name" [disabled]="column.is_disabled">
                   <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
-                </ion-button>
-                
+                </ion-button>                
               </ion-item>
               <div class="ion-padding" slot="content" class="ion-padding-top">
-                <ion-item lines="none" class="ion-margin-bottom" *ngIf="!dataListForUpload[column.field_name] || (dataListForUpload[column.field_name] && dataListForUpload[column.field_name].length == 0)">
-                  <ion-label>No file uploaded, <ion-text>please upload</ion-text> <ion-text slot="error" class="text-danger">field is <strong>required</strong></ion-text></ion-label>
+                <ion-item lines="none" class="ion-margin-bottom" *ngIf="!modifiedGridData[column.field_name] || (modifiedGridData[column.field_name] && modifiedGridData[column.field_name].length == 0)">
+                  <ion-label>No file uploaded, <ion-text>please upload</ion-text></ion-label>
                 </ion-item>
-                <ion-list class="contactlist ion-margin-start ion-margin-end" *ngIf="dataListForUpload[column.field_name] && dataListForUpload[column.field_name].length > 0">
-                  <ion-item class="ion-margin-bottom" *ngFor="let file of dataListForUpload[column.field_name]; let i = index;">
-                  
-                    <ion-label *ngIf="(file.rollName && file.rollName != null) || (file.fileName && file.fileName != null)">{{file.fileName || file.rollName}}</ion-label>
-                    <ion-label *ngIf="(!file.rollName && file.rollName == null)">{{file._id}}</ion-label>
-                    <ion-button slot="end" class="" fill="clear" (click)="removeAttachedDataFromList(i,column.field_name)">
+                <ion-list class="contactlist" *ngIf="modifiedGridData[column.field_name] && modifiedGridData[column.field_name].length > 0">
+                  <ion-item class="ion-margin-bottom" *ngFor="let file of modifiedGridData[column.field_name]; let i = index;">
+                    <ion-label style="font-size:11px; white-space:inherit" *ngIf="(file.rollName && file.rollName != null) || (file.fileName && file.fileName != null)">{{file.fileName || file.rollName}}</ion-label>
+                    <ion-label *ngIf="(!file.rollName || file.rollName == null)">{{file._id}}</ion-label>
+                    <ion-button style="font-size:7px;" fill="clear" (click)="removeAttachedDataFromList(i,column.field_name)">
                       <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
                     </ion-button>
-                    <ion-button slot="end" class="" fill="clear" *ngIf="file && file._id" (click)="imageDownload(file)">
+                    <ion-button style="font-size:7px;" fill="clear" *ngIf="file && file._id" (click)="imageDownload(file)">
                       <ion-icon slot="icon-only" name="download" color=""></ion-icon>
                     </ion-button>
                   </ion-item>
