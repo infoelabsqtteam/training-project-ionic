@@ -46,7 +46,7 @@
             <ion-label>{{item.name ? item.name : item}}</ion-label>
             <ion-icon name="close-outline" (click)="removeItem(modifiedGridData,column,i)"></ion-icon>
           </ion-chip>
-          <ng-select [bindLabel]="'column.name'" #typeheadchips [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,modifiedGridData,$event)" (change)="setValue($event,column,modifiedGridData,i,typeheadchips)" (close)="resetVariables()" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" enterkeyhint="enter" [id]="column._id+'_'+column.field_name">
+          <ng-select [bindLabel]="'column.name'" [addTag]="true" #typeheadchips [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,modifiedGridData,$event)" (change)="setValue($event,column,modifiedGridData,i,typeheadchips)" (keyup.enter)="setValue($event,column,modifiedGridData,i,chipsInput,'keyupenter')" (close)="resetVariables()" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" enterkeyhint="enter" [id]="column._id+'_'+column.field_name">
             <ng-option *ngFor="let option of typeAheadData" [value]="option">{{ option.name ? option.name : option }}</ng-option>
           </ng-select>          
         </span>

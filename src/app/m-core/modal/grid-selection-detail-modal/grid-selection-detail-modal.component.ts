@@ -380,16 +380,23 @@ export class GridSelectionDetailModalComponent implements OnInit {
       }
       if(option?.target?.value){
         option.target.value = '';
-      }      
-      if(chipsInput && chipsInput.element && this.chipsInput.nativeElement){
+      }
+      if(this.chipsInput && this.chipsInput.nativeElement){
         this.chipsInput.nativeElement.value = '';
         let ngInput = <HTMLInputElement>document.getElementById(field._id+'_'+field.field_name);
         ngInput.value = '';
+      }else{
+        if(chipsInput && chipsInput.element){
+          chipsInput.element.value = '';
+          let ngInput = <HTMLInputElement>document.getElementById(field._id+'_'+field.field_name);
+          ngInput.value = '';
+        }
       }
-      if(this.userInputChipsData.label ){
+      if(this.userInputChipsData && this.userInputChipsData?.label ){
         this.userInputChipsData.label = "";        
+      }else{
+        this.userInputChipsData = "";
       }
-      this.userInputChipsData = "";
       this.chipsData = {};
       this.typeAheadData = [];
     }
