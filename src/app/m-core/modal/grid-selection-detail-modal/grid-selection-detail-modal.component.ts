@@ -590,9 +590,9 @@ export class GridSelectionDetailModalComponent implements OnInit {
     let kbytes:any;
     let fileName:any;
     this.selectedphotos=[];
-    photos.forEach(async (img:any) => {
+    photos.forEach(async (img:any,i) => {
       base64Data = await this.readAsBase64(img);
-      const dateTime = this.datePipe.transform(new Date(), 'yyyyMMdd') + "_" + this.datePipe.transform(new Date(), 'hhmmss');
+      const dateTime = this.datePipe.transform(new Date(), 'yyyyMMdd') + "_" + this.datePipe.transform(new Date(), 'hhmmss') + i;
       fileName = "IMG_" + dateTime + '.'+ img.format;
       this.selectedphotos.push({
         fileData: base64Data,
@@ -667,11 +667,11 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
  
 
-  async removeAttachedDataFromList(index:number,fieldName:any){
+  async removeAttachedDataFromList(deleteIndex:number,fieldName:any){
     let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
     if(confirmDelete == "confirm"){
-      this.data[fieldName].splice(index,1);
-      this.modifiedGridData[fieldName].splice(index,1);
+      // this.data[fieldName].splice(deleteIndex,1);
+      this.modifiedGridData[fieldName].splice(deleteIndex,1);
     }else{
      // this.cancel();
     }
