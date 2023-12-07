@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitter, Output, HostListener, NgZone } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, FormArray, FormControl } from "@angular/forms";
+import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray, UntypedFormControl } from "@angular/forms";
 import { DatePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
 import { App_googleService, NotificationService, AppDataShareService, AppPermissionService } from '@core/ionic-core';
@@ -190,11 +190,11 @@ tinymceConfig = {}
   // newCapMap: GoogleMap;
   apiLoaded: Observable<boolean>;
   
-  ionicForm: FormGroup;
+  ionicForm: UntypedFormGroup;
   defaultDate = "1987-06-30";
   isSubmitted = false;
 
-  templateForm!: FormGroup;
+  templateForm!: UntypedFormGroup;
 
   forms:any={};
   form:any ={};
@@ -328,7 +328,7 @@ tinymceConfig = {}
     // }
 
   constructor(
-    public formBuilder: FormBuilder,
+    public formBuilder: UntypedFormBuilder,
     private datePipe: DatePipe,
     private router: Router,
     private commonFunctionService:CommonFunctionService,
@@ -675,11 +675,11 @@ tinymceConfig = {}
         checkCreatControl = this.templateForm.get(element.field_name);
       }
       if (this.staticData[element.ddn_field] && checkCreatControl.controls && checkCreatControl.controls.length == 0) {
-        let checkArray: FormArray;
+        let checkArray: UntypedFormArray;
         if (element.parent) {
-          checkArray = this.templateForm.get(element.parent).get(element.field_name) as FormArray;
+          checkArray = this.templateForm.get(element.parent).get(element.field_name) as UntypedFormArray;
         } else {
-          checkArray = this.templateForm.get(element.field_name) as FormArray;
+          checkArray = this.templateForm.get(element.field_name) as UntypedFormArray;
         }
         this.staticData[element.ddn_field].forEach((data, i) => {
           if (this.updateMode) {
@@ -699,12 +699,12 @@ tinymceConfig = {}
               }
             }
             if (selected) {
-              checkArray.push(new FormControl(true));
+              checkArray.push(new UntypedFormControl(true));
             } else {
-              checkArray.push(new FormControl(false));
+              checkArray.push(new UntypedFormControl(false));
             }
           } else {
-            checkArray.push(new FormControl(false));
+            checkArray.push(new UntypedFormControl(false));
           }
         });
       }

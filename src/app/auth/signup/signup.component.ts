@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationService } from '@core/ionic-core';
 import { CustomvalidationService, AuthService, AuthDataShareService, EnvService, StorageService } from '@core/web-core';
@@ -13,7 +13,7 @@ import { Subscription } from 'rxjs';
 export class SignupComponent implements OnInit {
 
 
-  signUpForm: FormGroup;
+  signUpForm: UntypedFormGroup;
   showpassword = false;
   passwordNotMatch:boolean=false;
   confirmpassword = false;
@@ -51,13 +51,13 @@ export class SignupComponent implements OnInit {
   
   // Form Creation Function Handling start--------------
   initForm(){
-    this.signUpForm = new FormGroup({
-      name: new FormControl ('', [Validators.required]),
-      email: new FormControl ('', [Validators.required, Validators.email]),
-      mobileNumber: new FormControl ('', [Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]),
-      password: new FormControl ('', [Validators.required, this.customValidationService.patternValidator()]),
-      confpwd: new FormControl ('', [Validators.required]),
-      'admin': new FormControl(false),
+    this.signUpForm = new UntypedFormGroup({
+      name: new UntypedFormControl ('', [Validators.required]),
+      email: new UntypedFormControl ('', [Validators.required, Validators.email]),
+      mobileNumber: new UntypedFormControl ('', [Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]),
+      password: new UntypedFormControl ('', [Validators.required, this.customValidationService.patternValidator()]),
+      confpwd: new UntypedFormControl ('', [Validators.required]),
+      'admin': new UntypedFormControl(false),
     },{ validators: this.customValidationService.MatchPassword('password','confpwd') }
     );
   }

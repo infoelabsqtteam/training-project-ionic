@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { NotificationService } from '@core/ionic-core';
 import { ApiCallService, ApiService, CommonFunctionService, GridCommonFunctionService } from '@core/web-core';
 import { ModalController } from '@ionic/angular';
@@ -17,7 +17,7 @@ export class ModalComponent implements OnInit {
   @Output() responceData = new EventEmitter();
 
   
-  rateForm: FormGroup;
+  rateForm: UntypedFormGroup;
   public coloumName:any = '';
   public data=[];
   bulkDownload:boolean=false;
@@ -31,7 +31,7 @@ export class ModalComponent implements OnInit {
   multiGridDetails:any = [];
 
   constructor(
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private apiService:ApiService,
     private notificationService: NotificationService,
     private commonFunctionService: CommonFunctionService,
@@ -151,9 +151,9 @@ export class ModalComponent implements OnInit {
     switch (type) {
       case "text":
         if(mandatory){
-          forControl[fieldName] = new FormControl(object, Validators.required)
+          forControl[fieldName] = new UntypedFormControl(object, Validators.required)
         }else{
-          forControl[fieldName] = new FormControl(object)
+          forControl[fieldName] = new UntypedFormControl(object)
         }
       default:
         break;

@@ -7,7 +7,7 @@ import { CallNumber } from '@ionic-native/call-number/ngx';
 import { PopoverController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { SocialOptionComponent } from '../social-option/social-option.component';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
 import { ApiCallService, CommonFunctionService, EnvService, FormCreationService, StorageService } from '@core/web-core';
 
@@ -45,7 +45,7 @@ export class ContactDetailsPage implements OnInit {
   collectionname: any;
   childColumn: any = {};
   createFormgroup: boolean = true;
-  filterForm: FormGroup;
+  filterForm: UntypedFormGroup;
   filterCount: number;
   childColumns : any;
   childCardType: string = "";
@@ -59,7 +59,7 @@ export class ContactDetailsPage implements OnInit {
     private storageService: StorageService,
     private router: Router,
     private callNumber: CallNumber,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private datePipe: DatePipe,
     private CurrencyPipe: CurrencyPipe,
     private ionLoaderService: IonLoaderService,

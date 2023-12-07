@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
 import {  NotificationService } from '@core/ionic-core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
 import { App } from '@capacitor/app';
@@ -16,7 +16,7 @@ import { ApiCallService, AuthDataShareService, AuthService, CoreFunctionService,
 export class SigninComponent implements OnInit {
 
 
-  loginForm: FormGroup;
+  loginForm: UntypedFormGroup;
   showpassword = false;
   VerifyType : boolean = false;
   isExitAlertOpen:boolean = false;
@@ -32,7 +32,7 @@ export class SigninComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private alertController: AlertController,
     private storageService: StorageService,
     private coreFunctionService: CoreFunctionService,

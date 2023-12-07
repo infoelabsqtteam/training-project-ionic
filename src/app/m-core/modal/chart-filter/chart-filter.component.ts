@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { NotificationService, AppPermissionService, DownloadService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
@@ -43,7 +43,7 @@ export class ChartFilterComponent implements OnInit {
   // dashboardItem :any = {};
   //dashletData:any = {};
 
-  dashboardFilter:FormGroup;
+  dashboardFilter:UntypedFormGroup;
 
   public chartType:any = {};
   public chartDatasets:any = {};
@@ -81,7 +81,7 @@ export class ChartFilterComponent implements OnInit {
 
   constructor(
     private platform: Platform,
-    public formBuilder: FormBuilder,
+    public formBuilder: UntypedFormBuilder,
     private apiService:ApiService,
     private dataShareService:DataShareService,
     private file: File,

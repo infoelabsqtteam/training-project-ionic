@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationService } from '@core/ionic-core';
 import { EnvService, AuthService, AuthDataShareService, CustomvalidationService, StorageService } from '@core/web-core';
@@ -15,7 +15,7 @@ export class ChangepwdComponent implements OnInit {
   VerifyType: boolean = false;
 
   // for old and new pwd functianality---------------------
-  changepwdform:FormGroup;
+  changepwdform:UntypedFormGroup;
   oldpassword = false;
   confirmpwd: any;
   oldpwd: string;
@@ -25,10 +25,10 @@ export class ChangepwdComponent implements OnInit {
   // passwordNotMatch:boolean;
 
   // for Mobile OTP functianality
-  fForm: FormGroup;
+  fForm: UntypedFormGroup;
   confirmpassword = false;
   newpassword = false;
-  vForm: FormGroup;
+  vForm: UntypedFormGroup;
   username: string;
   resetPwd: boolean = true;
   newpwd: any;
@@ -40,7 +40,7 @@ export class ChangepwdComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private notificationService:NotificationService,
-    private formBuilder:FormBuilder,
+    private formBuilder:UntypedFormBuilder,
     private envService: EnvService,
     private authDataShareService: AuthDataShareService,
     private customValidationService: CustomvalidationService,

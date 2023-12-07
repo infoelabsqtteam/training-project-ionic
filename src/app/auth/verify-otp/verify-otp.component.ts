@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NotificationService } from '@core/ionic-core';
 import { StorageService, AuthService, AuthDataShareService, CoreFunctionService } from '@core/web-core';
@@ -12,7 +12,7 @@ import { Subscription } from 'rxjs';
 })
 export class VerifyOtpComponent implements OnInit {
 
-  OtpVarify: FormGroup;
+  OtpVarify: UntypedFormGroup;
   isVerify:boolean = false;
   logoPath:string = '';
   imageTitle:string = '';
@@ -23,7 +23,7 @@ export class VerifyOtpComponent implements OnInit {
   constructor(
     private routers: ActivatedRoute,
     private authService:AuthService,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private storageService: StorageService,
     private coreFunctionService: CoreFunctionService,
     private authDataShareService: AuthDataShareService,

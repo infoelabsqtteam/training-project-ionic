@@ -1,7 +1,7 @@
 import { Component, OnInit, Optional, OnDestroy} from '@angular/core';
 import { NotificationService } from '@core/ionic-core';
 import { ModalController, IonRouterOutlet} from '@ionic/angular';
-import { FormGroup} from '@angular/forms';
+import { UntypedFormGroup} from '@angular/forms';
 import { CommonAppDataShareService, MenuOrModuleCommonService } from '@core/web-core';
 
 @Component({
@@ -22,7 +22,7 @@ export class QuotationPage implements OnInit, OnDestroy {
   cardType = "summary"; //default cardtype
   childColumns : any;
   childColumn: any = {};
-  filterForm: FormGroup;
+  filterForm: UntypedFormGroup;
   createFormgroup: boolean = true;
   collectionname: any;
   card:any={};

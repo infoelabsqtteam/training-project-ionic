@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { LoaderService, NotificationService } from '@core/ionic-core';
 import { AlertController, IonInput, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
@@ -15,12 +15,12 @@ export class VerifyCompanyComponent implements OnInit {
 
   @ViewChild('companyCode') companyCode: IonInput;
 
-  cCodeForm: FormGroup;
+  cCodeForm: UntypedFormGroup;
   isValidCode = false;
   isExitAlertOpen: boolean = false;
   
   constructor(    
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private envService: EnvService,
     private storageService: StorageService,
     private _location: Location,

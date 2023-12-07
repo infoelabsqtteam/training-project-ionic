@@ -1,7 +1,7 @@
 import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2} from '@angular/core';
 import { NotificationService } from '@core/ionic-core';
 import { ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
-import { FormBuilder, FormGroup} from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup} from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, AuthService, FormCreationService } from '@core/web-core';
 
@@ -29,7 +29,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   // new var
   gridDataSubscription: any;
   // filter card
-  filterForm: FormGroup;
+  filterForm: UntypedFormGroup;
   createFormgroup: boolean = true;
   openFilter: boolean = false;
   filterCount: 0;
@@ -50,7 +50,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   
   constructor(
     private commonAppDataShareService:CommonAppDataShareService,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     public modalController: ModalController,
     private router:Router,
     public popoverController: PopoverController,

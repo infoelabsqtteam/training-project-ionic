@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { NotificationService } from '@core/ionic-core';
 import { AuthDataShareService, AuthService, CustomvalidationService, EnvService, StorageService } from '@core/web-core';
 import { Subscription } from 'rxjs';
@@ -11,10 +11,10 @@ import { Subscription } from 'rxjs';
 })
 export class ForgetPasswordComponent implements OnInit {
 
-  fForm: FormGroup;
+  fForm: UntypedFormGroup;
   confirmpassword = false;
   newpassword = false;
-  vForm: FormGroup;
+  vForm: UntypedFormGroup;
   username: string;
   resetPwd: boolean = true;
   newpwd: any;
@@ -67,9 +67,9 @@ export class ForgetPasswordComponent implements OnInit {
   // Form Creation Function Handling start--------------
   initForm() {
     this.username = "";
-    this.fForm = new FormGroup({
-      'userId': new FormControl('', [Validators.required]),
-      "admin": new FormControl(false)
+    this.fForm = new UntypedFormGroup({
+      'userId': new UntypedFormControl('', [Validators.required]),
+      "admin": new UntypedFormControl(false)
     });
 
     if(!this.VerifyType){
@@ -78,10 +78,10 @@ export class ForgetPasswordComponent implements OnInit {
       this.fForm.get('userId').setValidators([Validators.required,Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]);
     }
 
-    this.vForm = new FormGroup({
-      'verifyCode': new FormControl('', [Validators.required]),
-      'password': new FormControl('', [Validators.required,this.customvalidationService.patternValidator()]),
-      'confpwd': new FormControl('', [Validators.required]),
+    this.vForm = new UntypedFormGroup({
+      'verifyCode': new UntypedFormControl('', [Validators.required]),
+      'password': new UntypedFormControl('', [Validators.required,this.customvalidationService.patternValidator()]),
+      'confpwd': new UntypedFormControl('', [Validators.required]),
     });
   }
   // Form Creation Function Handling End--------------
