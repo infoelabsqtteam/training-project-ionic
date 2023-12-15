@@ -365,6 +365,14 @@ export class GridSelectionComponent implements OnInit, OnChanges {
         }
       });      
     }
+    this.setSelectTab();
+  }
+  setSelectTab(){
+    if(this.selecteData && this.selecteData.length > 0){
+      this.selectedTab = "added";
+    }else{
+      this.selectedTab = "new";
+    }
   }
   getFirstCharOfString(char:any){
     return this.commonFunctionService.getFirstCharOfString(char);
@@ -394,6 +402,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
     if(confirmDelete === "confirm"){
       this.selectedData.splice(index,1);
+      this.setSelectTab();
       let obj =this.getSendData()
       this.gridSelectionResponce.emit(obj);
     }

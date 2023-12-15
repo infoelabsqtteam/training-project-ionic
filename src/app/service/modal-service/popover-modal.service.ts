@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { ModalController, PopoverController } from '@ionic/angular';
-import { FormComponent } from 'src/app/m-core/common-component/form/form.component';
 
 @Injectable({
   providedIn: 'root'

@@ -5,6 +5,7 @@ import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryIma
 import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService, StorageService, GridCommonFunctionService, FileHandlerService } from '@core/web-core';
 import { DatePipe } from '@angular/common';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
 @Component({
   selector: 'app-grid-selection-detail-modal',
@@ -61,6 +62,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
   downloadClick='';
   // Select Photos or camera end
   modifiedGridData:any;
+  ngLoading: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -75,7 +77,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     private storageService: StorageService,
     private plt: Platform,
     private gridCommonFunctionService: GridCommonFunctionService,
-    private fileHandlerService: FileHandlerService
+    private dataShareServiceService: DataShareServiceService
   ) { 
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
@@ -260,7 +262,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
         this.dismissModal(this.data,false);
       }else{
         // if(this.checkValidator()){
-          this.notificationService.presentToastOnBottom("Record selected");
+          this.notificationService.presentToastOnBottom(this.gridSelctionTitle + " is select");
           this.dismissModal(this.data,false);
         // }
       }
@@ -268,9 +270,10 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   remove(){
     if(!this.alreadyAdded){
-      this.notificationService.presentToastOnBottom("Can't perform this action because this record not selected");
+      // this.notificationService.presentToastOnBottom("Can't perform this action because this record not selected");
+      this.dismissModal();
     }else{
-      this.notificationService.presentToastOnBottom("Record removed");
+      this.notificationService.presentToastOnBottom(this.gridSelctionTitle + "is deselect");
       this.dismissModal(this.data,true);
     }
   }
@@ -344,6 +347,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
     let staticModalGroup = this.commonFunctionService.getPaylodWithCriteria(field.api_params, call_back_field, criteria, this.typeaheadObjectWithtext ? this.typeaheadObjectWithtext : {});
     staticModal.push(staticModalGroup);
+    this.ngLoading = true;
     this.apiService.GetTypeaheadData(staticModal);
 
     this.typeaheadObjectWithtext[field.field_name] = this.addedDataInList;
@@ -353,7 +357,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
       this.typeAheadData = typeAheadData;
     } else {
       this.typeAheadData = [];
-    }
+    }    
+    this.ngLoading = false;
   }
   setValue(option:any,field,data,index,chipsInput,eventFire?:any) {
     let inputSelectValue:any;
@@ -364,7 +369,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       }else if(this.coreFunctionService.isNotBlank(option.label)){
         inputSelectValue = option.label;
       }else if(typeof option == 'string' || this.coreFunctionService.isNotBlank(option['_id'])){
-        inputSelectValue = option
+        inputSelectValue = option;
       }
     }
     if(inputSelectValue){
@@ -372,7 +377,11 @@ export class GridSelectionDetailModalComponent implements OnInit {
         if(typeof option == 'string'){
           this.notificationService.presentToastOnBottom( option + ' Already Added');
         }else{
+          if(option && option.label){
+            this.notificationService.presentToastOnBottom( option.label + ' Already Added');
+          }else{            
           this.notificationService.presentToastOnBottom( option.name + ' Already Added');
+          }
         }
       }else{
         if(data[field.field_name] == null) data[field.field_name] = [];
@@ -381,16 +390,14 @@ export class GridSelectionDetailModalComponent implements OnInit {
       if(option?.target?.value){
         option.target.value = '';
       }
-      if(this.chipsInput && this.chipsInput.nativeElement){
-        this.chipsInput.nativeElement.value = '';
+      if((this.chipsInput && this.chipsInput.nativeElement) || chipsInput && chipsInput.element){
+        if(this.chipsInput && this.chipsInput.nativeElement){
+          this.chipsInput.nativeElement.value = '';
+        }else{
+          chipsInput.element.value = '';
+        }
         let ngInput = <HTMLInputElement>document.getElementById(field._id+'_'+field.field_name);
         ngInput.value = '';
-      }else{
-        if(chipsInput && chipsInput.element){
-          chipsInput.element.value = '';
-          let ngInput = <HTMLInputElement>document.getElementById(field._id+'_'+field.field_name);
-          ngInput.value = '';
-        }
       }
       if(this.userInputChipsData && this.userInputChipsData?.label ){
         this.userInputChipsData.label = "";        
@@ -473,23 +480,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
     this.setValue(e,field,'','','',"clearDropDown");
   }
   selectGridData(addOrupdate?:boolean) {
-    // this.selectedData = [];
-    // if (this.grid_row_selection == false) {
-    //   this.selectedData = [...this.gridData];
-    // }
-    // else {
-    //   this.gridData.forEach(row => {
-    //     if (row.selected) {
-    //       this.selectedData.push(row);
-    //     }
-    //   });
-    // }
-    let gridData = [];
-    gridData.push(this.data);
-    let modifyGridData = [];
-    modifyGridData.push(this.modifiedGridData);
-    let modifySelectedData = this.gridCommonFunctionService.updateGridDataToModifiedData(this.grid_row_selection,gridData,modifyGridData,this.columnList);
-    this.data = modifySelectedData[0];
     
     let check = 0;
     let validation = {
@@ -501,8 +491,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
           const fieldName = mField.field_name;
           if(mField.display){
           // this.selectedData.forEach((row,i) => {
-            let checkDisable = this.isDisable(mField,this.data);
-            if(this.data && !checkDisable && (this.data[fieldName] == undefined || this.data[fieldName] == '' || this.data[fieldName] == null)){
+            let checkDisable = this.isDisable(mField,this.modifiedGridData);
+            if(this.modifiedGridData && !checkDisable && (this.modifiedGridData[fieldName] == undefined || this.modifiedGridData[fieldName] == '' || this.modifiedGridData[fieldName] == null)){
               if(validation.msg == ''){
                 // const rowNo = i + 1;
                 // validation.msg = mField.label+'( '+rowNo+' ) is required.';
@@ -521,6 +511,17 @@ export class GridSelectionDetailModalComponent implements OnInit {
         return false;
       }
     }else{
+      let gridData = [];
+      gridData.push(this.data);
+      let modifyGridData = [];
+      modifyGridData.push(this.modifiedGridData);
+      let modifySelectedData = [];
+      if(!addOrupdate && addOrupdate != undefined){
+        modifySelectedData = this.gridCommonFunctionService.updateGridDataToModifiedData(this.grid_row_selection,gridData,modifyGridData,this.columnList);
+      }else{
+        modifySelectedData = this.gridCommonFunctionService.updateGridDataToModifiedData(false,gridData,modifyGridData,this.columnList);
+      }
+      this.data = modifySelectedData[0];
       if(addOrupdate){
         return addOrupdate;
       }else{
@@ -685,13 +686,10 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
 
 
-  imageDownload(img:any) {
-    this.downloadClick = img.rollName;
-    const payload = {
-      path: 'download',
-      data: img
-    }
-    this.apiService.DownloadFile(payload);
+  imageDownload(file:any) {
+    this.dataShareServiceService.setDownloadimage(file);
+      // this.downloadClick = file.rollName;
+      // this.commonFunctionService.downloadFile(file);
   }
  
 
