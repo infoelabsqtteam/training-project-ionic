@@ -11,7 +11,7 @@
     <div class="" *ngFor="let column of columnList; let i = index" [ngClass]="column.display ? 'd-block':'d-none'">
       <div *ngIf="!column.editable" class="enquerylist ">
         <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>
-        <strong [innerHtml]="getValueForGrid(column,modifiedGridData)"></strong>
+        <strong>{{modifiedGridData[column.field_name]}}</strong>
       </div>
       <div *ngIf="column.editable" class="enquerylist">
         <span [title]="column.label" class="detail-grid" [ngClass]="column.type == 'file' ? 'ion-hide' : ''">{{column.label}} <ion-text color="danger" *ngIf="column.is_mandatory">*</ion-text><ion-text>&nbsp;:&nbsp;</ion-text></span>        

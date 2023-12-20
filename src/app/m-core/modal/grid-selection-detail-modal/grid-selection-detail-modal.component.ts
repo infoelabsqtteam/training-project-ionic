@@ -232,9 +232,9 @@ export class GridSelectionDetailModalComponent implements OnInit {
       this.apiService.getStatiData(staticModal);
     }
   }
-  getValueForGrid(field, object) {
-    return this.commonFunctionService.getValueForGrid(field, object);
-  }
+  // getValueForGrid(field, object) {
+  //   return this.commonFunctionService.getValueForGrid(field, object);
+  // }
   closeModal(data?:any,remove?:any){
     this.data = '';
     this.dataShareService.setIsGridSelectionOpenOrNot(true);
