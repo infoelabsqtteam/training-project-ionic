@@ -158,9 +158,9 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
   
   // Functions Not in Use -------
 
-  // columnListOutput(columnList){
-  //   // console.log(columnList);
-  // }
+  columnListOutput(columnList){
+    console.log(columnList);
+  }
   
   // async detailCardButton(column, data){}  
   
