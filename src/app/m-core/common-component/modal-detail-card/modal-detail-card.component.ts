@@ -97,7 +97,11 @@ export class ModalDetailCardComponent implements OnInit {
     }
     this.childDataValue = this.childData;    
     if(this.childDataValue && this.childDataValue.name){
-      this.childDataTitle = this.childDataValue.name;
+      if(typeof this.childDataValue.name == 'object'){
+        this.childDataTitle = this.childDataValue?.name['name'];
+      }else{
+        this.childDataTitle = this.childDataValue.name;
+      }
     }
     this.setCard(child_card);
     
@@ -227,7 +231,6 @@ export class ModalDetailCardComponent implements OnInit {
         "Data": {"data":value,"field":field,"index": i,"field_name":field_name,"editemode": editemode},        
         "formInfo" : {"InlineformGridSelection" : ""}          
       },
-      swipeToClose: true,
     });
     modal.componentProps.modal = modal;
     modal.onDidDismiss()

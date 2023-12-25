@@ -2,9 +2,10 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { NotificationService } from '@core/ionic-core';
 import { ActionSheetController, ModalController, Platform } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
-import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService, StorageService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService, StorageService, GridCommonFunctionService, FileHandlerService } from '@core/web-core';
 import { DatePipe } from '@angular/common';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
 @Component({
   selector: 'app-grid-selection-detail-modal',
@@ -23,6 +24,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
 
   cardType:any;
   columnList :any = [];
+  editableGridColumns:any=[];
   data:any={};
   gridSelctionTitle:any;
   gridselectionverticalbutton:any;
@@ -53,6 +55,14 @@ export class GridSelectionDetailModalComponent implements OnInit {
   };
   ionSelectInterface:string = 'alert';
   //  Ion-select changes end
+  // Select Photos or camera
+  curFileUploadField:any={}
+  curFileUploadFieldparentfield:any={};
+  selectedphotos:any= [];
+  downloadClick='';
+  // Select Photos or camera end
+  modifiedGridData:any;
+  ngLoading: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -66,6 +76,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private storageService: StorageService,
     private plt: Platform,
+    private gridCommonFunctionService: GridCommonFunctionService,
+    private dataShareServiceService: DataShareServiceService
   ) { 
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
@@ -137,22 +149,26 @@ export class GridSelectionDetailModalComponent implements OnInit {
     //   this.gridData = [];
     // }
     if (this.field.gridColumns && this.field.gridColumns.length > 0) {
-      let gridColumns = this.commonFunctionService.updateFieldInList('display',this.field.gridColumns);
-      gridColumns.forEach(field => {
-        if (this.coreFunctionService.isNotBlank(field.show_if)) {
-          if (!this.commonFunctionService.showIf(field, parentObject)) {
-            field['display'] = false;
-          } else {
-            field['display'] = true;
-          }
-        } else {
-          field['display'] = true;
-        }
-        if(field['field_class']){
-          field['field_class'] = field['field_class'].trim();
-        }
-      });
-      this.columnList = gridColumns;
+      // let gridColumns = this.commonFunctionService.updateFieldInList('display',this.field.gridColumns);
+      // gridColumns.forEach(field => {
+      //   if (this.coreFunctionService.isNotBlank(field.show_if)) {
+      //     if (!this.commonFunctionService.showIf(field, parentObject)) {
+      //       field['display'] = false;
+      //     } else {
+      //       field['display'] = true;
+      //     }
+      //   } else {
+      //     field['display'] = true;
+      //   }
+      //   if(field['field_class']){
+      //     field['field_class'] = field['field_class'].trim();
+      //   }
+      // });
+      // this.columnList = gridColumns;
+      this.columnList = this.gridCommonFunctionService.modifyGridColumns(JSON.parse(JSON.stringify(this.field.gridColumns)),parentObject);
+      this.editableGridColumns = this.gridCommonFunctionService.getListByKeyValueToList(this.columnList,"editable",true);
+      this.modifiedGridData = this.gridCommonFunctionService.rowModify(alert.value,this.field,this.field.gridColumns,this.editableGridColumns,[]);
+      // this.data = this.modifySelectedData;
     } else {
       this.notificationService.presentToastOnMiddle("Grid Columns are not available In This Field.","danger")
     }
@@ -216,9 +232,9 @@ export class GridSelectionDetailModalComponent implements OnInit {
       this.apiService.getStatiData(staticModal);
     }
   }
-  getValueForGrid(field, object) {
-    return this.commonFunctionService.getValueForGrid(field, object);
-  }
+  // getValueForGrid(field, object) {
+  //   return this.commonFunctionService.getValueForGrid(field, object);
+  // }
   closeModal(data?:any,remove?:any){
     this.data = '';
     this.dataShareService.setIsGridSelectionOpenOrNot(true);
@@ -246,7 +262,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
         this.dismissModal(this.data,false);
       }else{
         // if(this.checkValidator()){
-          this.notificationService.presentToastOnBottom("Record selected");
+          this.notificationService.presentToastOnBottom(this.gridSelctionTitle + " is select");
           this.dismissModal(this.data,false);
         // }
       }
@@ -254,9 +270,10 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   remove(){
     if(!this.alreadyAdded){
-      this.notificationService.presentToastOnBottom("Can't perform this action because this record not selected");
+      // this.notificationService.presentToastOnBottom("Can't perform this action because this record not selected");
+      this.dismissModal();
     }else{
-      this.notificationService.presentToastOnBottom("Record removed");
+      this.notificationService.presentToastOnBottom(this.gridSelctionTitle + "is deselect");
       this.dismissModal(this.data,true);
     }
   }
@@ -330,6 +347,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
     let staticModalGroup = this.commonFunctionService.getPaylodWithCriteria(field.api_params, call_back_field, criteria, this.typeaheadObjectWithtext ? this.typeaheadObjectWithtext : {});
     staticModal.push(staticModalGroup);
+    this.ngLoading = true;
     this.apiService.GetTypeaheadData(staticModal);
 
     this.typeaheadObjectWithtext[field.field_name] = this.addedDataInList;
@@ -339,18 +357,19 @@ export class GridSelectionDetailModalComponent implements OnInit {
       this.typeAheadData = typeAheadData;
     } else {
       this.typeAheadData = [];
-    }
+    }    
+    this.ngLoading = false;
   }
   setValue(option:any,field,data,index,chipsInput,eventFire?:any) {
     let inputSelectValue:any;
     const alreadyAddedList = data[field.field_name];
     if(option != null && option != ""){
-      if ((option.keyCode == 13 || option.keyCode == 9) || this.coreFunctionService.isNotBlank(option.target.value)){
+      if ((option.keyCode == 13 || option.keyCode == 9) || this.coreFunctionService.isNotBlank(option?.target?.value)){
         inputSelectValue = option.target.value;
       }else if(this.coreFunctionService.isNotBlank(option.label)){
         inputSelectValue = option.label;
       }else if(typeof option == 'string' || this.coreFunctionService.isNotBlank(option['_id'])){
-        inputSelectValue = option
+        inputSelectValue = option;
       }
     }
     if(inputSelectValue){
@@ -358,7 +377,11 @@ export class GridSelectionDetailModalComponent implements OnInit {
         if(typeof option == 'string'){
           this.notificationService.presentToastOnBottom( option + ' Already Added');
         }else{
+          if(option && option.label){
+            this.notificationService.presentToastOnBottom( option.label + ' Already Added');
+          }else{            
           this.notificationService.presentToastOnBottom( option.name + ' Already Added');
+          }
         }
       }else{
         if(data[field.field_name] == null) data[field.field_name] = [];
@@ -366,16 +389,21 @@ export class GridSelectionDetailModalComponent implements OnInit {
       }
       if(option?.target?.value){
         option.target.value = '';
-      }      
-      if(chipsInput && chipsInput.element && this.chipsInput.nativeElement){
-        this.chipsInput.nativeElement.value = '';
+      }
+      if((this.chipsInput && this.chipsInput.nativeElement) || chipsInput && chipsInput.element){
+        if(this.chipsInput && this.chipsInput.nativeElement){
+          this.chipsInput.nativeElement.value = '';
+        }else{
+          chipsInput.element.value = '';
+        }
         let ngInput = <HTMLInputElement>document.getElementById(field._id+'_'+field.field_name);
         ngInput.value = '';
       }
-      if(this.userInputChipsData.label ){
+      if(this.userInputChipsData && this.userInputChipsData?.label ){
         this.userInputChipsData.label = "";        
+      }else{
+        this.userInputChipsData = "";
       }
-      this.userInputChipsData = "";
       this.chipsData = {};
       this.typeAheadData = [];
     }
@@ -452,17 +480,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     this.setValue(e,field,'','','',"clearDropDown");
   }
   selectGridData(addOrupdate?:boolean) {
-    // this.selectedData = [];
-    // if (this.grid_row_selection == false) {
-    //   this.selectedData = [...this.gridData];
-    // }
-    // else {
-    //   this.gridData.forEach(row => {
-    //     if (row.selected) {
-    //       this.selectedData.push(row);
-    //     }
-    //   });
-    // }
+    
     let check = 0;
     let validation = {
       'msg' : ''
@@ -473,8 +491,8 @@ export class GridSelectionDetailModalComponent implements OnInit {
           const fieldName = mField.field_name;
           if(mField.display){
           // this.selectedData.forEach((row,i) => {
-            let checkDisable = this.isDisable(mField,this.data);
-            if(this.data && !checkDisable && (this.data[fieldName] == undefined || this.data[fieldName] == '' || this.data[fieldName] == null)){
+            let checkDisable = this.isDisable(mField,this.modifiedGridData);
+            if(this.modifiedGridData && !checkDisable && (this.modifiedGridData[fieldName] == undefined || this.modifiedGridData[fieldName] == '' || this.modifiedGridData[fieldName] == null)){
               if(validation.msg == ''){
                 // const rowNo = i + 1;
                 // validation.msg = mField.label+'( '+rowNo+' ) is required.';
@@ -493,20 +511,24 @@ export class GridSelectionDetailModalComponent implements OnInit {
         return false;
       }
     }else{
+      let gridData = [];
+      gridData.push(this.data);
+      let modifyGridData = [];
+      modifyGridData.push(this.modifiedGridData);
+      let modifySelectedData = [];
+      if(!addOrupdate && addOrupdate != undefined){
+        modifySelectedData = this.gridCommonFunctionService.updateGridDataToModifiedData(this.grid_row_selection,gridData,modifyGridData,this.columnList);
+      }else{
+        modifySelectedData = this.gridCommonFunctionService.updateGridDataToModifiedData(false,gridData,modifyGridData,this.columnList);
+      }
+      this.data = modifySelectedData[0];
       if(addOrupdate){
         return addOrupdate;
       }else{
         this.dismissModal(this.data,"onlyupdate");
-
       }
     }
   }
- 
-  dataListForUpload:any = {};
-  curFileUploadField:any={}
-  curFileUploadFieldparentfield:any={};
-  selectedphotos:any= [];
-  downloadClick='';
 
   // camera upload files
   async selectImageSource(parent,field) {
@@ -529,17 +551,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
       }
     ];
  
-    // Only allow file selection inside a browser
-    // if (!this.plt.is('hybrid')) {
-    //   buttons.push({
-    //     text: 'Choose a File',
-    //     icon: 'attach',
-    //     handler: () => {
-    //       this.fileInput.nativeElement.click();
-    //     }
-    //   });
-    // }
- 
     const actionSheet = await this.actionSheetCtrl.create({
       header: 'Select Image Source',
       buttons
@@ -557,8 +568,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       correctOrientation: true,
       saveToGallery: true
     });
-
-    console.log('Selected Image : ', image);
+    // console.log('Selected Image : ', image);
     let arrayimages:any = []; 
     arrayimages.push(image);
     if (arrayimages && arrayimages.length > 0) {
@@ -566,8 +576,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
   }
 
-  async selectMultipleImages(){
-    
+  async selectMultipleImages(){    
     const multipleImagesOption:GalleryImageOptions = {
       quality: 60,
       limit: 0,     
@@ -589,9 +598,9 @@ export class GridSelectionDetailModalComponent implements OnInit {
     let kbytes:any;
     let fileName:any;
     this.selectedphotos=[];
-    photos.forEach(async (img:any) => {
+    photos.forEach(async (img:any,i) => {
       base64Data = await this.readAsBase64(img);
-      const dateTime = this.datePipe.transform(new Date(), 'yyyyMMdd') + "_" + this.datePipe.transform(new Date(), 'hhmmss');
+      const dateTime = this.datePipe.transform(new Date(), 'yyyyMMdd') + "_" + this.datePipe.transform(new Date(), 'hhmmss') + i;
       fileName = "IMG_" + dateTime + '.'+ img.format;
       this.selectedphotos.push({
         fileData: base64Data,
@@ -637,12 +646,12 @@ export class GridSelectionDetailModalComponent implements OnInit {
     if(this.curFileUploadField){
       if(this.curFileUploadFieldparentfield != ''){
         const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
-        const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]
+        const data = this.modifiedGridData[custmizedKey][this.curFileUploadField.field_name]
         if(data && data.length > 0){
           uploadData = data;
         }        
       }else{ 
-        const data = this.dataListForUpload[this.curFileUploadField.field_name];
+        const data = this.modifiedGridData[this.curFileUploadField.field_name];
         if(data && data.length > 0){
           uploadData = data;
         } 
@@ -654,59 +663,33 @@ export class GridSelectionDetailModalComponent implements OnInit {
       });
     }
     if(uploadData && uploadData.length > 0){
-      this.fileUploadResponce(uploadData);    
+      this.fileUploadResponce(uploadData);
       this.notificationService.presentToastOnBottom("Image Added", "success");
     }
   }
 
 
   fileUploadResponce(response) {
-    if(this.curFileUploadFieldparentfield != ''){
-      const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);            
-      if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
-      if (!this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]) this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] = [];
-      this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] = response;
-    }else{
-      if (!this.dataListForUpload[this.curFileUploadField.field_name]) this.dataListForUpload[this.curFileUploadField.field_name] = [];
-      this.dataListForUpload[this.curFileUploadField.field_name] = response;
-    }
-    
-    if(this.curFileUploadFieldparentfield != ''){
-      const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield); 
-      if(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] && this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name].length > 0){
-        let fileName = this.commonFunctionService.modifyFileSetValue(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]);        
-       // this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue(fileName);
-      }else{
-       // this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue('');
-      }
-    }else{    
-      if(this.dataListForUpload[this.curFileUploadField.field_name] && this.dataListForUpload[this.curFileUploadField.field_name].length > 0){
-        let fileName = this.commonFunctionService.modifyFileSetValue(this.dataListForUpload[this.curFileUploadField.field_name]);
-      //  this.templateForm.get(this.curFileUploadField.field_name).setValue(fileName);
-      }else{
-       // this.templateForm.get(this.curFileUploadField.field_name).setValue('');
-      }
-    }
+    this.data[this.curFileUploadField.field_name] = response;
+    this.modifiedGridData[this.curFileUploadField.field_name] = response;
   }
  
 
-  async removeAttachedDataFromList(index:number,fieldName:any){
+  async removeAttachedDataFromList(deleteIndex:number,fieldName:any){
     let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
     if(confirmDelete == "confirm"){
-      this.dataListForUpload[fieldName].splice(index,1)
+      // this.data[fieldName].splice(deleteIndex,1);
+      this.modifiedGridData[fieldName].splice(deleteIndex,1);
     }else{
      // this.cancel();
     }
   }
 
 
-  imageDownload(img:any) {
-    this.downloadClick = img.rollName;
-    const payload = {
-      path: 'download',
-      data: img
-    }
-    this.apiService.DownloadFile(payload);
+  imageDownload(file:any) {
+    this.dataShareServiceService.setDownloadimage(file);
+      // this.downloadClick = file.rollName;
+      // this.commonFunctionService.downloadFile(file);
   }
  
 

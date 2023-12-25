@@ -254,6 +254,7 @@ tinymceConfig = {}
   nextFormSubscription:Subscription;
   gridSelectionOpenOrNotSubscription:any;
   gridRealTimeDataSubscription:Subscription;
+  gridDownloadImageSubscription:Subscription;
   isGridSelectionOpen: boolean = true;
   deleteGridRowData: boolean = false;
   clickFieldName:any={};
@@ -468,6 +469,9 @@ tinymceConfig = {}
       })
       this.gridRealTimeDataSubscription = this.dataShareService.gridRunningData.subscribe(data =>{
         this.updateRunningData(data.data);
+      })
+      this.gridDownloadImageSubscription = this.dataShareServiceService.gridDownloadImage.subscribe(data => {
+        this.imageDownload(data);
       })
 
       this.onLoadVariable();

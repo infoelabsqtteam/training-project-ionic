@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { AppDataShareService, NotificationService, AppStorageService } from '@core/ionic-core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AppDataShareService, NotificationService } from '@core/ionic-core';
+import { ModalController } from '@ionic/angular';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
-import { ApiService, DataShareService, LimsCalculationsService, CommonFunctionService, CoreFunctionService } from '@core/web-core';
+import { DataShareService, LimsCalculationsService, CommonFunctionService, CoreFunctionService, GridCommonFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-grid-selection',
@@ -33,7 +33,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   grid_row_refresh_icon:boolean = false;
 
   selectedTab:any = "new";
-  // selectedTabAgain:any;
+  showAllTab : boolean = true;
 
   expandicon: any = "assets/itc-labs/icon/expand-icon.png";
 
@@ -53,18 +53,11 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     private appDataShareService: AppDataShareService,
     private limsCalculationsService: LimsCalculationsService,
     private commonFunctionService: CommonFunctionService
-
   ) { }
   
 
   ngOnInit() {
     this.samePageGridSelection = this.appDataShareService.getgridselectioncheckvalue();    
-    if(this.Data?.updateMode && this.Data.updateMode){  
-      this.selectedTab = "added";
-      this.updateMode = this.Data.updateMode;
-    }else{
-      this.selectedTab = "new";
-    }
   }
   ngOnChanges(changes: SimpleChanges) {
     if(this.Data){
@@ -119,6 +112,8 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       this.parentObject = this.Data.object;
     }
     if(this.Data.field.onchange_api_params == "" || this.Data.field.onchange_api_params == null){
+      this.showAllTab = false;
+      this.selectedTab = "added";
       this.gridData = JSON.parse(JSON.stringify(this.Data.selectedData));
     }
     else{
@@ -133,7 +128,11 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       this.grid_row_refresh_icon = true;
     }else{
       this.grid_row_refresh_icon = false;
-    }    
+    }
+    if(this.Data?.updateMode && this.Data.updateMode){  
+      this.selectedTab = "added";
+      this.updateMode = this.Data.updateMode;
+    }  
   }
   
   setStaticData(staticData) {
@@ -285,37 +284,36 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   async addremoveitem(data,index){
     let alreadyAdded = false;
-      let toastMsg = ""
-      this.selectedData.forEach(element => {
-        if(element && element._id == data._id){
-          alreadyAdded = true;
-        }
-      });
-      const modal = await this.modalController.create({
-        component: GridSelectionDetailModalComponent,
-        componentProps: {
-          "Data": {"value":data,"column":this.field.gridColumns,"field":this.field,"alreadyAdded": alreadyAdded,"parentObject":this.parentObject},
-          "index": index,
-          "childCardType" : "demo1",
-          "formInfo" : {"InlineformGridSelection" : this.appDataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""}          
-        },
-        swipeToClose: false
-      });
-      modal.componentProps.modal = modal;
-      modal.onDidDismiss()
-        .then((data) => {
-          const object = data['data']; // Here's your selected user!
-          if(object['data'] && object['remove'] == true){
-            this.toggle(object['data'],{'detail':{'checked':false}},index);
-          }else if(object['data'] && object['remove'] == false){
-            this.toggle(object['data'],{'detail':{'checked':true}},index);
-          }else if(object['data'] && object['remove'] == "onlyupdate"){
-            this.updateSelectedData(object['data'],index);
-          }else{
-            console.log("No action performed !");
-          }              
-      });
-      return await modal.present();
+    this.selectedData.forEach(element => {
+      if(element && element._id == data._id){
+        alreadyAdded = true;
+      }
+    });
+    const modal = await this.modalController.create({
+      component: GridSelectionDetailModalComponent,
+      componentProps: {
+        "Data": {"value":data,"column":this.field.gridColumns,"field":this.field,"alreadyAdded": alreadyAdded,"parentObject":this.parentObject},
+        "index": index,
+        "childCardType" : "demo1",
+        "formInfo" : {"InlineformGridSelection" : this.appDataShareService.getgridselectioncheckvalue(), "type" : this.Data.formTypeName,"name":""}          
+      },
+      swipeToClose: false
+    });
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss()
+      .then((data) => {
+        const object = data['data']; // Here's your selected user!
+        if(object['data'] && object['remove'] == true){
+          this.toggle(object['data'],{'detail':{'checked':false}},index);
+        }else if(object['data'] && object['remove'] == false){
+          this.toggle(object['data'],{'detail':{'checked':true}},index);
+        }else if(object['data'] && object['remove'] == "onlyupdate"){
+          this.updateSelectedData(object['data'],index);
+        }else{
+          console.log("No action performed !");
+        }              
+    });
+    return await modal.present();
   }
   toggle(data:any,event:any, indx:any) {
     let index:any = -1;
@@ -342,8 +340,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
     if(index > -1){
       if (event.detail.checked) {
-        this.gridData[index].selected=true; 
-        // this.selectedTab = "added";
+        this.gridData[index].selected=true;
       } else{
         this.gridData[index].selected=false;
       }
@@ -367,6 +364,14 @@ export class GridSelectionComponent implements OnInit, OnChanges {
           this.selectedData.push(element);
         }
       });      
+    }
+    this.setSelectTab();
+  }
+  setSelectTab(){
+    if(this.selecteData && this.selecteData.length > 0){
+      this.selectedTab = "added";
+    }else{
+      this.selectedTab = "new";
     }
   }
   getFirstCharOfString(char:any){
@@ -393,10 +398,11 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
 
   async delete(index:number){
-    //alert, if confirm then
+    //confirmation alert
     let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
     if(confirmDelete === "confirm"){
       this.selectedData.splice(index,1);
+      this.setSelectTab();
       let obj =this.getSendData()
       this.gridSelectionResponce.emit(obj);
     }
