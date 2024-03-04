@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { NotificationService } from '@core/ionic-core';
 import { ActionSheetController, ModalController, Platform } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
-import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService, StorageService, GridCommonFunctionService, FileHandlerService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService, StorageService, GridCommonFunctionService, FileHandlerService, CheckIfService, ApiCallService } from '@core/web-core';
 import { DatePipe } from '@angular/common';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -77,7 +77,9 @@ export class GridSelectionDetailModalComponent implements OnInit {
     private storageService: StorageService,
     private plt: Platform,
     private gridCommonFunctionService: GridCommonFunctionService,
-    private dataShareServiceService: DataShareServiceService
+    private dataShareServiceService: DataShareServiceService,
+    private apiCallService: ApiCallService,
+    private checkIfService: CheckIfService
   ) { 
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
@@ -216,13 +218,13 @@ export class GridSelectionDetailModalComponent implements OnInit {
   checkRowDisabledIf(field,data){
     const condition = field.disableRowIf;
     if(condition){
-      return !this.commonFunctionService.checkDisableRowIf(condition,data);
+      return !this.checkIfService.checkDisableRowIf(condition,data);
     }
     return true;    
   }
   getStaticDataWithDependentData(){
     const staticModal = []
-    let staticModalGroup = this.commonFunctionService.commanApiPayload([],this.columnList,[],this.data);
+    let staticModalGroup = this.apiCallService.commanApiPayload([],this.columnList,[],this.data);
     if(staticModalGroup.length > 0){
       staticModalGroup.forEach(element => {
         staticModal.push(element);
@@ -233,7 +235,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     }
   }
   // getValueForGrid(field, object) {
-  //   return this.commonFunctionService.getValueForGrid(field, object);
+  //   return this.gridCommonFunctionService.getValueForGrid(field, object);
   // }
   closeModal(data?:any,remove?:any){
     this.data = '';
@@ -292,7 +294,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       return true;
     }
     if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-      return this.commonFunctionService.isDisable(field.etc_fields, updateMode, object);
+      return this.checkIfService.isDisable(field.etc_fields, updateMode, object);
     }   
     return false;
   }
@@ -304,7 +306,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
         condition = this.field.disableRowIf;
       }
       if(condition != ''){
-        if(this.commonFunctionService.checkDisableRowIf(condition,data)){
+        if(this.checkIfService.checkDisableRowIf(condition,data)){
           check = true;
         }else{
           check = false;
@@ -345,7 +347,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
     if(field.api_params_criteria && field.api_params_criteria != ''){
       criteria =  field.api_params_criteria;
     }
-    let staticModalGroup = this.commonFunctionService.getPaylodWithCriteria(field.api_params, call_back_field, criteria, this.typeaheadObjectWithtext ? this.typeaheadObjectWithtext : {});
+    let staticModalGroup = this.apiCallService.getPaylodWithCriteria(field.api_params, call_back_field, criteria, this.typeaheadObjectWithtext ? this.typeaheadObjectWithtext : {});
     staticModal.push(staticModalGroup);
     this.ngLoading = true;
     this.apiService.GetTypeaheadData(staticModal);
@@ -373,7 +375,7 @@ export class GridSelectionDetailModalComponent implements OnInit {
       }
     }
     if(inputSelectValue){
-      if(this.commonFunctionService.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
+      if(this.checkIfService.checkDataAlreadyAddedInListOrNot("_id",option,alreadyAddedList)){
         if(typeof option == 'string'){
           this.notificationService.presentToastOnBottom( option + ' Already Added');
         }else{

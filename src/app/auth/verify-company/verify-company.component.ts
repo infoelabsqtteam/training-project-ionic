@@ -5,7 +5,7 @@ import { LoaderService, NotificationService } from '@core/ionic-core';
 import { AlertController, IonInput, IonRouterOutlet, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
-import { EnvService, DataShareService, StorageService, CommonFunctionService } from '@core/web-core';
+import { EnvService, DataShareService, StorageService, CommonFunctionService, ApiCallService } from '@core/web-core';
 
 @Component({
   selector: 'app-verify-company',
@@ -30,7 +30,8 @@ export class VerifyCompanyComponent implements OnInit {
     private alertController: AlertController,
     private notificationService: NotificationService,
     private loaderService: LoaderService,
-    private commonFunctionService: CommonFunctionService
+    private commonFunctionService: CommonFunctionService,
+    private apiCallService: ApiCallService
   ) { }
 
   ionViewWillEnter(){
@@ -115,7 +116,7 @@ export class VerifyCompanyComponent implements OnInit {
       this.storageService.removeDataFormStorage('all');
       this.loaderService.showLoader("Please wait while we are setting up the App for you.");
       this.storageService.setClientNAme(clientCode);
-      this.commonFunctionService.getApplicationAllSettings();
+      this.apiCallService.getApplicationAllSettings();
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
     }

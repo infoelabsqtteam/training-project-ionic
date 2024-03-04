@@ -3,7 +3,7 @@ import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
 import { ModelService, DownloadService } from '@core/ionic-core';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
 import { ModalController, isPlatform } from '@ionic/angular';
-import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService, ApiCallService } from '@core/web-core';
 
 @Component({
   selector: 'app-mongodb-chart',
@@ -33,7 +33,8 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     private modalController: ModalController,
     private modelService: ModelService,
     private commonFunctionService: CommonFunctionService,
-    private downloadService: DownloadService
+    private downloadService: DownloadService,
+    private apiCallService: ApiCallService
   ) {
       // this.getMongoChartList([]);
       // this.accessToken = this.storageService.GetIdToken();
@@ -81,7 +82,7 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
   }
 
   getMongoChartList(Criteria){
-    const data = this.commonFunctionService.getPaylodWithCriteria('mongo_dashlet_master','',Criteria,'');
+    const data = this.apiCallService.getPaylodWithCriteria('mongo_dashlet_master','',Criteria,'');
       data['pageNo'] = this.pageNumber - 1;
       data['pageSize'] = this.itemNumOfGrid; 
       const getFilterData = {
@@ -127,7 +128,7 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     }
   }
   getChartList(){
-    const payload = this.commonFunctionService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
+    const payload = this.apiCallService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
     this.apiService.getStatiData([payload]);
   }
   setStaticData(staticDatas){

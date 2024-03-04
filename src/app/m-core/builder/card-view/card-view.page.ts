@@ -3,7 +3,7 @@ import { NotificationService } from '@core/ionic-core';
 import { ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { FormBuilder, FormGroup} from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, AuthService } from '@core/web-core';
+import { CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, AuthService, FormCreationService } from '@core/web-core';
 
 @Component({
   selector: 'app-card-view',
@@ -63,6 +63,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       private notificationService: NotificationService,
       private permissionService: PermissionService,
       private authService: AuthService,
+      private formCreationService:FormCreationService,
       @Optional() private readonly routerOutlet?: IonRouterOutlet,
     ){}
   
@@ -241,7 +242,7 @@ export class CardViewPage implements OnInit, OnDestroy {
             case "abcd":
               break;
             default:
-              this.commonFunctionService.createFormControl(forControl, element, '', "text");
+              this.formCreationService.createFormControl(forControl, element, '', "text");
               break;
           }
         });

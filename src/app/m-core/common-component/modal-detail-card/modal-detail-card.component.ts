@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ModalComponent } from '../../modal/modal.component';
-import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService, CommonAppDataShareService } from '@core/web-core';
+import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService, CommonAppDataShareService, ApiCallService } from '@core/web-core';
 import { ModelService } from '@core/ionic-core';
 import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
 
@@ -36,7 +36,8 @@ export class ModalDetailCardComponent implements OnInit {
     private apiService: ApiService,
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
-    private modelService: ModelService
+    private modelService: ModelService,
+    private apiCallService: ApiCallService
     ) {
       this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
         if(data && data.gridColumns){
@@ -146,7 +147,7 @@ export class ModalDetailCardComponent implements OnInit {
   }
   
   getValueForGrid(field,object){
-    return this.commonFunctionService.getValueForGrid(field,object);
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   }
   
   dismissModal(){
@@ -269,7 +270,7 @@ export class ModalDetailCardComponent implements OnInit {
   getChildGridFieldsbyId(childrGridId:string){
       const params = "grid";
       const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
-      const payload = this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, {});
+      const payload = this.apiCallService.getPaylodWithCriteria(params, '', criteria, {});
       this.apiService.GetChildGrid(payload);
   }
 

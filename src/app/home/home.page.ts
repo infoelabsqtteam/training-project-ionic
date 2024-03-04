@@ -5,7 +5,7 @@ import { Platform, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { App } from '@capacitor/app';
-import { ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService, StorageService, MenuOrModuleCommonService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService, StorageService, MenuOrModuleCommonService, ApiCallService } from '@core/web-core';
 
 
 @Component({
@@ -74,7 +74,8 @@ export class HomePage implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
-    private appStorageService: AppStorageService
+    private appStorageService: AppStorageService,
+    private apiCallService: ApiCallService
   ) 
   {
     this.initializeApp();
@@ -163,7 +164,7 @@ export class HomePage implements OnInit, OnDestroy {
       criteriaList = criteria;
     }
     const params = 'card_master';
-    let data = this.commonFunctionService.getPaylodWithCriteria(params,'',criteria,{});
+    let data = this.apiCallService.getPaylodWithCriteria(params,'',criteria,{});
     data['pageNo'] = 0;
     data['pageSize'] = this.appCardMasterDataSize;
     let payload = {

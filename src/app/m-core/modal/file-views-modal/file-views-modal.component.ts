@@ -99,7 +99,7 @@ export class FileViewsModalComponent implements OnInit {
     return this.commonFunctionService.getddnDisplayVal(val);    
   }
   getValueForGrid(field,object){
-    return this.commonFunctionService.getValueForGrid(field,object);
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   }
   downloadFile(file){
     this.downloadClick = file.rollName;

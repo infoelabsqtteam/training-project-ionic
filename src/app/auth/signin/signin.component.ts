@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
 import { App } from '@capacitor/app';
 import { Location } from '@angular/common';
-import { AuthDataShareService, AuthService, CommonFunctionService, CoreFunctionService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
+import { ApiCallService, AuthDataShareService, AuthService, CommonFunctionService, CoreFunctionService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
 
 @Component({
   selector: 'app-signine',
@@ -45,7 +45,8 @@ export class SigninComponent implements OnInit {
     private routerOutlet: IonRouterOutlet,
     private _location: Location,
     private authDataShareService: AuthDataShareService,
-    private commonFunctionService: CommonFunctionService
+    private commonFunctionService: CommonFunctionService,
+    private apiCallService: ApiCallService
   ) { 
     this.initializeApp();
     
@@ -73,7 +74,9 @@ export class SigninComponent implements OnInit {
     this.checkValues();
   }
   ionViewDidEnter(){
-    this.getLogoPath();
+    setTimeout(() => {
+      this.getLogoPath();      
+    }, 1000);
     this.onLoadSubscriptions();
   }
   ionViewDidLeave(){
@@ -119,7 +122,7 @@ export class SigninComponent implements OnInit {
       if(this.checkIdTokenStatus()){
         this.authService.GetUserInfoFromToken(this.storageService.GetIdToken(), '/home');
       }else if(!this.checkApplicationSetting() && this.coreFunctionService.isNotBlank(isHostNameExist) && isHostNameExist != '/rest/'){
-        this.commonFunctionService.getApplicationAllSettings();
+        this.apiCallService.getApplicationAllSettings();
       }else{        
         this.storageService.removeKeyFromStorage("USER");
       }

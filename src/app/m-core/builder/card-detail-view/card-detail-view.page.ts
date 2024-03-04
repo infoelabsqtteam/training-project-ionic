@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NotificationService,} from '@core/ionic-core';
-import { CommonAppDataShareService, MenuOrModuleCommonService } from '@core/web-core';
+import { CommonAppDataShareService, GridCommonFunctionService, MenuOrModuleCommonService } from '@core/web-core';
 import { CommonFunctionService } from '@core/web-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -31,7 +31,8 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
     private callNumber: CallNumber,
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private gridCommonFunctionService:GridCommonFunctionService
   ) { 
     
   }
@@ -112,7 +113,7 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
   }
 
   getValueForGrid(field,object){
-    return this.commonFunctionService.getValueForGrid(field,object);
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   }
 
   // extra code added below for error ressolve

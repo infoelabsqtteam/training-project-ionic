@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
-import { ApiService, CommonFunctionService, DataShareService } from '@core/web-core';
+import { ApiCallService, ApiService, CommonFunctionService, DataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-chart',
@@ -44,7 +44,8 @@ export class ChartComponent implements OnInit{
     private apiService:ApiService,
     private dataShareService:DataShareService,
     private modalController: ModalController,
-    private commonFunctionService: CommonFunctionService
+    private commonFunctionService: CommonFunctionService,
+    private apiCallService: ApiCallService
   ) {
     this.headertitle = "Charts";
     this.gridDataSubscription = this.dataShareService.dashletMaster.subscribe(data =>{
@@ -176,7 +177,7 @@ export class ChartComponent implements OnInit{
   }
 
   getDataForGrid(Criteria?:any){    
-    const data = this.commonFunctionService.getPaylodWithCriteria('dashlet_master','',Criteria,'');
+    const data = this.apiCallService.getPaylodWithCriteria('dashlet_master','',Criteria,'');
     data['pageNo'] = this.pageNumber - 1;
     data['pageSize'] = this.itemNumOfGrid; 
     const getFilterData = {
@@ -195,7 +196,7 @@ export class ChartComponent implements OnInit{
     this.checkGetDashletData = true;
   }
   getChartList(){
-    const payload = this.commonFunctionService.getPaylodWithCriteria('dashlet_master','chart_list',[],'');
+    const payload = this.apiCallService.getPaylodWithCriteria('dashlet_master','chart_list',[],'');
     this.apiService.getStatiData([payload]);
   }
 

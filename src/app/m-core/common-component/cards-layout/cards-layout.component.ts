@@ -13,7 +13,7 @@ import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
-import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService } from '@core/web-core';
+import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService, ApiCallService, GridCommonFunctionService } from '@core/web-core';
 
 @Component({
   selector: 'app-cards-layout',
@@ -154,7 +154,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private appPermissionService: AppPermissionService,
     private actionSheetController: ActionSheetController,
     private coreFunctionService: CoreFunctionService,
-    private authService: AuthService
+    private authService: AuthService,
+    private apiCallService: ApiCallService,
+    private gridCommonFunctionService: GridCommonFunctionService
   ) 
   {
     
@@ -704,7 +706,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     return listCiteria;
   }
   async getGridData(collectionName,criteria?,parentCard?){
-    const crList = this.commonFunctionService.getfilterCrlist(this.columnList, this.filterForm.value);
+    const crList = this.apiCallService.getfilterCrlist(this.columnList, this.filterForm.value);
     const params = collectionName;
     let cardCriteria = [];
     let object = {};
@@ -724,7 +726,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     
     let user = this.storageService.GetUserInfo();
     object["user"]=user;
-    let data = this.commonFunctionService.getPaylodWithCriteria(params,'',cardCriteria,object);
+    let data = this.apiCallService.getPaylodWithCriteria(params,'',cardCriteria,object);
     this.currentPage = this.currentPageCount - 1;
     data['pageNo'] = this.currentPage;
     data['pageSize'] = this.dataPerPageCount;
@@ -758,7 +760,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   getValueForGrid(field,object){
-    return this.commonFunctionService.getValueForGrid(field,object);
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   } 
 
   tabmenuClick(index:number){
@@ -921,7 +923,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       switch (button.onclick.action_name.toUpperCase()) {
         case "PREVIEW":
           this.checkPreviewData = true;
-          this.commonFunctionService.preview(gridData,this.currentMenu,'grid-preview-modal');
+          this.apiCallService.preview(gridData,this.currentMenu,'grid-preview-modal');
           break;
         case "TEMPLATE": 
           let object =JSON.parse(JSON.stringify(gridData))    
@@ -936,14 +938,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
             currentMenu = this.currentMenu.name
           }
-          this.downloadPdfCheck = this.commonFunctionService.downloadPdf(gridData,currentMenu);         
+          this.downloadPdfCheck = this.apiCallService.downloadPdf(gridData,currentMenu);         
           break;
           case 'GETFILE':
             let currentsMenu = '';
           if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
             currentsMenu = this.currentMenu.name
           }
-          this.downloadPdfCheck = this.commonFunctionService.getPdf(gridData,currentsMenu);         
+          this.downloadPdfCheck = this.apiCallService.getPdf(gridData,currentsMenu);         
           break;
           case 'TDS':
             let currentMenuForTds = '';
@@ -952,7 +954,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
             currentMenuForTds = this.currentMenu.name
           }
-          const getFormData:any = this.commonFunctionService.getFormForTds(gridData,currentMenuForTds,this.carddata[index]);        
+          const getFormData:any = this.apiCallService.getFormForTds(gridData,currentMenuForTds,this.carddata[index]);        
           if(getFormData._id && getFormData._id != undefined && getFormData._id != null && getFormData._id != ''){
             getFormData.data['data']=gridData;
             this.apiService.GetForm(getFormData);
@@ -1026,14 +1028,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }   
         if(this.checkFieldsAvailability('UPDATE')){
           this.addNewForm(formName);
-          this.commonFunctionService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
+          this.apiCallService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
         }else{
           return;
         }  
         // this.addNewForm(formName, 'edit');      
       }else{
         this.addNewForm(formName, 'edit');
-        this.commonFunctionService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
+        this.apiCallService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
       }  
       this.selectedIndex = index;    
     } else {
@@ -1147,7 +1149,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   getChildGridFieldsbyId(childrGridId:string){
       const params = "grid";
       const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
-      const payload = this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, {});
+      const payload = this.apiCallService.getPaylodWithCriteria(params, '', criteria, {});
       this.apiService.GetChildGrid(payload);
   }
   // myFiles:any;

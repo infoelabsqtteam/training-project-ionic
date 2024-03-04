@@ -9,7 +9,7 @@ import { DataShareServiceService } from 'src/app/service/data-share-service.serv
 import { SocialOptionComponent } from '../social-option/social-option.component';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
-import { CommonFunctionService, EnvService, StorageService } from '@core/web-core';
+import { ApiCallService, CommonFunctionService, EnvService, FormCreationService, StorageService } from '@core/web-core';
 
 @Component({
   selector: 'app-contact-details',
@@ -65,7 +65,9 @@ export class ContactDetailsPage implements OnInit {
     private ionLoaderService: IonLoaderService,
     private commonFunctionService:CommonFunctionService,
     private appStorageService: AppStorageService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private apiCallService: ApiCallService,
+    private formCreationService: FormCreationService
   ) {}
 
   ngOnInit() {
@@ -232,7 +234,7 @@ export class ContactDetailsPage implements OnInit {
             break;
 
           default:
-            this.commonFunctionService.createFormControl(forControl, element, '', "text");
+            this.formCreationService.createFormControl(forControl, element, '', "text");
             break;
         }
       });
@@ -452,96 +454,96 @@ export class ContactDetailsPage implements OnInit {
     }
   }
 
-  getfilterCrlist(headElements,formValue) {
-    const filterList = []
-    if(formValue != undefined){
-      const criteria = [];
-      headElements.forEach(element => {        
-        switch (element.type.toLowerCase()) {
-          case "text":
-          case "tree_view_selection":
-          case "dropdown":
-            if(formValue.value && formValue.value[element.field_name] != ''){              
-              if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
-                element.api_params_criteria.forEach(cri => {
-                  criteria.push(cri)
-                });
-              }else{
-                filterList.push(
-                  {
-                    "fName": element.field_name,
-                    "fValue": this.getddnDisplayVal(formValue.value[element.field_name]),
-                    "operator": "stwic"
-                  }
-                )
-              }
-            }
-            break;
-          case "date":
-          case "datetime":
-            if(formValue.value && formValue.value[element.field_name] != ''){
-              if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
-                element.api_params_criteria.forEach(cri => {
-                  criteria.push(cri)
-                });
-              }else{
-                filterList.push(
-                  {
-                    "fName": element.field_name,
-                    "fValue": this.commonFunctionService.dateFormat(formValue.value[element.field_name]),
-                    "operator": "eq"
-                  }
-                )
-              }
-            }
-            break;
-          case "daterange":
-            if(formValue.value && formValue.value[element.field_name].start != '' && formValue.value[element.field_name].end != null){              
-              if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
-                element.api_params_criteria.forEach(cri => {
-                  criteria.push(cri)
-                });
-              }else{
-                filterList.push(
-                  {
-                    "fName": element.field_name,
-                    "fValue": this.commonFunctionService.dateFormat(formValue.value[element.field_name].start),
-                    "operator": "gte"
-                  }
-                ) 
-              }          
-            }
-            if(formValue.value && formValue.value[element.field_name].end != '' && formValue.value[element.field_name].end != null){
-              if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
-                element.api_params_criteria.forEach(cri => {
-                  criteria.push(cri)
-                });
-              }else{
-                filterList.push(
-                  {
-                    "fName": element.field_name,
-                    "fValue": this.commonFunctionService.dateFormat(formValue.value[element.field_name].end),
-                    "operator": "lte"
-                  }
-                )
-              }
-            }
-            break;
-          default:
-            break;
-        }
-      });
-      if(criteria && criteria.length > 0){
-        const crList = this.commonFunctionService.getCriteriaList(criteria,formValue.getRawValue());
-        if(crList && crList.length > 0){
-          crList.forEach(element => {
-            filterList.push(element);
-          });
-        }
-      }
-    }
-    return filterList;
-  }
+  // getfilterCrlist(headElements,formValue) {
+  //   const filterList = []
+  //   if(formValue != undefined){
+  //     const criteria = [];
+  //     headElements.forEach(element => {        
+  //       switch (element.type.toLowerCase()) {
+  //         case "text":
+  //         case "tree_view_selection":
+  //         case "dropdown":
+  //           if(formValue.value && formValue.value[element.field_name] != ''){              
+  //             if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
+  //               element.api_params_criteria.forEach(cri => {
+  //                 criteria.push(cri)
+  //               });
+  //             }else{
+  //               filterList.push(
+  //                 {
+  //                   "fName": element.field_name,
+  //                   "fValue": this.getddnDisplayVal(formValue.value[element.field_name]),
+  //                   "operator": "stwic"
+  //                 }
+  //               )
+  //             }
+  //           }
+  //           break;
+  //         case "date":
+  //         case "datetime":
+  //           if(formValue.value && formValue.value[element.field_name] != ''){
+  //             if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
+  //               element.api_params_criteria.forEach(cri => {
+  //                 criteria.push(cri)
+  //               });
+  //             }else{
+  //               filterList.push(
+  //                 {
+  //                   "fName": element.field_name,
+  //                   "fValue": this.commonFunctionService.dateFormat(formValue.value[element.field_name]),
+  //                   "operator": "eq"
+  //                 }
+  //               )
+  //             }
+  //           }
+  //           break;
+  //         case "daterange":
+  //           if(formValue.value && formValue.value[element.field_name].start != '' && formValue.value[element.field_name].end != null){              
+  //             if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
+  //               element.api_params_criteria.forEach(cri => {
+  //                 criteria.push(cri)
+  //               });
+  //             }else{
+  //               filterList.push(
+  //                 {
+  //                   "fName": element.field_name,
+  //                   "fValue": this.commonFunctionService.dateFormat(formValue.value[element.field_name].start),
+  //                   "operator": "gte"
+  //                 }
+  //               ) 
+  //             }          
+  //           }
+  //           if(formValue.value && formValue.value[element.field_name].end != '' && formValue.value[element.field_name].end != null){
+  //             if(this.isArray(element.api_params_criteria) && element.api_params_criteria.length > 0){
+  //               element.api_params_criteria.forEach(cri => {
+  //                 criteria.push(cri)
+  //               });
+  //             }else{
+  //               filterList.push(
+  //                 {
+  //                   "fName": element.field_name,
+  //                   "fValue": this.commonFunctionService.dateFormat(formValue.value[element.field_name].end),
+  //                   "operator": "lte"
+  //                 }
+  //               )
+  //             }
+  //           }
+  //           break;
+  //         default:
+  //           break;
+  //       }
+  //     });
+  //     if(criteria && criteria.length > 0){
+  //       const crList = this.apiCallService.getCriteriaList(criteria,formValue.getRawValue());
+  //       if(crList && crList.length > 0){
+  //         crList.forEach(element => {
+  //           filterList.push(element);
+  //         });
+  //       }
+  //     }
+  //   }
+  //   return filterList;
+  // }
   isArray(obj : any ) {
     return Array.isArray(obj)
   }

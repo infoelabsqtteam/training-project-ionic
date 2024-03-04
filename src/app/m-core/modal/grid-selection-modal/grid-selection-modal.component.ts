@@ -197,7 +197,7 @@ export class GridSelectionModalComponent implements OnInit {
   }
   getStaticDataWithDependentData(){
     const staticModal = []
-    let staticModalGroup = this.commonFunctionService.commanApiPayload([],this.listOfGridFieldName,[],{});
+    let staticModalGroup = this.apiCallService.commanApiPayload([],this.listOfGridFieldName,[],{});
     if(staticModalGroup.length > 0){
       staticModalGroup.forEach(element => {
         staticModal.push(element);
@@ -326,7 +326,7 @@ export class GridSelectionModalComponent implements OnInit {
   }
 
   getValueForGrid(field, object) {
-    return this.commonFunctionService.getValueForGrid(field, object);
+    return this.gridCommonFunctionService.getValueForGrid(field, object);
   }
   isDisable(field,object){
     const updateMode = false;
@@ -662,7 +662,7 @@ export class GridSelectionModalComponent implements OnInit {
     for (let j = 0; j < gridColumns.length; j++) {
       const column = gridColumns[j];  
       if(!column.editable || editableGridColumns.length == 0){        
-        modifyRow[column.field_name] = this.commonFunctionService.getValueForGrid(column,row);
+        modifyRow[column.field_name] = this.gridCommonFunctionService.getValueForGrid(column,row);
       }          
       if(column.editable){
         modifyRow[column.field_name+"_disabled"] = this.isDisable(column,row);            
