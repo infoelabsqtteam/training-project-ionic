@@ -49,7 +49,6 @@ export class SigninComponent implements OnInit {
   // Ionic LifeCycle Function Handling Start--------------------
   ionViewWillEnter(){
     this.initializeApp();
-    // this.getLogoPath();
     this.checkValues();
   }
   ionViewDidEnter(){
@@ -254,6 +253,10 @@ export class SigninComponent implements OnInit {
       if(loader){
         this.ionLoaderService.hideLoader();
       }
+    }else{
+      setTimeout(() => {
+        this.getLogoPath();
+      }, 2000);
     }
   }
   checkIdTokenStatus(){
