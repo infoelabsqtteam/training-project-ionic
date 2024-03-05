@@ -49,10 +49,11 @@ export class SigninComponent implements OnInit {
   // Ionic LifeCycle Function Handling Start--------------------
   ionViewWillEnter(){
     this.initializeApp();
-    this.getLogoPath();
+    // this.getLogoPath();
     this.checkValues();
   }
   ionViewDidEnter(){
+    this.getLogoPath();
     this.onLoadSubscriptions();
   }
   ionViewWillLeave(){
@@ -244,7 +245,8 @@ export class SigninComponent implements OnInit {
     }
   }
   async getLogoPath(){
-    if(this.coreFunctionService.isNotBlank(this.storageService.getApplicationSetting())){
+    let appsetting = await this.storageService.getApplicationSetting()
+    if(this.coreFunctionService.isNotBlank(appsetting)){
       this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
       this.imageTitle = this.storageService.getPageTitle();
       this.appTitle = this.storageService.getPageTitle();

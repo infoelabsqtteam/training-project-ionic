@@ -22,6 +22,7 @@ export class DataShareServiceService {
   setcollectionName: EventEmitter<any> = new EventEmitter<any>(null);
   collectionName: any = '';
   confirmationCheck: Subject<any> = new Subject();
+  gridDownloadImage: Subject<any> = new Subject();
 
   setCurrentLatitude(responce){
     this.Latitude.emit(responce);
@@ -76,6 +77,9 @@ export class DataShareServiceService {
   }
   setConfirmation(responce:any){
     this.confirmationCheck.next(responce);
+  }
+  setDownloadimage(responce){
+    this.gridDownloadImage.next(responce);
   }
   
 }
