@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { NotificationService } from '@core/ionic-core';
-import { ApiService, CommonFunctionService } from '@core/web-core';
+import { ApiCallService, ApiService, CommonFunctionService, GridCommonFunctionService } from '@core/web-core';
 import { ModalController } from '@ionic/angular';
 
 
@@ -17,7 +17,7 @@ export class ModalComponent implements OnInit {
   @Output() responceData = new EventEmitter();
 
   
-  rateForm: FormGroup;
+  rateForm: UntypedFormGroup;
   public coloumName:any = '';
   public data=[];
   bulkDownload:boolean=false;
@@ -31,11 +31,13 @@ export class ModalComponent implements OnInit {
   multiGridDetails:any = [];
 
   constructor(
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private apiService:ApiService,
     private notificationService: NotificationService,
     private commonFunctionService: CommonFunctionService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private apiCallService: ApiCallService,
+    private gridCommonFunctionService: GridCommonFunctionService
   ) {
   }
 
@@ -81,7 +83,7 @@ export class ModalComponent implements OnInit {
             element['adkey'] = {'totalRows':this.data.length};
           });          
         }
-        const staticModalGroup = this.commonFunctionService.commanApiPayload(this.gridColumns,[],[]);
+        const staticModalGroup = this.apiCallService.commanApiPayload(this.gridColumns,[],[]);
         if (staticModalGroup.length > 0) {
           // this.store.dispatch(
           //   new CusTemGenAction.GetStaticData(staticModalGroup)
@@ -149,9 +151,9 @@ export class ModalComponent implements OnInit {
     switch (type) {
       case "text":
         if(mandatory){
-          forControl[fieldName] = new FormControl(object, Validators.required)
+          forControl[fieldName] = new UntypedFormControl(object, Validators.required)
         }else{
-          forControl[fieldName] = new FormControl(object)
+          forControl[fieldName] = new UntypedFormControl(object)
         }
       default:
         break;
@@ -171,7 +173,7 @@ export class ModalComponent implements OnInit {
     return this.commonFunctionService.getddnDisplayVal(val);    
   }
   getValueForGrid(field,object){
-    return this.commonFunctionService.getValueForGrid(field,object);
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   }
   getGridColumnWidth(column){
     if(column.width){
@@ -307,7 +309,7 @@ export class ModalComponent implements OnInit {
       
     }else{
       const staticModal = []
-      const staticModalPayload = this.commonFunctionService.getPaylodWithCriteria(params, callback, criteria, object);
+      const staticModalPayload = this.apiCallService.getPaylodWithCriteria(params, callback, criteria, object);
       staticModalPayload['adkeys'] = {'index':i};
       staticModal.push(staticModalPayload)      
       if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){

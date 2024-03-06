@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 // import { ModalDirective } from 'angular-bootstrap-md';
-import { CommonFunctionService, DataShareService, ApiService, ModelService } from '@core/web-core';
+import { CommonFunctionService, DataShareService, ApiService, ModelService, GridCommonFunctionService } from '@core/web-core';
 import { ModalController } from '@ionic/angular';
 
 
@@ -29,12 +29,11 @@ export class FileViewsModalComponent implements OnInit {
   @ViewChild('fileViewModal') fileViewModal: ElementRef;
 
   constructor(
-    private modalService: ModelService, 
-    private el: ElementRef,
     private commonFunctionService:CommonFunctionService,
     private dataShareService:DataShareService,
     private apiService:ApiService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private gridCommonFunctionService: GridCommonFunctionService
     ) {
       this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
         this.setFileDownloadUrl(data);
@@ -99,7 +98,7 @@ export class FileViewsModalComponent implements OnInit {
     return this.commonFunctionService.getddnDisplayVal(val);    
   }
   getValueForGrid(field,object){
-    return this.commonFunctionService.getValueForGrid(field,object);
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   }
   downloadFile(file){
     this.downloadClick = file.rollName;

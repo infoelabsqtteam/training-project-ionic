@@ -7,9 +7,9 @@ import { CallNumber } from '@ionic-native/call-number/ngx';
 import { PopoverController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { SocialOptionComponent } from '../social-option/social-option.component';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { IonLoaderService } from 'src/app/service/ion-loader.service';
-import { CommonFunctionService, EnvService, StorageService } from '@core/web-core';
+import { ApiCallService, CommonFunctionService, EnvService, FormCreationService, StorageService } from '@core/web-core';
 
 @Component({
   selector: 'app-contact-details',
@@ -45,7 +45,7 @@ export class ContactDetailsPage implements OnInit {
   collectionname: any;
   childColumn: any = {};
   createFormgroup: boolean = true;
-  filterForm: FormGroup;
+  filterForm: UntypedFormGroup;
   filterCount: number;
   childColumns : any;
   childCardType: string = "";
@@ -59,13 +59,15 @@ export class ContactDetailsPage implements OnInit {
     private storageService: StorageService,
     private router: Router,
     private callNumber: CallNumber,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private datePipe: DatePipe,
     private CurrencyPipe: CurrencyPipe,
     private ionLoaderService: IonLoaderService,
     private commonFunctionService:CommonFunctionService,
     private appStorageService: AppStorageService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private formCreationService: FormCreationService,
+    private apiCallService: ApiCallService
   ) {}
 
   ngOnInit() {
@@ -232,7 +234,7 @@ export class ContactDetailsPage implements OnInit {
             break;
 
           default:
-            this.commonFunctionService.createFormControl(forControl, element, '', "text");
+            this.formCreationService.createFormControl(forControl, element, '', "text");
             break;
         }
       });
@@ -532,7 +534,7 @@ export class ContactDetailsPage implements OnInit {
         }
       });
       if(criteria && criteria.length > 0){
-        const crList = this.commonFunctionService.getCriteriaList(criteria,formValue.getRawValue());
+        const crList = this.apiCallService.getCriteriaList(criteria,formValue.getRawValue());
         if(crList && crList.length > 0){
           crList.forEach(element => {
             filterList.push(element);

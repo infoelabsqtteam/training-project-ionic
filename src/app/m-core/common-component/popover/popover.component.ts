@@ -32,13 +32,9 @@ export class PopoverComponent implements OnInit {
     'value' : {}
   }
 
-  constructor(
-    private commonAppDataShareService:CommonAppDataShareService,
-    private commonFunctionService: CommonFunctionService
-    ) {
+  constructor( ) { }
 
-  }
-
+  // Angular LifeCycle Function Handling Start--------------------
   ngOnInit() {}
 
   ngOnChanges(changes: SimpleChanges) {
@@ -46,12 +42,9 @@ export class PopoverComponent implements OnInit {
       this.tabMenu = this.popoverItems;
     }
   }
+  // Angular LifeCycle Function Handling End--------------------
   
-  selectedItem(item:any){
-    this.popoverOutput.emit(item.label);
-    // this.tabmenuClick(item);
-  }
-
+  // Click FUnction Handling Start--------------
   tabmenuClick(item:any,index:number){
     // if(item && item.name){
     //   this.popoverOutput.emit(item);
@@ -66,6 +59,16 @@ export class PopoverComponent implements OnInit {
     this.card['card'] = item.tabCard;
     this.card.selectedTabIndex = index;
     this.popoverOutput.emit(this.card);
-  } 
+  }
+  // Click FUnction Handling End--------------
+
+  // Event Emission Starts Here ------------
+  selectedItem(item:any){
+    this.popoverOutput.emit(item.label);
+    // this.tabmenuClick(item);
+  }
+  // Event Emission END Here ------------
+
+  
   
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { NotificationService } from '@core/ionic-core';
 import { AuthDataShareService, AuthService, CustomvalidationService, EnvService, StorageService } from '@core/web-core';
 import { Subscription } from 'rxjs';
@@ -11,10 +11,10 @@ import { Subscription } from 'rxjs';
 })
 export class ForgetPasswordComponent implements OnInit {
 
-  fForm: FormGroup;
+  fForm: UntypedFormGroup;
   confirmpassword = false;
   newpassword = false;
-  vForm: FormGroup;
+  vForm: UntypedFormGroup;
   username: string;
   resetPwd: boolean = true;
   newpwd: any;
@@ -42,7 +42,53 @@ export class ForgetPasswordComponent implements OnInit {
      this.VerifyType = false;
     }    
     this.forGotSubscription = this.authDataShareService.forgot.subscribe(data =>{
-      let color = 'danger';
+      this.forgotPasswordResponse(data);
+    })
+    this.resetPassSubscription = this.authDataShareService.resetPass.subscribe(data =>{
+      this.resetPasswordResponse(data);
+    })
+  }
+
+  // Angular LifeCycle Functions Handling Start---------
+  ngOnInit() {
+    this.initForm();
+    this.pageloded();
+  }
+  ngOnDestroy(){
+    if(this.forGotSubscription){
+      this.forGotSubscription.unsubscribe();
+    }
+    if(this.resetPassSubscription){
+      this.resetPassSubscription.unsubscribe();
+    }
+  }
+  // Angular LifeCycle Functions Handling End----------
+
+  // Form Creation Function Handling start--------------
+  initForm() {
+    this.username = "";
+    this.fForm = new UntypedFormGroup({
+      'userId': new UntypedFormControl('', [Validators.required]),
+      "admin": new UntypedFormControl(false)
+    });
+
+    if(!this.VerifyType){
+      this.fForm.get('userId').setValidators([Validators.email,Validators.required]);
+    }else{
+      this.fForm.get('userId').setValidators([Validators.required,Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]);
+    }
+
+    this.vForm = new UntypedFormGroup({
+      'verifyCode': new UntypedFormControl('', [Validators.required]),
+      'password': new UntypedFormControl('', [Validators.required,this.customvalidationService.patternValidator()]),
+      'confpwd': new UntypedFormControl('', [Validators.required]),
+    });
+  }
+  // Form Creation Function Handling End--------------
+
+  // Subscribed Variable Function Handling Start-------------------
+  forgotPasswordResponse(data){
+    let color = 'danger';
       let msg = data.msg;
       if(data && data.status == "success"){
         if(data.msg === "Reset password is successful, notification with a verification code has been sent to your registered user id"){
@@ -60,9 +106,9 @@ export class ForgetPasswordComponent implements OnInit {
       if(msg != ''){
         this.notificationService.presentToastOnBottom(msg,color);
       }
-    })
-    this.resetPassSubscription = this.authDataShareService.resetPass.subscribe(data =>{
-      let color = 'danger';
+  }
+  resetPasswordResponse(data){
+    let color = 'danger';
       let msg = data.msg;
       if(data && data.msg != '' && data.status == "success") {
         color = 'success';
@@ -75,42 +121,10 @@ export class ForgetPasswordComponent implements OnInit {
       if(data && data.status == 'success') {
         this.authService.redirectToSignPage();
       }
-    })
   }
+  // Subscribed Variable Function Handling End-------------------
 
-  ngOnInit() {
-    this.initForm();
-    this.pageloded();
-  }
-  ngOnDestroy(){
-    if(this.forGotSubscription){
-      this.forGotSubscription.unsubscribe();
-    }
-    if(this.resetPassSubscription){
-      this.resetPassSubscription.unsubscribe();
-    }
-  }
-
-  initForm() {
-    this.username = "";
-    this.fForm = new FormGroup({
-      'userId': new FormControl('', [Validators.required]),
-      "admin": new FormControl(false)
-    });
-
-    if(!this.VerifyType){
-      this.fForm.get('userId').setValidators([Validators.email,Validators.required]);
-    }else{
-      this.fForm.get('userId').setValidators([Validators.required,Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$"),Validators.maxLength(10),Validators.minLength(10)]);
-    }
-
-    this.vForm = new FormGroup({
-      'verifyCode': new FormControl('', [Validators.required]),
-      'password': new FormControl('', [Validators.required,this.customvalidationService.patternValidator()]),
-      'confpwd': new FormControl('', [Validators.required]),
-    });
-  }
-
+  // Click Functions Handling Start--------------------
   onResetPwd() {
     if (this.fForm.invalid) {
       return;
@@ -120,11 +134,9 @@ export class ForgetPasswordComponent implements OnInit {
     let payload = {userId:this.username,admin:admin};
     this.authService.TryForgotPassword(payload);
   }
-
   resendCode() {
     this.authService.TryForgotPassword(this.username);
-  }
-  
+  }  
   onVerifyPwd() {
     if (this.vForm.invalid) {
       return;
@@ -134,23 +146,19 @@ export class ForgetPasswordComponent implements OnInit {
     const payload = { userId: this.username, code: code, newPassword: password };
     this.authService.SaveNewPassword(payload);
   }
-  get f() {return this.fForm.controls;}
-  get r() {return this.vForm.controls;}
-
-  pageloded(){
-    this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
-    this.template = this.storageService.getTemplateName();
-    this.title = this.envService.getHostKeyValue('title');
-    this.adminEmail = this.storageService.getAdminEmail();
-  }
-
   shownewpass() {
     this.newpassword = !this.newpassword;
   }
   showconfirmpass() {
     this.confirmpassword = !this.confirmpassword;
   }
+  gobackandreset(){
+    this.resetPwd=!this.resetPwd;
+    this.vForm.reset();
+  }
+  // Click Functions Handling End--------------------
 
+  // IonChange Function Handling Start--------------
   passwordmismatch(){
     if((this.vForm.value.password === this.vForm.value.confpwd)){
       this.vForm.controls['confpwd'].setErrors(null);;
@@ -160,9 +168,17 @@ export class ForgetPasswordComponent implements OnInit {
       this.passwordNotMatch = true;
     }
   }
-  gobackandreset(){
-    this.resetPwd=!this.resetPwd;
-    this.vForm.reset();
+  // IonChange Function Handling End--------------
+  
+  // Dependency Function Handling Start -------------------
+  pageloded(){
+    this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
+    this.template = this.storageService.getTemplateName();
+    this.title = this.envService.getHostKeyValue('title');
+    this.adminEmail = this.storageService.getAdminEmail();
   }
+  get f() {return this.fForm.controls;}
+  get r() {return this.vForm.controls;}
+  // Dependency Function Handling End ------------------- 
     
 }

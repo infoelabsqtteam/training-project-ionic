@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AppDataShareService, NotificationService } from '@core/ionic-core';
 import { ModalController } from '@ionic/angular';
 import { GridSelectionDetailModalComponent } from '../grid-selection-detail-modal/grid-selection-detail-modal.component';
-import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, LimsCalculationsService, CoreFunctionService, CheckIfService, ApiCallService, GridCommonFunctionService } from '@core/web-core';
 
 
 @Component({
@@ -51,7 +51,10 @@ export class GridSelectionModalComponent implements OnInit {
     private commonFunctionService: CommonFunctionService,
     private limsCalculationService: LimsCalculationsService,
     private dataShareService: DataShareService,
-    private appDataShareService: AppDataShareService
+    private appDataShareService: AppDataShareService,
+    private checkIfService: CheckIfService,
+    private apiCallService: ApiCallService,
+    private gridCommonFunctionService: GridCommonFunctionService
   ) { }
 
   ngOnInit() {
@@ -164,7 +167,7 @@ export class GridSelectionModalComponent implements OnInit {
       let index = 0;
       this.field.gridColumns.forEach(field => {
         if(this.coreFunctionService.isNotBlank(field.show_if)){
-          if(!this.commonFunctionService.showIf(field,this.parentObject)){
+          if(!this.checkIfService.showIf(field,this.parentObject)){
             field['display'] = false;
           }else{
             field['display'] = true;
@@ -197,7 +200,7 @@ export class GridSelectionModalComponent implements OnInit {
   }
   getStaticDataWithDependentData(){
     const staticModal = []
-    let staticModalGroup = this.commonFunctionService.commanApiPayload([],this.listOfGridFieldName,[],{});
+    let staticModalGroup = this.apiCallService.commanApiPayload([],this.listOfGridFieldName,[],{});
     if(staticModalGroup.length > 0){
       staticModalGroup.forEach(element => {
         staticModal.push(element);
@@ -326,14 +329,14 @@ export class GridSelectionModalComponent implements OnInit {
   }
 
   getValueForGrid(field, object) {
-    return this.commonFunctionService.getValueForGrid(field, object);
+    return this.gridCommonFunctionService.getValueForGrid(field, object);
   }
   isDisable(field,object){
     const updateMode = false;
     if(field.is_disabled){
       return true;
     }else if(field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != ''){
-      return this.commonFunctionService.isDisable(field.etc_fields,updateMode,object);
+      return this.checkIfService.isDisable(field.etc_fields,updateMode,object);
     }
     return false;
   }
@@ -662,7 +665,7 @@ export class GridSelectionModalComponent implements OnInit {
     for (let j = 0; j < gridColumns.length; j++) {
       const column = gridColumns[j];  
       if(!column.editable || editableGridColumns.length == 0){        
-        modifyRow[column.field_name] = this.commonFunctionService.getValueForGrid(column,row);
+        modifyRow[column.field_name] = this.gridCommonFunctionService.getValueForGrid(column,row);
       }          
       if(column.editable){
         modifyRow[column.field_name+"_disabled"] = this.isDisable(column,row);            
@@ -674,7 +677,7 @@ export class GridSelectionModalComponent implements OnInit {
       modifyRow["column_edit"] = false;
     }  
     if(editableGridColumns && editableGridColumns.length == 0 && field && Object.keys(field).length > 0){
-      modifyRow['actionBtnDisplay'] = this.checkRowDisabledIf(field,row);
+      modifyRow['actionBtnDisplay'] = this.gridCommonFunctionService.checkRowDisabledIf(field,row);
     } 
     // if(typegrapyCriteriaList && typegrapyCriteriaList.length > 0){
     //   modifyRow['background-color'] = this.checkTypgraphCondition(typegrapyCriteriaList,row,'background-color');
@@ -689,7 +692,7 @@ export class GridSelectionModalComponent implements OnInit {
         condition = field.disableRowIf;
       }
       if(condition != ''){
-        if(this.commonFunctionService.checkDisableRowIf(condition,data)){
+        if(this.checkIfService.checkDisableRowIf(condition,data)){
           check = true;
         }else{
           check = false;
@@ -698,18 +701,18 @@ export class GridSelectionModalComponent implements OnInit {
     }
     return check;
   }
-  checkRowDisabledIf(field,data){  
-    if(field && field.disableRowIf && field.disableRowIf != ''){  
-      const condition = field.disableRowIf;
-      if(condition){
-        if(field.disableRowIfOnlySelection){
-          return true;
-        }else{
-          return !this.commonFunctionService.checkDisableRowIf(condition,data);
-        }      
-      }
-    }
-    return true;    
-  }
+  // checkRowDisabledIf(field,data){  
+  //   if(field && field.disableRowIf && field.disableRowIf != ''){  
+  //     const condition = field.disableRowIf;
+  //     if(condition){
+  //       if(field.disableRowIfOnlySelection){
+  //         return true;
+  //       }else{
+  //         return !this.checkIfService.checkDisableRowIf(condition,data);
+  //       }      
+  //     }
+  //   }
+  //   return true;    
+  // }
 
 }

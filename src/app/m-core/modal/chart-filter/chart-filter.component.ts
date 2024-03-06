@@ -1,18 +1,14 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { NotificationService, AppPermissionService, AppDataShareService, DownloadService } from '@core/ionic-core';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { NotificationService, AppPermissionService, DownloadService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@ionic-native/file/ngx';
 import { ModalController, Platform, isPlatform } from '@ionic/angular';
-// import { Directory, Filesystem } from '@capacitor/filesystem';
-// import { promise } from 'protractor';
-// import { writeFile } from "capacitor-blob-writer";
-// import * as FileSaver from 'file-saver';
 import { DatePipe } from '@angular/common';
-import { zonedTimeToUtc, utcToZonedTime, format} from 'date-fns-tz';
+import { utcToZonedTime, format} from 'date-fns-tz';
 import { parseISO } from 'date-fns';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
-import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService, ApiCallService, FormCreationService } from '@core/web-core';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -47,7 +43,7 @@ export class ChartFilterComponent implements OnInit {
   // dashboardItem :any = {};
   //dashletData:any = {};
 
-  dashboardFilter:FormGroup;
+  dashboardFilter:UntypedFormGroup;
 
   public chartType:any = {};
   public chartDatasets:any = {};
@@ -85,7 +81,7 @@ export class ChartFilterComponent implements OnInit {
 
   constructor(
     private platform: Platform,
-    public formBuilder: FormBuilder,
+    public formBuilder: UntypedFormBuilder,
     private apiService:ApiService,
     private dataShareService:DataShareService,
     private file: File,
@@ -96,7 +92,9 @@ export class ChartFilterComponent implements OnInit {
     private chartService:ChartService,
     private commonFunctionService: CommonFunctionService,
     private downloadService: DownloadService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private apiCallService: ApiCallService,
+    private formCreationService: FormCreationService
   ) {
     this.accessToken = this.storageService.GetIdToken();
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
@@ -180,7 +178,7 @@ export class ChartFilterComponent implements OnInit {
         };
         let crList = [];
         if(fields && fields.length > 0){
-          crList = this.commonFunctionService.getfilterCrlist(fields,filterData);
+          crList = this.apiCallService.getfilterCrlist(fields,filterData);
         }        
         let object = {}
 
@@ -236,7 +234,7 @@ export class ChartFilterComponent implements OnInit {
       const payload = [];
       const params = field.api_params;
       const criteria = field.api_params_criteria;
-      payload.push(this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, objectValue));
+      payload.push(this.apiCallService.getPaylodWithCriteria(params, '', criteria, objectValue));
       this.apiService.GetTypeaheadData(payload);
     }
   }
@@ -330,7 +328,7 @@ export class ChartFilterComponent implements OnInit {
             case "date":
               field['minDate'] = this.minDate
               field['maxDate'] = this.maxDate;
-              this.commonFunctionService.createFormControl(forControl, field, '', "text")
+              this.formCreationService.createFormControl(forControl, field, '', "text")
                 break; 
             case "daterange":
               const date_range = {};
@@ -340,20 +338,20 @@ export class ChartFilterComponent implements OnInit {
               ]
               if (list_of_dates.length > 0) {
                 list_of_dates.forEach((data) => {                  
-                  this.commonFunctionService.createFormControl(date_range, data, '', "text")
+                  this.formCreationService.createFormControl(date_range, data, '', "text")
                 });
               }
-              this.commonFunctionService.createFormControl(forControl, field, date_range, "group")                                    
+              this.formCreationService.createFormControl(forControl, field, date_range, "group")                                    
               break; 
                                       
             default:
-              this.commonFunctionService.createFormControl(forControl, field, '', "text");
+              this.formCreationService.createFormControl(forControl, field, '', "text");
               break;
           }   
         });
       } 
       if(formField.length > 0){
-        let staticModalGroup = this.commonFunctionService.commanApiPayload([],formField,[]);
+        let staticModalGroup = this.apiCallService.commanApiPayload([],formField,[]);
         if(staticModalGroup.length > 0){  
           this.apiService.getStatiData(staticModalGroup);
         }

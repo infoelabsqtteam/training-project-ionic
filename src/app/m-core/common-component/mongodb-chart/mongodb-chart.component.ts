@@ -3,7 +3,7 @@ import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
 import { ModelService, DownloadService } from '@core/ionic-core';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
 import { ModalController, isPlatform } from '@ionic/angular';
-import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService } from '@core/web-core';
+import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService, ApiCallService } from '@core/web-core';
 
 @Component({
   selector: 'app-mongodb-chart',
@@ -32,29 +32,33 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     private chartService:ChartService,
     private modalController: ModalController,
     private modelService: ModelService,
-    private commonFunctionService: CommonFunctionService,
-    private downloadService: DownloadService
-  ) {
-      // this.getMongoChartList([]);
-      // this.accessToken = this.storageService.GetIdToken();
-      this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
-          this.setStaticData(data);
-      })
-      this.gridDataSubscription = this.dataShareService.mongoDbChartList.subscribe(data =>{
-        const chartData = data.data;
-        if(chartData && chartData.length > 0){
-          this.chartIdList = chartData;
-          setTimeout(() => {
-            this.populateMongodbChart();
-          }, 100);
-        }
-      })      
-   }
+    private downloadService: DownloadService,
+    private apiCallService: ApiCallService
+  ){
+    // this.getMongoChartList([]);
+    // this.accessToken = this.storageService.GetIdToken();
+    this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
+        this.setStaticData(data);
+    })
+    this.gridDataSubscription = this.dataShareService.mongoDbChartList.subscribe(data =>{
+      const chartData = data.data;
+      if(chartData && chartData.length > 0){
+        this.chartIdList = chartData;
+        setTimeout(() => {
+          this.populateMongodbChart();
+        }, 100);
+      }
+    })      
+  }
 
+  // Ionic LifeCycle Function Handling Start--------------------
   ionViewWillEnter(){
     this.getMongoChartList([]);
     this.getChartList();
   }
+  // Ionic LifeCycle Function Handling End--------------------
+
+  // Angular LifeCycle Function Handling Start--------------------
   ngOnInit() {
     this.itemNumOfGrid = 12;
     this.accessToken = this.storageService.GetIdToken();
@@ -79,9 +83,10 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
       this.staticDataSubscription.unsubscribe();
     }
   }
+  // Angular LifeCycle Function Handling End--------------------
 
   getMongoChartList(Criteria){
-    const data = this.commonFunctionService.getPaylodWithCriteria('mongo_dashlet_master','',Criteria,'');
+    const data = this.apiCallService.getPaylodWithCriteria('mongo_dashlet_master','',Criteria,'');
       data['pageNo'] = this.pageNumber - 1;
       data['pageSize'] = this.itemNumOfGrid; 
       const getFilterData = {
@@ -127,7 +132,7 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     }
   }
   getChartList(){
-    const payload = this.commonFunctionService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
+    const payload = this.apiCallService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
     this.apiService.getStatiData([payload]);
   }
   setStaticData(staticDatas){

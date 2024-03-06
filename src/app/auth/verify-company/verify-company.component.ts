@@ -1,11 +1,10 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { NavigationEnd, Router } from '@angular/router';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { LoaderService, NotificationService } from '@core/ionic-core';
-import { AlertController, IonInput, IonRouterOutlet, Platform } from '@ionic/angular';
+import { AlertController, IonInput, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
-import { EnvService, DataShareService, StorageService, CommonFunctionService } from '@core/web-core';
+import { EnvService, StorageService, ApiCallService } from '@core/web-core';
 
 @Component({
   selector: 'app-verify-company',
@@ -16,23 +15,23 @@ export class VerifyCompanyComponent implements OnInit {
 
   @ViewChild('companyCode') companyCode: IonInput;
 
-  cCodeForm: FormGroup;
+  cCodeForm: UntypedFormGroup;
   isValidCode = false;
   isExitAlertOpen: boolean = false;
   
   constructor(    
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private envService: EnvService,
-    private dataShareService: DataShareService,
     private storageService: StorageService,
     private _location: Location,
     private platform: Platform,
     private alertController: AlertController,
     private notificationService: NotificationService,
     private loaderService: LoaderService,
-    private commonFunctionService: CommonFunctionService
+    private apiCallService: ApiCallService
   ) { }
 
+  // Ionic LifeCycle Function Handling Start--------------------
   ionViewWillEnter(){
     // this.onload();
   }
@@ -41,10 +40,26 @@ export class VerifyCompanyComponent implements OnInit {
     this.exitTheApp();
     this.initForm();
   }
+  // Ionic LifeCycle Function Handling End--------------------
+
+  // Angular LifeCycle Function Handling Start--------------------
   ngOnInit() {
     this.onload();
     this.initForm();
   }
+  // Angular LifeCycle Function Handling Start--------------------
+
+  // Form Creation Function Handling Start--------------------  
+  initForm() {
+    this.cCodeForm = this.formBuilder.group({
+      'code': ['', [Validators.required,]],
+    });
+    this.cCodeForm.value.code = '';
+    // this.cCodeForm.get('code').setValidators([]);
+  }
+  // Form Creation Function Handling End--------------------
+  
+  // Hardware Button Click Function Handling Start--------------------
   exitTheApp(){ 
     this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
       console.log('Back press handler!');
@@ -65,11 +80,6 @@ export class VerifyCompanyComponent implements OnInit {
         this._location.back();
       }
     });
-  }
-  async onload(){
-    // let keyList = await this.storageService.getKetList();
-    await this.storageService.removeDataFormStorage();
-    this.storageService.removeDataFormStorage();
   }
   showExitConfirm() {
     this.isExitAlertOpen = true;
@@ -98,16 +108,9 @@ export class VerifyCompanyComponent implements OnInit {
         alert.present();
       });
   }
-  initForm() {
-    this.cCodeForm = this.formBuilder.group({
-      'code': ['', [Validators.required,]],
-    });
-    this.cCodeForm.value.code = '';
-    // this.cCodeForm.get('code').setValidators([]);
-  }
-  
-  get ccform() { return this.cCodeForm.controls;}
-  
+  // Hardware Button Click Function Handling End--------------------
+
+  // Click Function Handling Start--------------------
   verifyCompanyCode(){
     let clientCode:string = this.cCodeForm.value.code;
     let isClientExist = this.envService.checkClientExistOrNot(clientCode);
@@ -115,7 +118,7 @@ export class VerifyCompanyComponent implements OnInit {
       this.storageService.removeDataFormStorage('all');
       this.loaderService.showLoader("Please wait while we are setting up the App for you.");
       this.storageService.setClientNAme(clientCode);
-      this.commonFunctionService.getApplicationAllSettings();
+      this.apiCallService.getApplicationAllSettings();
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
     }
@@ -137,5 +140,19 @@ export class VerifyCompanyComponent implements OnInit {
         alert.present();
       });
   }
+  // Click Function Handling End--------------------
+
+  // Dependency Functions Handling Start------------------
+  async onload(){
+    // let keyList = await this.storageService.getKetList();
+    await this.storageService.removeDataFormStorage();
+    this.storageService.removeDataFormStorage();
+  }
+  // Dependency Functions Handling End------------------
+
+  // Functions NOt in use -----------  
+  // get ccform() { return this.cCodeForm.controls;}
+  
+  
 
 }
