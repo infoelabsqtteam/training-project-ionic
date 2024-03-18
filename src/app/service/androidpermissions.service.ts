@@ -6,6 +6,12 @@ import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { App_googleService, NotificationService } from '@core/ionic-core';
 import { AlertController, Platform } from '@ionic/angular';
 import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
+import { Filesystem, Directory, FilesystemDirectory } from '@capacitor/filesystem';
+import { HttpClient } from '@angular/common/http';
+import { DomSanitizer } from '@angular/platform-browser';
+
+import { Capacitor } from '@capacitor/core';
+import { FileOpener } from '@capacitor-community/file-opener';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +25,11 @@ export class AndroidpermissionsService {
   options: any;
   inputaddress: any;
   result: any;
+   // Small PDF
+   smallFile = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+
+   // Large PDF (~25mb)
+   largeFile = 'https://research.nhm.org/pdfs/10840/10840.pdf';
 
   constructor(
     private nativeGeocoder: NativeGeocoder,
@@ -30,6 +41,8 @@ export class AndroidpermissionsService {
     public alertController: AlertController,
     private nativeSettings: OpenNativeSettings,
     private platform: Platform,
+    private http: HttpClient, 
+    private sanitizer: DomSanitizer
   ) { }
 
     // requestPermisiions() {
@@ -177,5 +190,75 @@ export class AndroidpermissionsService {
     });
   }
 
+  // Download and Print PDF
+
+  async downloadAndPrintPdf(blobData: any,filename?:string): Promise<void> {
+    try {
+      const newFileName = new Date().toDateString().replace(/:/g, '-') + '.pdf'
+      let data = {
+        msg: "",
+        status: false,
+        fileName: filename ? filename : ''
+      }
+      let fileName = '';      
+      if(filename){
+        filename = fileName
+      }else{
+        fileName = "download-pdf.pdf"
+      }
+      // Check write permission
+      let checkwritepermission = await Filesystem.checkPermissions();
+      if(checkwritepermission){
+
+      }else{
+        checkwritepermission = await Filesystem.requestPermissions();
+      }
+      // Save the blob data as a PDF file
+      const filePath = `${Directory.Documents}/${fileName}`;
+      await Filesystem.writeFile({
+        path: filePath,
+        data: blobData,
+        directory: Directory.Documents
+      });
+      // Write the blob to the app's local filesystem
+        const writeResult = await Filesystem.writeFile({
+          path: fileName,
+          data: blobData,
+          directory: Directory.Documents
+        });
+
+      // Print the PDF file
+      await this.printPdf(filePath);
+    } catch (error) {
+      console.error('Error downloading and printing PDF:', error);
+    }
+  }
+
+  async printPdf(filePath: string): Promise<void> {
+    try {
+      // Print the PDF file using the Capacitor Filesystem plugin
+      if (!filePath) {
+        throw new Error(`Unable to download ${filePath}`);
+      }
+      await FileOpener.open({
+        filePath: filePath,
+        openWithDefault: true
+      });
+
+      await Filesystem.getUri({
+        path: filePath,
+        directory: Directory.Documents
+      });
+      const fileUrl:any = this.sanitizer.bypassSecurityTrustUrl(filePath);
+      window.open(fileUrl, '_blank');
+    } catch (error) {
+      console.error('Error printing PDF:', error);
+    }
+  }
+
+  // Download and Print PDF end
+  /**
+   * This will download a PDF file and open it using @capacitor-community/file-opener
+   */
 
 }

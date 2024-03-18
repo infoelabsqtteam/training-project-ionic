@@ -13,7 +13,13 @@ import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
-import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService, ApiCallService, GridCommonFunctionService, DownloadService } from '@core/web-core';
+import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService, ApiCallService, GridCommonFunctionService, DownloadService, ChartService } from '@core/web-core';
+import { Subscription } from 'rxjs';
+// import { Printer, PrintOptions } from '@awesome-cordova-plugins/printer/ngx';
+import { Directory, Filesystem } from '@capacitor/filesystem';
+import { DomSanitizer } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
+// import { Printer, PrintOptions } from '@ionic-native/printer/ngx';
 
 @Component({
   selector: 'app-cards-layout',
@@ -87,8 +93,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   enableReviewOnly:boolean=false;
   downloadReport:boolean=false;
   downloadPdfBtn:boolean=false;
-  // new var
-  gridDataSubscription: any;
+  // subscription Variables start
+  gridDataSubscription: Subscription;
+  printFileSubscription: Subscription;
+  pdfFileSubscription: Subscription;
+  saveResponceSubscription: Subscription;
+  childgridsubscription: Subscription;
+  nestedCardSubscribe: Subscription;
+  // subscription Variables start
   currentPageCount:number = 1;
   currentPage:number;
   dataPerPageCount:number = 50;
@@ -107,22 +119,18 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   downloadPdfCheck: any = '';
   downloadQRCode: any = '';
   public tab: any = [];
-  details:any = {};  
-  pdfFileSubscription:any;
+  details:any = {};
   downloadProgress:any;
   nodatafoundImg :any = "../../../../assets/nodatafound.png";
   nodatafound:boolean = false;
   hasDetaildCard:boolean = false;
-  childgridsubscription:any;
   // GPS variables below
   currentLatLng:any;
   userLocation:any;
-  saveResponceSubscription:any;
   geocoder:any;
 
   multipleCardCollection:any=[];
   public nextCardData:any ={};
-  nestedCardSubscribe:any;
   userTimeZone: any;
   userLocale:any;
   gpsAlertResult:any;
@@ -157,7 +165,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private authService: AuthService,
     private apiCallService: ApiCallService,
     private gridCommonFunctionService: GridCommonFunctionService,
-    private downloadService: DownloadService
+    private downloadService: DownloadService,
+    // private printer: Printer,
+    private androidpermissionsService: AndroidpermissionsService,
+    private chartService: ChartService
   ) 
   {
     
@@ -200,8 +211,50 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.card = nextgriddata.card;
       }
     });
+    this.printFileSubscription = this.dataShareService.printData.subscribe(data =>{
+      let template = data.data;
+      const blob = new Blob([template], { type: 'application/pdf' });
+      const blobUrl = window.URL.createObjectURL(blob);
+      if(this.platform.is("hybrid")){
+        this.androidpermissionsService.downloadAndPrintPdf(blob,data?.filename)
+      }else{
+        // this.chartService.downlodBlobData(blobUrl, data?.filename);
+        // const iframe = document.createElement('iframe');
+        // iframe.style.display = 'none';
+        // iframe.src = blobUrl;
+        // document.body.appendChild(iframe);
+        // iframe.contentWindow.print();
+      }
+      // const base64Data = this.downloadToMobile(blob,data?.filename);
+      // let options: PrintOptions = {
+      //        name: 'filename',
+      //        duplex: true,
+      //        orientation: 'landscape',
+      //        monochrome: true
+      //   }
+      //   this.printer.pick().then(result => {
+      //     console.log(result);
+      //   })
+      //   this.printer.print()
+
+      //   if(this.platform.is("hybrid")){
+      //     this.downloadToMobile(file,fileName);
+      //   }else{
+      //     this.downloadService.download(blobUrl,data?.filename);
+      //   }
+
+      // const iframe = document.createElement('iframe');
+      // iframe.style.display = 'none';
+      // iframe.src = blobUrl;
+      // document.body.appendChild(iframe);
+      // iframe.contentWindow.print();
+      // // this.modalService.close('download-progress-modal');
+    })
     
   }
+  // Test Functions
+
+  // Test Functions End
 
   // Ionic LifeCycle Function Handling Start------------------  
   ionViewWillEnter(){
@@ -364,7 +417,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       if(this.platform.is("hybrid")){
         this.downloadToMobile(file,fileName);
       }else{
-        this.downloadService.download(url,downloadPdfData?.filename)
+        this.downloadService.download(url,downloadPdfData?.filename);
       }
       this.downloadPdfCheck = '';
       this.apiService.ResetPdfData();
@@ -441,6 +494,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     if(this.nestedCardSubscribe){
       this.nestedCardSubscribe.unsubscribe();
+    }
+    if(this.printFileSubscription){
+      this.printFileSubscription.unsubscribe();
     }
   }
   unsubscribedSavecall(){    
@@ -578,12 +634,13 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           }else{
             this.notificationService.showAlert("Permission denied","You don't have this Permission",['Dismiss']);
           }
-            break;
+          break;
           // case 'AUDIT_HISTORY':
           //   if (this.permissionService.checkPermission(this.currentMenu.name, 'auditHistory')) {
           //     let obj = {
           //       "aduitTabIndex": this.selectTabIndex,
-          //       "tabname": this.tabs
+          //       "tabname": this.tabs,
+          //       "objectId": gridData._id
           //     }
           //     this.commonFunctionService.getAuditHistory(gridData,this.elements[index]);
           //     this.modalService.open('audit-history',obj);
@@ -591,6 +648,22 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           //     this.notificationService.notify("bg-danger", "Permission denied !!!");
           //   }
           // break;
+          case 'PRINT':
+            let templateType = '';
+            if(button.onclick.templateType && button.onclick.templateType != ''){
+              templateType = button.onclick.templateType;
+              gridData['print_template'] = templateType;
+              const payload = {
+                curTemp: this.currentMenu.name,
+                data: gridData,
+                _id :gridData._id
+              }
+              this.apiService.PrintTemplate(payload);
+              // this.modalService.open('download-progress-modal', {});
+            }else{
+              this.notificationService.presentToastOnBottom('Template Type is null!!!','danger',);
+            }
+            break;
           case 'GOOGLE_MAP':
             this.loadNextGrid(index, gridData, button.onclick.action_name.toUpperCase());
             break;
@@ -1587,4 +1660,3 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   
 
 }
-;
