@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService } from '@core/ionic-core';
+import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService, AppDownloadService, AppShareService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Platform, ModalController, AlertController, PopoverController, isPlatform, ActionSheetController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -8,7 +8,7 @@ import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card
 import { FormComponent } from '../form/form.component';
 import { DatePipe } from '@angular/common';
 import { CallDataRecordFormComponent } from '../../modal/call-data-record-form/call-data-record-form.component';
-import { FileOpener } from '@ionic-native/file-opener/ngx';
+// import { FileOpener } from '@ionic-native/file-opener/ngx';
 import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
@@ -16,10 +16,11 @@ import { zonedTimeToUtc } from 'date-fns-tz';
 import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService, ApiCallService, GridCommonFunctionService, DownloadService, ChartService } from '@core/web-core';
 import { Subscription } from 'rxjs';
 // import { Printer, PrintOptions } from '@awesome-cordova-plugins/printer/ngx';
-import { Directory, Filesystem } from '@capacitor/filesystem';
-import { DomSanitizer } from '@angular/platform-browser';
-import { HttpClient } from '@angular/common/http';
+// import { Directory, Filesystem } from '@capacitor/filesystem';
+// import { DomSanitizer } from '@angular/platform-browser';
+// import { HttpClient } from '@angular/common/http';
 // import { Printer, PrintOptions } from '@ionic-native/printer/ngx';
+import { FileOpener } from '@capacitor-community/file-opener'
 
 @Component({
   selector: 'app-cards-layout',
@@ -151,7 +152,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private datePipe: DatePipe,
     private notificationService: NotificationService,
     private permissionService:PermissionService,
-    private fileOpener: FileOpener,
+    // private fileOpener: FileOpener,
     private file: File,
     private apppermissionsService: AndroidpermissionsService,
     public renderer: Renderer2,
@@ -166,17 +167,16 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private apiCallService: ApiCallService,
     private gridCommonFunctionService: GridCommonFunctionService,
     private downloadService: DownloadService,
-    // private printer: Printer,
+    private appDownloadService: AppDownloadService,
     private androidpermissionsService: AndroidpermissionsService,
-    private chartService: ChartService
+    private chartService: ChartService,
+    private appShareService: AppShareService
   ) 
   {
     
     this.userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     this.userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
-    // below code is for slider and title name
     this.initializeApp();
-    // this.web_site_name = this.envService.getWebSiteName();
     this.gridDataSubscription = this.dataShareService.collectiondata.subscribe(data =>{
       let res:any;
       if(data && data.data && data.data_size && data.data.length > 0){
@@ -212,48 +212,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     });
     this.printFileSubscription = this.dataShareService.printData.subscribe(data =>{
-      let template = data.data;
-      const blob = new Blob([template], { type: 'application/pdf' });
-      const blobUrl = window.URL.createObjectURL(blob);
-      if(this.platform.is("hybrid")){
-        this.androidpermissionsService.downloadAndPrintPdf(blob,data?.filename)
-      }else{
-        // this.chartService.downlodBlobData(blobUrl, data?.filename);
-        // const iframe = document.createElement('iframe');
-        // iframe.style.display = 'none';
-        // iframe.src = blobUrl;
-        // document.body.appendChild(iframe);
-        // iframe.contentWindow.print();
-      }
-      // const base64Data = this.downloadToMobile(blob,data?.filename);
-      // let options: PrintOptions = {
-      //        name: 'filename',
-      //        duplex: true,
-      //        orientation: 'landscape',
-      //        monochrome: true
-      //   }
-      //   this.printer.pick().then(result => {
-      //     console.log(result);
-      //   })
-      //   this.printer.print()
-
-      //   if(this.platform.is("hybrid")){
-      //     this.downloadToMobile(file,fileName);
-      //   }else{
-      //     this.downloadService.download(blobUrl,data?.filename);
-      //   }
-
-      // const iframe = document.createElement('iframe');
-      // iframe.style.display = 'none';
-      // iframe.src = blobUrl;
-      // document.body.appendChild(iframe);
-      // iframe.contentWindow.print();
-      // // this.modalService.close('download-progress-modal');
+      this.downloadandprint(data);
     })
     
   }
-  // Test Functions
-
+  // Test Functions Start
+  
   // Test Functions End
 
   // Ionic LifeCycle Function Handling Start------------------  
@@ -450,9 +414,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           if(openFile == "confirm"){
             const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
             const mimeType = file_Type;      
-            this.fileOpener.open(path,mimeType)
-            .then(()=> console.log('File is opened'))
-            .catch(error => console.log('Error opening file ',error));
+            // this.fileOpener.open(path,mimeType)
+            // .then(()=> console.log('File is opened'))
+            // .catch(error => console.log('Error opening file ',error));
           }
         }).catch( (error:any) =>{
           this.notificationService.presentToastOnBottom(JSON.stringify(error), 'danger');
@@ -478,6 +442,47 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.apppermissionsService.openNativeSettings('application_details');
       }
     }
+  }
+  async downloadandprint(data){
+    let template = data.data;
+    const blob = new Blob([template], { type: 'application/pdf' });
+    const blobUrl = window.URL.createObjectURL(blob);
+    if(this.platform.is("hybrid")){
+      const response:any = await this.appDownloadService.downloadAnyBlobData(blob,data?.filename,false,true);
+      const fileUri:string = await this.appDownloadService.getFileUri(response?.filename,response?.directoryname);
+      if(response?.sharefile && !response?.openfile){
+        const canShare = await this.appShareService.checkDeviceCanShare();
+        if(canShare){
+          let shareOption = {
+            title: response?.filename ? response.filename : "Print File",
+            text: "Here is the file you requested.",
+            url: fileUri,
+            dialogTitle: "Print " + response?.filename
+          }
+          this.appShareService.share(shareOption);
+        }
+      }
+      if(response?.openfile && !response?.sharefile){
+        console.log(fileUri);
+        if(fileUri){
+          FileOpener.open({filePath:fileUri, contentType:'application/pdf', openWithDefault:true,}).then( res => {
+            console.log("File Opened");
+          }).catch((e)=>{
+            console.error("File Opening error ", JSON.stringify(e));
+          })
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+        }
+      }
+    }else{
+      this.chartService.downlodBlobData(blobUrl, data?.filename);
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = blobUrl;
+      document.body.appendChild(iframe);
+      iframe.contentWindow.print();
+    }    
+    this.checkLoader();
   }
   // Subscriber Functions Handling End -------------------
 
@@ -658,6 +663,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
                 data: gridData,
                 _id :gridData._id
               }
+              this.loaderService.showLoader("blank","dots");
               this.apiService.PrintTemplate(payload);
               // this.modalService.open('download-progress-modal', {});
             }else{
@@ -1311,21 +1317,23 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   
   arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
     const fileExtension = extentionType;
-    let file_Type: any;
-    let file_prefix: any;
-    if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
-      file_Type = "image/" + extentionType;
-      file_prefix = "Image";
-    }else if(fileExtension == "xlsx" || fileExtension == "xls"){
-      file_Type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
-      file_prefix = "Excel";
-    }else if(fileExtension == "pdf"){
-      file_Type = "application/" + extentionType;
-      file_prefix = "PDF";
-    }else{
-      file_Type = "application/octet-stream";
-      file_prefix = "TEXT";
-    }
+    // if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
+    //   file_Type = "image/" + extentionType;
+    //   file_prefix = "Image";
+    // }else if(fileExtension == "xlsx" || fileExtension == "xls"){
+    //   file_Type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
+    //   file_prefix = "Excel";
+    // }else if(fileExtension == "pdf"){
+    //   file_Type = "application/" + extentionType;
+    //   file_prefix = "PDF";
+    // }else{
+    //   file_Type = "application/octet-stream";
+    //   file_prefix = "TEXT";
+    // }
+
+    const response: any = this.appDownloadService.getBlobTypeFromExtn(extentionType);
+    const file_Type:string = response?.mimeType ? response?.mimeType : '';
+    const file_prefix:string = response?.filePrefix ? response?.filePrefix : '';
 
     let fileName:any;
     if(filename && filename !=undefined){      
