@@ -127,6 +127,34 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   userLocale:any;
   gpsAlertResult:any;
   form:any;
+  /* --------BarCode Scanning Variables------------------------------------------- */
+  // public readonly barcodeFormat = BarcodeFormat;
+  // public readonly lensFacing = LensFacing;
+
+  // public formGroup = new FormGroup({
+  //   formats: new FormControl([]),
+  //   lensFacing: new FormControl(LensFacing.Back),
+  // });
+  // public barcodes = [];
+  // public isBarCodeScannerSupported = false;
+  // public isBarCodeCameraPermissionGranted = false;
+  // public barCodeFormats = [
+  //   ["AZTEC"],
+  //   ["CODABAR"],
+  //   ["CODE_39"],
+  //   ["CODE_93"],
+  //   ["CODE_128"],
+  //   ["DATA_MATRIX"],
+  //   ["EAN_8"],
+  //   ["EAN_13"],
+  //   ["ITF"],
+  //   ["PDF_417"],
+  //   ["QR_CODE"],
+  //   ["UPC_A"],
+  //   ["UPC_E"]
+  // ];
+  // ngZone: any;
+  /* --------BarCode Scanning Variables End------------------------------------------- */
 
   constructor(
     private platform: Platform,
@@ -811,7 +839,24 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
   async collectionSpecificCriteria(card:any){
     let customCriteria = [];
-    if(this.cardType == "trackOnMap"){
+    if(this.coreFunctionService.isNotBlank(this.cardType)){
+      switch(this.cardType){
+        case "trackOnMap":
+          if(card && card.collection_name == "travel_tracking_master" && card.parent_id && card.parent_id !=''){
+            const cr = "travelPlan._id;eq;" + card.parent_id + ";STATIC";
+            customCriteria.push(cr);
+            return customCriteria;
+          }
+          break;
+        case "scanner":
+          // this.checkBarcodeScannerSupportedorNot();
+          break;
+        default:
+          
+          break;
+      }
+    }
+    if(card['enableGps']){
       if(this.platform.is("hybrid")){
         let isGpsEnabled = await this.app_googleService.checkGeolocationPermission();
         if(!isGpsEnabled){
@@ -819,11 +864,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       }else{
         await this.getCurrentPosition();
-      }
-      if(card && card.collection_name == "travel_tracking_master" && card.parent_id && card.parent_id !=''){
-        const cr = "travelPlan._id;eq;" + card.parent_id + ";STATIC";
-        customCriteria.push(cr);
-        return customCriteria;
       }
     }
   }
@@ -1349,6 +1389,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
               lat:this.userLocation.lat ? this.userLocation.lat : this.userLocation.latitude,
               lng:this.userLocation.lng ? this.userLocation.lng : this.userLocation.longitude
             }
+            // let currentlatlngdetails:any = await this.app_googleService.getAddressFromLatLong(this.currentLatLng.lat,this.currentLatLng.lng);
             return true;
           }
         }else{
@@ -1430,8 +1471,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             this.notificationService.showAlert(saveFromDataRsponce.success_msg,'',['Dismiss']);
           }
         }
-        this.apiService.ResetSaveResponce()
       }
+      this.apiService.ResetSaveResponce();
     }
   }
   async startTracking(data:any,index:number,actionname?:any){
@@ -1557,7 +1598,197 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   mapOutPutData(index:number){
     this.editedRowData(index,"UPDATE");
   }
+  /*----BarCode Functions------------------------------------------------------------------------- */
+  // checkBarcodeScannerSupportedorNot(){
+  //   BarcodeScanner.isSupported().then((result) => {
+  //     this.isBarCodeScannerSupported = result.supported;
+  //   }).catch(err => {
+  //     this.barCodeNotExistAlert();
+  //     console.log('checkBarcodeScannerSupportedorNot Error', err);
+  //   });
+  // }
+  // barCodeNotExistAlert(){
+  //   let alertOpt = {
+  //     'header': "Alert",
+  //     'message':"Your device doesn't support barcode scanning.",
+  //     'buttons' : [
+  //       {
+  //         text: 'Dismiss',
+  //         role: 'cancel',
+  //       }
+  //     ]
+  //   }
+  //   this.popoverModalService.showErrorAlert(alertOpt);
+  // }
+  // checkCameraPermissionToSacn(){
+  //   if(this.isBarCodeScannerSupported){
+  //     BarcodeScanner.checkPermissions().then((result) => {
+  //       if(result.camera === 'granted' || result.camera === 'limited'){
+  //         this.isBarCodeCameraPermissionGranted = true;
+  //         // this.removeAllBarCodeListeners();
+  //         BarcodeScanner.removeAllListeners().then(() => {
+  //           console.log("removeAllListeners");
+  //           this.startScan();
+  //         });          
+  //       }else{
+  //         if(result.camera === 'denied'){
+  //           this.presentsettingAlert();
+  //         }
+  //         this.isBarCodeCameraPermissionGranted = false;
+  //       }
+  //     }).catch(err => {
+  //       console.log('checkCameraPermissionToSacn Error', err);
+  //     });
+  //   }else{
+  //     this.barCodeNotExistAlert();
+  //   }
+  // }
+  // removeAllBarCodeListeners(){
+  //   BarcodeScanner.removeAllListeners().then(() => {
+  //     console.log("removeAllListeners")
+  //     BarcodeScanner.addListener(
+  //       'barcodeScanned',
+  //       (event) => {
+  //         this.ngZone.run(() => {
+  //           console.log('barcodeScanned', event);
+  //           // const { state, progress } = event;
+  //           // this.formGroup.patchValue({
+  //           //   googleBarcodeScannerModuleInstallState: state,
+  //           //   googleBarcodeScannerModuleInstallProgress: progress,
+  //           // });
+  //         });
+  //       }
+  //     );
+  //   });
+  // }
+  // async startScan(): Promise<void> {
+  //   const formats = this.formGroup.get('formats')?.value || this.barCodeFormats;
+  //   const lensFacing =
+  //     this.formGroup.get('lensFacing')?.value || LensFacing.Back;
+  //   const modal = await this.popoverModalService.showModal({
+  //     component: BarcodeScanningComponent,
+  //     // Set `visibility` to `visible` to show the modal (see `src/theme/variables.scss`)
+  //     cssClass: 'barcode-scanning-modal',
+  //     showBackdrop: false,
+  //     componentProps: {
+  //       formats: formats,
+  //       lensFacing: lensFacing,
+  //     },
+  //   });
+  //   modal.onDidDismiss().then((result) => {
+  //     const barcode: Barcode | undefined = result.data?.barcode;
+  //     if (barcode) {
+  //       this.saveCallSubscribe();
+  //       barcode.displayValue = JSON.parse(barcode.displayValue);
+  //       this.prepareQrCodeData(barcode);
+  //     }
+  //   });
+  // }
+  // async prepareQrCodeData(barCode:any){
+  //   const isGpsEnable = await this.app_googleService.checkGeolocationPermission();
+  //   let currentposition:any = {};
+  //   if(isGpsEnable){
+  //     let userLocationAccess:boolean = await this.requestLocationPermission();
+  //     if(userLocationAccess){
+  //       currentposition = await this.app_googleService.getAddressFromLatLong(this.currentLatLng.lat,this.currentLatLng.lng);
+  //     }
+  //   }else{      
+  //     await this.gpsEnableAlert('trackingAlert').then(async (confirm:any) => {
+  //       if(this.gpsAlertResult && this.gpsAlertResult.role == "confirmed" && this.currentLatLng && this.currentLatLng.lat){ 
+  //         this.notificationService.presentToastOnBottom("Getting your location, please wait..");          
+  //         this.prepareQrCodeData(barCode,);
+  //       }else{
+  //         this.notificationService.presentToastOnBottom("Please enable GPS to serve you better !");
+  //       }
+  //     }).catch(error => {
+  //       this.notificationService.presentToastOnBottom("Please enable GPS to serve you better !");
+  //     })
+  //   }
+  //   if(!currentposition && !currentposition.lat ) return ;
+  //   let data = {};
+  //   let currentpositionDetails = currentposition['0'];
+  //   let locationData = {
+  //     'latitude' : this.currentLatLng.lat,
+  //     'longitude' : this.currentLatLng.lng,
+  //   }
+  //   data['employee'] = this.storageService.GetUserReference();
+  //   data['customer'] = barCode.displayValue;
+  //   data['scannedLocation'] = locationData;
+  //   data['currentDate'] = JSON.parse(JSON.stringify(new Date()));
+  //   data['barCodeDetail'] = {
+  //     "barcodeFormat": barCode.format,
+  //     "barcodeValueType": barCode.valueType,
+  //   };
+  //   this.barcodes = [data];
+  //   data['log'] = this.storageService.getUserLog();
+  //   if(!data['refCode'] || data['refCode'] == '' || data['refCode'] == null){
+  //     data['refCode'] = this.storageService.getRefCode();
+  //   }
+  //   if(!data['appId'] || data['appId'] == '' || data['appId'] == null){
+  //     data['appId'] = this.storageService.getAppId();              
+  //   }
+  //   if(!this.coreFunctionService.isNotBlank(data['platForm'])){
+  //     data['platForm'] = Capacitor.getPlatform().toUpperCase();              
+  //   }
+  //   const saveFromData = {
+  //     'curTemp': this.collectionname,
+  //     'data': data
+  //   }
+  //   this.saveQRcodeData(saveFromData);
+  // }
+  // saveQRcodeData(saveFromData){  
+  //   // this.popoverModalService.
+  //   this.apiService.SaveFormData(saveFromData);
+  // }
+  // async openSettings(): Promise<void> {
+  //   await BarcodeScanner.openSettings();
+  // }
+  // async requestPermissions(): Promise<void> {
+  //   await BarcodeScanner.requestPermissions();
+  // }
+  // async presentsettingAlert(): Promise<void> {
+  //   let openSetting:any = await this.notificationService.confirmAlert('Permission denied','Please grant camera permission to use the barcode scanner. And try again.');
+  //   if(openSetting == "confirm"){
+  //     this.openSettings();
+  //   }
+  // }
+  // onlySuccessAlert(responseData?:any){
+  //   let successData = responseData;
+  //   let alertMsg = '';
+  //   if(this.collectionname == "daily_scan_visit"){
+  //     if( successData && successData.customer){
+  //       if(typeof successData.customer == "object"){
+  //         alertMsg += `${successData.customer.name}` + ' scanned successfully !';
+  //       }else{
+  //         alertMsg += `${successData.customer}` + ' scanned successfully !';
+  //       }
+  //     }
+  //   }else{      
+  //     if( successData && successData.name){
+  //       if(typeof successData.name == "object"){
+  //         alertMsg += `${successData.name.name}` + 'added successfully !';
+  //       }else{
+  //         alertMsg += `${successData.name}` + 'added successfully !';
+  //       }
+  //     }
+  //   }
+  //   let alertOpt = {
+  //     'header': "Success",
+  //     'message':alertMsg,
+  //     'buttons' : [
+  //       {
+  //         text: 'Dismiss',
+  //         role: 'cancel',
+  //       }
+  //     ]
+  //   }
+  //   // this.popoverModalService.showAlert(alertOpt);
+  //   this.notificationService.presentToastOnMiddle(alertMsg,"success");
+  //   this.unsubscribedSavecall();
+  // }
+  /*-------BarCode Functions End--------------*/
   
+  /* --------Let this below 2 functions at the end of this file--------------------------------- */
   async getGeocodeAddress(LatLng:any) {
     this.geocoder = new google.maps.Geocoder();
     // const latlngStr = ;

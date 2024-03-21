@@ -169,6 +169,7 @@ export class CardViewPage implements OnInit, OnDestroy {
       }
     }
   }
+  
   filterCardByDropdownValue(){  
     const value = {}
     if(this.searchcardvalue && this.searchcardvalue.length >= 1){

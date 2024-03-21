@@ -2,67 +2,125 @@
   <ion-toolbar>
     <ion-buttons slot="start"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
     <ion-title>
-      Images Upload
+      Test Page
     </ion-title>
   </ion-toolbar>
 </ion-header>
  
 <ion-content>
-
-  <h4 *ngIf="files.length == 0">Please Select Image</h4>
-
   <ion-list>
-    <ion-item *ngFor="let img of files; let i = index;">
-      <ion-thumbnail slot="start">
-        <ion-img [src]="img.data"></ion-img>
-      </ion-thumbnail>
-      <ion-label>{{img.name}}</ion-label>
-      <!-- <ion-button slot="end" fill="clear" (click)="startUpload(img)">
-        <ion-icon slot="icon-only" name="cloud-upload" color=""></ion-icon>
-      </ion-button> -->
-      <ion-button slot="end" fill="clear" (click)="deleteSelectedImage(img)">
-        <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
-      </ion-button>
-    </ion-item>
-    <ion-item *ngFor="let img of selectedphotos; let i = index;">
-      <ion-thumbnail slot="start">
-        <ion-img [src]="img"></ion-img>
-      </ion-thumbnail>
-      <ion-label>{{img.name}}</ion-label>
-      <!-- <ion-button slot="end" fill="clear" (click)="startUpload(img)">
-        <ion-icon slot="icon-only" name="cloud-upload" color=""></ion-icon>
-      </ion-button> -->
-      <ion-button slot="end" fill="clear" (click)="deleteSelectedImage(img)">
-        <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
-      </ion-button>
-    </ion-item>
+    <ion-item *ngIf="files.length == 0"><ion-text>Select Camera Icon to capture & upload Image</ion-text></ion-item>
+    <ion-item *ngIf="barcodes.length == 0"><ion-text>Select BarCode Icon to Scan Barcode</ion-text></ion-item>
+    <ion-item *ngIf="barcodes.length == 0"><ion-text>Select Image Icon to Scan Barcode from Gallery</ion-text></ion-item>
   </ion-list>
 
-  <ion-row>
-    <ion-col
-      size="6"
-      *ngFor="let img of images; let i = index;"
-      class="ion-text-center"
-    >
-      <ion-label>
-        {{ img.name }}
-        <p>{{ img.createdAt | date:'short' }}</p>
-      </ion-label>
+  <ng-container *ngIf="(files && files.length > 0) || (selectedphotos && selectedphotos.length > 0)">
+    <ion-list>
+      <ion-item *ngFor="let img of files; let i = index;">
+        <ion-thumbnail slot="start">
+          <ion-img [src]="img.data"></ion-img>
+        </ion-thumbnail>
+        <ion-label>{{img.name}}</ion-label>
+        <!-- <ion-button slot="end" fill="clear" (click)="startUpload(img)">
+          <ion-icon slot="icon-only" name="cloud-upload" color=""></ion-icon>
+        </ion-button> -->
+        <ion-button slot="end" fill="clear" (click)="deleteSelectedImage(img)">
+          <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
+        </ion-button>
+      </ion-item>
+      <ion-item *ngFor="let img of selectedphotos; let i = index;">
+        <ion-thumbnail slot="start">
+          <ion-img [src]="img"></ion-img>
+        </ion-thumbnail>
+        <ion-label>{{img.name}}</ion-label>
+        <!-- <ion-button slot="end" fill="clear" (click)="startUpload(img)">
+          <ion-icon slot="icon-only" name="cloud-upload" color=""></ion-icon>
+        </ion-button> -->
+        <ion-button slot="end" fill="clear" (click)="deleteSelectedImage(img)">
+          <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+  </ng-container>
+
+  <ng-container *ngIf="images && images.length > 0">
+    <ion-row>
+      <ion-col
+        size="6"
+        *ngFor="let img of images; let i = index;"
+        class="ion-text-center"
+      >
+        <ion-label>
+          {{ img.name }}
+          <p>{{ img.createdAt | date:'short' }}</p>
+        </ion-label>
+  
+        <img [src]="img" />
+        <ion-fab vertical="bottom" horizontal="end">
+          <ion-fab-button
+            color="danger"
+            size="small"
+            (click)="deleteImage(i)"
+          >
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-fab-button>
+        </ion-fab>
+      </ion-col>
+    </ion-row>
+  </ng-container>
+
+  <ng-container *ngFor="let barcode of barcodes">
+    <ion-card>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="fixed">Bytes</ion-label>
+          <ion-input
+            type="text"
+            readonly
+            [value]="barcode.bytes?.toString() || ''"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="fixed">Corner Points</ion-label>
+          <ion-input
+            type="text"
+            readonly
+            [value]="barcode.cornerPoints?.toString() || ''"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="fixed">Display Value</ion-label>
+          <ion-input
+            type="text"
+            readonly
+            [value]="barcode.displayValue"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="fixed">Format</ion-label>
+          <ion-input type="text" readonly [value]="barcode.format"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="fixed">Raw Value</ion-label>
+          <ion-input
+            type="text"
+            readonly
+            [value]="barcode.rawValue"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="fixed">Value Type</ion-label>
+          <ion-input
+            type="text"
+            readonly
+            [value]="barcode.valueType"
+          ></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
  
-      <img [src]="img" />
-      <ion-fab vertical="bottom" horizontal="end">
-        <ion-fab-button
-          color="danger"
-          size="small"
-          (click)="deleteImage(i)"
-        >
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-fab-button>
-      </ion-fab>
-    </ion-col>
-  </ion-row>
- 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <!-- <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <input
       type="file" id="fileInput" multiple
       #fileInput
@@ -73,5 +131,21 @@
     <ion-fab-button (click)="selectImageSource()" class="addNew">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
+  </ion-fab> -->
+  <ion-fab slot="fixed" vertical="top" horizontal="end" [edge]="true">
+    <ion-fab-button>
+      <ion-icon name="chevron-down-circle"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="bottom">
+      <ion-fab-button (click)="selectImageSource()">
+        <ion-icon name="camera"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button *ngIf="isSupported" (click)="checkCameraPermissionToSacn()">
+        <ion-icon name="scan"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button *ngIf="isSupported" (click)="readBarcodeFromImage()">
+        <ion-icon name="image"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
   </ion-fab>
 </ion-content>

@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Raise Query !</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal('cancel')">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <form [formGroup]="newSubmitForm" class="ion-margin-vertical"  (ngSubmit)="onSubmit()">
+    <ng-container *ngIf="userType == 'customer'" class="">
+      <ng-container *ngIf="collectionName === 'customer_complaint'">
+        <ion-item counter="true" class="">
+          <ion-label position="stacked">Complaint Subject <ion-text color="danger"> *</ion-text></ion-label>
+          <!-- <ion-input type="text" formControlName="complaintSubject" maxlength="50" required></ion-input> -->
+          <ion-select formControlName="complaintSubject" placeholder="Select Subject" (ionChange)="ionSelectChange($event)" (ionFocus)="ionSelectFocus($event)" (ionCancel)="clearDropdownField($event)" cancel-text="Clear" (ionDismiss)="$event.stopPropagation()">
+            <ion-select-option value="Garbage Complaint">Garbage Complaint</ion-select-option>
+            <ion-select-option value="Sewage Complaint">Sewage Complaint</ion-select-option>
+          </ion-select>
+          <ion-note slot="error" class="text-danger" *ngIf="f.complaintSubject.invalid && (f.complaintSubject.dirty || f.complaintSubject.touched)">Subject is required</ion-note>
+        </ion-item>
+        <ion-item counter="true">
+          <ion-label position="stacked">Complaint Description <ion-text color="danger"> *</ion-text></ion-label>
+          <ion-textarea formControlName="complaintDescription" required [autoGrow]="true" enterkeyhint="enter" maxlength="500"></ion-textarea>
+          <ion-note slot="error" class="text-danger" *ngIf="f.complaintDescription.invalid && (f.complaintDescription.dirty || f.complaintDescription.touched)">Description is required</ion-note>
+        </ion-item>
+      </ng-container>
+      <ng-container *ngIf="collectionName === 'customer_requests'">
+        <ion-item>
+          <ion-label position="stacked">Request Type <ion-text color="danger"> *</ion-text></ion-label>
+          <ion-select placeholder="Select Category" formControlName="requestType" aria-required="true" (ionChange)="ionSelectChange($event)" (ionFocus)="ionSelectFocus($event)" (ionCancel)="clearDropdownField($event)" cancel-text="Clear" (ionDismiss)="$event.stopPropagation()">
+            <ion-select-option value="Garbage Request">Gabage Request</ion-select-option>
+            <ion-select-option value="Food Request">Food Request</ion-select-option>
+          </ion-select>
+          <ion-note slot="error" class="text-danger" *ngIf="f.requestType.invalid && (f.requestType.dirty || f.requestType.touched)">Request type is required</ion-note>
+        </ion-item>
+        <ion-item counter="true">
+          <ion-label position="stacked">Request Description <ion-text color="danger"> *</ion-text></ion-label>
+          <ion-textarea formControlName="requestDescription" aria-required="true" [autoGrow]="true" enterkeyhint="enter" maxlength="500"></ion-textarea>
+          <ion-note slot="error" class="text-danger" *ngIf="f.requestDescription.invalid && (f.requestDescription.dirty || f.requestDescription.touched)">Request description type is required</ion-note>
+        </ion-item>
+      </ng-container>
+    </ng-container>
+    <ion-button type="submit" expand="full" class="ion-margin-top">
+      <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+      Submit
+    </ion-button>
+  </form>
+</ion-content>
