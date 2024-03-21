@@ -5,7 +5,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { Capacitor } from '@capacitor/core';
 import { BarcodeScanningComponent } from '../modal/barcode-scanning/barcode-scanning.component';
 import { Subject, Subscription } from 'rxjs';
-import { ApiService, CommonFunctionService, CoreFunctionService, DataShareService, StorageService } from '@core/web-core';
+import { ApiCallService, ApiService, CommonFunctionService, CoreFunctionService, DataShareService, StorageService } from '@core/web-core';
 import { AppPermissionService, AppStorageService, App_googleService, NotificationService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, IonModal, ModalController, Platform, isPlatform } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -101,7 +101,8 @@ export class MyScannerComponent implements OnInit {
     private modalCtrl: ModalController,
     private platform: Platform,
     private _location: Location,
-    private appStorageService: AppStorageService
+    private appStorageService: AppStorageService,
+    private apiCallService: ApiCallService
   ) { 
     this.initializeApp();    
     this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
@@ -425,7 +426,7 @@ export class MyScannerComponent implements OnInit {
     let currentMenu = {
       'name' : 'user'
     }
-    this.commonFunctionService.getRealTimeGridData(currentMenu, scannedData.displayValue);
+    this.apiCallService.getRealTimeGridData(currentMenu, scannedData.displayValue);
   }
   updateRunningData(data){
     this.openDataModal(data)
@@ -636,7 +637,7 @@ export class MyScannerComponent implements OnInit {
       criteriaList = criteria;
     }
     // const params = 'card_master';
-    let data = this.commonFunctionService.getPaylodWithCriteria(this.collectionname,'',criteria,{});
+    let data = this.apiCallService.getPaylodWithCriteria(this.collectionname,'',criteria,{});
     data['pageNo'] = 0;
     data['pageSize'] = this.appCardMasterDataSize;
     let payload = {
