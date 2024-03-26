@@ -35,7 +35,7 @@ export class ChartFilterComponent implements OnInit {
   @Input() modal;
   @Input() dashletData;
   @Input() filter;
-  @Input() staticData;
+  @Input() staticData = {};
   @ViewChild('startDate', { static: false }) startDateSelected:ElementRef<any>;  
   @ViewChild('endDate', { static: false }) endDateSelected:ElementRef<any>;
   // @ViewChild('chartFilterModal') public chartFilterModal: ModalDirective;  
@@ -601,7 +601,7 @@ export class ChartFilterComponent implements OnInit {
     let blobData:any = await this.chartService.getDownloadData(chart,object);
     if(isPlatform('hybrid')){
       const response:any = await this.appDownloadService.downloadBlobData(blobData.url, blobData.name);
-      console.log(response);
+      // console.log(response);
     }else{
       this.chartService.downlodBlobData(blobData.url, blobData.name)
     }
