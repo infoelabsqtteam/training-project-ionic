@@ -27,6 +27,7 @@
     "@angular/service-worker": "^14.3.0",
     "@awesome-cordova-plugins/core": "^6.6.0",
     "@capacitor-community/file-opener": "^1.0.5",
+    "@capacitor-community/http": "^1.4.1",
     "@capacitor/android": "4.0.1",
     "@capacitor/app": "4.0.1",
     "@capacitor/camera": "4.0.1",
