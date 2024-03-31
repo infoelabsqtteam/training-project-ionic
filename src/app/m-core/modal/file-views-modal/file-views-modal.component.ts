@@ -1,9 +1,8 @@
 import { Component, OnInit, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { AppShareService, LoaderService, NotificationService, AppDownloadService } from '@core/ionic-core';
-// import { ModalDirective } from 'angular-bootstrap-md';
-import { CommonFunctionService, DataShareService, ApiService, ModelService, GridCommonFunctionService } from '@core/web-core';
-import { IonAccordion, IonAccordionGroup, ModalController, isPlatform } from '@ionic/angular';
+import { CommonFunctionService, DataShareService, ApiService, GridCommonFunctionService } from '@core/web-core';
+import { ModalController, isPlatform } from '@ionic/angular';
 
 
 @Component({
