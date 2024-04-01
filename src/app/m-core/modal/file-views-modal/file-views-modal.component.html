@@ -1,13 +1,13 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start" (click)="closeModal('close')"><ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon></ion-buttons>
-    <!-- <ion-title class="ion-no-padding ion-text-capitalize">{{Data.field.field_label}}</ion-title> -->
+    <ion-title *ngIf="coloumName! && coloumName!=''" class="ion-no-padding ion-text-capitalize">{{coloumName}}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="pages">
   <div class="" #fileViewModal>
-    <ion-card>
+    <ion-card *ngIf="!showPreview || fieldType == 'file'">
       <ion-card-header *ngIf="coloumName! && coloumName!=''">
         <ion-card-title>{{coloumName}}</ion-card-title>
         <!-- <ion-card-subtitle>{{Data.field.field_label}}</ion-card-subtitle> -->
@@ -40,6 +40,7 @@
             </tr>
           </tbody>
         </table>
+        <!-- File Download Table below -->
         <table class="table-bordered table-striped one-line-text" *ngIf="gridColumns.length == 0">
           <thead>
             <tr>
@@ -65,6 +66,28 @@
         </table>
       </ion-card-content>
     </ion-card>
+    <div *ngIf="showPreview">
+      <ion-accordion-group expand="inset" class="ion-margin-bottom-default" [value]="data?.length == 1 ? 0 : selectedIndex" (ionChange)="accordionGroupChange($event)">
+        <ion-accordion [value]="i" *ngFor="let item of data;let i = index">
+          <ion-item slot="header" color="light">
+            <ion-label>{{item['rollName']}}</ion-label>
+          </ion-item>
+          <div class="ion-padding" slot="content">
+            <ion-img [src]="imageUrlList[item['rollName']]" class="ion-margin-bottom" ionError="Somethisng  went wrong"></ion-img>
+            <div class="ion-display-flex ion-justify-content-around">
+              <ion-button size="small" (click)="downloadImage(imageUrlList[item['rollName']],item['rollName'])">
+                <ion-icon name="download" slot="end"></ion-icon>
+                Download
+              </ion-button>
+              <ion-button *ngIf="showPrint" size="small" (click)="printFile(imageUrlList[item['rollName']],item['rollName'])">
+                <ion-icon name="print" slot="end"></ion-icon>
+                Print
+              </ion-button>
+            </div>
+          </div>
+        </ion-accordion>
+      </ion-accordion-group>
+    </div>
   </div>
 </ion-content>
 
