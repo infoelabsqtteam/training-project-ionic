@@ -6,6 +6,9 @@ import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { App_googleService, NotificationService } from '@core/ionic-core';
 import { AlertController, Platform } from '@ionic/angular';
 import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
+import { HttpClient } from '@angular/common/http';
+import { DomSanitizer } from '@angular/platform-browser';
+
 
 @Injectable({
   providedIn: 'root'
@@ -30,16 +33,9 @@ export class AndroidpermissionsService {
     public alertController: AlertController,
     private nativeSettings: OpenNativeSettings,
     private platform: Platform,
+    private http: HttpClient, 
+    private sanitizer: DomSanitizer
   ) { }
-
-    // requestPermisiions() {
-    //   this.androidPermission.requestPermissions(
-    //     [this.androidPermission.PERMISSION.ACCESS_NETWORK_STATE, this.androidPermission.PERMISSION.READ_EXTERNAL_STORAGE,
-    //     this.androidPermission.PERMISSION.WRITE_EXTERNAL_STORAGE, this.androidPermission.PERMISSION.CAMERA, this.androidPermission.PERMISSION.GET_ACCOUNTS,
-    //     this.androidPermission.PERMISSION.ACCESS_FINE_LOCATION, this.androidPermission.PERMISSION.ACCESS_COARSE_LOCATION,
-    //     this.androidPermission.PERMISSION.RECORD_AUDIO, this.androidPermission.PERMISSION.MODIFY_AUDIO_SETTINGS
-    //     ]);
-    // }
 
   async internetExceptionError(){
       const alert = await this.alertController.create({
@@ -71,73 +67,6 @@ export class AndroidpermissionsService {
     });
     return alert;
   }
-
-  // internetPermission(){
-  //   return  this.androidPermission.checkPermission(this.androidPermission.PERMISSION.INTERNET || this.androidPermission.PERMISSION.ACCESS_WIFI_STATE).then(
-  //     result => {
-  //       if (result.hasPermission) {
-  //         this.enableGPS();
-  //         console.log("Internet Access");
-  //       }else {
-  //         this.androidPermission.requestPermission(this.androidPermission.PERMISSION.INTERNET);
-  //         return true;
-  //       }
-  //     },
-  //     error => {
-  //       console.log(error);
-  //       this.notificationService.showAlert("Your Device Has LOST Internet Access", 'No Internet',['OK'])
-  //     }
-  //   )
-  // }
-
-  // checkPermission() {
-  //   return this.androidPermission.checkPermission(this.androidPermission.PERMISSION.ACCESS_COARSE_LOCATION).then(
-  //      result => {
-  //        if (result.hasPermission) {
-  //          this.enableGPS();
-  //        } else {
-  //          this.locationAccPermission();
-  //        }
-  //      },
-  //      error => {
-  //          // alert("GPS not active. Please Enable GPS.");
-  //          console.log(error);
-  //      }
-  //    );
-  //  }
-  
-  //  locationAccPermission() {
-  //    this.locationAccuracy.canRequest().then((canRequest: boolean) => {
-  //      if (canRequest) {
-  //      } else {
-  //        this.androidPermission.requestPermission(this.androidPermission.PERMISSION.ACCESS_COARSE_LOCATION)
-  //          .then(
-  //            () => {
-  //            return  this.enableGPS();
-  //            },
-  //            error => {
-  //              alert("GPS not active. Please Enable GPS.")
-  //              console.log(error)
-  //            }
-  //          );
-  //      }
-  //    });
-  //  }
-  
-  //  enableGPS() {
-  //    this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-  //      () => {
-  //        this.getCurrentLocation();
-  //        return true;
-  //      },
-  //      // error => alert(JSON.stringify(error))
-  //      error => {
-  //          // alert("GPS unable to locate your position. Please check GPS is Active.")
-  //          this.notificationService.showAlert("GPS unable to locate your position.", 'Enable GPS',['OK'])
-  //          console.log(JSON.stringify(error))
-  //      }
-  //    );
-  //  }
   
   async getCurrentLocation(){
     try{
@@ -176,6 +105,5 @@ export class AndroidpermissionsService {
       console.log(settingName + "has been open");
     });
   }
-
 
 }
