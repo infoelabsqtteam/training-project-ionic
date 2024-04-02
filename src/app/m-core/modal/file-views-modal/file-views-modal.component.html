@@ -73,7 +73,7 @@
             <ion-label>{{item['rollName']}}</ion-label>
           </ion-item>
           <div class="ion-padding" slot="content">
-            <ion-img [src]="imageUrlList[item['rollName']]" class="ion-margin-bottom" ionError="Somethisng  went wrong"></ion-img>
+            <ion-img *ngIf="imageUrlList[item['rollName']]" [src]="imageUrlList[item['rollName']]" class="ion-margin-bottom" ></ion-img>
             <div class="ion-display-flex ion-justify-content-around">
               <ion-button size="small" (click)="downloadImage(imageUrlList[item['rollName']],item['rollName'])">
                 <ion-icon name="download" slot="end"></ion-icon>

@@ -88,8 +88,10 @@ export class FileViewsModalComponent implements OnInit {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      this.notificationService.presentToastOnBottom(this.downloadClick + ' file, downloaded into downloads');
       this.downloadClick = '';
       this.apiService.ResetDownloadUrl();
+      this.checkLoader();
     }
   }
   // Subscriber Functions Handling End -----------
@@ -119,7 +121,7 @@ export class FileViewsModalComponent implements OnInit {
     this.selectedIndex = event?.detail?.value;
   }
   async downloadImage(imageUrl: string, fileName: string) {
-    this.loaderService.showLoader("blank");
+    await this.loaderService.showLoader("Dowloading...");
     if(isPlatform('hybrid')){
       const response = await this.appDownloadService.saveFileAndGetFileUriFromUrl(imageUrl,fileName,'Documents');
       this.loaderService.hideLoader();
@@ -138,21 +140,30 @@ export class FileViewsModalComponent implements OnInit {
     }else{
       this.setFileDownloadUrl(imageUrl,fileName);
     }
-    this.loaderService.hideLoader();
   }
   async printFile(fileUrl:string,fileName:string){
-    this.loaderService.showLoader("Preparing File to print");
-    const response = await this.appDownloadService.saveFileAndGetFileUriFromUrl(fileUrl,fileName);
-    let fileUri : any;
-    if(response?.path && response?.status){
-      fileUri = await this.appDownloadService.getFileUri(fileName);
-      if(fileUri?.uri){
-        await this.openShareDialogeForPrint(fileUri.uri,fileName);
+    await this.loaderService.showLoader("Preparing File to print");
+    if(isPlatform('hybrid')){
+      const response = await this.appDownloadService.saveFileAndGetFileUriFromUrl(fileUrl,fileName);
+      let fileUri : any;
+      if(response?.path && response?.status){
+        fileUri = await this.appDownloadService.getFileUri(fileName);
+        if(fileUri?.uri){
+          await this.openShareDialogeForPrint(fileUri.uri,fileName);
+        }
       }
-    }
-    await this.loaderService.hideLoader();
-    if(!response.status || !fileUri.status){
-      this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
+      if(!response.status || !fileUri.status){
+        this.notificationService.presentToastOnBottom("Something went wrong please retry.");
+      }
+    }else{
+      await this.checkLoader();
+      const blob = new Blob([fileUrl], { type: 'application/pdf' });
+      const blobUrl = window.URL.createObjectURL(blob);
+      const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = blobUrl;
+        document.body.appendChild(iframe);
+        iframe.contentWindow.print();
     }
   }
   // Click Functions Handling End----------------
@@ -202,6 +213,14 @@ export class FileViewsModalComponent implements OnInit {
       }
       this.appShareService.share(shareOption);
     }
+  }  
+  async checkLoader(){
+    new Promise(async (resolve)=>{
+      const checkLoader = await this.loaderService.loadingCtrl.getTop();
+      if(checkLoader && checkLoader['hasController']){
+        this.loaderService.hideLoader();
+      }
+    });
   }
   // Dependency Functions Handling End ----------
 
