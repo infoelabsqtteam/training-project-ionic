@@ -32,6 +32,9 @@
                 "output": "./svg"
               }
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": ["./node_modules"]
+            },
             "styles": ["src/theme/variables.scss", "src/global.scss"],
             "scripts": ["node_modules/chart.js/dist/chart.js"],
             "aot": false,
