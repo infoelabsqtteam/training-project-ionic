@@ -8,19 +8,13 @@ import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card
 import { FormComponent } from '../form/form.component';
 import { DatePipe } from '@angular/common';
 import { CallDataRecordFormComponent } from '../../modal/call-data-record-form/call-data-record-form.component';
-// import { FileOpener } from '@ionic-native/file-opener/ngx';
 import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
 import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService, ApiCallService, GridCommonFunctionService, DownloadService, ChartService } from '@core/web-core';
 import { Subscription } from 'rxjs';
-// import { Printer, PrintOptions } from '@awesome-cordova-plugins/printer/ngx';
-// import { Directory, Filesystem } from '@capacitor/filesystem';
-// import { DomSanitizer } from '@angular/platform-browser';
-// import { HttpClient } from '@angular/common/http';
-// import { Printer, PrintOptions } from '@ionic-native/printer/ngx';
-import { FileOpener } from '@capacitor-community/file-opener'
+import { FileOpener } from '@capacitor-community/file-opener';
 
 @Component({
   selector: 'app-cards-layout',
