@@ -1957,7 +1957,7 @@ tinymceConfig = {}
     }
     valueOfForm = this.updateMode || this.complete_object_payload_mode ? selectedRow : modifyFormValue;
     
-    if(this.getLocation && valueOfForm['locationDetail'] == ''){
+    if(this.getLocation){
       if(this.center !=null && this.center.lat !=null){
         valueOfForm['locationDetail'] = {
           'latitude' : this.center.lat ? this.center.lat : this.latitude,
@@ -2415,7 +2415,6 @@ tinymceConfig = {}
           //     this.updateFormValue(element,formValue);
           //   }
           // }
-          let dataType = element.datatype;
           let fieldName = element.field_name;
           let object = formValue[fieldName];
           if(object != null && object != undefined){
@@ -2690,11 +2689,7 @@ tinymceConfig = {}
                     if(this.longitude != 0 && this.latitude != 0){
                       this.getAddressfromLatLng(this.latitude,this.longitude)
                     }
-                    if(dataType == "object"){
-                      this.templateForm.controls[element.field_name].setValue(object?.address)
-                    }else{
-                      this.templateForm.controls[element.field_name].setValue(object)
-                    }
+                    this.templateForm.controls[element.field_name].setValue(object)
                   }
                   break;
                 case "daterange":
