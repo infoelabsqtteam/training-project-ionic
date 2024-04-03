@@ -540,8 +540,29 @@ body.barcode-scanning-active {
         --background: transparent;
     }
 }
+#qrScanner{
+    position: absolute;
+    left: 200px;
+    top: 350px;
+}
 .barcode-scanning-modal {
     visibility: visible;
+}
+.scanner-button{
+    display: flex;
+    gap: 10px;
+    ion-fab-button{
+        margin: 10px;
+    }
+}
+
+.scanner_component{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+
 }
 @media (prefers-color-scheme: dark) {
     .barcode-scanning-modal {

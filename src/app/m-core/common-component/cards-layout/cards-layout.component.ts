@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
@@ -19,6 +19,7 @@ import { Capacitor } from '@capacitor/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 import { BarcodeScanningComponent } from '../../modal/barcode-scanning/barcode-scanning.component';
+import { FilePicker } from '@capawesome/capacitor-file-picker';
 
 @Component({
   selector: 'app-cards-layout',
@@ -41,7 +42,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   @Output() parentCardName = new EventEmitter();
 
 
-
+  scannerForm=false
+  scannerFormName="";
   web_site_name: string = '';
   list: any = [];
   carddata: any;
@@ -132,6 +134,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   userLocale:any;
   gpsAlertResult:any;
   form:any;
+  enableScanner:boolean=false;
   /* --------BarCode Scanning Variables------------------------------------------- */
   public readonly barcodeFormat = BarcodeFormat;
   public readonly lensFacing = LensFacing;
@@ -143,7 +146,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   public barcodes = [];
   public isBarCodeScannerSupported = false;
   public isBarCodeCameraPermissionGranted = false;
-  public barCodeFormats = [
+  public barCodeFormats:any = [
     ["AZTEC"],
     ["CODABAR"],
     ["CODE_39"],
@@ -163,6 +166,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   constructor(
     private platform: Platform,
+    private cdr: ChangeDetectorRef,
     private storageService: StorageService,
     private router: Router,
     private dataShareServiceService:DataShareServiceService,
@@ -264,7 +268,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     // }
     this.unSubscribed();
   }
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(changes?: SimpleChanges) {
     this.onloadVariables();
     if(this.data && this.data.filterFormData){
       this.filterForm['value'] = this.data.filterFormData;
@@ -375,6 +379,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.nodatafound=false;
     }else{
       this.nodatafound=true;
+    }
+    if(this.scannerForm && this.formTypeName != ''){
+      let forms=this.card?.card?.form;
+      if(forms && forms[this.formTypeName] && this.carddata?.length == 1){
+        this.editedRowData(0,this.formTypeName)
+      }
+      this.formTypeName='';
+      // this.scannerForm=false;
     }
   }
   checkLoader() {
@@ -740,7 +752,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.selectedIndex = -1;
     }
   }
-  async setCardDetails(card) {  
+  async setCardDetails(card) { 
+    this.enableScanner=false; 
     let criteria:any = [];
     let parentcard:any = {};
     if(card){
@@ -763,6 +776,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           this.addCallingFeature = false;
         }else{
           this.addCallingFeature = true;
+          this.enableScanner = true;
         }
       }else{
         this.addCallingFeature = false;
@@ -824,6 +838,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       if(card.form){
         this.form = card.form;
       }
+      // if(card.enableScanner){
+      //   this.enableScanner = card.enableScanner;
+      // }else{
+      //   this.enableScanner=false;
+      // }
       this.collectionname = card.collection_name;
       if(this.collectionname !=''){
         if(this.currentMenu == undefined){
@@ -1044,7 +1063,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       });
       modal.present();
       modal.componentProps.modal = modal;
-      modal.onDidDismiss().then((result) => {        
+      modal.onDidDismiss().then((result) => {  
+        // if(this.scannerForm){this.scannerForm=false; this.ngOnChanges();}
         this.getCardDataByCollection(this.selectedIndex);
         this.unsubscribedSavecall();
       });
@@ -1608,6 +1628,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   checkBarcodeScannerSupportedorNot(){
     BarcodeScanner.isSupported().then((result) => {
       this.isBarCodeScannerSupported = result.supported;
+      this.startScan();
     }).catch(err => {
       this.barCodeNotExistAlert();
       console.log('checkBarcodeScannerSupportedorNot Error', err);
@@ -1634,7 +1655,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           // this.removeAllBarCodeListeners();
           BarcodeScanner.removeAllListeners().then(() => {
             console.log("removeAllListeners");
-            this.startScan();
+            // this.startScan();
           });          
         }else{
           if(result.camera === 'denied'){
@@ -1667,6 +1688,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       );
     });
   }
+  result='';
   async startScan(): Promise<void> {
     const formats = this.formGroup.get('formats')?.value || this.barCodeFormats;
     const lensFacing =
@@ -1681,14 +1703,179 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         lensFacing: lensFacing,
       },
     });
-    modal.onDidDismiss().then((result) => {
+    modal.onDidDismiss().then(async(result) => {
       const barcode: Barcode | undefined = result.data?.barcode;
-      if (barcode) {
+      // if (barcode && barcode.displayValue) {
+        // this.checkBarcodeFormat(barcode)
         this.saveCallSubscribe();
-        barcode.displayValue = JSON.parse(barcode.displayValue);
-        this.prepareQrCodeData(barcode);
-      }
+        // barcode.displayValue = JSON.parse(barcode.displayValue);
+        console.log("value>>",barcode.displayValue);
+        this.validateScannedData(barcode);
     });
+  }
+
+validateScannedData(barcodeDetails?:any){
+  let forms = this.card?.card?.form;
+  let resultValue='';
+  this.formTypeName ='';
+  // this.scannerFormName="upload_file";"F01-2402150016"
+  // this.formTypeName="upload_file";
+  let barCodeType=barcodeDetails?.format;
+  switch(barCodeType){
+      case "CODE_128":this.formTypeName="upload_file";resultValue=barcodeDetails?.displayValue;
+                      break;
+      default:
+        if(forms && forms[barcodeDetails?.displayValue?.form_name]){
+          this.formTypeName = barcodeDetails?.displayValue?.form_name;
+          resultValue=barcodeDetails?.displayValue?.serialId;
+        }
+  }
+  this.alertPopUp(forms,this.formTypeName,resultValue)
+  // this.openScannedData(forms,this.formTypeName,resultValue)
+//   if(forms && forms[this.formTypeName] && resultValue != ''){
+//     this.scannerForm=true;
+//     this.data={
+//       filterFormData:{
+//         "serialId": resultValue
+//       }
+//     }
+//     this.ngOnChanges();
+//     this.data={};
+// }
+}
+openScannedData(forms:any,formTypeName:any,resultValue:any){
+  if(forms && forms[formTypeName] && resultValue != ''){
+    this.scannerForm=true;
+    this.data={
+      filterFormData:{
+        "serialId": resultValue
+      }
+    }
+    this.ngOnChanges();
+    this.data={};
+}
+}
+userOption=false;
+async checkUserConfirmation(){
+  await this.alertPopUp("v",)
+  console.log(this.userOption);
+}
+
+async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
+  let alertHeader:string = 'Barcode result';
+  let message: string = `your Barcode value is ${resultValue}`;
+  let res=''
+  const alert = await this.alertController.create({
+    cssClass: 'my-gps-class',
+    header: alertHeader,
+    message: message,
+    buttons: [
+      {
+        text: 'CLOSE',
+        role: 'cancel',
+        handler: () => {
+          console.log('Cancel clicked');
+        },
+      },
+      {
+        text: 'PROCEED',
+        role: 'confirmed',
+        handler:() => {
+          console.log('proceed clicked');
+          this.openScannedData(forms,this.formTypeName,resultValue);
+        },
+      }
+    ],
+  })
+  await alert.present();
+}
+
+  
+  // let value=
+  // {
+  //   data:{
+  //     previousValue: {},
+  //     currentValue: {
+  //         filterFormData: {
+  //             serialId: "F01-2312070044"
+  //         }
+  //     },
+  //     firstChange: false
+  // }
+  // }
+  // this.ngOnChanges(value);
+
+    // let form={
+    //   "_id": "65f403aac519ca7063aba971",
+    //   "name": "Sample Inspection"
+
+
+    // }
+    // this.commonAppDataShareService.setFormId(form._id);
+    //   // this.router.navigate(['crm/form']);
+    //   console.log({
+    //     "childData": {},
+    //     "editedRowIndex": -1,
+    //     "addform" : form,
+    //     "formTypeName" : "default",
+    //   });
+    //   this.saveCallSubscribe();
+    //   const modal = await this.modalController.create({
+    //     component: FormComponent,
+    //     componentProps: {
+    //       "childData": this.gridData,
+    //       "editedRowIndex": this.editedRowIndex,
+    //       "addform" : form,
+    //       "formTypeName" : this.formTypeName,
+    //     },
+    //     id: form._id,
+    //     showBackdrop:true,
+    //     backdropDismiss:false,
+    //   });
+    //   modal.present();
+    //   modal.componentProps.modal = modal;
+    //   modal.onDidDismiss().then((result) => {        
+    //     this.getCardDataByCollection(this.selectedIndex);
+    //     this.unsubscribedSavecall();
+    //   });
+  
+  public async readBarcodeFromImage(): Promise<void> {
+    const { files } = await FilePicker.pickImages({ multiple: false });
+    const path = files[0]?.path;
+    if (!path) {
+      return;
+    }
+    const formats = this.formGroup.get('formats')?.value || [];
+    const { barcodes } = await BarcodeScanner.readBarcodesFromImage({
+      path,
+      formats,
+    });
+    this.barcodes = barcodes;
+    let alertType = "GPS";
+    let alertHeader:string = 'Barcode result';
+    let message:string;
+    if(this.barcodes.length==0){
+        message = `Please select Correct Image`;
+      }
+      else{
+       message= `your Barcode value is ${barcodes[0].displayValue}`;
+      }
+      const alert = await this.alertController.create({
+        cssClass: 'my-gps-class',
+        header: alertHeader,
+        message: message,
+        buttons: [
+          {
+            text: 'CLOSE',
+            role: 'confirmed',
+            handler: () => {
+              console.log(alertType.toUpperCase() + " alert action : ", "Confirmed");
+            },
+          },
+        ],
+      })
+      await alert.present();
+    console.log(barcodes);
   }
   async prepareQrCodeData(barCode:any){
     const isGpsEnable = await this.app_googleService.checkGeolocationPermission();

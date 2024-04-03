@@ -1,4 +1,4 @@
-import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2} from '@angular/core';
+import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2, ChangeDetectorRef} from '@angular/core';
 import { NotificationService } from '@core/ionic-core';
 import { ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { UntypedFormBuilder, UntypedFormGroup} from '@angular/forms';
@@ -58,6 +58,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     private menuOrModuleCommonService: MenuOrModuleCommonService,
     private notificationService: NotificationService,
     private formCreationService: FormCreationService,
+    private cdr: ChangeDetectorRef,
     @Optional() private readonly routerOutlet?: IonRouterOutlet,
   ){}
 
@@ -66,6 +67,7 @@ export class CardViewPage implements OnInit, OnDestroy {
     this.load();
     this.searching = false;
     this.renderer.setStyle(this.primaryheader['el'], 'webkitTransition', 'top 700ms');
+    this.cdr.detectChanges();
   }
   ionViewWillLeave(){
     console.log("IonCycle: ","ionViewWillLeave");

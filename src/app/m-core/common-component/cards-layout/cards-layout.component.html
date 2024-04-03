@@ -79,7 +79,7 @@
           <div class="ion-display-flex" *ngFor="let btn of gridButtons">
             <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
               <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
-              <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+              <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
             </ion-item-option>
           </div>
         </ion-item-options>
@@ -187,7 +187,7 @@
             <div class="ion-display-flex" *ngFor="let btn of gridButtons">
               <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
                 <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
-                <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+                <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
               </ion-item-option>
             </div>
           </ion-item-options>
@@ -250,7 +250,7 @@
         <ion-col *ngFor="let btn of gridButtons">
         <ion-button color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" (click)="gridButtonAction(card,i,btn)">
           <span [ngClass]=" " class="material-symbols-outlined" >{{btn.field_class}}</span>
-          <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+          <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
         </ion-button>
         </ion-col>
       </ion-row>
@@ -259,7 +259,7 @@
         <div class="ion-display-flex" *ngFor="let btn of gridButtons">
           <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
             <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
-            <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+            <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
           </ion-item-option>
         </div>
       </ion-item-options>
@@ -333,8 +333,9 @@
     </ion-card>
   </ion-list>
   <!-- Types of Cards End -->
-  <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" *ngIf="addNewEnabled && form && form['default']">
-    <ion-fab-button (click)="addNewForm()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>
+  <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" >
+    <ion-fab-button *ngIf="addNewEnabled && form && form['default']" (click)="addNewForm()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>
+    <ion-fab-button *ngIf="enableScanner"  (click)="checkBarcodeScannerSupportedorNot()" class="addNew ion-margin-top" ><ion-icon name="scan-outline"></ion-icon></ion-fab-button>
   </ion-fab>
 
   <div *ngIf="totalDataCount == 0" class="nodatafound">

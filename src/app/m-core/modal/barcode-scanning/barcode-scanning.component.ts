@@ -1,5 +1,9 @@
 import { AfterViewInit, Component, ElementRef, Input, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Barcode, BarcodeFormat, BarcodeScanner, LensFacing, StartScanOptions } from '@capacitor-mlkit/barcode-scanning';
+import { FilePicker } from '@capawesome/capacitor-file-picker';
+import { AlertController } from '@ionic/angular';
 import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 
 @Component({
@@ -20,10 +24,18 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
   public squareElement: ElementRef<HTMLDivElement> | undefined;
 
   public isTorchAvailable = false;
+  public formGroup = new UntypedFormGroup({
+    formats: new UntypedFormControl([]),
+    lensFacing: new UntypedFormControl(LensFacing.Back),
+    googleBarcodeScannerModuleInstallState: new UntypedFormControl(0),
+    googleBarcodeScannerModuleInstallProgress: new UntypedFormControl(0),
+  });
 
   constructor(
     private readonly popoverModalService: PopoverModalService,
-    private readonly ngZone: NgZone
+    private router:Router,
+    private readonly ngZone: NgZone,
+    private alertController:AlertController
   ) {}
 
   public ngOnInit(): void {
@@ -33,9 +45,9 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   public ngAfterViewInit(): void {
-    setTimeout(() => {
+    // setTimeout(() => {
       this.startScan();
-    }, 250);
+    // }, 250);
   }
 
   public ngOnDestroy(): void {
@@ -58,7 +70,7 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
   public async toggleTorch(): Promise<void> {
     await BarcodeScanner.toggleTorch();
   }
-
+  listener:any;
   private async startScan(): Promise<void> {
     // Hide everything behind the modal (see `src/theme/variables.scss`)
     document.querySelector('body')?.classList.add('barcode-scanning-active');
@@ -94,7 +106,7 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
           [scaledRect.left, scaledRect.top + scaledRect.height],
         ]
       : undefined;
-    const listener = await BarcodeScanner.addListener(
+    this.listener = await BarcodeScanner.addListener(
       'barcodeScanned',
       async (event) => {
         // this.ngZone.run(() => {
@@ -121,9 +133,10 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
         //   listener.remove();
         //   this.closeModal(event.barcode);
         // });
-        let valueType = event.barcode.valueType;
-        if(valueType === 'TEXT'){          
-          listener.remove();
+        let result = event.barcode.displayValue;
+        if(result && result != ''){          
+          this.listener.remove();
+          this.stopScan();
           this.closeModal(event.barcode);
         }
       }
@@ -136,6 +149,50 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
     document.querySelector('body')?.classList.remove('barcode-scanning-active');
     
     await BarcodeScanner.stopScan();
+  }
+  barcodes:any=[];
+  public async readBarcodeFromImage(): Promise<void> {
+    const { files } = await FilePicker.pickImages({ multiple: false });
+    const path = files[0]?.path;
+    if (!path) {
+      return;
+    }
+    const formats = this.formGroup.get('formats')?.value || [];
+    const { barcodes } = await BarcodeScanner.readBarcodesFromImage({
+      path,
+      formats,
+    });
+    this.barcodes = barcodes;
+    let alertType = "GPS";
+    let alertHeader:string = 'Barcode result';
+    let message:string;
+    if(this.barcodes.length==0){
+        message = `Please select Correct Image`;
+        this.closeModal(this.barcodes);
+      }
+      else{
+       message= `your Barcode value is ${barcodes[0].displayValue}`;
+       this.closeModal(this.barcodes);
+      }
+      const alert = await this.alertController.create({
+        cssClass: 'my-gps-class',
+        header: alertHeader,
+        message: message,
+        buttons: [
+          {
+            text: 'CLOSE',
+            role: 'confirmed',
+            handler: () => {
+              console.log(alertType.toUpperCase() + " alert action : ", "Confirmed");
+            },
+          },
+        ],
+      })
+      this.listener.remove();
+      this.stopScan();
+      this.closeModal(this.barcodes);
+      await alert.present();
+    console.log(barcodes);
   }
 
 }
