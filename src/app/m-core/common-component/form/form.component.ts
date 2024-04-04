@@ -2688,7 +2688,7 @@ tinymceConfig = {}
                     }    
                     if(this.longitude != 0 && this.latitude != 0){
                       this.getAddressfromLatLng(this.latitude,this.longitude)
-                    } 
+                    }
                     this.templateForm.controls[element.field_name].setValue(object)
                   }
                   break;

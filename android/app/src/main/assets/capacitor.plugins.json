@@ -4,6 +4,14 @@
 		"classpath": "io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.BarcodeScannerPlugin"
 	},
 	{
+		"pkg": "@capacitor-community/file-opener",
+		"classpath": "com.ryltsov.alex.plugins.file.opener.FileOpenerPlugin"
+	},
+	{
+		"pkg": "@capacitor-community/http",
+		"classpath": "com.getcapacitor.plugin.http.Http"
+	},
+	{
 		"pkg": "@capacitor/app",
 		"classpath": "com.capacitorjs.plugins.app.AppPlugin"
 	},
@@ -50,6 +58,10 @@
 	{
 		"pkg": "@capacitor/status-bar",
 		"classpath": "com.capacitorjs.plugins.statusbar.StatusBarPlugin"
+	},
+	{
+		"pkg": "capacitor-blob-writer",
+		"classpath": "com.equimaps.capacitorblobwriter.BlobWriter"
 	},
 	{
 		"pkg": "@capawesome/capacitor-file-picker",

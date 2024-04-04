@@ -1,7 +1,8 @@
 import { Component, OnInit, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
-// import { ModalDirective } from 'angular-bootstrap-md';
-import { CommonFunctionService, DataShareService, ApiService, ModelService, GridCommonFunctionService } from '@core/web-core';
-import { ModalController } from '@ionic/angular';
+import { FileOpener } from '@capacitor-community/file-opener';
+import { AppShareService, LoaderService, NotificationService, AppDownloadService } from '@core/ionic-core';
+import { CommonFunctionService, DataShareService, ApiService, GridCommonFunctionService } from '@core/web-core';
+import { ModalController, isPlatform } from '@ionic/angular';
 
 
 @Component({
@@ -20,6 +21,11 @@ export class FileViewsModalComponent implements OnInit {
   fileDownloadUrlSubscription;
   editeMode:boolean;
   imgurl:string='';
+  imageUrlList={};
+  selectedIndex = -1;
+  showPreview:boolean = false;
+  showPrint:boolean = false;
+  fieldType:string = '';
 
   @Input() id: string;
   @Input() modal: any;
@@ -33,13 +39,24 @@ export class FileViewsModalComponent implements OnInit {
     private dataShareService:DataShareService,
     private apiService:ApiService,
     private modalController: ModalController,
-    private gridCommonFunctionService: GridCommonFunctionService
+    private gridCommonFunctionService: GridCommonFunctionService,
+    private appShareService: AppShareService,
+    private loaderService: LoaderService,
+    private notificationService: NotificationService,
+    private appDownloadService: AppDownloadService
     ) {
       this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
-        this.setFileDownloadUrl(data);
+        if(this.showPreview){
+          let splitUrl =data.split('?')[0];
+          let imageName = splitUrl.split('/').pop();
+          this.imageUrlList[imageName] = data;
+        }else{
+          this.setFileDownloadUrl(data);
+        }
       })
-     }
+  }
 
+  // 
   ngOnInit(): void {
     let modal = this;
     // ensure id attribute exists
@@ -49,10 +66,19 @@ export class FileViewsModalComponent implements OnInit {
     }
     // add self (this modal instance) to the modal service so it's accessible from controllers
     // this.modalService.add(this);
-
     this.showModal(this.objectData);
   }
-  setFileDownloadUrl(fileDownloadUrl){
+  ngOnDestroy(): void {
+    // this.modalService.remove(this.id);
+    if(this.fileDownloadUrlSubscription){
+      this.fileDownloadUrlSubscription.unsubscribe();
+    }
+  }
+  // Subscriber Functions Handling Start -------------------
+  setFileDownloadUrl(fileDownloadUrl:string,fileName?:string){
+    if(this.showPreview){
+      this.downloadClick = fileName;
+    }
     if (fileDownloadUrl != '' && fileDownloadUrl != null && this.downloadClick != '') {
       this.imgurl = fileDownloadUrl;
       let link = document.createElement('a');
@@ -62,30 +88,15 @@ export class FileViewsModalComponent implements OnInit {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      this.notificationService.presentToastOnBottom(this.downloadClick + ' file, downloaded into downloads');
       this.downloadClick = '';
       this.apiService.ResetDownloadUrl();
+      this.checkLoader();
     }
   }
-  // remove self from modal service when directive is destroyed
-  ngOnDestroy(): void {
-    // this.modalService.remove(this.id);
-    if(this.fileDownloadUrlSubscription){
-      this.fileDownloadUrlSubscription.unsubscribe();
-    }
-  }
-  showModal(alert){
-    this.field = alert.field;
-    this.coloumName = this.field.label ? this.field.label : this.field.field_label;
-    this.data = JSON.parse(JSON.stringify(alert.data.data));
-    
-    if(alert.menu_name && alert.menu_name != null && alert.menu_name != undefined && alert.menu_name != ''){
-      this.currentPage = alert.menu_name;
-    } 
-    if(alert.data?.gridColumns){
-      this.gridColumns = JSON.parse(JSON.stringify(alert.data.gridColumns));
-    }     
-    // this.fileViewModal.show()    
-  }
+  // Subscriber Functions Handling End -----------
+  
+  // Click Functions Handling Start-----------------------
   closeModal(role?:string){
     // this.fileViewModal.hide()
     this.dismissModal(role);
@@ -94,23 +105,130 @@ export class FileViewsModalComponent implements OnInit {
     // this.editedColumne=false;
     this.gridColumns=[];
   }
-  getddnDisplayVal(val) {
-    return this.commonFunctionService.getddnDisplayVal(val);    
-  }
-  getValueForGrid(field,object){
-    return this.gridCommonFunctionService.getValueForGrid(field,object);
-  }
   downloadFile(file){
     this.downloadClick = file.rollName;
     this.commonFunctionService.downloadFile(file);
   }
-
+  // remove self from modal service when directive is destroyed
   dismissModal(role:string){
     if(this.modal && this.modal?.offsetParent['hasController']){
       this.modal?.offsetParent?.dismiss({'dismissed': true},role);
     }else{        
       this.modalController.dismiss({'dismissed': true},role,);
     }
+  }
+  accordionGroupChange(event:any){
+    this.selectedIndex = event?.detail?.value;
+  }
+  async downloadImage(imageUrl: string, fileName: string) {
+    await this.loaderService.showLoader("Dowloading...");
+    if(isPlatform('hybrid')){
+      const response = await this.appDownloadService.saveFileAndGetFileUriFromUrl(imageUrl,fileName,'Documents');
+      this.loaderService.hideLoader();
+      if(response?.path){
+        const confirm = await this.notificationService.confirmAlert(fileName, "Downloaded into Documents.  Do you want to open it ?", "Open");
+        if(confirm == "confirm"){
+          FileOpener.open({filePath:response?.path, openWithDefault:true,}).then( res => {
+            console.log("File Opened");
+          }).catch((e)=>{
+            console.error("File Opening error ", JSON.stringify(e));
+          })
+        }
+      }else{
+        this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
+      }
+    }else{
+      this.setFileDownloadUrl(imageUrl,fileName);
+    }
+  }
+  async printFile(fileUrl:string,fileName:string){
+    await this.loaderService.showLoader("Preparing File to print");
+    if(isPlatform('hybrid')){
+      const response = await this.appDownloadService.saveFileAndGetFileUriFromUrl(fileUrl,fileName);
+      let fileUri : any;
+      if(response?.path && response?.status){
+        fileUri = await this.appDownloadService.getFileUri(fileName);
+        if(fileUri?.uri){
+          await this.openShareDialogeForPrint(fileUri.uri,fileName);
+        }
+      }
+      if(!response.status || !fileUri.status){
+        this.notificationService.presentToastOnBottom("Something went wrong please retry.");
+      }
+    }else{
+      await this.checkLoader();
+      const blob = new Blob([fileUrl], { type: 'application/pdf' });
+      const blobUrl = window.URL.createObjectURL(blob);
+      const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = blobUrl;
+        document.body.appendChild(iframe);
+        iframe.contentWindow.print();
+    }
+  }
+  // Click Functions Handling End----------------
+  
+  // Dependency Functions Handling Start -------------------
+  showModal(alert){
+    this.field = alert?.field;
+    this.coloumName = this.field?.label ? this.field.label : this.field?.field_label;
+    this.data = JSON.parse(JSON.stringify(alert.data.data));
+    this.showPreview = alert?.previewFile;
+    this.showPrint = alert?.printFile;
+    this.fieldType = alert?.field_type;
+    if(alert.menu_name && alert.menu_name != null && alert.menu_name != undefined && alert.menu_name != ''){
+      this.currentPage = alert.menu_name;
+    } 
+    if(alert.data?.gridColumns){
+      this.gridColumns = JSON.parse(JSON.stringify(alert.data.gridColumns));
+    }     
+    // this.fileViewModal.show()
+    if(this.showPrint){
+      this.showPreview = true;
+      if(this.gridColumns.length == 0){
+        this.getImagesUrl(this.data);
+      }
+    }   
+  }
+  getImagesUrl(data:any){
+    for (let index = 0; index < data.length; index++) {
+      const element = data[index];
+      const payload = {
+        path: 'download',
+        data: element
+      }
+      this.imageUrlList[element['rollName']] = '';
+      this.apiService.DownloadFile(payload);    
+    }
+  }
+  async openShareDialogeForPrint(fileUri,fileName){
+    const canShare = await this.appShareService.checkDeviceCanShare();    
+    await this.loaderService.hideLoader();
+    if(canShare && fileUri){
+      let shareOption = {
+        title: fileName ? fileName : "Print File",
+        text: "Here is the file you requested.",
+        url: fileUri,
+        dialogTitle: 'To print ' + fileName + ', please select print app'
+      }
+      this.appShareService.share(shareOption);
+    }
+  }  
+  async checkLoader(){
+    new Promise(async (resolve)=>{
+      const checkLoader = await this.loaderService.loadingCtrl.getTop();
+      if(checkLoader && checkLoader['hasController']){
+        this.loaderService.hideLoader();
+      }
+    });
+  }
+  // Dependency Functions Handling End ----------
+
+  getddnDisplayVal(val) {
+    return this.commonFunctionService.getddnDisplayVal(val);    
+  }
+  getValueForGrid(field,object){
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   }
 
 }

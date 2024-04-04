@@ -1,6 +1,6 @@
 import { Component, OnInit, AfterViewInit, Input, SimpleChanges } from '@angular/core';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
-import { ModelService, DownloadService } from '@core/ionic-core';
+import { ModelService, AppDownloadService } from '@core/ionic-core';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
 import { ModalController, isPlatform } from '@ionic/angular';
 import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService, ApiCallService } from '@core/web-core';
@@ -32,7 +32,7 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     private chartService:ChartService,
     private modalController: ModalController,
     private modelService: ModelService,
-    private downloadService: DownloadService,
+    private appDownloadService: AppDownloadService,
     private apiCallService: ApiCallService
   ){
     // this.getMongoChartList([]);
@@ -194,9 +194,9 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     let chart = this.createdChartList[chartId];    
     let blobData:any = await this.chartService.getDownloadData(chart,object);
     if(isPlatform('hybrid')){
-      this.downloadService.downloadBlobData(blobData.url, blobData.name)
+      const response:any = await this.appDownloadService.downloadBlobData(blobData.url, blobData.name);
     }else{
-      this.chartService.downlodBlobData(blobData.url, blobData.name)
+      this.chartService.downlodBlobData(blobData.url, blobData.name);
     }
   }  
   changeTheme(object,value){
