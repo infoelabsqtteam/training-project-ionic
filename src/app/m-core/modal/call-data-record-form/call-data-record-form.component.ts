@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { NotificationService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { IonDatetime, ModalController } from '@ionic/angular';
@@ -21,7 +21,7 @@ export class CallDataRecordFormComponent implements OnInit {
   @Input() startTime:any;
   @Input() modal: any;
   
-  cdrForm: FormGroup;
+  cdrForm: UntypedFormGroup;
   followupDate:any='';
   followupTime:any='';
   contactNumber:any;
@@ -43,7 +43,7 @@ export class CallDataRecordFormComponent implements OnInit {
   ];
 
   constructor(    
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private datePipe: DatePipe,
     private apiService: ApiService,
     private dataShareService:DataShareService,

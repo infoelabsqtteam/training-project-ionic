@@ -13,7 +13,7 @@ import { File } from '@ionic-native/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
-import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService } from '@core/web-core';
+import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService, ApiCallService, GridCommonFunctionService, DownloadService } from '@core/web-core';
 
 @Component({
   selector: 'app-cards-layout',
@@ -154,7 +154,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private appPermissionService: AppPermissionService,
     private actionSheetController: ActionSheetController,
     private coreFunctionService: CoreFunctionService,
-    private authService: AuthService
+    private authService: AuthService,
+    private apiCallService: ApiCallService,
+    private gridCommonFunctionService: GridCommonFunctionService,
+    private downloadService: DownloadService
   ) 
   {
     
@@ -199,12 +202,87 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     });
     
   }
-  saveCallSubscribe(){
-    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
-      this.setSaveResponce(responce);
-    })
-  }
 
+  // Ionic LifeCycle Function Handling Start------------------  
+  ionViewWillEnter(){
+    console.log("ionViewwillEnter");
+  }
+  ionViewwillLeave(){
+    this.carddata=[];
+    this.nodatafound=false;
+  }
+  ionVieDidEnter(){
+    console.log("DidEnter");
+    // this.checkLoader();
+  }
+  ionViewDidLeave(){
+    this.carddata=[];
+  }
+  // Ionic LifeCycle Function Handling End--------------------
+
+  // Angular LifeCycle Function Handling Start--------------------
+  ngOnInit() {     
+    // this.renderer.setStyle(this.cardViewContent['el'], 'webkitTransition', 'top 700ms');
+  }
+  ngOnDestroy(): void {
+    // if (this.cardListSubscription) {
+    //   this.cardListSubscription.unsubscribe();
+    // }
+    this.unSubscribed();
+  }
+  ngOnChanges(changes: SimpleChanges) {
+    this.onloadVariables();
+    if(this.data && this.data.filterFormData){
+      this.filterForm['value'] = this.data.filterFormData;
+      // this.getGridData(this.collectionname);
+      if(this.card && this.card.card && this.card.card.name){
+        this.setCardDetails(this.card.card);
+      }
+    }else if(this.data && this.data.searchData && this.data.searchData.length > 0){
+      let criteria = [];
+      if(this.card && this.card.card && this.card.card){
+        let card = this.card.card;
+        if(card && card.search_field_name && card.search_field_name != ''){
+          const cr = card.search_field_name + ";stwic;" +this.data.searchData + ";STATIC";
+          criteria.push(cr);
+          this.getGridData(this.collectionname,criteria);
+        }
+      }
+      
+    }else{
+      this.filterForm['value'] = {};
+      if(this.data && this.data._id){
+        this.detailPage = true;
+      }
+      if(this.card && this.card.card && this.card.card.name){
+        this.setCardAndTab(this.card);
+      }
+      if(this.card && this.card.card && this.card.card.grid_selection_inform != null){
+        this.appDataShareService.setGridSelectionCheck(this.card.card.grid_selection_inform)
+      }
+    }
+  }
+  // Angular LifeCycle Function Handling End-------------------
+
+  // Subscriber Functions Handling Start -------------------
+  initializeApp() {
+    this.platform.ready().then(() => {
+
+      // this.callLog.hasReadPermission().then(hasPermission => {
+      //   if (!hasPermission) {
+      //     this.callLog.requestReadPermission().then(results => {
+      //       this.getContacts("type","1","==");
+      //     })
+      //       .catch(e => console.log(" requestReadPermission " + JSON.stringify(e)));
+      //   } else {
+      //     this.getContacts("type", "1", "==");
+      //   }
+      // })
+      //   .catch(e => console.log(" hasReadPermission " + JSON.stringify(e)));
+
+    });
+
+  }
   setCardData(data:any){
     if( this.currentPage < this.totalPageCount){
       if(this.loadMoreData && this.carddata.length !== 0 && this.totalDataCount !== 0 && this.updateMode){
@@ -265,50 +343,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.nodatafound=true;
     }
   }
-  resetVariabls(){
-    if(this.updateMode){
-    }
-    if(!this.updateMode){
-      this.carddata = []; 
-      this.selectedgriddataId="";
-    }
-    this.formTypeName = '';
-    this.editedRowIndex = -1;
-    this.currentPageCount = 1;
-    this.gridData = {};
-  }
-  initializeApp() {
-    this.platform.ready().then(() => {
-
-      // this.callLog.hasReadPermission().then(hasPermission => {
-      //   if (!hasPermission) {
-      //     this.callLog.requestReadPermission().then(results => {
-      //       this.getContacts("type","1","==");
-      //     })
-      //       .catch(e => console.log(" requestReadPermission " + JSON.stringify(e)));
-      //   } else {
-      //     this.getContacts("type", "1", "==");
-      //   }
-      // })
-      //   .catch(e => console.log(" hasReadPermission " + JSON.stringify(e)));
-
-    });
-
-  }
-  ionViewwillEnter(){
-    console.log("ionViewwillEnter");
-  }
-  ionViewwillLeave(){
-    this.carddata=[];
-    this.nodatafound=false;
-  }
-  ionViewDidLeave(){
-    this.carddata=[];
-  }
-  ionVieDidEnter(){
-    console.log("DidEnter");
-    // this.checkLoader();
-  }
   checkLoader() {
     new Promise(async (resolve)=>{
       let checkLoader = await this.loaderService.loadingCtrl.getTop();
@@ -317,61 +351,84 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     });
   }
-
-  ngOnChanges(changes: SimpleChanges) {
-    this.onloadVariables();
-    if(this.data && this.data.filterFormData){
-      this.filterForm['value'] = this.data.filterFormData;
-      // this.getGridData(this.collectionname);
-      if(this.card && this.card.card && this.card.card.name){
-        this.setCardDetails(this.card.card);
+  setDownloadPdfData(downloadPdfData){
+    if (downloadPdfData != '' && downloadPdfData != null && this.downloadPdfCheck != '') {
+      const file = new Blob([downloadPdfData.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(file);
+      let fileExt:any = '';
+      let fileName:any = '';
+      if(downloadPdfData && downloadPdfData.filename){
+        fileExt = downloadPdfData.filename.split('.').pop();
+        fileName = downloadPdfData.filename;
+      }      
+      if(this.platform.is("hybrid")){
+        this.downloadToMobile(file,fileName);
+      }else{
+        this.downloadService.download(url,downloadPdfData?.filename)
       }
-    }else if(this.data && this.data.searchData && this.data.searchData.length > 0){
-      let criteria = [];
-      if(this.card && this.card.card && this.card.card){
-        let card = this.card.card;
-        if(card && card.search_field_name && card.search_field_name != ''){
-          const cr = card.search_field_name + ";stwic;" +this.data.searchData + ";STATIC";
-          criteria.push(cr);
-          this.getGridData(this.collectionname,criteria);
-        }
-      }
-      
+      this.downloadPdfCheck = '';
+      this.apiService.ResetPdfData();
+      fileExt = '';
+      fileName = '';
+    }
+  }
+  async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
+    let file_Type:any = '';
+    let folderName:any = '';
+    if(blobData && blobData.type){
+      file_Type = blobData.type;
+    }
+    if(FolderName == undefined || FolderName == null){
+      folderName = 'Download'
     }else{
-      this.filterForm['value'] = {};
-      if(this.data && this.data._id){
-        this.detailPage = true;
-      }
-      if(this.card && this.card.card && this.card.card.name){
-        this.setCardAndTab(this.card);
-      }
-      if(this.card && this.card.card && this.card.card.grid_selection_inform != null){
-        this.appDataShareService.setGridSelectionCheck(this.card.card.grid_selection_inform)
+      folderName = FolderName;
+    }
+    let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
+    let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
+
+    if(readPermission && writePermission){
+
+      // ==========using native file    
+      this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
+
+        this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
+          // confirm alert
+          let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
+          if(openFile == "confirm"){
+            const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
+            const mimeType = file_Type;      
+            this.fileOpener.open(path,mimeType)
+            .then(()=> console.log('File is opened'))
+            .catch(error => console.log('Error opening file ',error));
+          }
+        }).catch( (error:any) =>{
+          this.notificationService.presentToastOnBottom(JSON.stringify(error), 'danger');
+        })
+        
+      }).catch( (error:any) =>{
+        if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
+          
+          this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
+            console.log('Directory create '+ response);
+            this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
+              this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
+            })
+
+          }).catch( (error:any) =>{            
+            this.notificationService.presentToastOnBottom(JSON.stringify(error));
+          })
+        }
+      });
+    }else{
+      let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
+      if(gavepermission == "cancel"){
+        this.apppermissionsService.openNativeSettings('application_details');
       }
     }
   }
+  // Subscriber Functions Handling End -------------------
 
-  onloadVariables(){
-    this.checkionEvents();
-    this.nodatafound=false;
-    this.gridButtons=[];
-    this.currentPageCount = 1;    
-    this.carddata=[];
-    this.hasDetaildCard=false;
-    this.selectedgriddataId = "";
-    this.addNewEnabled = false;
-    this.form = "";
-  }
-  ngOnInit() {     
-    // this.renderer.setStyle(this.cardViewContent['el'], 'webkitTransition', 'top 700ms');
-  }
-
-  ngOnDestroy(): void {
-    // if (this.cardListSubscription) {
-    //   this.cardListSubscription.unsubscribe();
-    // }
-    this.unSubscribed();
-  }
+  // Unsubscribe Functions Handling Start -------------------
   unSubscribed(){
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
@@ -391,7 +448,202 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.saveResponceSubscription.unsubscribe();
     }
   }
-  
+  // Unsubscribe Functions Handling End -------------------
+
+  // Click Functions Handling Start---------------------
+  async modaldetailCardButton(column, data){
+    if(this.hasDetaildCard){
+     const cardmaster=this.dataShareServiceService.getCardList();
+      // const cardmaster = this.commonAppDataShareService.getModuleList();
+      const childColumn = this.childColumn;
+      if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
+        cardmaster.forEach(element => {
+          if(element._id == childColumn._id ){
+            this.childColumns = element.fields;
+            this.childCardType = element.card_type;
+          }
+        });
+      }
+      const modal = await this.modalController.create({
+        component: ModalDetailCardComponent,
+        componentProps: {
+          "childData": data,
+          "childColumns": this.childColumns,
+          "childDataTitle": this.childDataTitle,
+          "childCardType" : this.childCardType,
+          "selected_tab_index": this.selectedIndex
+        },
+        id: data._id,
+        showBackdrop:true,
+        backdropDismiss:false,
+      });
+      modal.present();
+      modal.componentProps.modal = modal;
+      modal.onDidDismiss().then((result) => {
+        this.detailPage = false;
+      });
+    }else{
+      return console.log("No detail card found.");
+    }
+  }
+  call(card:any,Index:number) {
+    let callingNumber:any;
+    let startTime: any = new Date();
+    let startTimeMs:any = startTime.getTime(startTime);
+    this.editedRowIndex = Index;
+    if(card.mobile && card.mobile.length >= 10){
+      callingNumber = card.mobile;
+    }else if(card.billing_mobile && card.billing_mobile.length >= 10){
+      callingNumber = card.billing_mobile;
+    }else if(card.phone && card.phone.length >= 10){
+      callingNumber = card.phone;
+    }else{
+      console.log("No number Found");
+    }
+
+    if(callingNumber && callingNumber != null){
+      this.callNumber.callNumber(callingNumber, true)
+        .then(res => {
+          // console.log('Launched dialer! ' + res);
+          this.notificationService.presentToastOnBottom("Calling on :- " + callingNumber,"success");
+          
+          this.callDetailRecord(card, startTimeMs);
+        })
+        .catch(err => console.log('Error launching dialer ' + err));
+    }else{
+      this.notificationService.presentToastOnBottom("Invalid number or Number not found","danger");
+    }
+  }  
+  gridButtonAction(gridData,index,button,confirmation?:boolean){
+    if(button && button.onclick && button.onclick.action_name){
+      switch (button.onclick.action_name.toUpperCase()) {
+        case "PREVIEW":
+          this.checkPreviewData = true;
+          this.apiCallService.preview(gridData,this.currentMenu,'grid-preview-modal');
+          break;
+        case "TEMPLATE": 
+          let object =JSON.parse(JSON.stringify(gridData))    
+          console.log(gridData); 
+          //this.templateModal('template-modal',object,index, 'Template')
+          break;
+        case 'UPDATE':
+          this.editedRowData(index,button.onclick.action_name.toUpperCase())
+          break;
+        case 'DOWNLOAD':
+          let currentMenu = '';
+          if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
+            currentMenu = this.currentMenu.name
+          }
+          this.downloadPdfCheck = this.apiCallService.downloadPdf(gridData,currentMenu);         
+          break;
+          case 'GETFILE':
+            let currentsMenu = '';
+          if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
+            currentsMenu = this.currentMenu.name
+          }
+          this.downloadPdfCheck = this.apiCallService.getPdf(gridData,currentsMenu);         
+          break;
+          case 'TDS':
+            let currentMenuForTds = '';
+            this.flagForTdsForm = true;
+            this.currentRowIndex = index;
+          if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
+            currentMenuForTds = this.currentMenu.name
+          }
+          const getFormData:any = this.apiCallService.getFormForTds(gridData,currentMenuForTds,this.carddata[index]);        
+          if(getFormData._id && getFormData._id != undefined && getFormData._id != null && getFormData._id != ''){
+            getFormData.data['data']=gridData;
+            this.apiService.GetForm(getFormData);
+          }else{
+            getFormData.data=gridData;
+            this.apiService.GetForm(getFormData);
+          }
+          break;
+        case 'CANCEL':
+          this.editedRowData(index,button.onclick.action_name)
+          break;
+        case 'INLINEEDIT':
+          //this.gridInlineEdit(gridData,index);
+          break;
+        case 'COMMUNICATION':
+          // this.commonFunctionService.openModal('communication-modal',gridData);
+          break;
+        case 'DOWNLOAD_QR':
+          this.downloadQRCode = this.commonFunctionService.getQRCode(gridData);
+          this.checkForDownloadReport = true;
+          break;
+        case 'DELETE_ROW':
+          if(this.permissionService.checkPermission(this.currentMenu.name, 'delete')){
+            this.editedRowData(index,button)
+          }else{
+            this.notificationService.showAlert("Permission denied","You don't have this Permission",['Dismiss']);
+          }
+            break;
+          // case 'AUDIT_HISTORY':
+          //   if (this.permissionService.checkPermission(this.currentMenu.name, 'auditHistory')) {
+          //     let obj = {
+          //       "aduitTabIndex": this.selectTabIndex,
+          //       "tabname": this.tabs
+          //     }
+          //     this.commonFunctionService.getAuditHistory(gridData,this.elements[index]);
+          //     this.modalService.open('audit-history',obj);
+          //   }else {
+          //     this.notificationService.notify("bg-danger", "Permission denied !!!");
+          //   }
+          // break;
+          case 'GOOGLE_MAP':
+            this.loadNextGrid(index, gridData, button.onclick.action_name.toUpperCase());
+            break;
+          case 'GOOGLE_TRACKING_START':
+            this.startTracking(gridData, index, button.onclick.action_name.toUpperCase());
+            break;
+          case 'GOOGLE_TRACKING_END':
+            if(confirmation){
+              this.saveCurrentLocationDetails(gridData,index);
+              // this.editedRowData(index,button.onclick.action_name);
+            }else{
+              this.presentConfirmationActionSheet(gridData, index, button);
+            }
+            break;
+        default:
+          this.editedRowData(index,button.onclick.action_name);
+          break;
+      }
+    }
+  }
+  // Click Functions Handling End---------------------
+
+  // Dependency Functions Handling Start -------------------
+
+  // Dependency Functions Handling End -------------------
+  saveCallSubscribe(){
+    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
+      this.setSaveResponce(responce);
+    })
+  }  
+  resetVariabls(){
+    if(this.updateMode){
+    }
+    if(!this.updateMode){
+      this.carddata = []; 
+      this.selectedgriddataId="";
+    }
+    this.formTypeName = '';
+    this.editedRowIndex = -1;
+    this.currentPageCount = 1;
+    this.gridData = {};
+  }
+  onloadVariables(){
+    this.checkionEvents();
+    this.nodatafound=false;
+    this.gridButtons=[];
+    this.currentPageCount = 1;    
+    this.carddata=[];
+    this.hasDetaildCard=false;
+    this.selectedgriddataId = "";
+    this.addNewEnabled = false;
+    this.form = "";
+  }  
   onContentScroll(event:any) {
     let scrollEventVal:any = {};
     if (event.detail.scrollTop >= 50) {
@@ -406,7 +658,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.primaryheaderNew.emit(scrollEventVal);
     }
   }
-
   getCardDataByCollection(i: number,parentId?:string) {
     this.resetVariabls();
     const cardWithTab = this.menuOrModuleCommonService.getCard(i);
@@ -455,7 +706,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.selectedIndex = -1;
     }
   }
-
   async setCardDetails(card) {  
     let criteria:any = [];
     let parentcard:any = {};
@@ -559,7 +809,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.getGridData(this.collectionname, criteria, parentcard);
     }
   }
-
   async collectionSpecificCriteria(card:any){
     let customCriteria = [];
     if(this.cardType == "trackOnMap"){
@@ -578,61 +827,22 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     }
   }
-
   search(searchcard) {
     // const criteria = "quotation_status;stwic;"+this.searchcard+";STATIC";
     // this.getGridData(this.collectionname, [criteria]);
     // this.getGridData(this.collectionname);
   }
-
   onChangeValue(myInput) {
     this.inValue = myInput.length;
     if (this.inValue <= 0) {
       this.getGridData(this.collectionname);
     }
   }
-
   // goBack(){
   //   this.carddata = [];
   //   this.tabMenu = [];
   //   this.openFilter = false;
-  // }
-
-  async modaldetailCardButton(column, data){
-    if(this.hasDetaildCard){
-     const cardmaster=this.dataShareServiceService.getCardList();
-      // const cardmaster = this.commonAppDataShareService.getModuleList();
-      const childColumn = this.childColumn;
-      if(cardmaster && cardmaster.length > 0 && childColumn && childColumn._id){
-        cardmaster.forEach(element => {
-          if(element._id == childColumn._id ){
-            this.childColumns = element.fields;
-            this.childCardType = element.card_type;
-          }
-        });
-      }
-      const modal = await this.modalController.create({
-        component: ModalDetailCardComponent,
-        componentProps: {
-          "childData": data,
-          "childColumns": this.childColumns,
-          "childDataTitle": this.childDataTitle,
-          "childCardType" : this.childCardType,
-          "selected_tab_index": this.selectedIndex
-        },
-        id: data._id,
-        showBackdrop:true,
-        backdropDismiss:false,
-      });
-      modal.present();
-      modal.componentProps.modal = modal;
-      modal.onDidDismiss().then((result) => {
-        this.detailPage = false;
-      });
-    }else{
-      return console.log("No detail card found.");
-    }
-  }
+  // }  
 
   // go to new page 2nd method
   async detailCardButton(column, data){
@@ -653,36 +863,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   
   comingSoon() {
     this.notificationService.presentToastOnBottom('Comming Soon...');
-  }
-
-  call(card:any,Index:number) {
-    let callingNumber:any;
-    let startTime: any = new Date();
-    let startTimeMs:any = startTime.getTime(startTime);
-    this.editedRowIndex = Index;
-    if(card.mobile && card.mobile.length >= 10){
-      callingNumber = card.mobile;
-    }else if(card.billing_mobile && card.billing_mobile.length >= 10){
-      callingNumber = card.billing_mobile;
-    }else if(card.phone && card.phone.length >= 10){
-      callingNumber = card.phone;
-    }else{
-      console.log("No number Found");
-    }
-
-    if(callingNumber && callingNumber != null){
-      this.callNumber.callNumber(callingNumber, true)
-        .then(res => {
-          // console.log('Launched dialer! ' + res);
-          this.notificationService.presentToastOnBottom("Calling on :- " + callingNumber,"success");
-          
-          this.callDetailRecord(card, startTimeMs);
-        })
-        .catch(err => console.log('Error launching dialer ' + err));
-    }else{
-      this.notificationService.presentToastOnBottom("Invalid number or Number not found","danger");
-    }
-  }
+  }  
 
   callInvoice(card:any,Index:number) {
     let callingNumber:any;
@@ -704,7 +885,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     return listCiteria;
   }
   async getGridData(collectionName,criteria?,parentCard?){
-    const crList = this.commonFunctionService.getfilterCrlist(this.columnList, this.filterForm.value);
+    const crList = this.apiCallService.getfilterCrlist(this.columnList, this.filterForm.value);
     const params = collectionName;
     let cardCriteria = [];
     let object = {};
@@ -724,7 +905,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     
     let user = this.storageService.GetUserInfo();
     object["user"]=user;
-    let data = this.commonFunctionService.getPaylodWithCriteria(params,'',cardCriteria,object);
+    let data = this.apiCallService.getPaylodWithCriteria(params,'',cardCriteria,object);
     this.currentPage = this.currentPageCount - 1;
     data['pageNo'] = this.currentPage;
     data['pageSize'] = this.dataPerPageCount;
@@ -758,7 +939,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   getValueForGrid(field,object){
-    return this.commonFunctionService.getValueForGrid(field,object);
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   } 
 
   tabmenuClick(index:number){
@@ -916,103 +1097,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       event.target.complete();
     }
   }
-  gridButtonAction(gridData,index,button,confirmation?:boolean){
-    if(button && button.onclick && button.onclick.action_name){
-      switch (button.onclick.action_name.toUpperCase()) {
-        case "PREVIEW":
-          this.checkPreviewData = true;
-          this.commonFunctionService.preview(gridData,this.currentMenu,'grid-preview-modal');
-          break;
-        case "TEMPLATE": 
-          let object =JSON.parse(JSON.stringify(gridData))    
-          console.log(gridData); 
-          //this.templateModal('template-modal',object,index, 'Template')
-          break;
-        case 'UPDATE':
-          this.editedRowData(index,button.onclick.action_name.toUpperCase())
-          break;
-        case 'DOWNLOAD':
-          let currentMenu = '';
-          if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
-            currentMenu = this.currentMenu.name
-          }
-          this.downloadPdfCheck = this.commonFunctionService.downloadPdf(gridData,currentMenu);         
-          break;
-          case 'GETFILE':
-            let currentsMenu = '';
-          if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
-            currentsMenu = this.currentMenu.name
-          }
-          this.downloadPdfCheck = this.commonFunctionService.getPdf(gridData,currentsMenu);         
-          break;
-          case 'TDS':
-            let currentMenuForTds = '';
-            this.flagForTdsForm = true;
-            this.currentRowIndex = index;
-          if(this.currentMenu.name && this.currentMenu.name != null && this.currentMenu.name != undefined && this.currentMenu.name != ''){
-            currentMenuForTds = this.currentMenu.name
-          }
-          const getFormData:any = this.commonFunctionService.getFormForTds(gridData,currentMenuForTds,this.carddata[index]);        
-          if(getFormData._id && getFormData._id != undefined && getFormData._id != null && getFormData._id != ''){
-            getFormData.data['data']=gridData;
-            this.apiService.GetForm(getFormData);
-          }else{
-            getFormData.data=gridData;
-            this.apiService.GetForm(getFormData);
-          }
-          break;
-        case 'CANCEL':
-          this.editedRowData(index,button.onclick.action_name)
-          break;
-        case 'INLINEEDIT':
-          //this.gridInlineEdit(gridData,index);
-          break;
-        case 'COMMUNICATION':
-          // this.commonFunctionService.openModal('communication-modal',gridData);
-          break;
-        case 'DOWNLOAD_QR':
-          this.downloadQRCode = this.commonFunctionService.getQRCode(gridData);
-          this.checkForDownloadReport = true;
-          break;
-        case 'DELETE_ROW':
-          if(this.permissionService.checkPermission(this.currentMenu.name, 'delete')){
-            this.editedRowData(index,button)
-          }else{
-            this.notificationService.showAlert("Permission denied","You don't have this Permission",['Dismiss']);
-          }
-            break;
-          // case 'AUDIT_HISTORY':
-          //   if (this.permissionService.checkPermission(this.currentMenu.name, 'auditHistory')) {
-          //     let obj = {
-          //       "aduitTabIndex": this.selectTabIndex,
-          //       "tabname": this.tabs
-          //     }
-          //     this.commonFunctionService.getAuditHistory(gridData,this.elements[index]);
-          //     this.modalService.open('audit-history',obj);
-          //   }else {
-          //     this.notificationService.notify("bg-danger", "Permission denied !!!");
-          //   }
-          // break;
-          case 'GOOGLE_MAP':
-            this.loadNextGrid(index, gridData, button.onclick.action_name.toUpperCase());
-            break;
-          case 'GOOGLE_TRACKING_START':
-            this.startTracking(gridData, index, button.onclick.action_name.toUpperCase());
-            break;
-          case 'GOOGLE_TRACKING_END':
-            if(confirmation){
-              this.saveCurrentLocationDetails(gridData,index);
-              // this.editedRowData(index,button.onclick.action_name);
-            }else{
-              this.presentConfirmationActionSheet(gridData, index, button);
-            }
-            break;
-        default:
-          this.editedRowData(index,button.onclick.action_name);
-          break;
-      }
-    }
-  }
 
   editedRowData(index,formName) {
     if (this.permissionService.checkPermission(this.currentMenu.name, 'edit')) {
@@ -1026,14 +1110,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }   
         if(this.checkFieldsAvailability('UPDATE')){
           this.addNewForm(formName);
-          this.commonFunctionService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
+          this.apiCallService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
         }else{
           return;
         }  
         // this.addNewForm(formName, 'edit');      
       }else{
         this.addNewForm(formName, 'edit');
-        this.commonFunctionService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
+        this.apiCallService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
       }  
       this.selectedIndex = index;    
     } else {
@@ -1147,38 +1231,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   getChildGridFieldsbyId(childrGridId:string){
       const params = "grid";
       const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
-      const payload = this.commonFunctionService.getPaylodWithCriteria(params, '', criteria, {});
+      const payload = this.apiCallService.getPaylodWithCriteria(params, '', criteria, {});
       this.apiService.GetChildGrid(payload);
   }
   // myFiles:any;
-  setDownloadPdfData(downloadPdfData){
-    if (downloadPdfData != '' && downloadPdfData != null && this.downloadPdfCheck != '') {
-      let link = document.createElement('a');
-      link.setAttribute('type', 'hidden');
-      const file = new Blob([downloadPdfData.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(file);
-      link.href = url;
-      let fileExt:any = '';
-      let fileName:any = '';
-      if(downloadPdfData && downloadPdfData.filename){
-        fileExt = downloadPdfData.filename.split('.').pop();
-        fileName = downloadPdfData.filename;
-      }
-      
-      if(this.platform.is("hybrid")){
-        this.downloadToMobile(file,fileName);
-      }else{
-        link.download = downloadPdfData.filename;
-        document.body.appendChild(link);
-        link.click();
-      }
-      link.remove();
-      this.downloadPdfCheck = '';
-      this.apiService.ResetPdfData();
-      fileExt = '';
-      fileName = '';
-    }
-  }
+  
   arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
     const fileExtension = extentionType;
     let file_Type: any;
@@ -1207,60 +1264,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     
     this.downloadToMobile(blobData,fileName);
 
-  }
-  async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
-    let file_Type:any = '';
-    let folderName:any = '';
-    if(blobData && blobData.type){
-      file_Type = blobData.type;
-    }
-    if(FolderName == undefined || FolderName == null){
-      folderName = 'Download'
-    }else{
-      folderName = FolderName;
-    }
-    let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-    let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
-
-    if(readPermission && writePermission){
-
-      // ==========using native file    
-      this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
-
-        this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
-          // confirm alert
-          let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
-          if(openFile == "confirm"){
-            const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
-            const mimeType = file_Type;      
-            this.fileOpener.open(path,mimeType)
-            .then(()=> console.log('File is opened'))
-            .catch(error => console.log('Error opening file ',error));
-          }
-        }).catch( (error:any) =>{
-          this.notificationService.presentToastOnBottom(JSON.stringify(error), 'danger');
-        })
-        
-      }).catch( (error:any) =>{
-        if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
-          
-          this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
-            console.log('Directory create '+ response);
-            this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
-              this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
-            })
-
-          }).catch( (error:any) =>{            
-            this.notificationService.presentToastOnBottom(JSON.stringify(error));
-          })
-        }
-      });
-    }else{
-      let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
-      if(gavepermission == "cancel"){
-        this.apppermissionsService.openNativeSettings('application_details');
-      }
-    }
   }
 
   checkionEvents(){

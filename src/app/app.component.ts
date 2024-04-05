@@ -9,7 +9,7 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { DataShareServiceService } from './service/data-share-service.service';
 import { AndroidpermissionsService } from './service/androidpermissions.service';
 import { Title } from '@angular/platform-browser';
-import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService, MenuOrModuleCommonService, EnvService, CoreFunctionService, StorageTokenStatus } from '@core/web-core';
+import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService, MenuOrModuleCommonService, EnvService, CoreFunctionService, StorageTokenStatus, ApiCallService } from '@core/web-core';
 import { App } from '@capacitor/app';
 import { Share } from '@capacitor/share';
 
@@ -79,7 +79,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private authDataShareService: AuthDataShareService,
     private menuOrModuleCommonService: MenuOrModuleCommonService,    
     private envService: EnvService,
-    private appStorageService: AppStorageService
+    private appStorageService: AppStorageService,
+    private apiCallService: ApiCallService
 
   ) {
     
@@ -217,7 +218,7 @@ export class AppComponent implements OnInit, OnDestroy {
     let checkComapanyCode:any = this.storageService.getClientName();
     if(this.coreFunctionService.isNotBlank(checkComapanyCode)){
       if(!this.checkApplicationSetting()){
-        this.commonFunctionService.getApplicationAllSettings();
+        this.apiCallService.getApplicationAllSettings();
       }else{
         this.loadPage();
       }
@@ -274,7 +275,7 @@ export class AppComponent implements OnInit, OnDestroy {
       criteriaList = criteria;
     }
     const params = 'card_master';
-    let data = this.commonFunctionService.getPaylodWithCriteria(params,'',criteria,{});
+    let data = this.apiCallService.getPaylodWithCriteria(params,'',criteria,{});
     data['pageNo'] = 0;
     data['pageSize'] = this.appCardMasterDataSize;
     let payload = {
