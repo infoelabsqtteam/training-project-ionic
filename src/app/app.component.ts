@@ -216,8 +216,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
   redirectToHomePageWithStorage(){
     let checkComapanyCode:any = this.storageService.getClientName();
+    let isHostNameExist:any = this.storageService.getHostNameDinamically();
     if(this.coreFunctionService.isNotBlank(checkComapanyCode)){
-      if(!this.checkApplicationSetting()){
+      if(!this.checkApplicationSetting() && isHostNameExist){
         this.apiCallService.getApplicationAllSettings();
       }else{
         this.loadPage();

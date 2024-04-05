@@ -4,7 +4,7 @@ import { LoaderService, NotificationService } from '@core/ionic-core';
 import { AlertController, IonInput, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
-import { EnvService, StorageService, ApiCallService } from '@core/web-core';
+import { EnvService, StorageService, ApiCallService, AwsSecretManagerService, DataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-verify-company',
@@ -21,14 +21,15 @@ export class VerifyCompanyComponent implements OnInit {
   
   constructor(    
     private formBuilder: UntypedFormBuilder,
-    private envService: EnvService,
+    private dataShareService: DataShareService,
     private storageService: StorageService,
     private _location: Location,
     private platform: Platform,
     private alertController: AlertController,
     private notificationService: NotificationService,
     private loaderService: LoaderService,
-    private apiCallService: ApiCallService
+    private apiCallService: ApiCallService,
+    private awsSecretManagerService : AwsSecretManagerService
   ) { }
 
   // Ionic LifeCycle Function Handling Start--------------------
@@ -111,13 +112,15 @@ export class VerifyCompanyComponent implements OnInit {
   // Hardware Button Click Function Handling End--------------------
 
   // Click Function Handling Start--------------------
-  verifyCompanyCode(){
+  async verifyCompanyCode(){
     let clientCode:string = this.cCodeForm.value.code;
-    let isClientExist = this.envService.checkClientExistOrNot(clientCode);
-    if(isClientExist || clientCode === "localhost"){
+    let hostname = await this.awsSecretManagerService.getServerHostFromAwsSecretManager(clientCode);
+    if(hostname || clientCode === "localhost"){
       this.storageService.removeDataFormStorage('all');
       this.loaderService.showLoader("Please wait while we are setting up the App for you.");
       this.storageService.setClientNAme(clientCode);
+      this.storageService.setHostNameDinamically(hostname+"/rest/");
+      this.dataShareService.shareServerHostName(hostname);
       this.apiCallService.getApplicationAllSettings();
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
