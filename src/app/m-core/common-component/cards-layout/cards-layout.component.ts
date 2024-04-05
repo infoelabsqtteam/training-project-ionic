@@ -1704,7 +1704,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   checkBarcodeScannerSupportedorNot(){
     BarcodeScanner.isSupported().then((result) => {
       this.isBarCodeScannerSupported = result.supported;
-      this.startScan();
+      this.checkCameraPermissionToScan()
     }).catch(err => {
       this.barCodeNotExistAlert();
       console.log('checkBarcodeScannerSupportedorNot Error', err);
@@ -1723,7 +1723,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     this.popoverModalService.showErrorAlert(alertOpt);
   }
-  checkCameraPermissionToSacn(){
+  checkCameraPermissionToScan(){
     if(this.isBarCodeScannerSupported){
       BarcodeScanner.checkPermissions().then((result) => {
         if(result.camera === 'granted' || result.camera === 'limited'){
@@ -1731,7 +1731,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           // this.removeAllBarCodeListeners();
           BarcodeScanner.removeAllListeners().then(() => {
             console.log("removeAllListeners");
-            // this.startScan();
+            this.startScan();
           });          
         }else{
           if(result.camera === 'denied'){
@@ -1764,7 +1764,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       );
     });
   }
-  result='';
   async startScan(): Promise<void> {
     const formats = this.formGroup.get('formats')?.value || this.barCodeFormats;
     const lensFacing =
@@ -1798,8 +1797,10 @@ validateScannedData(barcodeDetails?:any){
   // this.formTypeName="upload_file";
   let barCodeType=barcodeDetails?.format;
   switch(barCodeType){
-      case "CODE_128":this.formTypeName="upload_file";resultValue=barcodeDetails?.displayValue;
-                      break;
+      case "CODE_128":
+        this.formTypeName ="upload_file";
+        resultValue=barcodeDetails?.displayValue;
+        break;
       default:
         if(forms && forms[barcodeDetails?.displayValue?.form_name]){
           this.formTypeName = barcodeDetails?.displayValue?.form_name;
@@ -1808,16 +1809,16 @@ validateScannedData(barcodeDetails?:any){
   }
   this.alertPopUp(forms,this.formTypeName,resultValue)
   // this.openScannedData(forms,this.formTypeName,resultValue)
-//   if(forms && forms[this.formTypeName] && resultValue != ''){
-//     this.scannerForm=true;
-//     this.data={
-//       filterFormData:{
-//         "serialId": resultValue
-//       }
-//     }
-//     this.ngOnChanges();
-//     this.data={};
-// }
+  //   if(forms && forms[this.formTypeName] && resultValue != ''){
+  //     this.scannerForm=true;
+  //     this.data={
+  //       filterFormData:{
+  //         "serialId": resultValue
+  //       }
+  //     }
+  //     this.ngOnChanges();
+  //     this.data={};
+  // }
 }
 openScannedData(forms:any,formTypeName:any,resultValue:any){
   if(forms && forms[formTypeName] && resultValue != ''){
@@ -1829,7 +1830,7 @@ openScannedData(forms:any,formTypeName:any,resultValue:any){
     }
     this.ngOnChanges();
     this.data={};
-}
+  }
 }
 userOption=false;
 async checkUserConfirmation(){
