@@ -1,0 +1,112 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" (click)="closeModal()"><ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-capitalize">{{gridSelctionTitle}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pages ion-padding-horizontal">
+  
+  <ion-card class="contactdetails app-grid_selection fixed_button detail_grid" *ngIf="cardType == 'demo1'">
+    <div class="" *ngFor="let column of columnList; let i = index" [ngClass]="column.display ? 'd-block':'d-none'">
+      <div *ngIf="!column.editable" class="enquerylist ">
+        <span [title]="column.label" class="detail-grid">{{column.label}}<ion-text>&nbsp;:&nbsp;</ion-text></span>
+        <strong>{{modifiedGridData[column.field_name]}}</strong>
+      </div>
+      <div *ngIf="column.editable" class="enquerylist">
+        <span [title]="column.label" class="detail-grid" [ngClass]="column.type == 'file' ? 'ion-hide' : ''">{{column.label}} <ion-text color="danger" *ngIf="column.is_mandatory">*</ion-text><ion-text>&nbsp;:&nbsp;</ion-text></span>        
+        <span *ngIf="column.type.toLowerCase() == 'text'" class="editable-input-wrapper">
+            <input  type="text" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(modifiedGridData,column, i)" [(ngModel)]="modifiedGridData[column.field_name]" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
+        </span>
+        <span *ngIf="column.type.toLowerCase() == 'textarea'" class="editable-input-wrapper">
+          <input type="text" class="form-control form-control-sm d-inline mr-2" [(ngModel)]="modifiedGridData[column.field_name]" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
+        </span>
+        <span *ngIf="column.type.toLowerCase() == 'number'" class="editable-input-wrapper">
+          <input  type="number" class="form-control form-control-sm d-inline mr-2" (keyup)="calculateNetAmount(modifiedGridData,column, i)"  [(ngModel)]="modifiedGridData[column.field_name]" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" [id]="column._id+'_'+column.field_name">
+        </span>
+        <span *ngIf="column.type.toLowerCase() == 'boolean'" class="editable-input-wrapper" >
+            <ion-checkbox [(ngModel)]="modifiedGridData[column.field_name]" [ngclass]="column.field_class" class="ion-margin-end" [disabled]="isDisable(column,modifiedGridData)" [disabled]="readonly" [id]="column._id+'_'+column.field_name"></ion-checkbox>            
+        </span>        
+        <span *ngIf="column.type.toLowerCase() == 'dropdown'" class="editable-input-wrapper">
+            <ion-select [interfaceOptions]="customAlertOptions" interface="{{ionSelectInterface}}" [selectedText]="modifiedGridData[column.field_name]" [(ngModel)]="modifiedGridData[column.field_name]" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" class="ion-border_bottom ion-padding-end" (ionCancel)="clearDropdownField($event, column)" cancel-text="Clear" (ionDismiss)="$event.stopPropagation()" (ionFocus)="selectionFocus(column)" [id]="column._id+'_'+column.field_name">
+              <ion-select-option *ngFor="let staticValue of staticData[column.ddn_field]" [value]="staticValue">{{ staticValue.name ? staticValue.name : staticValue }}</ion-select-option>
+            </ion-select>
+        </span>        
+        <span *ngIf="column.type.toLowerCase() == 'userinput_chips'" class="editable-input-wrapper userInputChips">         
+          <ion-chip  *ngFor="let item of modifiedGridData[column.field_name]; let i = index" [disabled]="isDisable(column,modifiedGridData)" [disabled]="readonly">
+            <ion-label>{{ item.name ? item.name : item }}</ion-label>
+            <ion-icon name="close-outline" (click)="removeItem(modifiedGridData,column,i)"></ion-icon>
+          </ion-chip>
+          <ng-select [bindLabel]="'column.name'" [addTag]="true" #chipsInput [(ngModel)]="userInputChipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,modifiedGridData,$event)" (change)="setValue($event,column,modifiedGridData,i,chipsInput,'change')" (keyup.enter)="setValue($event,column,modifiedGridData,i,chipsInput,'keyupenter')" (close)="resetVariables()" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" enterkeyhint="done" [id]="column._id+'_'+column.field_name" placeholder="Type to search" typeToSearchText="Type to search" loadingText="Loading..." [loading]="ngLoading">
+            <ng-option *ngFor="let option of typeAheadData" [value]="option">{{ option.name ? option.name : option }}</ng-option>
+          </ng-select>
+        </span>
+        <span *ngIf="column.type.toLowerCase() == 'chips'" class="editable-input-wrapper chips">         
+          <ion-chip  *ngFor="let item of modifiedGridData[column.field_name]; let i = index" [disabled]="isDisable(column,modifiedGridData)" [disabled]="readonly">
+            <ion-label>{{item.name ? item.name : item}}</ion-label>
+            <ion-icon name="close-outline" (click)="removeItem(modifiedGridData,column,i)"></ion-icon>
+          </ion-chip>
+          <ng-select [bindLabel]="'column.name'" [addTag]="false" #typeheadchips [(ngModel)]="chipsData" notFoundText="No records found" (keyup)="searchTypeaheadData(column,modifiedGridData,$event)" (change)="setValue($event,column,modifiedGridData,i,typeheadchips)" (keyup.enter)="setValue($event,column,modifiedGridData,i,chipsInput,'keyupenter')" (close)="resetVariables()" [disabled]="isDisable(column,modifiedGridData)" [readonly]="readonly" enterkeyhint="enter" [id]="column._id+'_'+column.field_name" placeholder="Type to search" typeToSearchText="Type to search" loadingText="Loading..." [loading]="ngLoading">
+            <ng-option *ngFor="let option of typeAheadData" [value]="option">{{ option.name ? option.name : option }}</ng-option>
+          </ng-select>          
+        </span>
+
+        <div *ngIf="column.type == 'file'" class="camera_file_upload" style="width:100%;">
+          <div class="ion-margin-bottom-default" style="width: 50%;">{{ column.label | titlecase}} :<ion-text *ngIf="column.is_mandatory" class="ng-star-inserted"> *</ion-text></div>
+          <ion-accordion-group expand="inset" class="ion-margin-horizontal-0 ion-margin-vertical-0" [value]="column._id+'_'+column.field_name">
+            <ion-accordion value="{{column._id+'_'+column.field_name}}">
+              <ion-item slot="header" color="light" line="inset">
+                <!-- <ion-label>{{ column.label | titlecase}} <ion-text *ngIf="column.is_mandatory" class="ng-star-inserted"> *</ion-text></ion-label> -->
+                <ion-button expand="round" slot="" size="small" fill="outline" *ngIf="modifiedGridData[column.field_name] && modifiedGridData[column.field_name].length > 0" >{{ modifiedGridData[column.field_name].length > 0 ? modifiedGridData[column.field_name].length : '' }}</ion-button>
+                <ion-button expand="round" slot="start" size="small" fill="outline" [id]="column._id+'_'+column.field_name" (click)="selectImageSource('',column)" [formControlName]="column.field_name" [disabled]="column.is_disabled">
+                  <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
+                </ion-button>                
+              </ion-item>
+              <div class="ion-padding" slot="content" class="ion-padding-top">
+                <ion-item lines="none" class="ion-margin-bottom" *ngIf="!modifiedGridData[column.field_name] || (modifiedGridData[column.field_name] && modifiedGridData[column.field_name].length == 0)">
+                  <ion-label>No file uploaded, <ion-text>please upload</ion-text></ion-label>
+                </ion-item>
+                <ion-list class="contactlist" *ngIf="modifiedGridData[column.field_name] && modifiedGridData[column.field_name].length > 0">
+                  <ion-item class="ion-margin-bottom" *ngFor="let file of modifiedGridData[column.field_name]; let i = index;">
+                    <ion-label style="font-size:11px; white-space:inherit" *ngIf="(file.rollName && file.rollName != null) || (file.fileName && file.fileName != null)">{{file.fileName || file.rollName}}</ion-label>
+                    <ion-label *ngIf="(!file.rollName || file.rollName == null)">{{file._id}}</ion-label>
+                    <ion-button style="font-size:7px;" fill="clear" (click)="removeAttachedDataFromList(i,column.field_name)">
+                      <ion-icon slot="icon-only" name="trash-outline" color=""></ion-icon>
+                    </ion-button>
+                    <ion-button style="font-size:7px;" fill="clear" *ngIf="file && file._id" (click)="imageDownload(file)">
+                      <ion-icon slot="icon-only" name="download" color=""></ion-icon>
+                    </ion-button>
+                  </ion-item>
+                </ion-list> 
+              </div>
+            </ion-accordion>
+          </ion-accordion-group>
+        </div>
+
+
+      </div>
+    </div>
+    <ion-card-content *ngIf="columnList.length == 0">
+      <ion-text>Grid Columns are not available In This Field.</ion-text>
+      <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="closeModal()">Go Back</ion-button>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+<ion-footer> 
+  <div  class="inlineFormGridSelectionButton">
+      <ion-row class="">
+        <ion-col>
+          <ion-button *ngIf="(gridselectionverticalbutton && grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="readonly"  (click)="select()" size="small" expand="block" >{{formInfo.updateMode == true ? 'Update' : 'Add'}}</ion-button>
+          <ion-button *ngIf="(gridselectionverticalbutton && !grid_row_selection)" type="button" [disabled]="" color="appcolor" outline="true" size="small" expand="block"  (click)="selectGridData()" >{{ fieldButtonLabel(field)}}</ion-button >
+        </ion-col>
+        <ion-col>
+          <ion-button *ngIf="(gridselectionverticalbutton && grid_row_selection)" type="button" color="appcolor" [disabled]="readonly" (click)="remove()" size="small" expand="block" >Remove</ion-button>
+          <ion-button *ngIf="(gridselectionverticalbutton && !grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="" (click)="closeModal()" size="small" expand="block" >Cancel</ion-button>
+        </ion-col>
+      </ion-row>
+      <!-- <div *ngIf="!grid_row_selection">
+        <ion-button  type="button" [disabled]="checkValidator()" color="appcolor" outline="true" size="small" expand="block"  (click)="selectGridData()">{{ fieldButtonLabel(field)}}</ion-button >
+        <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="closeModal()">Close</ion-button>
+      </div> -->
+  </div>
+</ion-footer>

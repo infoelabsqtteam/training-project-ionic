@@ -1,0 +1,159 @@
+<ion-header>
+  <ion-toolbar  class="ion-text-center">
+    <ion-title>
+      CDR
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="pages">
+  <ion-list *ngIf="mobileList">
+    <ion-item>
+      <ion-label>Mark Primary</ion-label>
+    </ion-item>
+    <ion-item (click)="call(cardData.mobile)">
+      <ion-checkbox slot="start" ></ion-checkbox>
+      <ion-label>{{cardData.mobile}}</ion-label>
+      <ion-icon slot="end" name="call" color="ion-appcolor" ></ion-icon>
+    </ion-item>
+  </ion-list>
+  <form [formGroup]="cdrForm" (ngSubmit)="onSubmit()" *ngIf="!mobileList">
+    <ion-row class="row">
+      <ion-col size="12" *ngIf="contactName !=''">
+        <ion-item>
+          <ion-label slot="start">Contact Name  </ion-label>
+          <ion-label slot="end">{{contactName}}</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="contactNumber !=''">
+        <ion-item>
+          <ion-label slot="start">Contact number </ion-label>
+          <ion-label slot="end">{{contactNumber}}</ion-label>
+        </ion-item>
+      </ion-col>
+        <!-- <ion-col size="12">
+          <ion-item>
+            <ion-label>Account name</ion-label>
+            <ion-input type="text" class="inputBg" formControlName="account_name" placeholder=""></ion-input></ion-item>
+        </ion-col>
+        <ion-col size="12">
+          <ion-item>
+            <ion-label>Contact name</ion-label>
+            <ion-input type="text" class="inputBg" formControlName="contact_name" placeholder=""></ion-input></ion-item>
+        </ion-col>
+        <ion-col size="12">
+          <ion-item>
+            <ion-label>Contact Number</ion-label>
+            <ion-input type="text" class="inputBg" formControlName="contact_number" placeholder=""></ion-input></ion-item>
+        </ion-col>
+        <ion-col size="12">
+            <ion-item>
+              <ion-label>Call Start Time</ion-label>
+              <ion-input value="" class="ion-text-end" formControlName="call_start_time" id="call-start-time"></ion-input>
+              <ion-popover trigger="call-start-time" size="cover">
+                <ng-template>
+                  <ion-datetime
+                    #popoverDatetime
+                    displayFormat="hh-mm-A"
+                    presentation="Time"
+                    formControlName="call_start_time"
+                  ></ion-datetime>
+                </ng-template>
+              </ion-popover>
+            </ion-item>
+        </ion-col>
+        <ion-col size="12">
+            <ion-item>
+              <ion-label>Call Date</ion-label>
+              <ion-input
+                value=""
+                class="ion-text-end"
+              ></ion-input>
+              <ion-popover trigger="date" size="cover">
+                <ng-template>
+                  <ion-datetime
+                  displayFormat="hh-mm-A"
+                    presentation="date"
+                    formControlName="call_date"
+                  ></ion-datetime>
+                </ng-template>
+              </ion-popover>
+            </ion-item>
+        </ion-col>
+        <ion-col size="12">
+          <ion-item>
+            <ion-label>Call Duration Time</ion-label>
+            <ion-input
+              value=""
+              class="ion-text-end"
+            ></ion-input>
+            <ion-popover trigger="date" size="cover">
+              <ng-template>
+                <ion-datetime
+                displayFormat="hh-mm-A"
+                  presentation="Time"
+                  formControlName="call_duration_time"
+                ></ion-datetime>
+              </ng-template>
+            </ion-popover>
+          </ion-item>
+      </ion-col> -->
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Description</ion-label>
+          <ion-input type="text" formControlName="description" value=""></ion-input>
+        </ion-item>
+      </ion-col>
+      <!-- <ion-col size="12">
+        <ion-list>
+          <ion-item>
+            <ion-label>Lead Status</ion-label>
+            <ion-select placeholder="Lead Status" formControlName="leadstatus" >
+              <ion-select-option *ngFor="let item of statusList" value="{{item.val}}">{{item.val}}</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+      </ion-col> -->
+      <ion-col size="12">
+        <ng-select placeholder="Lead Status" [bindLabel]="'name'" formControlName="leadstatus" >
+          <ng-option *ngFor="let item of statusList" [value]="item.val">{{item.val}}</ng-option>
+        </ng-select>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item button="true">
+          <ion-label>Next Follow-up Date</ion-label>
+          <ion-input class="ion-text-end" value="{{this.cdrForm.get('followupdate').value | date: 'dd-MM-yyyy'}}" id="followup-date">
+            <ion-icon name="calendar-outline" class="ion-padding-start ion-icon-large-font"></ion-icon>
+          </ion-input>
+          <ion-popover trigger="followup-date" show-backdrop="false" side="end">
+            <ng-template>
+              <ion-datetime
+                presentation="date"
+                formControlName="followupdate"
+              ></ion-datetime>
+            </ng-template>
+          </ion-popover>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label>Next Follow-up Time</ion-label>
+          <ion-input class="ion-text-end" [value]="this.cdrForm.get('followuptime').value | date: 'hh:mm a'" id="followup-time">
+            <ion-icon name="time-outline" class="ion-padding-start ion-icon-large-font"></ion-icon>
+          </ion-input>
+          <ion-popover trigger="followup-time" show-backdrop="false" side="end">
+            <ng-template>
+              <ion-datetime
+                presentation="time"
+                formControlName="followuptime"
+              ></ion-datetime>
+            </ng-template>
+          </ion-popover>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+          <ion-button type="submit" shape="round" expand="block" color="medium">Save</ion-button>
+      </ion-col>
+
+    </ion-row>
+  </form>
+</ion-content>

@@ -1,0 +1,80 @@
+.ion-focused {--background-focused:transparent;}
+.autoresult {background:#efefef;padding:10px;
+    p {margin-top:0;}
+}
+
+// CRM Contact New Add  Pages
+.addnewform {background:#fff;margin-top:10px;padding:20px;border-radius:20px 20px 0 0;font-family:Source Sans Pro;
+    .label-stacked.sc-ion-label-md-h, .label-floating.sc-ion-label-md-h {font-size:12px;color:#3a3a3a;font-family:Source Sans Pro;}
+    h6 {font-weight:600;color:#353535;font-size:14px;margin-bottom:0px;}
+    .item-label-floating, .item-label-stacked {--padding-start:0px;}
+    .label-floating.sc-ion-label-md-h {transform:translateY(165%);}
+    .item-has-focus.label-floating.sc-ion-label-md-h, .item-has-focus .label-floating.sc-ion-label-md-h, .item-has-placeholder.sc-ion-label-md-h:not(.item-input).label-floating, .item-has-placeholder:not(.item-input) .label-floating.sc-ion-label-md-h, .item-has-value.label-floating.sc-ion-label-md-h, .item-has-value .label-floating.sc-ion-label-md-h {transform:translateY(50%) scale(0.75);color:#A5A5A5;}
+    ion-input {font-size:15px;}
+    ion-button {margin-top:20px;--background:#113970;height:54px;border-radius:10px;color:#fff;position:relative;opacity:1;border-radius:10px;overflow:hidden;text-transform:capitalize;
+        ion-icon {position:absolute;right:10px;}
+    }
+    ion-button.button-disabled {--background:#E1E3E8;color:#fff}
+    .selectvalue {--inner-padding-end:0px;--padding-start:0px;
+        ion-select {width:100%;background:#E6E7E8;border-radius:10px;font-size:12px;padding:5px 10px;}
+    }
+    ion-item {--padding-start:0px;--inner-padding-end:8px;font-size:12px;color:#3A3A3A;}
+}
+
+
+.fileuploader {margin:10px 0;
+    ion-label {font-size:12px;color:#3A3A3A;margin-bottom:10px;display:inline-block;}
+    .filebox {width:100%;height:80px;padding:16px 45px 13px 46px;border:1px dashed #e1e3e8;position:relative;text-align:center;
+        ion-input {position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;}
+        ion-icon {font-size:20px;color:#999;}
+        small {display:block;color:#3A3A3A;}
+    }
+}
+
+ng-select.ng-select {
+    padding: 0;
+    .ng-select-container{
+        padding: 0 15px;
+
+        .ng-value-container .ng-input>input{
+            padding: 0 15px;
+            line-height: 30px;
+        }
+    }
+    .ng-dropdown-panel.ng-select-bottom{
+        top:calc(100% - .25em);
+    }
+    
+}
+.contactdetails .enquerylist span.editable-input-wrapper ion-textarea{
+    margin-top: 0;border: 1px solid #949494;border-radius: 4px;
+}
+.contactdetails .enquerylist span {
+    .ng-select-container {
+        .ng-clear-wrapper , .ng-arrow-wrapper{width: auto;}
+    }
+}
+ion-card.app-grid_selection.detail_grid{ margin-left: auto;margin-right: auto;padding: 7px;}
+.label-stacked.chips-stacked-label{display: block;margin-bottom: 10px;}
+.ion-flex-direction-row-reverse{flex-direction: row-reverse;}
+.ion-flex-direction-column-reverse{flex-direction: column-reverse;}
+.ion-icon-large-font{font-size: 22px;}
+.form_label{--background: var(--themebg);border-radius: 6px;color: var(--ion-color-white);}
+ion-accordion-group.accordion-margin-vertical{margin-top: .2em;margin-bottom: .2em;}
+ion-accordion-group ~ ion-accordion-group.accordion-group-expand-inset.md > ion-accordion.accordion-expanding:first-of-type, ion-accordion-group.accordion-group-expand-inset.md > ion-accordion.accordion-expanded:first-of-type{margin-bottom: 0;}
+capacitor-google-map {
+    display: inline-block;
+    width: 100%;
+    height: 250px;
+}
+.input-container {
+    padding: 7px 15px;
+}
+.not-ioninput{
+    width: 100%;
+    padding: 10px 0 2px 2px;
+    line-height: 1.5;
+    height: 2.5rem;
+    border: none;
+}
+.not-ioninput:focus-visible {outline: none;}

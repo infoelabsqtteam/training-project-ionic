@@ -1,0 +1,71 @@
+<ion-header #primaryheader>
+  <ion-toolbar *ngIf="!this.popoverTabbing">
+    <ion-buttons slot="start" (click)="goBack()"><ion-button><ion-icon name="arrow-back"></ion-icon></ion-button></ion-buttons>
+    <ion-title class="" *ngIf="columnList && columnList.length == 0 && headerTitle !=''">{{headerTitle}}</ion-title>
+    <div class="cardsearch" *ngIf="columnList && columnList.length > 0">
+      <ion-select interface="popover" class="ion-padding-left-0" placeholder="Search By" [(ngModel)]="searchcardfield" (ionChange)="selectedSearchValue(searchcardfield)">
+        <ion-select-option *ngFor="let columns of columnList; index as i" [value]="columns.field_name" [ngClass]="columns.filter?'ion-show':'ion-hide'">{{columns.field_label}}</ion-select-option>
+      </ion-select>
+      <div class="searchbox">
+          <ion-title [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>
+          <ion-input [type]="selectedSearchCardField.type == 'date' || selectedSearchCardField.type == 'datetime' ? 'date' : 'text'" enterkeyhint="search" inputmode="" minlength="3" maxlength="30" placeholder="Enter value" (ionChange)="filterCardByDropdownValue()" [(ngModel)]="searchcardvalue" clearInput animated="true" [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
+            <span (click)="togglesearch()"><ion-icon name="arrow-back" size="small" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon></span>
+          </ion-input>
+          <!-- <ion-buttons slot="end" (click)="togglesearch()">
+            <ion-icon name="search" [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}"></ion-icon>
+            <ion-icon name="close-outline" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon>
+          </ion-buttons> -->
+          <!-- <ion-buttons class="filter ion-text-end" slot="end" (click)="open()"><img src="assets/img/icons/Filter.svg"></ion-buttons> -->
+      </div>
+    </div>
+  </ion-toolbar>
+  <ion-toolbar class="segmentTabMenu" *ngIf="!this.popoverTabbing && popoverItems && popoverItems.length > 0">
+    <div class="menutab">
+      <ion-segment [scrollable]="true" >
+        <ion-segment-button *ngFor="let tabItem of popoverItems; let i = index" (click)="tabmenuClick(tabItem,i)" [class.segment-button-checked]="selectedIndex == i" [ngClass]="!tabItem.display ? 'ion-hide' : 'ion-show'" value="{{tabItem.name}}">
+          <ion-label class="ion-margin-vertical-0">{{tabItem.name}}</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+  </ion-toolbar>
+
+  <ion-toolbar *ngIf="this.popoverTabbing">
+    <ion-buttons slot="start" (click)="goBack()">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="" *ngIf="headerTitle !=''">{{headerTitle}}</ion-title>
+    <ion-buttons class="filter ion-text-end" slot="end" (click)="open()"><img src="assets/img/icons/Filter.svg"></ion-buttons>
+    <ion-buttons class="filter ion-text-end" slot="end" id="popover-id">
+      <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+    </ion-buttons>
+    <ion-popover trigger="popover-id" dismiss-on-select="true">
+      <ng-template>
+        <app-popover [card]="card" [popoverItems]="popoverItems" (popoverOutput)="popoverOutput($event)"></app-popover>
+      </ng-template>
+    </ion-popover>
+  </ion-toolbar>
+</ion-header>
+
+
+
+<div #cardFilterDiv class="ion_accordian ion-no-padding filterdata" *ngIf="openFilter">
+  <div [formGroup]="filterForm">
+    <div class="search_div ion-padding">
+      <div *ngFor="let column of columnList; index as j" style="position: relative;">
+        <div class="filteritem" *ngIf="column.type == 'text' || column.type == 'number' || column.type == 'date' || column.type == 'datetime'"  [ngClass]="column.filter?'ion-show':'ion-hide'">
+          <input type="checkbox" checked disabled>
+          <ion-input [type]="column.type == 'date' || column.type == 'datetime' ? 'date': 'text'" class="column.type == 'date' || column.type == 'datetime' ? 'ion-text-uppercase': 'ion-text-capitalize'" [formControlName]="column.field_name" clearInput [placeholder]="column.field_label"></ion-input>
+        </div>
+      </div>
+      <ion-buttons class="ion-padding-top ion-justify-content-around">
+        <ion-button fill="outline" shape="round" class="ion-text-capitalize" (click)="closefilterCard()">Close</ion-button>
+        <ion-button fill="outline" shape="round" class="ion-text-capitalize" (click)="clearfilterCard()">Clear</ion-button>
+        <ion-button type="submit" fill="outline" shape="round" class="ion-text-capitalize" (click)="filterCard()">Apply</ion-button>
+      </ion-buttons>
+    </div>
+  </div>
+</div>
+
+<ion-content class="pages quotation" [scrollEvents]="true">
+  <app-cards-layout [card]="card" [data]="data" (parentCardName)="parentCardName($event)" (columnListOutput)="columnListOutput($event)" (popoverTabbing)="popoverMenuItem($event)"></app-cards-layout>
+</ion-content>

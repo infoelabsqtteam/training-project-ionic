@@ -1,0 +1,69 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="crm/enquiry"></ion-back-button></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-uppercase">crm</ion-title>
+    <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
+    <ion-buttons slot="end" class="ion-padding-start"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<div class="menutab">
+  <ion-tab-button routerLink="/crm/addcontact"><ion-label>New Contact</ion-label> </ion-tab-button>
+  <ion-tab-button routerLink="/crm/add-enquiry" class="active"><ion-label>New Enquiry</ion-label></ion-tab-button>
+  <ion-tab-button routerLink="/crm/addquotation"><ion-label>New Quotation</ion-label></ion-tab-button>
+</div>
+
+
+<ion-content class="pages">
+
+  <div class="addnewform">
+    
+    <form>
+      <ion-item>
+        <ion-label position="floating">Person/ Company Name</ion-label>
+        <ion-input></ion-input>
+      </ion-item>
+      <h6>Enquiry Detail</h6>
+      <ion-item>
+        <ion-label position="floating">Branch</ion-label>
+        <ion-input></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Department</ion-label>
+        <ion-input></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Sample Name</ion-label>
+        <ion-input></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Reference Test Standard</ion-label>
+        <ion-input></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Query Details</ion-label>
+        <ion-input></ion-input>
+      </ion-item>
+
+
+      <div class="fileuploader">
+        <ion-label>File Upload</ion-label>
+        <div class="filebox">
+          <ion-input type="file"></ion-input>
+          <ion-icon name="cloud-upload"></ion-icon>
+          <small>Only JPEG or PDF files With Max Size of 10MB</small>
+        </div>
+      </div>
+      <ion-item>
+        <ion-label>Status</ion-label>
+        <ion-select class="custom-options" interface="popover">
+          <ion-select-option value="blonde">Blonde</ion-select-option>
+          <ion-select-option value="black">Black</ion-select-option>
+          <ion-select-option value="red">Red</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-button [disabled]="disabled? 'desabledbtn': '' "  expand="full">Save & Move To Enquiry <ion-icon name="arrow-forward"></ion-icon></ion-button>
+  </form>
+</div>
+</ion-content>

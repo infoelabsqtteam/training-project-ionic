@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="crm/contact"></ion-back-button></ion-buttons>
+    <ion-title class="ion-no-padding ion-text-uppercase">crm</ion-title>
+    <ion-buttons slot="end"><ion-icon name="search"></ion-icon></ion-buttons>
+    <ion-buttons slot="end" class="ion-padding-start"><ion-icon name="notifications-outline"></ion-icon></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<div class="menutab">
+    <ion-tab-button routerLink="/crm/addcontact" class="active"><ion-label>New Contact</ion-label> </ion-tab-button>
+    <ion-tab-button routerLink="/crm/add-enquiry"><ion-label>New Enquiry</ion-label></ion-tab-button>
+    <ion-tab-button routerLink="/crm/addquotation"><ion-label>New Quotation</ion-label></ion-tab-button>
+</div>
+
+<ion-content class="pages">
+  <div class="addnewform">
+    <form>
+      <ion-item>
+        <ion-label position="floating">Person Name</ion-label>
+        <ion-input autocomplete="off"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Company Name</ion-label>
+        <ion-input></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Company Address</ion-label>
+        <ion-input></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">City</ion-label>
+        <ion-input></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Pin Code</ion-label>
+        <ion-input type="number"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Mobile No.</ion-label>
+        <ion-input type="number"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">E-mail</ion-label>
+        <ion-input type="email"></ion-input>
+      </ion-item>
+
+      <ion-button [disabled]="disabled? 'desabledbtn': '' "  expand="full">Save & Move To Enquiry <ion-icon name="arrow-forward"></ion-icon></ion-button>
+  </form>
+</div>
+</ion-content>

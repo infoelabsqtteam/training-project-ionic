@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home4"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="ion-no-padding ion-text-uppercase">Charts </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <app-chart></app-chart>
+
+
+  <!-- <div class="">
+    <ion-card class="" *ngFor="let chart of charts; let i = index">
+      <ion-card-header>
+        <ion-card-title>{{chart.name}}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <canvas baseChart 
+          [datasets]="chartDatasets[chart.name]"
+          [labels]="chartLabels[chart.name]"
+          [options]="chartOptions[chart.name]"
+          [legend]="chartLegend[chart.name]"
+          [type]="chartType[chart.name]"
+          (chartClick)="chartClicked($event, i)">
+          <p>Your browser does not support the canvas element.</p>
+        </canvas>
+      </ion-card-content>
+        <!-- <ion-item>
+          <ion-label>Disable Legend</ion-label>
+          <ion-toggle (ionChange)="hideLegend(i)"></ion-toggle>
+        </ion-item> -->
+    <!--</ion-card>
+
+  </div> -->
+</ion-content>

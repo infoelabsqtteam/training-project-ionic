@@ -1,0 +1,46 @@
+<ion-content class="loginpage">
+    <div class="logintitle">
+        <h4>Welcome <span *ngIf="appTitle">to {{appTitle}}</span></h4>
+        <p>Sign-In to continue</p>   
+    </div>
+    <div class="loginlogo" *ngIf="logoPath"> 
+        <ion-img src="{{logoPath}}"
+                 alt="{{imageTitle}}" (ionError)="getLogoPath()">
+        </ion-img>
+    </div>
+    <div class="login">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="formgroup" *ngIf="!VerifyType">
+                <ion-item>
+                    <ion-label position="floating">E-mail Id</ion-label>
+                    <ion-input type="email" formControlName="userId" placeholder="Email Id"></ion-input>
+                    <ion-icon class="showpassword" name="checkmark-circle" *ngIf="f.userId.valid"></ion-icon>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched) && f.userId.errors?.required">Email Id is required</ion-note>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched) && f.userId.errors?.email">Enter Valid Email Id</ion-note>
+                </ion-item>
+            </div>
+            <div class="formgroup" *ngIf="VerifyType">
+                <ion-item counter="true">
+                    <ion-label position="floating">Mobile number</ion-label>
+                    <ion-input type="number" formControlName="userId" placeholder="Enter mobile number" maxlength="10"></ion-input>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched) && f.userId.errors?.required">Mobile number is required</ion-note>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched) && f.userId.errors?.pattern">Enter valid mobile number</ion-note>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.userId.invalid && (f.userId.dirty || f.userId.touched) && f.userId.errors?.maxLength">Number should be 10 digit</ion-note>
+                </ion-item>
+            </div>
+            <div class="formgroup">
+                <ion-item>
+                    <ion-label position="floating">Password</ion-label>
+                    <ion-input [type]="showpassword ? 'text': 'password'" formControlName="password" placeholder="Password"></ion-input>
+                    <ion-icon [name]="showpassword ? 'eye': 'eye-off' " class="showpassword" (click)="showtxtpass()"></ion-icon>
+                    <ion-note slot="error" class="text-danger" *ngIf="f.password.invalid && (f.password.dirty || f.password.touched) && f.password.errors?.required">Password is required</ion-note>
+                </ion-item>
+            </div>
+            <div class="formgroup ion-text-end"><ion-text class="forgetpassword" [routerLink]="['/forgetpassword']">Forgot Password?</ion-text></div>
+            <div class="formgroup"><ion-button type="submit" [disabled]="checkValidate()" expand="full">Login</ion-button></div>
+            <div class="formgroup ion-text-center"><ion-text class="signup">Don't have an account ? <a [routerLink]="['/signup']"><strong>Sign-up</strong></a></ion-text></div>
+            
+            <div class="ion-text-center"><ion-text class="signup">Change Company Code ? <a (click)="changeCode()"><strong>Change</strong></a></ion-text></div>
+        </form>
+    </div>
+</ion-content>

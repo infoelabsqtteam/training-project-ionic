@@ -1,0 +1,73 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-menu-button><img src="assets/img/icons/menu.svg"></ion-menu-button>
+        </ion-buttons>
+        <ion-searchbar show-cancel-button="focus" [debounce]="1000" enterkeyhint="search" inputmode="search" [(ngModel)]="myInput" (ionChange)="search()"></ion-searchbar>
+        <ion-buttons *ngIf="notification" slot="end" (click)="comingSoon()"><img src="assets/img/icons/bell-Bold.svg"></ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+
+<ion-content class="pages">
+
+    <div class="banner">
+        <ion-slides>
+            <ion-slide swiperSlide *ngFor="let banner of banner_img">
+                <div class="slideshow"><img [src]="banner"></div>
+            </ion-slide>
+        </ion-slides>
+    </div>
+
+    <div class="catlist">
+
+        <ion-grid *ngIf="homePageLayout == 'layout1'">
+            <ion-row>
+                <ion-col size="6" *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
+                    <div class="homecard">
+                        <ion-avatar><img [src]="cardItem.image_src"></ion-avatar>
+                        <ion-label>{{cardItem.name}}</ion-label>
+                    </div>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+
+        <ul *ngIf="homePageLayout == 'layout2'">
+            <li *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)"
+                [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
+                <div class="caticon">
+                    <!-- <ion-img [src]="cardItem.image_src"></ion-img> -->
+                    <img [src]="cardItem.image_src">
+                </div>
+                <span>{{cardItem.name}}</span>
+            </li>
+        </ul>
+
+        <div>
+            <ion-card *ngIf="cardList == null" class="">
+                <!-- <div class="ion-text-center"><img alt="No Modules Assign" *ngIf="nodatafoundImg" [src]="nodatafoundImg" /> </div>-->
+                <ion-card-header>
+                  <ion-card-title>{{errorTitle}}</ion-card-title>
+                  <!-- <ion-card-subtitle>Card Subtitle</ion-card-subtitle> -->
+                </ion-card-header>              
+                <ion-card-content>{{errorMessage}}</ion-card-content>
+                <ion-button color="primary" fill="clear" size="small" (click)="getGridData()">Try again</ion-button>
+            </ion-card>
+            <ion-card *ngIf="cardList != null && cardList && cardList.length == 0" class="">
+                <ion-card-header>
+                  <ion-card-title>{{errorTitle}}</ion-card-title>
+                  <!-- <ion-card-subtitle>Card Subtitle</ion-card-subtitle> -->
+                </ion-card-header>
+                <ion-card-content>{{errorMessage}}</ion-card-content>
+            </ion-card>
+        </div>
+    </div>
+    <ion-refresher  slot="fixed" pullFactor="0.5" pullMin="100" pullMax="150" (ionRefresh)="doRefresh($event)" class="ion-margin-top">
+        <ion-refresher-content
+          pullingIcon="arrow-down-outline"
+          pullingText="Pull down to refresh"
+          refreshingSpinner="bubbles"
+          refreshingText="Refreshing...">
+        </ion-refresher-content>
+    </ion-refresher>
+</ion-content>

@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="ion-no-padding ion-text-uppercase">{{headertitle}} </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+
+<div class="chartfilter">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6">
+        <ion-item>
+          <ion-label>Select List</ion-label>
+          <ion-select multiple="true" [(ngModel)]="filterValue" (change)="checkFilter()">
+            <ion-select-option *ngFor="let staticValue of copyStaticData['chart_list']; index as i" [value]="staticValue._id">{{staticValue.name}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="3">
+        <ion-item>
+          <select [(ngModel)]="itemNumOfGrid" (change)="selectNoOfItem()">
+            <option *ngFor="let numverOfItem of noOfItems" [value]="numverOfItem">{{numverOfItem}}</option>
+          </select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="3">
+        <ion-badge color="medium" class="roundedbtn" [disabled]="filterValue.length == 0 || filterValue.length > itemNumOfGrid" (click)="filterchart()"><ion-icon name="filter-outline"></ion-icon></ion-badge>
+        <ion-badge color="light" class="roundedbtn" [disabled]="filterValue.length == 0" (click)="resetFilter()"><ion-icon name="reload-outline"></ion-icon></ion-badge>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</div>
+
+
+<div class="row" *ngIf="filteredDashboardData.length >0">
+  <div *ngFor="let item of filteredDashboardData; let j = index">
+    <ion-card class="chartcard">
+      <ion-card-header class="charthead" color="medium" *ngIf="item.fields && item.fields.length > 0">
+        <ion-card-title>{{item.name}}</ion-card-title>
+        <ion-icon (click)="chartmodel(item,true,j)" name="funnel-outline"></ion-icon>
+      </ion-card-header>
+      <ion-card-content class="chartbody">
+        <ng-container *ngIf="chartType[item.call_back_field]">
+          <canvas baseChart *ngIf="item.package_name == 'chart_js'" [chartType]="chartType[item.call_back_field]"
+            [datasets]="chartDatasets[item.call_back_field]" [labels]="chartLabels[item.call_back_field]"
+            [colors]="chartColors[item.call_back_field]" [options]="chartOptions[item.call_back_field]"
+            [legend]="chartLegend[item.call_back_field]">
+          </canvas>
+          <google-chart *ngIf="item.package_name == 'google_chart' && chartTitle[item.call_back_field]"
+            [title]="chartTitle[item.call_back_field]" [type]="chartType[item.call_back_field]"
+            [data]="chartDatasets[item.call_back_field]" [columns]="chartLabels[item.call_back_field]"
+            [options]="chartOptions[item.call_back_field]">
+          </google-chart>
+        </ng-container>
+        <div *ngIf="!chartType[item.call_back_field]" class="spinner">
+          <ion-spinner name="crescent"></ion-spinner>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>
+
+</ion-content>
