@@ -1841,80 +1841,11 @@ async checkUserConfirmation(){
 async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
   let alertHeader:string = 'Barcode result';
   let message: string = `your Barcode value is ${resultValue}`;
-  let res=''
-  const alert = await this.alertController.create({
-    cssClass: 'my-gps-class',
-    header: alertHeader,
-    message: message,
-    buttons: [
-      {
-        text: 'CLOSE',
-        role: 'cancel',
-        handler: () => {
-          console.log('Cancel clicked');
-        },
-      },
-      {
-        text: 'PROCEED',
-        role: 'confirmed',
-        handler:() => {
-          console.log('proceed clicked');
-          this.openScannedData(forms,this.formTypeName,resultValue);
-        },
-      }
-    ],
-  })
-  await alert.present();
+  const confirm = await this.notificationService.confirmAlert(alertHeader,message,'PROCEED','CLOSE');
+  if(confirm == 'confirm'){
+    this.openScannedData(forms,this.formTypeName,resultValue);
+  }
 }
-
-  
-  // let value=
-  // {
-  //   data:{
-  //     previousValue: {},
-  //     currentValue: {
-  //         filterFormData: {
-  //             serialId: "F01-2312070044"
-  //         }
-  //     },
-  //     firstChange: false
-  // }
-  // }
-  // this.ngOnChanges(value);
-
-    // let form={
-    //   "_id": "65f403aac519ca7063aba971",
-    //   "name": "Sample Inspection"
-
-
-    // }
-    // this.commonAppDataShareService.setFormId(form._id);
-    //   // this.router.navigate(['crm/form']);
-    //   console.log({
-    //     "childData": {},
-    //     "editedRowIndex": -1,
-    //     "addform" : form,
-    //     "formTypeName" : "default",
-    //   });
-    //   this.saveCallSubscribe();
-    //   const modal = await this.modalController.create({
-    //     component: FormComponent,
-    //     componentProps: {
-    //       "childData": this.gridData,
-    //       "editedRowIndex": this.editedRowIndex,
-    //       "addform" : form,
-    //       "formTypeName" : this.formTypeName,
-    //     },
-    //     id: form._id,
-    //     showBackdrop:true,
-    //     backdropDismiss:false,
-    //   });
-    //   modal.present();
-    //   modal.componentProps.modal = modal;
-    //   modal.onDidDismiss().then((result) => {        
-    //     this.getCardDataByCollection(this.selectedIndex);
-    //     this.unsubscribedSavecall();
-    //   });
   
   public async readBarcodeFromImage(): Promise<void> {
     const { files } = await FilePicker.pickImages({ multiple: false });
