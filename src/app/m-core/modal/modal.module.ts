@@ -13,6 +13,7 @@ import { GoogleChartsModule } from 'angular-google-charts';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ModalComponent } from './modal.component';
 import { FileViewsModalComponent } from './file-views-modal/file-views-modal.component';
+import { BarcodeScanningComponent } from './barcode-scanning/barcode-scanning.component';
 
 const modal =[
   ModalComponent,
@@ -21,7 +22,8 @@ const modal =[
   GridSelectionDetailModalComponent,
   CallDataRecordFormComponent,
   ChartFilterComponent,
-  FileViewsModalComponent
+  FileViewsModalComponent,
+  BarcodeScanningComponent
 ]
 
 @NgModule({

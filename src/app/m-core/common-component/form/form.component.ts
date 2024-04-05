@@ -2138,7 +2138,7 @@ tinymceConfig = {}
   async closeModal(){
     if(this.modal && this.modal?.offsetParent['hasController']){
       this.modal?.offsetParent?.dismiss(undefined,"confirmed");
-    }else{        
+    }else{
       this.modalController.dismiss(undefined,"confirmed",);
     }
   }

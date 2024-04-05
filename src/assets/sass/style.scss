@@ -524,9 +524,70 @@ ion-searchbar{
     font-size: 14px !important;
 }
 .customCheckbox{
- margin: 16px 0px;
- display: flex;
+    margin: 16px 0px;
+    display: flex;
 }
 .companyCode.has-focus {
     margin-top: 10px;
 }
+/*** Barcode Scanning * -------------------------------------------*/
+body.barcode-scanning-active {
+    visibility: hidden;
+    --background: transparent;
+    --ion-background-color: transparent;
+    
+    ion-content {
+        --background: transparent;
+    }
+}
+#qrScanner{
+    position: absolute;
+    left: 200px;
+    top: 350px;
+}
+.barcode-scanning-modal {
+    visibility: visible;
+}
+.scanner-button{
+    display: flex;
+    gap: 10px;
+    ion-fab-button{
+        margin: 10px;
+    }
+}
+
+.scanner_component{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+
+}
+@media (prefers-color-scheme: dark) {
+    .barcode-scanning-modal {
+        --background: transparent;
+        --ion-background-color: transparent;
+    }
+}
+.square {
+position: absolute;
+left: 50%;
+top: 50%;
+transform: translate(-50%, -50%);
+border-radius: 16px;
+width: 200px;
+height: 200px;
+border: 6px solid #ffffff;
+box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
+}
+.scannerBtn{height: 60vh;
+    align-items: flex-end;
+    display: flex;
+    justify-content: center;}
+@media screen and (min-width:420px){
+    .scannerBtn{
+        height: 55vh;
+    }
+}
+  /*** Barcode Scanning css End * -------------------------------------------*/

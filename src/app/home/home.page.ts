@@ -54,7 +54,8 @@ export class HomePage implements OnInit, OnDestroy {
   notification: boolean=false;
   cardMasterList:any;
   userAuthModules:any;
-  appCardMasterDataSize:number;  
+  // cardListSubscription:Subscription;
+  appCardMasterDataSize:number = 200;  
   ionEvent:any;
   isExitAlertOpen:boolean = false;
   errorTitle:string= "Please Wait !";
