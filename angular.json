@@ -19,7 +19,14 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
-            "allowedCommonJsDependencies":["@looker/chatty","lodash/isEmpty","lodash/isEqual","json-2-csv","date-fns-tz","fast-deep-equal"],
+            "allowedCommonJsDependencies": [
+              "@looker/chatty",
+              "lodash/isEmpty",
+              "lodash/isEqual",
+              "json-2-csv",
+              "date-fns-tz",
+              "fast-deep-equal"
+            ],
             "assets": [
               {
                 "glob": "**/*",
@@ -33,11 +40,17 @@
               }
             ],
             "stylePreprocessorOptions": {
-              "includePaths": ["./node_modules"]
+              "includePaths": [
+                "./node_modules"
+              ]
             },
-            "styles": ["src/theme/variables.scss", "src/global.scss"],
-            "scripts": ["node_modules/chart.js/dist/chart.js"],
-            "aot": false,
+            "styles": [
+              "src/theme/variables.scss",
+              "src/global.scss"
+            ],
+            "scripts": [
+              "node_modules/chart.js/dist/chart.js"
+            ],
             "vendorChunk": true,
             "extractLicenses": false,
             "buildOptimizer": false,
@@ -88,8 +101,7 @@
             "production": {
               "browserTarget": "app:build:production"
             },
-            "ci": {
-            }
+            "ci": {}
           }
         },
         "extract-i18n": {
