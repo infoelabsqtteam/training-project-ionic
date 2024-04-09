@@ -1899,7 +1899,7 @@ async goToCollectioncenter(): Promise<void> {
       modal: {value:12}
     },
   });
-  modal.onDidDismiss().then(async(result) => {
+  modal.onDidDismiss().then(async(result:any) => {
       console.log("modal dismiss");
       console.log(result);
   });

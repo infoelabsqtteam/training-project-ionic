@@ -15,6 +15,7 @@ export class CollectionCentreModelComponent implements OnInit {
   public modal:any;
 
   staticData:any={};
+  selectedCenter:any='';
   sampleFormDate:any=[{name:"F012",checked:false},{name:"F015",checked:false},{name:"F066",checked:false}];
   staticDataSubscriber:Subscription
   constructor(
@@ -51,6 +52,8 @@ export class CollectionCentreModelComponent implements OnInit {
   public async closeModal(value?: any): Promise<void> {
     if(this.modal && this.modal?.offsetParent['hasController']){
       this.modal?.offsetParent?.dismiss({
+          'dismissed': true,
+          'value':value
       });
     }else{        
       this.popoverModalService.dismissModal({
