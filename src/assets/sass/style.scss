@@ -591,3 +591,22 @@ box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
     }
 }
   /*** Barcode Scanning css End * -------------------------------------------*/
+
+  /*** detail2 *--------------------------------------*/
+
+  .detail2{
+    padding: 10px;
+    ion-label{
+        width: 100%;
+    }
+    .padding{    padding: 10px;padding-bottom: 0;}
+    .label{
+        background-color: var(--card-bg-light);
+        padding: 10px;
+        border-radius: 5px;
+        text-align: justify;
+    }
+    .custom-divider {
+        min-height: 2px;
+      }
+  }
