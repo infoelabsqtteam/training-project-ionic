@@ -13,6 +13,8 @@ export class CollectionCentreModelComponent implements OnInit {
 
   @Input()
   public modal:any;
+  @Input()
+  private data:any;
 
   staticData:any={};
   selectedCenter:any='';
@@ -32,8 +34,14 @@ export class CollectionCentreModelComponent implements OnInit {
    }
 
   ngOnInit() {
-    console.log("collection");
-    this.staticData.collection_centre=[{"name": "Delhi"},
+    this.onLoadSetData();
+  }
+  onLoadSetData(){
+    if(this.data?.collectionCenterList){
+      this.staticData = this.data?.collectionCenterList;
+    }
+    this.staticData.collection_centre=[
+      {"name": "Delhi"},
       {
         "name": "Nagpur",
       },

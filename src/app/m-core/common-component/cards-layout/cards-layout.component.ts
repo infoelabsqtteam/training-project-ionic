@@ -862,14 +862,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           this.addCallingFeature = false;
         }else{
           this.addCallingFeature = true;
-          this.enableScanner = true;
         }
       }else{
         this.addCallingFeature = false;
       }
       if (card.card_type !== '') {
         this.cardType = card.card_type.name;
-      }
+      }      
+      if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
       // this.childColumn = card.child_card;
       if(card.fields && card.fields.length > 0){
         this.columnList = card.fields;      
@@ -951,7 +951,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       }
       this.getGridData(this.collectionname, criteria, parentcard);
-      if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
     }
   }
   async collectionSpecificCriteria(card:any){
@@ -1894,29 +1893,36 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
   // await alert.present();
 }
 
-async goToSampleSubmit(): Promise<void> {
+async goToSampleSubmit(collectionCenter?:any,scannedData?:any): Promise<void> {
+  const obj :any = {
+    'collectionCenterList' : collectionCenter,
+    'scannedData' : scannedData
+  }
   const modal = await this.popoverModalService.showModal({
     component: SampleSubmitModelComponent,
     showBackdrop: false,
     componentProps: {
-      modal: {value:12}
+      'data': obj
     },
   });
-  modal.onDidDismiss().then(async(result) => {;
-      console.log("modal dismiss");
+  modal.componentProps.modal = modal;
+  modal.onDidDismiss().then(async(result) => {
       console.log(result);
   });
 }
-async goToCollectioncenter(): Promise<void> {
+async goToCollectioncenter(collectionCenter?:any): Promise<void> {
+  const obj :any = {
+    'collectionCenterList' : collectionCenter
+  }
   const modal = await this.popoverModalService.showModal({
     component: CollectionCentreModelComponent,
     showBackdrop: false,
     componentProps: {
-      modal: {value:12}
+      'data': obj
     },
   });
+  modal.componentProps.modal = modal;
   modal.onDidDismiss().then(async(result:any) => {
-      console.log("modal dismiss");
       console.log(result);
   });
 }
@@ -2105,77 +2111,12 @@ async goToCollectioncenter(): Promise<void> {
         }
       })
       if(this.staticData){
-        this.openCollectionCenterModal(this.staticData);
+        this.goToCollectioncenter(this.staticData['collection_center_list']);
       }
-        // this.tableFields.forEach(element => {
-        //   switch (element.type) {              
-        //     case 'pdf_view':
-        //       if(this.commonFunctionService.isArray(staticData[element.ddn_field]) && staticData[element.ddn_field] != null){
-        //         const data = staticData[element.ddn_field][0];
-        //         if(data['bytes'] && data['bytes'] != '' && data['bytes'] != null){
-        //           const arrayBuffer = data['bytes'];
-        //           // this.pdfViewLink = encodeURIComponent(escape(window.atob( arrayBuffer )));
-        //           // this.pdfViewLink = decodeURIComponent(escape(window.atob( arrayBuffer )));
-        //           this.pdfViewLink = arrayBuffer;
-        //           this.pdfViewListData = JSON.parse(JSON.stringify(staticData[element.ddn_field]))
-        //         }
-        //       }else{
-        //         this.pdfViewLink = '';
-        //       }             
-        //       break;
-        //     case 'info_html':
-        //     case 'html_view':
-        //       if(staticData[element.ddn_field] && staticData[element.ddn_field] != null){
-        //         this.templateForm.controls[element.field_name].setValue(staticData[element.ddn_field])
-        //       }
-        //       break;
-        //     default:              
-        //       break;
-        //   }
-        // })
-
-        // if(staticData["FORM_GROUP"] && staticData["FORM_GROUP"] != null){          
-        //   this.updateDataOnFormField(staticData["FORM_GROUP"]);          
-        //   const fieldName = {
-        //     "field" : "FORM_GROUP"
-        //   }
-        //   this.apiService.ResetStaticData(fieldName);
-        // }    
-        // if(staticData["CHILD_OBJECT"] && staticData["CHILD_OBJECT"] != null){
-        //   this.updateDataOnFormField(staticData["CHILD_OBJECT"]); 
-        //   const fieldName = {
-        //     "field" : "CHILD_OBJECT"
-        //   }
-        //   this.apiService.ResetStaticData(fieldName);
-          
-        // }    
-        // if(staticData["COMPLETE_OBJECT"] && staticData["COMPLETE_OBJECT"] != null){
-        //   if(this.curFormField && this.curFormField.resetFormAfterQtmp){
-        //     this.resetForm();
-        //     this.curFormField = {};
-        //     this.curParentFormField = {};
-        //   }
-        //   this.updateDataOnFormField(staticData["COMPLETE_OBJECT"]);          
-        //   this.selectedRow = staticData["COMPLETE_OBJECT"];
-        //   this.complete_object_payload_mode = true;
-        //   const fieldName = {
-        //     "field" : "COMPLETE_OBJECT"
-        //   }
-        //   this.apiService.ResetStaticData(fieldName);
-          
-        // }    
-        // if(staticData["FORM_GROUP_FIELDS"] && staticData["FORM_GROUP_FIELDS"] != null){
-        //   this.updateDataOnFormField(staticData["FORM_GROUP_FIELDS"]);
-        //   const fieldName = {
-        //     "field" : "FORM_GROUP_FIELDS"
-        //   }
-        //   this.apiService.ResetStaticData(fieldName);    
-        // }
-        // if (this.checkBoxFieldListValue.length > 0 && Object.keys(staticData).length > 0) {
-        //   this.setCheckboxFileListValue();
-        // }
-        
-      // })
+      const fieldName = {
+        "field" : "collection_center_list"
+      }
+      this.apiService.ResetStaticData(fieldName);
     }
   }
   async checkPermissionandRequest(){
@@ -2243,9 +2184,8 @@ async goToCollectioncenter(): Promise<void> {
     }
     // this.zoom = 17;
   }
-  async openCollectionCenterModal(collectionList:any){
 
-  }
+  
   /*-------Custom Functions for Demo scanner End --------------*/
   
   /* --------Let this below 2 functions at the end of this file--------------------------------- */

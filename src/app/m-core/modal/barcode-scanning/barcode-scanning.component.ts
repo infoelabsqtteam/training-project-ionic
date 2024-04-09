@@ -190,9 +190,8 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
       })
       this.listener.remove();
       this.stopScan();
-      this.closeModal(this.barcodes);
+      this.closeModal(this.barcodes[0]);
       await alert.present();
-    console.log(barcodes);
   }
 
 }

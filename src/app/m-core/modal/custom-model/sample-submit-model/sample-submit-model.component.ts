@@ -15,6 +15,8 @@ export class SampleSubmitModelComponent implements OnInit {
 
   @Input()
   public modal:any;
+  @Input()
+  private data:any;
 
   staticData:any={};
   sampleFormDate:any=[{name:"F012",checked:false},{name:"F015",checked:false},{name:"F066",checked:false}];
