@@ -195,7 +195,6 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     let blobData:any = await this.chartService.getDownloadData(chart,object);
     if(isPlatform('hybrid')){
       const response:any = await this.appDownloadService.downloadBlobData(blobData.url, blobData.name);
-      console.log(response);
     }else{
       this.chartService.downlodBlobData(blobData.url, blobData.name);
     }

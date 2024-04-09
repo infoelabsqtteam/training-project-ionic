@@ -91,7 +91,7 @@ export class ModalDetailCardComponent implements OnInit {
       tabDetail = moduleList[tabIndex];
       }
     }
-    let child_card = {};
+    let child_card:any = {};
     if(tabDetail != ''){
       if(tabDetail && tabDetail.child_card){
         const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");
@@ -114,6 +114,8 @@ export class ModalDetailCardComponent implements OnInit {
       }else{
         this.childDataTitle = this.childDataValue.name;
       }
+    }else if(child_card?.name){
+      this.childDataTitle=child_card?.name;
     }
     this.setCard(child_card);
     
@@ -138,6 +140,10 @@ export class ModalDetailCardComponent implements OnInit {
       this.selectedIndex = 0;
     }
     if(this.childColumns && this.childColumns.length > 0) this.checkGridChild(this.childColumns);
+    console.log(card);
+    console.log(this.childColumns);
+    console.log(this.childDataValue);
+    console.log(this.childDataTitle);
   }
   checkGridChild(childColumns){
     this.childgridIds=[];

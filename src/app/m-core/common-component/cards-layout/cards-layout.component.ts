@@ -21,7 +21,8 @@ import { BarcodeScanningComponent } from '../../modal/barcode-scanning/barcode-s
 import { FilePicker } from '@capawesome/capacitor-file-picker';
 import { Subscription } from 'rxjs';
 import { FileOpener } from '@capacitor-community/file-opener';
-
+import { SampleSubmitModelComponent } from '../../modal/custom-model/sample-submit-model/sample-submit-model.component';
+import { CollectionCentreModelComponent } from '../../modal/custom-model/collection-centre-model/collection-centre-model.component';
 
 @Component({
   selector: 'app-cards-layout',
@@ -950,6 +951,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       }
       this.getGridData(this.collectionname, criteria, parentcard);
+      if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
     }
   }
   async collectionSpecificCriteria(card:any){
@@ -1718,13 +1720,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
   /*----BarCode Functions------------------------------------------------------------------------- */
   checkBarcodeScannerSupportedorNot(){
-    BarcodeScanner.isSupported().then((result) => {
-      this.isBarCodeScannerSupported = result.supported;
-      this.checkCameraPermissionToScan()
-    }).catch(err => {
-      this.barCodeNotExistAlert();
-      console.log('checkBarcodeScannerSupportedorNot Error', err);
-    });
+      BarcodeScanner.isSupported().then((result) => {
+        this.isBarCodeScannerSupported = result.supported;
+        // this.startScan();
+        this.checkCameraPermissionToScan()
+      }).catch(err => {
+        this.barCodeNotExistAlert();
+        console.log('checkBarcodeScannerSupportedorNot Error', err);
+      });
   }
   barCodeNotExistAlert(){
     let alertOpt = {
@@ -1800,30 +1803,32 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         // this.checkBarcodeFormat(barcode)
         this.saveCallSubscribe();
         // barcode.displayValue = JSON.parse(barcode.displayValue);
-        console.log("value>>",barcode.displayValue);
-        this.validateScannedData(barcode);
+        // console.log("value>>",barcode.displayValue);
+        console.log("card-lay",barcode);
+        this.checkScannedData(barcode);
     });
   }
 
-validateScannedData(barcodeDetails?:any){
+checkScannedData(barcodeDetails?:any){
   let forms = this.card?.card?.form;
   let resultValue='';
   this.formTypeName ='';
   // this.scannerFormName="upload_file";"F01-2402150016"
   // this.formTypeName="upload_file";
   let barCodeType=barcodeDetails?.format;
+  let barcodeValue=this.parseIfObject(barcodeDetails?.displayValue);
   switch(barCodeType){
       case "CODE_128":
         this.formTypeName ="upload_file";
         resultValue=barcodeDetails?.displayValue;
         break;
       default:
-        if(forms && forms[barcodeDetails?.displayValue?.form_name]){
-          this.formTypeName = barcodeDetails?.displayValue?.form_name;
-          resultValue=barcodeDetails?.displayValue?.serialId;
+        if(forms && forms[barcodeValue?.form_name]){
+          this.formTypeName = barcodeValue?.form_name;
+          resultValue=barcodeValue?.serialId;
         }
   }
-  this.alertPopUp(forms,this.formTypeName,resultValue)
+  if(resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
   // this.openScannedData(forms,this.formTypeName,resultValue)
   //   if(forms && forms[this.formTypeName] && resultValue != ''){
   //     this.scannerForm=true;
@@ -1848,89 +1853,73 @@ openScannedData(forms:any,formTypeName:any,resultValue:any){
     this.data={};
   }
 }
-userOption=false;
-async checkUserConfirmation(){
-  await this.alertPopUp("v",)
-  console.log(this.userOption);
+parseIfObject(variable:any) {
+  try {
+      return JSON.parse(variable);
+  } catch (error) {
+      return variable;
+  }
 }
 
 async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
   let alertHeader:string = 'Barcode result';
   let message: string = `your Barcode value is ${resultValue}`;
   let res=''
-  const alert = await this.alertController.create({
-    cssClass: 'my-gps-class',
-    header: alertHeader,
-    message: message,
-    buttons: [
-      {
-        text: 'CLOSE',
-        role: 'cancel',
-        handler: () => {
-          console.log('Cancel clicked');
-        },
-      },
-      {
-        text: 'PROCEED',
-        role: 'confirmed',
-        handler:() => {
-          console.log('proceed clicked');
-          this.openScannedData(forms,this.formTypeName,resultValue);
-        },
-      }
-    ],
-  })
-  await alert.present();
+  const confirm= await this.notificationService.confirmAlert(alertHeader,message,"Proceed","Close");
+  if(confirm=="confirm"){
+    this.openScannedData(forms,this.formTypeName,resultValue);
+  }
+  // const alert = await this.alertController.create({
+  //   cssClass: 'my-gps-class',
+  //   header: alertHeader,
+  //   message: message,
+  //   buttons: [
+  //     {
+  //       text: 'CLOSE',
+  //       role: 'cancel',
+  //       handler: () => {
+  //         console.log('Cancel clicked');
+  //       },
+  //     },
+  //     {
+  //       text: 'PROCEED',
+  //       role: 'confirmed',
+  //       handler:() => {
+  //         console.log('proceed clicked');
+  //         this.openScannedData(forms,this.formTypeName,resultValue);
+  //       },
+  //     }
+  //   ],
+  // })
+  // await alert.present();
 }
 
-  
-  // let value=
-  // {
-  //   data:{
-  //     previousValue: {},
-  //     currentValue: {
-  //         filterFormData: {
-  //             serialId: "F01-2312070044"
-  //         }
-  //     },
-  //     firstChange: false
-  // }
-  // }
-  // this.ngOnChanges(value);
-
-    // let form={
-    //   "_id": "65f403aac519ca7063aba971",
-    //   "name": "Sample Inspection"
-
-
-    // }
-    // this.commonAppDataShareService.setFormId(form._id);
-    //   // this.router.navigate(['crm/form']);
-    //   console.log({
-    //     "childData": {},
-    //     "editedRowIndex": -1,
-    //     "addform" : form,
-    //     "formTypeName" : "default",
-    //   });
-    //   this.saveCallSubscribe();
-    //   const modal = await this.modalController.create({
-    //     component: FormComponent,
-    //     componentProps: {
-    //       "childData": this.gridData,
-    //       "editedRowIndex": this.editedRowIndex,
-    //       "addform" : form,
-    //       "formTypeName" : this.formTypeName,
-    //     },
-    //     id: form._id,
-    //     showBackdrop:true,
-    //     backdropDismiss:false,
-    //   });
-    //   modal.present();
-    //   modal.componentProps.modal = modal;
-    //   modal.onDidDismiss().then((result) => {        
-    //     this.getCardDataByCollection(this.selectedIndex);
-    //     this.unsubscribedSavecall();
-    //   });
+async goToSampleSubmit(): Promise<void> {
+  const modal = await this.popoverModalService.showModal({
+    component: SampleSubmitModelComponent,
+    showBackdrop: false,
+    componentProps: {
+      modal: {value:12}
+    },
+  });
+  modal.onDidDismiss().then(async(result) => {;
+      console.log("modal dismiss");
+      console.log(result);
+  });
+}
+async goToCollectioncenter(): Promise<void> {
+  const modal = await this.popoverModalService.showModal({
+    component: CollectionCentreModelComponent,
+    showBackdrop: false,
+    componentProps: {
+      modal: {value:12}
+    },
+  });
+  modal.onDidDismiss().then(async(result:any) => {
+      console.log("modal dismiss");
+      console.log(result);
+  });
+}
   
   public async readBarcodeFromImage(): Promise<void> {
     const { files } = await FilePicker.pickImages({ multiple: false });

@@ -347,15 +347,6 @@
   <div *ngIf="totalDataCount == 0" class="nodatafound">
     <ion-img src="../../../assets/nodatafound.png"></ion-img>
   </div>
-  
-  <!-- <ion-row class="ion-justify-content-center scacannerBtn" *ngIf="cardType == 'scanner' && isBarCodeScannerSupported">
-    <ion-col size="4">          
-      <ion-button shape="round" size="large" (click)="startScan()">
-          <ion-icon slot="start" name="scan"></ion-icon>
-          Scan
-      </ion-button>
-    </ion-col>
-  </ion-row> -->
 
   <ion-infinite-scroll threshold="5%" (ionInfinite)="loadData($event)" *ngIf="loadMoreData && this.carddata && this.carddata?.length > 0">
     <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Hang on loading data...">      

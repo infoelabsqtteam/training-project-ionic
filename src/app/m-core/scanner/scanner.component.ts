@@ -106,7 +106,7 @@ export class MyScannerComponent implements OnInit {
   ) { 
     this.initializeApp();    
     this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
-
+    this.checkCameraPermissionToSacn();
     this.gridRealTimeDataSubscription = this.dataShareService.gridRunningData.subscribe(data =>{
       this.updateRunningData(data.data);
     });

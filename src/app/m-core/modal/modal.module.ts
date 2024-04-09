@@ -14,6 +14,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { ModalComponent } from './modal.component';
 import { FileViewsModalComponent } from './file-views-modal/file-views-modal.component';
 import { BarcodeScanningComponent } from './barcode-scanning/barcode-scanning.component';
+import { SampleSubmitModelComponent } from './custom-model/sample-submit-model/sample-submit-model.component';
+import { CollectionCentreModelComponent } from './custom-model/collection-centre-model/collection-centre-model.component';
 
 const modal =[
   ModalComponent,
@@ -23,7 +25,9 @@ const modal =[
   CallDataRecordFormComponent,
   ChartFilterComponent,
   FileViewsModalComponent,
-  BarcodeScanningComponent
+  BarcodeScanningComponent,
+  SampleSubmitModelComponent,
+  CollectionCentreModelComponent
 ]
 
 @NgModule({
