@@ -336,6 +336,7 @@
   <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" >
     <ion-fab-button *ngIf="addNewEnabled && form && form['default']" (click)="addNewForm()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>
     <ion-fab-button *ngIf="enableScanner"  (click)="checkBarcodeScannerSupportedorNot()" class="addNew ion-margin-top" ><ion-icon name="scan-outline"></ion-icon></ion-fab-button>
+    <ion-fab-button *ngIf="enableScanner"  (click)="goToCollectioncenter()" class="addNew ion-margin-top" ><ion-icon name="map-outline"></ion-icon></ion-fab-button>
   </ion-fab>
 
   <div *ngIf="totalDataCount == 0" class="nodatafound">
