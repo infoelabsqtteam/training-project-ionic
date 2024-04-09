@@ -134,7 +134,8 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
         //   this.closeModal(event.barcode);
         // });
         let result = event.barcode.displayValue;
-        if(result && result != ''){          
+        if(result && result != ''){  
+          console.log(result);        
           this.listener.remove();
           this.stopScan();
           this.closeModal(event.barcode);
@@ -190,7 +191,7 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
       })
       this.listener.remove();
       this.stopScan();
-      this.closeModal(this.barcodes);
+      this.closeModal(this.barcodes[0]);
       await alert.present();
     console.log(barcodes);
   }

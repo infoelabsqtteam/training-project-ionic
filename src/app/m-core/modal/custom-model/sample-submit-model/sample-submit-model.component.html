@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Sample Submit</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+          <ion-item>
+            <ion-label position="floating">Collection Centre <ion-text color="danger" > *</ion-text></ion-label>
+            <ion-select  class="selectDropdown" (ionDismiss)="$event.stopPropagation()">
+              <ion-select-option *ngFor="let staticValue of staticData['collection_centre']" [value]="staticValue" [innerHtml]="staticValue.name"></ion-select-option>
+              <!-- <ion-select-option *ngIf="tableField.add_new_enabled" [value]="'add_new'">+ Add New</ion-select-option> -->
+            </ion-select>
+          </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-list>
+    <ion-item >
+      <ion-checkbox class="ion-margin-end"  (click)="selectAll($event)"></ion-checkbox>
+      <ion-label>
+          Select All
+      </ion-label>
+    </ion-item>
+    <ion-item  *ngFor="let tableField of sampleFormDate">
+      <ion-checkbox [checked]="tableField.checked" [(ngModel)]="tableField.checked" (ionChange)="inputOnChangeFunc('','')" [ngclass]="tableField.field_class"  [id]="tableField._id+'_'+tableField.field_name"></ion-checkbox>
+      <ion-label class="ion-margin-start">
+          Item {{ tableField.name }} 
+          <button class="item-cover disable-hover" ion-button="item-cover" type="button">
+              <span class="button-inner"></span>
+              <div class="button-effect"></div>
+          </button>
+      </ion-label>
+    </ion-item>
+</ion-list>
+</ion-content>
+<ion-footer>
+  <ion-item>
+    <ion-button type="button" mdbBtn color="primary" outline="true" slot="end" size="small" class="waves-light" (click)="submit()">SUBMIT</ion-button>
+  </ion-item>
+</ion-footer>
