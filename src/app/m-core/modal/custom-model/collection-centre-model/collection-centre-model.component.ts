@@ -16,6 +16,7 @@ export class CollectionCentreModelComponent implements OnInit {
   @Input()
   private data:any;
 
+  collectionCenterList:any = {}
   staticData:any={};
   selectedCenter:any='';
   sampleFormDate:any=[{name:"F012",checked:false},{name:"F015",checked:false},{name:"F066",checked:false}];
@@ -39,33 +40,52 @@ export class CollectionCentreModelComponent implements OnInit {
   onLoadSetData(){
     if(this.data?.collectionCenterList){
       this.staticData = this.data?.collectionCenterList;
+      this.collectionCenterList = this.data?.collectionCenterList
     }
     this.staticData.collection_centre=[
-      {"name": "Delhi"},
+      {
+        "name": "Delhi",
+        "_id": "1",
+        "latitude": 28.704063,
+        "longitude": 74.54
+      },
       {
         "name": "Nagpur",
+        "_id": "2",
+        "latitude": 28.704063,
+        "longitude": 74.54
       },
       {
         "name": "Lucknow",
+        "_id": "3",
+        "latitude": 28.704063,
+        "longitude": 74.54
       },
       {
         "name": "Noida",
+        "_id": "4",
+        "latitude": 28.704063,
+        "longitude": 74.54
       },
       {
         "name": "Punjab",
+        "_id": "5",
+        "latitude": 28.704063,
+        "longitude": 74.54
       }
     ]
   }
 
-  public async closeModal(value?: any): Promise<void> {
+  public async closeModal(selectedCenter?: any): Promise<void> {
+    this.staticData
     if(this.modal && this.modal?.offsetParent['hasController']){
       this.modal?.offsetParent?.dismiss({
           'dismissed': true,
-          'value':value
+          'value':this.selectedCenter
       });
     }else{        
       this.popoverModalService.dismissModal({
-        value: value,
+        value: selectedCenter,
       });
     }
   }
@@ -87,6 +107,9 @@ export class CollectionCentreModelComponent implements OnInit {
 
   submit(){
     console.log(this.sampleFormDate);
+  }
+  selectedCollectionCenter(selectedData?:any){
+    this.selectedCenter = selectedData;
   }
 
 }
