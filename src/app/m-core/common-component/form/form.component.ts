@@ -2062,6 +2062,9 @@ tinymceConfig = {}
           'address' : this.address,
         }
       }
+      if(this.currentMenu['name'] == 'sample_collection_master'){
+        saveFromData['status'] = 'PENDING';
+      }
       if(this.getSavePayload){
         if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.api && this.currentActionButton.onclick.api != null && this.currentActionButton.onclick.api.toLowerCase() == 'send_email'){
           this.apiService.SendEmail(saveFromData)
