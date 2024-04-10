@@ -176,6 +176,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     'longitude' : 0
   }
   enableCustomGetCollection = false;
+  gridRunningDataSubscriber:Subscription;
 
   constructor(
     private platform: Platform,
@@ -259,6 +260,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
+    });
+    this.gridRunningDataSubscriber = this.dataShareService.gridRunningData.subscribe(data =>{
+      if(data && data?.length >0){
+        this.editedRowData(0,'default', data[0]);
+      }
     });
     
   }
@@ -802,7 +808,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   } 
   setCardAndTab(cardWithTab){
     if(cardWithTab && cardWithTab.card){
-      if (this.permissionService.checkPermission(cardWithTab.card.collection_name, 'view')) {
+      if (true) {
         this.setCardDetails(cardWithTab.card);
       }else{
         this.card['viewPermission'] = false;
@@ -971,6 +977,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           
           break;
       }
+    }
+    if(card.collection_name=='sample_collection' && this.updateMode){
+      let user=this.storageService.GetUserInfo();
+      const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
+      const cr2 = "status;eq;" + "PENDING" + ";STATIC";
+      customCriteria.push(cr1);
+      customCriteria.push(cr2);
+      return customCriteria;
     }
     if(card['enableGps']){
       if(this.platform.is("hybrid")){
@@ -1255,11 +1269,20 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
   }
 
-  editedRowData(index,formName) {
+  editedRowData(index,formName,customData?:any) {
     if (this.permissionService.checkPermission(this.currentMenu.name, 'edit')) {
       this.editedRowIndex = index;
-      this.gridData = this.carddata[index];
-      this.selectedgriddataId = this.gridData._id;
+      let selectedData:any = this.carddata[index];
+      if(selectedData){
+        this.gridData = selectedData;
+      }else{
+        if(customData){
+          this.gridData = customData;
+        } 
+      }
+      if(this.gridData){
+        this.selectedgriddataId = this.gridData._id;
+      }
       this.updateMode = true;
       if(formName == 'UPDATE'){   
         if(this.checkUpdatePermission(this.carddata[index])){
@@ -1800,7 +1823,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       const barcode: Barcode | undefined = result.data?.barcode;
       // if (barcode && barcode.displayValue) {
         // this.checkBarcodeFormat(barcode)
-        this.saveCallSubscribe();
+        // this.saveCallSubscribe();
         // barcode.displayValue = JSON.parse(barcode.displayValue);
         // console.log("value>>",barcode.displayValue);
         console.log("card-lay",barcode);
@@ -1843,13 +1866,22 @@ checkScannedData(barcodeDetails?:any){
 openScannedData(forms:any,formTypeName:any,resultValue:any){
   if(forms && forms[formTypeName] && resultValue != ''){
     this.scannerForm=true;
-    this.data={
-      filterFormData:{
-        "serialId": resultValue
-      }
+    let criterai ="uniqueId;eq;"+resultValue+";STATIC";
+    let payload = this.apiCallService.getPaylodWithCriteria(this.collectionname,"",[criterai],{});
+    payload["pageSize"] = 25;
+    payload["pageNo."] = 1;
+    let finalPayload = {
+      "data" : payload,
+      "path" : null
     }
-    this.ngOnChanges();
-    this.data={};
+    this.apiService.getGridRunningData(payload);
+    // this.data={
+    //   filterFormData:{
+    //     "serialId": resultValue
+    //   }
+    // }
+    // this.ngOnChanges();
+    // this.data={};
   }
 }
 parseIfObject(variable:any) {
