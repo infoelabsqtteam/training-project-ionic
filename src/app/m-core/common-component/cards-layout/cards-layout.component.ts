@@ -808,7 +808,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   } 
   setCardAndTab(cardWithTab){
     if(cardWithTab && cardWithTab.card){
-      if (true) {
+      if (this.permissionService.checkPermission(cardWithTab.card.collection_name, 'view')) {
         this.setCardDetails(cardWithTab.card);
       }else{
         this.card['viewPermission'] = false;
