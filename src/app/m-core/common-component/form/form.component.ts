@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitte
 import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray, UntypedFormControl } from "@angular/forms";
 import { DatePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { App_googleService, NotificationService, AppDataShareService, AppPermissionService } from '@core/ionic-core';
+import { App_googleService, NotificationService, AppDataShareService, AppPermissionService, LoaderService } from '@core/ionic-core';
 import { AlertController, ItemReorderEventDetail, ModalController, isPlatform  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
@@ -359,7 +359,8 @@ tinymceConfig = {}
     private fileHandlerService: FileHandlerService,
     private apiCallService: ApiCallService,
     private formCreationService: FormCreationService,
-    private checkIfService: CheckIfService
+    private checkIfService: CheckIfService,
+    private loaderService: LoaderService
     ) {
 
       // this.mapsApiLoaded();
@@ -1395,7 +1396,15 @@ tinymceConfig = {}
       });
       this.pageLoading = false;
     }
-
+    this.checkLoader();
+  }
+  checkLoader() {
+    new Promise(async (resolve)=>{
+      let checkLoader = await this.loaderService.loadingCtrl.getTop();
+      if(checkLoader && checkLoader['hasController']){
+        this.loaderService.hideLoader();
+      }
+    });
   }
   notifyFieldValueIsNull(formName,fieldNo){
     let msg = "Field No. "+ fieldNo + " value is null";
@@ -2062,8 +2071,8 @@ tinymceConfig = {}
           'address' : this.address,
         }
       }
-      if(this.currentMenu['name'] == 'sample_collection_master'){
-        saveFromData['status'] = 'PENDING';
+      if(this.currentMenu['name'] == 'sample_collection'){
+        saveFromData.data['status'] = 'PENDING';
       }
       if(this.getSavePayload){
         if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.api && this.currentActionButton.onclick.api != null && this.currentActionButton.onclick.api.toLowerCase() == 'send_email'){

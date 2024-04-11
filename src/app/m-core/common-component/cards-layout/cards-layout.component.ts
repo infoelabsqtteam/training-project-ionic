@@ -262,9 +262,16 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.setStaticData(data);
     });
     this.gridRunningDataSubscriber = this.dataShareService.gridRunningData.subscribe(data =>{
-      if(data && data?.length >0){
-        this.editedRowData(0,'default', data[0]);
+      if(data && data?.data?.length >0 &&this.scannerForm){
+        let form = this.commonFunctionService.getForm(this.card?.card?.form,'UPDATE',this.gridButtons);
+        this.scannerForm=false;
+        this.loaderService.showLoader("Loading...");
+        this.openFormModalForScanner(form,data?.data?.[0]);
       }
+      // else if(this.scannerForm){
+      //   this.scannerForm=false;
+      //   this.addNewForm()
+      // }
     });
     
   }
@@ -411,14 +418,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       this.nodatafound=true;
     }
-    if(this.scannerForm && this.formTypeName != ''){
-      let forms=this.card?.card?.form;
-      if(forms && forms[this.formTypeName] && this.carddata?.length == 1){
-        this.editedRowData(0,this.formTypeName)
-      }
-      this.formTypeName='';
-      // this.scannerForm=false;
-    }
+    // if(this.scannerForm && this.formTypeName != ''){
+    //   let forms=this.card?.card?.form;
+    //   if(forms && forms[this.formTypeName] && this.carddata?.length == 1){
+    //     this.editedRowData(0,this.formTypeName)
+    //   }
+    //   this.formTypeName='';
+    //   // this.scannerForm=false;
+    // }
   }
   checkLoader() {
     new Promise(async (resolve)=>{
@@ -978,7 +985,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           break;
       }
     }
-    if(card.collection_name=='sample_collection' && this.updateMode){
+    if(card.collection_name=='sample_collection'){
       let user=this.storageService.GetUserInfo();
       const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
       const cr2 = "status;eq;" + "PENDING" + ";STATIC";
@@ -1178,6 +1185,27 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
   }
 
+  async openFormModalForScanner(form:any,selectedData:any){
+    this.commonAppDataShareService.setFormId(form?._id);
+    const modal = await this.modalController.create({
+      component: FormComponent,
+      componentProps: {
+        "childData": selectedData,
+        "editedRowIndex": 0,
+        "addform" : form,
+        "formTypeName" : this.formTypeName,
+      },
+      id: form._id,
+      showBackdrop:true,
+      backdropDismiss:false,
+    });
+    modal.present();
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss().then((result) => {  
+      this.getCardDataByCollection(this.selectedIndex);
+      // this.unsubscribedSavecall();
+    });
+  }
 
   getFirstCharOfString(char:any){
     return this.commonFunctionService.getFirstCharOfString(char);
@@ -1257,7 +1285,16 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             if(card && card.collection_name == "travel_tracking_master" && card.parent_id && card.parent_id !=''){
               const cr = "travelPlan._id;eq;" + card.parent_id + ";STATIC";
               criteria.push(cr);
-            }            
+            }      
+          }
+          if(card && card.collection_name){
+            if(card.collection_name=='sample_collection'){
+              let user=this.storageService.GetUserInfo();
+              const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
+              const cr2 = "status;eq;" + "PENDING" + ";STATIC";
+              criteria.push(cr1);
+              criteria.push(cr2);
+            }
           }
           this.getGridData(this.collectionname, criteria, card);
         // }
@@ -1775,7 +1812,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             this.startScan();
           });          
         }else{
-          if(result.camera === 'denied'){
+          if(result.camera === 'denied' || result.camera == "prompt"){
             this.presentsettingAlert();
           }
           this.isBarCodeCameraPermissionGranted = false;
@@ -1821,17 +1858,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     });
     modal.onDidDismiss().then(async(result) => {
       const barcode: Barcode | undefined = result.data?.barcode;
-      // if (barcode && barcode.displayValue) {
-        // this.checkBarcodeFormat(barcode)
-        // this.saveCallSubscribe();
-        // barcode.displayValue = JSON.parse(barcode.displayValue);
-        // console.log("value>>",barcode.displayValue);
-        console.log("card-lay",barcode);
-        this.checkScannedData(barcode);
+        if(barcode)this.checkScannedData(barcode);
     });
   }
 
-checkScannedData(barcodeDetails?:any){
+async checkScannedData(barcodeDetails?:any){
   let forms = this.card?.card?.form;
   let resultValue='';
   this.formTypeName ='';
@@ -1841,13 +1872,15 @@ checkScannedData(barcodeDetails?:any){
   let barcodeValue=this.parseIfObject(barcodeDetails?.displayValue);
   switch(barCodeType){
       case "CODE_128":
-        this.formTypeName ="upload_file";
+        this.formTypeName ="UPDATE";
         resultValue=barcodeDetails?.displayValue;
         break;
       default:
         if(forms && forms[barcodeValue?.form_name]){
           this.formTypeName = barcodeValue?.form_name;
           resultValue=barcodeValue?.serialId;
+        }else{
+          const confirm= await this.notificationService.confirmAlert('Barcode result','Barcode is not supported',"Close");
         }
   }
   if(resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
@@ -1864,17 +1897,17 @@ checkScannedData(barcodeDetails?:any){
   // }
 }
 openScannedData(forms:any,formTypeName:any,resultValue:any){
-  if(forms && forms[formTypeName] && resultValue != ''){
+  // if(forms && forms[formTypeName] && resultValue != ''){
     this.scannerForm=true;
     let criterai ="uniqueId;eq;"+resultValue+";STATIC";
     let payload = this.apiCallService.getPaylodWithCriteria(this.collectionname,"",[criterai],{});
     payload["pageSize"] = 25;
-    payload["pageNo."] = 1;
+    payload["pageNo."] = 0;
     let finalPayload = {
       "data" : payload,
       "path" : null
     }
-    this.apiService.getGridRunningData(payload);
+    this.apiService.getGridRunningData(finalPayload);
     // this.data={
     //   filterFormData:{
     //     "serialId": resultValue
@@ -1882,7 +1915,7 @@ openScannedData(forms:any,formTypeName:any,resultValue:any){
     // }
     // this.ngOnChanges();
     // this.data={};
-  }
+  // }
 }
 parseIfObject(variable:any) {
   try {
@@ -1893,8 +1926,8 @@ parseIfObject(variable:any) {
 }
 
 async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
-  let alertHeader:string = 'Barcode result';
-  let message: string = `your Barcode value is ${resultValue}`;
+  let alertHeader:string = 'Scanned Value';
+  let message: string = `Barcode value is <strong>${resultValue}</strong>`;
   let res=''
   const confirm= await this.notificationService.confirmAlert(alertHeader,message,"Proceed","Close");
   if(confirm=="confirm"){
@@ -1939,6 +1972,7 @@ async goToSampleSubmit(collectionCenter?:any,scannedData?:any): Promise<void> {
   });
   modal.componentProps.modal = modal;
   modal.onDidDismiss().then(async(result) => {
+    if(result?.role && result?.role == 'close')this.router.navigate(['/home'])
       console.log(result);
   });
 }

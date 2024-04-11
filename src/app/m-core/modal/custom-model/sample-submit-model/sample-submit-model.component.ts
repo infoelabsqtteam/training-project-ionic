@@ -53,8 +53,7 @@ export class SampleSubmitModelComponent implements OnInit {
 
   public async closeModal(value?: any): Promise<void> {
     if(this.modal && this.modal?.offsetParent['hasController']){
-      this.modal?.offsetParent?.dismiss({
-      });
+      this.modal?.offsetParent?.dismiss({'dismissed': true},value);
     }else{        
       this.popoverModalService.dismissModal({
         value: value,
