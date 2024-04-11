@@ -4,7 +4,7 @@ import { LoaderService, NotificationService } from '@core/ionic-core';
 import { AlertController, IonInput, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
-import { EnvService, StorageService, ApiCallService, AwsSecretManagerService, DataShareService } from '@core/web-core';
+import { StorageService, ApiCallService, AwsSecretManagerService, DataShareService } from '@core/web-core';
 
 @Component({
   selector: 'app-verify-company',
