@@ -151,8 +151,8 @@ export class GmapViewComponent implements OnInit {
   }
 
   async onload(){
-    if(this.selectedRowData){
-      this.collectionCustomFunction(this.selectedRowData);      
+    if(this.selectedRowData || this.additionalData?.customEntryForBarcode){
+      this.collectionCustomFunction(this.selectedRowData);
     }else{
       // this.notificationService.presentToastOnBottom("Something went wrong.");
     }
@@ -175,7 +175,7 @@ export class GmapViewComponent implements OnInit {
       this.loadMap();
     }
   }
-  async collectionCustomFunction(selectedrowdata:any){
+  async collectionCustomFunction(selectedrowdata:any,customEntryForBarcode?:boolean){
     let collectionName:any ='';
     if(this.additionalData && this.additionalData.collectionName){
       collectionName= this.additionalData.collectionName
@@ -218,6 +218,18 @@ export class GmapViewComponent implements OnInit {
         }
         // this.createMap(this.center);
         break;
+      case "sample_collection":
+        this.isTracking = true;
+        if(!this.additionalData?.customEntryForBarcode){
+          this.reachBtn = true;
+        }else{
+          this.reachBtn = false;
+        }
+        if(this.reachBtn){
+          this.reachBtnText = "Reached";
+        }else{
+          this.reachBtnText = "Reach";
+        }
       default: 
         // this.notificationService.presentToast("error ");
     }      
@@ -468,6 +480,9 @@ export class GmapViewComponent implements OnInit {
     // }
   }
   dismissModal(data?:any,role?:any){
+    if(this.additionalData?.barcodeCenter){
+      data = this.additionalData?.barcodeCenter
+    }
     if(data != undefined && data != null){
       this.closeModal(data,role);     
     }else{
@@ -1016,6 +1031,9 @@ export class GmapViewComponent implements OnInit {
   }
   googleMapsRemoveMarker(data?:any){
     this.markers[data].setMap(null);
+  }
+  openSubmitModal(role?:string){
+
   }
   //END Testing Functions and sample example
 
