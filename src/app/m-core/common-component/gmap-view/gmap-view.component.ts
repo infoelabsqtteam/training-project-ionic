@@ -821,12 +821,28 @@ export class GmapViewComponent implements OnInit {
         this.ongoogleMapDestinationMarkerClick();
         this.ongoogleMapOriginMarkerClick();
       }else{
-        console.log("status: ", status);
-        // this.notificationService.presentToastOnBottom("status", "danger");
+        if(status == 'ZERO_RESULTS'){
+          this.noResultFoundError();
+        }else{          
+        console.error("RouteError: ", status);
+        }
       }
     }
     );
 
+  }
+  async noResultFoundError(){
+    await this.checkAlert();
+    const confirm = await this.notificationService.confirmAlert("Error","No such Destination present, please select different destination","OK");
+    if(confirm == "confirm"){
+      this.closeModal('','close');
+    }
+  }
+  async checkAlert(){    
+    const isAlertOpen = await this.alertCtrl.getTop();    
+    if(isAlertOpen && isAlertOpen['hasController']){
+      this.alertCtrl.dismiss();
+    }
   }
   ongoogleMapDestinationMarkerClick(){
     let origin = "&origin=" + this.currentLatLng.lat + "," + this.currentLatLng.lng;
