@@ -1976,6 +1976,7 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
     });
     modal.componentProps.modal = modal;
     modal.onDidDismiss().then(async(result) => {
+      if(result?.role && result?.role == 'close')this.router.navigate(['/home'])
         console.log(result);
     });
   }
