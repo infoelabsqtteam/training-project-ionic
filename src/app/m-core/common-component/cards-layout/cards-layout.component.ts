@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService, AppDownloadService, AppShareService } from '@core/ionic-core';
+import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService, AppDownloadService, AppShareService, AppStorageService } from '@core/ionic-core';
 import { CallNumber } from '@ionic-native/call-number/ngx';
 import { Platform, ModalController, AlertController, PopoverController, isPlatform, ActionSheetController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
@@ -175,8 +175,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     'latitude' : 0,
     'longitude' : 0
   }
-  enableCustomGetCollection = false;
+  enableCustomGotoCollection:boolean = false;
   gridRunningDataSubscriber:Subscription;
+  getCollectionCentre:boolean = false;
 
   constructor(
     private platform: Platform,
@@ -213,7 +214,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private androidpermissionsService: AndroidpermissionsService,
     private chartService: ChartService,
     private appShareService: AppShareService,
-    private popoverModalService: PopoverModalService
+    private popoverModalService: PopoverModalService,
+    private appStorageService: AppStorageService
   ) 
   {
     
@@ -258,9 +260,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.downloadandprint(data);
     })
 
-    this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
-      this.setStaticData(data);
-    });
     this.gridRunningDataSubscriber = this.dataShareService.gridRunningData.subscribe(data =>{
       if(data && data?.data?.length >0 &&this.scannerForm){
         let form = this.commonFunctionService.getForm(this.card?.card?.form,'UPDATE',this.gridButtons);
@@ -418,14 +417,17 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }else{
       this.nodatafound=true;
     }
-    // if(this.scannerForm && this.formTypeName != ''){
-    //   let forms=this.card?.card?.form;
-    //   if(forms && forms[this.formTypeName] && this.carddata?.length == 1){
-    //     this.editedRowData(0,this.formTypeName)
-    //   }
-    //   this.formTypeName='';
-    //   // this.scannerForm=false;
-    // }
+    if(this.scannerForm && this.formTypeName != ''){
+      let forms=this.card?.card?.form;
+      if(forms && forms[this.formTypeName] && this.carddata?.length == 1){
+        this.editedRowData(0,this.formTypeName)
+      }
+      this.formTypeName='';
+      // this.scannerForm=false;
+    }
+    if(this.enableScanner){
+      this.appStorageService.setObject('scannedData',this.carddata);
+    }
   }
   checkLoader() {
     new Promise(async (resolve)=>{
@@ -815,7 +817,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   } 
   setCardAndTab(cardWithTab){
     if(cardWithTab && cardWithTab.card){
-      if (true) {
+      if (this.permissionService.checkPermission(cardWithTab.card.collection_name, 'view')) {
         this.setCardDetails(cardWithTab.card);
       }else{
         this.card['viewPermission'] = false;
@@ -943,9 +945,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.enableScanner=false;
       }
       if(card.enable_only_edit){
-        this.enableCustomGetCollection = card.enable_only_edit;
+        this.enableCustomGotoCollection = card.enable_only_edit;
       }else{
-        this.enableCustomGetCollection=false;
+        this.enableCustomGotoCollection=false;
       }
       this.collectionname = card.collection_name;
       if(this.collectionname !=''){
@@ -1958,40 +1960,88 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
   // await alert.present();
 }
 
-async goToSampleSubmit(collectionCenter?:any,scannedData?:any): Promise<void> {
-  const obj :any = {
-    'collectionCenterList' : collectionCenter,
-    'scannedData' : scannedData
+  async goToSampleSubmit(collectionCenter?:any,scannedData?:any): Promise<void> {
+    const scannedDataList = await this.appStorageService.getObject('scannedData');
+    scannedData = JSON.parse(scannedDataList);
+    const obj :any = {
+      'selectedCollectionCenter' : collectionCenter,
+      'scannedData' : scannedData
+    }
+    const modal = await this.popoverModalService.showModal({
+      component: SampleSubmitModelComponent,
+      showBackdrop: false,
+      componentProps: {
+        'data': obj
+      },
+    });
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss().then(async(result) => {
+        console.log(result);
+    });
   }
-  const modal = await this.popoverModalService.showModal({
-    component: SampleSubmitModelComponent,
-    showBackdrop: false,
-    componentProps: {
-      'data': obj
-    },
-  });
-  modal.componentProps.modal = modal;
-  modal.onDidDismiss().then(async(result) => {
-    if(result?.role && result?.role == 'close')this.router.navigate(['/home'])
-      console.log(result);
-  });
-}
-async goToCollectioncenter(collectionCenter?:any): Promise<void> {
-  const obj :any = {
-    'collectionCenterList' : collectionCenter
+  async goToCollectioncenter(collectionCenter?:any): Promise<void> {
+    const modal = await this.popoverModalService.showModal({
+      component: CollectionCentreModelComponent,
+      showBackdrop: false,
+      componentProps: {
+        'data': collectionCenter
+      },
+    });
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss().then(async(result:any) => {      
+      const fieldName = {
+        "field" : "collection_center_list"
+      }
+      this.apiService.ResetStaticData(fieldName);
+
+      this.unsubscribeStaticData();
+      if(result?.role == 'submit' && result?.data?.data && result?.data?.data?.latitude){
+        this.openGmapViewModal(result?.data?.data);
+      }
+    });
   }
-  const modal = await this.popoverModalService.showModal({
-    component: CollectionCentreModelComponent,
-    showBackdrop: false,
-    componentProps: {
-      'data': obj
-    },
-  });
-  modal.componentProps.modal = modal;
-  modal.onDidDismiss().then(async(result:any) => {
-      console.log(result);
-  });
-}
+
+  async openGmapViewModal(data){
+    let additionaldata : any = {
+      'barcodeCenter':data,
+      'destinationAddress' : {
+        'geometry': {
+          'location': {
+            'lat': data?.latitude,
+            'lng': data?.longitude
+          }
+        },
+        'formatted_address': data?.collectionCenterName
+      },
+      'currentLatLng':{
+        'lat':this.userCurrentLocation.latitude,
+        'lng':this.userCurrentLocation.longitude
+      },
+      'collectionName':'sample_collection',
+      'customEntryForBarcode' : true
+    }
+    const modal = await this.modalController.create({
+      component: GmapViewComponent,
+      cssClass: 'my-custom-modal-css',
+      componentProps: { 
+        "additionalData": additionaldata,
+      },
+      id: data._id,
+      showBackdrop:true,
+      backdropDismiss:false,
+      initialBreakpoint : 1,
+      breakpoints : [0.75, 1],
+      backdropBreakpoint : 0.75,
+      handleBehavior:'cycle'
+    });
+    modal.present();
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss().then(async (result:any) => {
+      if(result?.data && result.role == "submit"){
+        this.goToSampleSubmit(result?.data);
+      }
+    });
+  }
   
   public async readBarcodeFromImage(): Promise<void> {
     const { files } = await FilePicker.pickImages({ multiple: false });
@@ -2139,6 +2189,8 @@ async goToCollectioncenter(collectionCenter?:any): Promise<void> {
   /*-------Custom Functions for Demo scanner Start --------------*/
 
   getCollectionCenterList(){
+    this.subscribeStaticData();
+    this.getCollectionCentre = true;
     const api = "GET_NEARBY_GEO_LOCATION"
     const params = "QTMP:"+api;
     // const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
@@ -2156,6 +2208,16 @@ async goToCollectioncenter(collectionCenter?:any): Promise<void> {
     if(userObj)
     staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(params, '', [], userObj));
     this.apiService.getStatiData(staticModalGroup);
+  }
+  subscribeStaticData(){
+    this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
+      this.setStaticData(data);
+    });
+  }
+  unsubscribeStaticData(){
+    if(this.staticDataSubscriber){
+      this.staticDataSubscriber.unsubscribe();
+    }
   }
 
   setStaticData(staticDatas:any){
@@ -2176,13 +2238,10 @@ async goToCollectioncenter(collectionCenter?:any): Promise<void> {
           }
         }
       })
-      if(this.staticData){
-        this.goToCollectioncenter(this.staticData['collection_center_list']);
+      if(this.staticData?.['collection_center_list']){
+        this.getCollectionCentre = false;
+        this.goToCollectioncenter(this.staticData);
       }
-      const fieldName = {
-        "field" : "collection_center_list"
-      }
-      this.apiService.ResetStaticData(fieldName);
     }
   }
   async checkPermissionandRequest(){

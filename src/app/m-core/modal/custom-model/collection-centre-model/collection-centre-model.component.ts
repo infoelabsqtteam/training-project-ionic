@@ -16,10 +16,11 @@ export class CollectionCentreModelComponent implements OnInit {
   @Input()
   private data:any;
 
-  staticData:any={};
-  selectedCenter:any='';
+  collectionCenterList:any = {}
+  // staticData:any={};
+  selectedCenter:any;
   sampleFormDate:any=[{name:"F012",checked:false},{name:"F015",checked:false},{name:"F066",checked:false}];
-  staticDataSubscriber:Subscription
+  // staticDataSubscriber:Subscription
   constructor(
     private readonly popoverModalService: PopoverModalService,
     private alertController:AlertController,
@@ -27,45 +28,68 @@ export class CollectionCentreModelComponent implements OnInit {
     private apiCallService:ApiCallService,
     private dataShareService:DataShareService,
   ) {
-    this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
-      console.log(data);
-      // this.setStaticData(data);
-    });
+    // this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
+    //   console.log(data);
+    //   // this.setStaticData(data);
+    // });
    }
 
   ngOnInit() {
     this.onLoadSetData();
   }
   onLoadSetData(){
-    if(this.data?.collectionCenterList){
-      this.staticData = this.data?.collectionCenterList;
+    if(this.data?.['collection_center_list']){
+      this.collectionCenterList = this.data?.['collection_center_list']
     }
-    this.staticData.collection_centre=[
-      {"name": "Delhi"},
-      {
-        "name": "Nagpur",
-      },
-      {
-        "name": "Lucknow",
-      },
-      {
-        "name": "Noida",
-      },
-      {
-        "name": "Punjab",
-      }
-    ]
+    // this.staticData.collection_centre=[
+    //   {
+    //     "name": "Delhi",
+    //     "_id": "1",
+    //     "latitude": 28.704063,
+    //     "longitude": 74.54
+    //   },
+    //   {
+    //     "name": "Nagpur",
+    //     "_id": "2",
+    //     "latitude": 28.704063,
+    //     "longitude": 74.54
+    //   },
+    //   {
+    //     "name": "Lucknow",
+    //     "_id": "3",
+    //     "latitude": 28.704063,
+    //     "longitude": 74.54
+    //   },
+    //   {
+    //     "name": "Noida",
+    //     "_id": "4",
+    //     "latitude": 28.704063,
+    //     "longitude": 74.54
+    //   },
+    //   {
+    //     "name": "Punjab",
+    //     "_id": "5",
+    //     "latitude": 28.704063,
+    //     "longitude": 74.54
+    //   }
+    // ]
   }
 
-  public async closeModal(value?: any): Promise<void> {
+  public async closeModal(role?:string): Promise<void> {
+    let selectedItem:any;
+    this.collectionCenterList.forEach(element => {
+      if(element?._id == this.selectedCenter){
+        selectedItem = element
+      }
+    });
     if(this.modal && this.modal?.offsetParent['hasController']){
       this.modal?.offsetParent?.dismiss({
           'dismissed': true,
-          'value':value
-      });
+          'data':selectedItem,
+      },role);
     }else{        
       this.popoverModalService.dismissModal({
-        value: value,
+        value: selectedItem,
       });
     }
   }
@@ -87,6 +111,9 @@ export class CollectionCentreModelComponent implements OnInit {
 
   submit(){
     console.log(this.sampleFormDate);
+  }
+  selectedCollectionCenter(selectedData:any){
+    this.selectedCenter = selectedData;
   }
 
 }

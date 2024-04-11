@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title>COLLECTION CENTER</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="closeModal()">
+      <ion-button (click)="closeModal('close')">
         <ion-icon name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -10,20 +10,19 @@
 </ion-header>
 
 <ion-content>
-  <ion-radio-group value="start" [(ngModel)]="selectedCenter">
-  <ion-item  *ngFor="let tableField of staticData.collection_centre">
-  <ion-radio [value]="tableField.name" labelPlacement="start" ></ion-radio>
-    <!-- <ion-checkbox [checked]="tableField.checked" [(ngModel)]="tableField.checked" (ionChange)="inputOnChangeFunc('','')" [ngclass]="tableField.field_class"  [id]="tableField._id+'_'+tableField.field_name"></ion-checkbox> -->
-    <ion-label class="ion-margin-start">
-        Item {{ tableField.name }} 
-    </ion-label>
-  </ion-item>
-</ion-radio-group>
+  <ion-list>
+    <ion-radio-group value="" [(ngModel)]="selectedCenter">
+      <ion-item *ngFor="let item of collectionCenterList">
+        <ion-label>{{item?.name ? item?.name : item?.collectionCenterName + "  "}} {{item?.distance | number:'1.0-0'}} {{" KM"}}</ion-label>
+        <ion-radio slot="end" [value]="item._id"></ion-radio>
+      </ion-item>
+    </ion-radio-group>
+  </ion-list>
 </ion-content>
 
 <ion-footer>
-  <ion-item>
-    <ion-button type="button" [disabled]="selectedCenter==''" mdbBtn color="primary" outline="true" slot="end"  class="waves-light" (click)="closeModal('NAVIGATE')">NAVIGATE TO MAP</ion-button>
-  </ion-item>
+  <ion-button expand="block" shape="" fill="outline" size="" color="" (click)="closeModal('submit')" class="waves-light" (click)="closeModal('NAVIGATE')"><ion-icon name="map-outline" slot="start"></ion-icon>NAVIGATE TO MAP
+    <!-- <span class="material-symbols-outlined" ></span> -->
+  </ion-button>
 </ion-footer>
 
