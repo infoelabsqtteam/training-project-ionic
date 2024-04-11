@@ -6,6 +6,7 @@ import { AlertController, isPlatform } from '@ionic/angular';
 import { element } from 'protractor';
 import { Subscription } from 'rxjs';
 import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
+import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
 @Component({
   selector: 'app-sample-submit-model',
@@ -22,7 +23,7 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
 
   submitForm: UntypedFormGroup;
   centerPresent:boolean = false;
-  selectedCenter:any;
+  selectedCenter:any={};
   staticData:any={};
   sampleFormDate:any=[{name:"F012",checked:false},{name:"F015",checked:false},{name:"F066",checked:false}];
   staticDataSubscriber:Subscription;  
@@ -45,7 +46,8 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private appStorageService: AppStorageService,
     private appPermissionService: AppPermissionService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private dataShareServiceService: DataShareServiceService
   ) {
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
@@ -53,17 +55,22 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
     
    }
 
+   ionViewwillLeave(){
+
+   }
+   ionViewDidLeave(){
+
+   }
+
   ngOnInit() {
+    this.data;
     this.initForm();
     this.onload();
-    console.log(this.data)
     // this.getScannedData();
   }
 
   ngOnDestroy(){
-    if(this.staticDataSubscriber){
-      this.staticDataSubscriber.unsubscribe();
-    }
+    this.unsubscribe()
   }
 
   initForm(){
@@ -77,21 +84,8 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
     if(this.data){
       this.selectedCenter = this.data?.selectedCollectionCenter;
       this.scannedDataList = this.data?.scannedData;
+      this.selectedItems = this.data?.scannedData;
     }
-    // this.staticData.collection_centre=[{"name": "Delhi"},
-    //   {
-    //     "name": "Nagpur",
-    //   },
-    //   {
-    //     "name": "Lucknow",
-    //   },
-    //   {
-    //     "name": "Noida",
-    //   },
-    //   {
-    //     "name": "Punjab",
-    //   }
-    // ]
   }
   // async getScannedData(){
   //   this.scannedDataList = await this.appStorageService.getObject('scannedData');
@@ -99,7 +93,12 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   // }
   getSelectedCenterFromList(){
     if(this.selectedCenter && this.staticData['collection_center_list'].length > 0){
+      const staticData = this.staticData['collection_center_list']
+      staticData.forEach(element => {
+        if(element?._id == this.selectedCenter?._id){
 
+        }
+      });
     }
   }
   public async closeModal(value?: any): Promise<void> {
@@ -115,13 +114,25 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   setValue(arg0: string,arg1: any,arg2: boolean) {
     throw new Error('Method not implemented.');
   }
+  compareWith(o1, o2) {
+    return o1 && o2 ? o1?._id === o2?._id : o1 === o2;
+  }
 
-  inputOnChangeFunc(parent,field) {
-    if(parent && parent != '' && parent.field_name && parent.field_name != ""){
-      field['parent'] = parent.field_name;
-    }
-    if(field){
+  handleChange(ev) {
+    this.selectedCenter = ev.target.value;
+  }
 
+  inputOnChangeFunc(event:any,item:any,index:number) {
+    // if(parent && parent != '' && parent.field_name && parent.field_name != ""){
+    //   field['parent'] = parent.field_name;
+    // }
+    if(item){
+      if(item?.checked){
+        this.scannedDataList[index] = item;
+      }else{
+        delete item.checked;
+        this.scannedDataList[index] = item;
+      }
     }
   }
 
@@ -133,7 +144,27 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   }
 
   submit(){
-    console.log(this.sampleFormDate);
+    const collectionCenter = {
+      '_id' : this.selectedCenter?._id,
+      'name' : this.selectedCenter?.name
+    }
+    const checkedSamples = this.scannedDataList.filter(sample => sample.checked);
+    checkedSamples.forEach(item => {
+      item['status'] = "SUBMIT";
+      item['collectionCenter'] = collectionCenter;
+      delete item.checked
+    });
+
+    if(checkedSamples?.length == 0){
+      return this.notificationService.presentToastOnBottom("Please select sample to submit.","danger");
+    }
+    const payload = {
+      'data': checkedSamples,
+      'curTemp' : this.dataShareServiceService.getCollectionName()
+    }
+
+    // this.apiService.SaveFormData(payload);
+
   }
   // Dependency functions
   setStaticData(staticDatas:any){
@@ -154,6 +185,11 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
           }
         }
       })
+    }
+  }
+  unsubscribe(){
+    if(this.staticDataSubscriber){
+      this.staticDataSubscriber.unsubscribe();
     }
   }
   getCollectionCenterList(){

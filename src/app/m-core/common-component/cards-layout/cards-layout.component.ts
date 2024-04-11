@@ -578,6 +578,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.saveResponceSubscription.unsubscribe();
     }
   }
+  unsubscribeStaticData(){
+    if(this.staticDataSubscriber){
+      this.staticDataSubscriber.unsubscribe();
+    }
+  }
   // Unsubscribe Functions Handling End -------------------
 
   // Click Functions Handling Start---------------------
@@ -2214,11 +2219,6 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
     });
-  }
-  unsubscribeStaticData(){
-    if(this.staticDataSubscriber){
-      this.staticDataSubscriber.unsubscribe();
-    }
   }
 
   setStaticData(staticDatas:any){

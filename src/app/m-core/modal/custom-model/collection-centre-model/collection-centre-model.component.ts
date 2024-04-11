@@ -89,8 +89,8 @@ export class CollectionCentreModelComponent implements OnInit {
       },role);
     }else{        
       this.popoverModalService.dismissModal({
-        value: selectedItem,
-      });
+        'data': selectedItem,
+      },role);
     }
   }
 
