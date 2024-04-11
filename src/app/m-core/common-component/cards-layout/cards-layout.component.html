@@ -337,9 +337,10 @@
     <ion-fab-button *ngIf="addNewEnabled && form && form['default']" (click)="addNewForm()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>
     <ion-fab-button *ngIf="enableScanner"  (click)="checkBarcodeScannerSupportedorNot()" class="addNew ion-margin-top" ><ion-icon name="scan-outline"></ion-icon></ion-fab-button>
   </ion-fab>
-  <ion-footer *ngIf="enableCustomGetCollection">
-    <ion-button expand="block" shape="" fill="outline" size="" color="" (click)="checkPermissionandRequest()">
-      <ion-icon slot="start" name="storefront-outline"></ion-icon> Go to Collection Centre
+  <ion-footer *ngIf="enableCustomGotoCollection">
+    <ion-button expand="block" shape="" fill="outline" size="" color="" (click)="checkPermissionandRequest()" [disabled]="carddata?.length > 0 ? false : true || getCollectionCentre">
+      <ion-icon slot="start" *ngIf="!getCollectionCentre" name="storefront-outline"></ion-icon> Go to Collection Centre
+      <ion-spinner slot="start" *ngIf="getCollectionCentre" name="circular" ></ion-spinner>
       <!-- <span class="material-symbols-outlined" ></span> -->
     </ion-button>
   </ion-footer>
