@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { NotificationService } from '@core/ionic-core';
 import { DataShareService,ApiCallService,ApiService } from '@core/web-core';
 import { AlertController } from '@ionic/angular';
 import { element } from 'protractor';
@@ -18,8 +19,9 @@ export class CollectionCentreModelComponent implements OnInit {
 
   collectionCenterList:any = {}
   // staticData:any={};
-  selectedCenter:any;
+  selectedCenter:any={};
   sampleFormDate:any=[{name:"F012",checked:false},{name:"F015",checked:false},{name:"F066",checked:false}];
+Object: any;
   // staticDataSubscriber:Subscription
   constructor(
     private readonly popoverModalService: PopoverModalService,
@@ -27,6 +29,7 @@ export class CollectionCentreModelComponent implements OnInit {
     private apiService:ApiService,
     private apiCallService:ApiCallService,
     private dataShareService:DataShareService,
+    private notificationService:NotificationService
   ) {
     // this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
     //   console.log(data);
@@ -76,21 +79,20 @@ export class CollectionCentreModelComponent implements OnInit {
   }
 
   public async closeModal(role?:string): Promise<void> {
-    let selectedItem:any;
-    this.collectionCenterList.forEach(element => {
-      if(element?._id == this.selectedCenter){
-        selectedItem = element
+    console.log(this.selectedCenter);
+    if(Object.keys(this.selectedCenter).length != 0 || role == 'close'){
+      if(this.modal && this.modal?.offsetParent['hasController']){
+        this.modal?.offsetParent?.dismiss({
+            'dismissed': true,
+            'data':this.selectedCenter,
+        },role);
+      }else{        
+        this.popoverModalService.dismissModal({
+          'data': this.selectedCenter,
+        },role);
       }
-    });
-    if(this.modal && this.modal?.offsetParent['hasController']){
-      this.modal?.offsetParent?.dismiss({
-          'dismissed': true,
-          'data':selectedItem,
-      },role);
-    }else{        
-      this.popoverModalService.dismissModal({
-        'data': selectedItem,
-      },role);
+    }else if(role=='submit'){
+      this.notificationService.presentToast("Please select collection center")
     }
   }
 

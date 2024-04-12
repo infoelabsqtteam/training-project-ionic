@@ -1883,7 +1883,7 @@ async checkScannedData(barcodeDetails?:any){
         resultValue=barcodeDetails?.displayValue;
         break;
       default:
-        if(forms && forms[barcodeValue?.form_name]){
+        if(forms){
           this.formTypeName = barcodeValue?.form_name;
           resultValue=barcodeValue?.serialId;
         }else{
