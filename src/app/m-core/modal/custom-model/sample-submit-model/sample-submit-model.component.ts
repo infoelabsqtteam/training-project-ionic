@@ -168,12 +168,30 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
 
     if(checkedSamples?.length == 0){
       return this.notificationService.presentToastOnBottom("Please select sample to submit.","danger");
+    }else if(checkedSamples?.length == this.scannedDataList.length){      
+      this.dataShareServiceService.removeKeyFromStorage('scannedData');
+    }else{
+      if(checkedSamples?.length < this.scannedDataList.length){
+        let newList:any = [] = this.scannedDataList;
+        for (let x = 0; x < newList.length; x++) {
+          const notSelectedElement = newList[x];
+          for (let y = 0; y < checkedSamples.length; y++) {
+            const selectedElement = checkedSamples[y];
+            if(notSelectedElement['_id'] == selectedElement['_id']){
+              newList.splice(x,1);
+            }          
+          }        
+        }
+        this.appStorageService.setObject('scannedData',newList);
+      }
     }
-    if(checkedSamples?.length > 0){
+    if(checkedSamples?.length > 0 ){
       this.selectedItems = checkedSamples;
       this.submitBtnText = "Please wait..";
       this.submitLoader = true;
-      this.loaderService.showLoader("Please wait...","crescent");      
+      const openLoader = async () =>{
+        this.loaderService.showLoader("Please wait...","crescent"); 
+      }
       setTimeout(() => {   
         this.checkLoader();
       }, 60000); 
@@ -198,7 +216,9 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
       if (saveFromDataRsponce.success && saveFromDataRsponce.success != '') {
         if (saveFromDataRsponce.success == 'success') {
           if(this.selectedItems?.length == 1){
-            this.checkLoader();
+            const check = async () =>{
+              this.checkLoader();
+            }
             this.submitBtnText='Submit';
             this.submitLoader=false;
             this.notificationService.showAlert("Sample Submited successfuly !","Success",['Dismiss']);
