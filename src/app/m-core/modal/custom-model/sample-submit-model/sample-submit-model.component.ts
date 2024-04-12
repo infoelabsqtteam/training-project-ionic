@@ -1,6 +1,7 @@
+import { IonLoaderService } from './../../../../service/ion-loader.service';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { App_googleService, NotificationService, AppStorageService, AppPermissionService } from '@core/ionic-core';
+import { App_googleService, NotificationService, AppStorageService, AppPermissionService, LoaderService } from '@core/ionic-core';
 import { DataShareService,ApiCallService,ApiService } from '@core/web-core';
 import { AlertController, isPlatform } from '@ionic/angular';
 import { element } from 'protractor';
@@ -27,6 +28,7 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   staticData:any={};
   sampleFormDate:any=[{name:"F012",checked:false},{name:"F015",checked:false},{name:"F066",checked:false}];
   staticDataSubscriber:Subscription;  
+  saveResponceSubscription:Subscription;
   userCurrentLocation = {
     'latitude' : 0,
     'longitude' : 0
@@ -34,6 +36,8 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   gpsAlertResult:any;
   scannedDataList:any = [];
   selectedItems: any = [];
+  submitBtnText:string='Submit';
+  submitLoader:boolean=false;
 
 
   constructor(
@@ -47,12 +51,16 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
     private appStorageService: AppStorageService,
     private appPermissionService: AppPermissionService,
     private formBuilder: FormBuilder,
-    private dataShareServiceService: DataShareServiceService
+    private dataShareServiceService: DataShareServiceService,
+    private loaderService: LoaderService
   ) {
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
       this.setStaticData(data);
     });
-    
+    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
+      this.setSaveResponce(responce);
+    });
+
    }
 
    ionViewwillLeave(){
@@ -84,7 +92,7 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
     if(this.data){
       this.selectedCenter = this.data?.selectedCollectionCenter;
       this.scannedDataList = this.data?.scannedData;
-      this.selectedItems = this.data?.scannedData;
+      if(this.selectedCenter != undefined) this.centerPresent = true;
     }
   }
   // async getScannedData(){
@@ -101,13 +109,16 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
       });
     }
   }
-  public async closeModal(value?: any): Promise<void> {
+  public async closeModal(value?: any,role?:string): Promise<void> {
     if(this.modal && this.modal?.offsetParent['hasController']){
-      this.modal?.offsetParent?.dismiss({'dismissed': true},value);
+      this.modal?.offsetParent?.dismiss({
+        'dismissed': true,
+        'data':value
+      },role);
     }else{        
       this.popoverModalService.dismissModal({
-        value: value,
-      });
+        'data': value,
+      },role);
     }
   }
 
@@ -123,9 +134,6 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   }
 
   inputOnChangeFunc(event:any,item:any,index:number) {
-    // if(parent && parent != '' && parent.field_name && parent.field_name != ""){
-    //   field['parent'] = parent.field_name;
-    // }
     if(item){
       if(item?.checked){
         this.scannedDataList[index] = item;
@@ -144,7 +152,10 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   }
 
   submit(){
-    const collectionCenter = {
+    if(this.selectedCenter == undefined){
+      return this.notificationService.presentToastOnBottom("Please select collection centre","danger");
+    }
+    const collectionCenter:any = {
       '_id' : this.selectedCenter?._id,
       'name' : this.selectedCenter?.name
     }
@@ -158,14 +169,68 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
     if(checkedSamples?.length == 0){
       return this.notificationService.presentToastOnBottom("Please select sample to submit.","danger");
     }
-    const payload = {
-      'data': checkedSamples,
-      'curTemp' : this.dataShareServiceService.getCollectionName()
+    if(checkedSamples?.length > 0){
+      this.selectedItems = checkedSamples;
+      this.submitBtnText = "Please wait..";
+      this.submitLoader = true;
+      this.loaderService.showLoader("Please wait...","crescent");      
+      setTimeout(() => {   
+        this.checkLoader();
+      }, 60000); 
     }
 
-    // this.apiService.SaveFormData(payload);
+    this.saveSelectedData(this.selectedItems[0]);
 
   }
+  saveSelectedData(data:any){
+    let payload = {
+      'data': data,
+      'curTemp' : this.dataShareServiceService.getCollectionName()
+    }
+    this.apiService.SaveFormData(payload);
+    // let saveFromDataRsponce = {
+    //   'success' : 'success'
+    // }
+    // this.setSaveResponce(saveFromDataRsponce);
+  }
+  setSaveResponce(saveFromDataRsponce){
+    if (saveFromDataRsponce) {
+      if (saveFromDataRsponce.success && saveFromDataRsponce.success != '') {
+        if (saveFromDataRsponce.success == 'success') {
+          if(this.selectedItems?.length == 1){
+            this.checkLoader();
+            this.submitBtnText='Submit';
+            this.submitLoader=false;
+            this.notificationService.showAlert("Sample Submited successfuly !","Success",['Dismiss']);
+            this.closeModal('','submit');
+          }else{
+            this.selectedItems.splice(0,1);
+            setTimeout(() => {   
+              this.saveSelectedData(this.selectedItems[0]);
+            }, 500);
+          }
+        }
+      }
+      this.apiService.ResetSaveResponce();
+    }
+  }
+  async checkLoader() {
+    new Promise(async (resolve)=>{
+      let checkLoader = await this.loaderService.loadingCtrl.getTop();
+      if(checkLoader && checkLoader['hasController']){
+        this.loaderService.hideLoader();
+      }
+    });
+  }
+  async checkAlert() {
+    new Promise(async (resolve)=>{
+      let checkAlert = await this.alertController.getTop();
+      if(checkAlert && checkAlert['hasController']){
+        this.alertController.dismiss();
+      }
+    });
+  }
+  
   // Dependency functions
   setStaticData(staticDatas:any){
     if(staticDatas && Object.keys(staticDatas).length > 0) {

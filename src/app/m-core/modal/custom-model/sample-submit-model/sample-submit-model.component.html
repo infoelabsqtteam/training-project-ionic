@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title>Sample Submit</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="closeModal('close')">
+      <ion-button (click)="closeModal('','close')">
         <ion-icon name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -12,7 +12,7 @@
   <ion-list>
     <ion-item>
       <ion-label position="floating">Collection Centre <ion-text color="danger" > *</ion-text></ion-label>
-      <ion-select  class="selectDropdown" [compareWith]="compareWith" (ionChange)="handleChange($event)" (ionDismiss)="$event.stopPropagation()" [(ngModel)]="selectedCenter" [disabled]="centerPresent">
+      <ion-select  class="selectDropdown" [compareWith]="compareWith" (ionChange)="handleChange($event)" (ionDismiss)="$event.stopPropagation()" [(ngModel)]="selectedCenter" [disabled]="centerPresent" required>
         <ion-select-option *ngFor="let staticValue of staticData?.['collection_center_list']; let i = index" [value]="staticValue">{{staticValue.name}}</ion-select-option>
       </ion-select>
     </ion-item>
@@ -25,13 +25,13 @@
     <ion-item  *ngFor="let tableField of scannedDataList; let i = index">
       <ion-checkbox slot="start" [checked]="tableField.checked" [(ngModel)]="tableField.checked" (ionChange)="inputOnChangeFunc($event,tableField,i)" [ngclass]="tableField.field_class"  [id]="tableField._id+'_'+tableField.field_name"></ion-checkbox>
       <ion-label class="ion-margin-start">
-          Sample {{ tableField.name ? tableField.name : tableField?.uniqueId }}
+         {{ tableField.name ? tableField.name : 'Sample ' + tableField?.uniqueId }}
       </ion-label>
     </ion-item>
   </ion-list>
 </ion-content>
 <ion-footer>
-  <ion-item>
-    <ion-button type="button" expand="block" shape="" fill="outline" size="" color="primary" outline="true"  class="waves-light" (click)="submit()">SUBMIT</ion-button>
-  </ion-item>
+    <ion-button expand="block" shape="" fill="" size="" color="primary" outline="true" slot="" class="waves-light" (click)="submit()">{{submitBtnText}}
+      <ion-icon name="arrow-forward-outline" slot="start"></ion-icon>
+    </ion-button>
 </ion-footer>
