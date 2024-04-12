@@ -174,7 +174,7 @@ export class ForgetPasswordComponent implements OnInit {
   pageloded(){
     this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
     this.template = this.storageService.getTemplateName();
-    this.title = this.envService.getHostKeyValue('title');
+    this.title = this.storageService.getPageTitle();
     this.adminEmail = this.storageService.getAdminEmail();
   }
   get f() {return this.fForm.controls;}
