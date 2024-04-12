@@ -428,6 +428,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if(this.enableScanner){
       this.appStorageService.setObject('scannedData',this.carddata);
     }
+    if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
   }
   checkLoader() {
     new Promise(async (resolve)=>{
@@ -889,7 +890,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       if (card.card_type !== '') {
         this.cardType = card.card_type.name;
       }      
-      if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
+      // if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
       // this.childColumn = card.child_card;
       if(card.fields && card.fields.length > 0){
         this.columnList = card.fields;      
@@ -1982,7 +1983,6 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
     modal.componentProps.modal = modal;
     modal.onDidDismiss().then(async(result) => {
       if(result?.role && result?.role == 'close' || result?.role == 'submit'){
-        await this.dataShareServiceService.removeKeyFromStorage('scannedData');
         this.router.navigate(['/home']);
       };
     });

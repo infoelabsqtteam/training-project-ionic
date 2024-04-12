@@ -25,7 +25,7 @@
     <ion-item  *ngFor="let tableField of scannedDataList; let i = index">
       <ion-checkbox slot="start" [checked]="tableField.checked" [(ngModel)]="tableField.checked" (ionChange)="inputOnChangeFunc($event,tableField,i)" [ngclass]="tableField.field_class"  [id]="tableField._id+'_'+tableField.field_name"></ion-checkbox>
       <ion-label class="ion-margin-start">
-         {{ tableField.name ? tableField.name : 'Sample ' + tableField?.uniqueId }}
+         {{ tableField.name ? tableField.name : tableField?.sampleName }}
       </ion-label>
     </ion-item>
   </ion-list>
