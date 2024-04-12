@@ -21,7 +21,6 @@ export class CollectionCentreModelComponent implements OnInit {
   // staticData:any={};
   selectedCenter:any={};
   sampleFormDate:any=[{name:"F012",checked:false},{name:"F015",checked:false},{name:"F066",checked:false}];
-Object: any;
   // staticDataSubscriber:Subscription
   constructor(
     private readonly popoverModalService: PopoverModalService,

@@ -14,7 +14,7 @@
     <ion-radio-group value="" [(ngModel)]="selectedCenter">
       <ion-item *ngFor="let item of collectionCenterList">
         <ion-label>{{item?.name ? item?.name : item?.collectionCenterName}}</ion-label>
-        <ion-radio slot="end" [value]="item._id"></ion-radio>
+        <ion-radio slot="end" [value]="item"></ion-radio>
       </ion-item>
     </ion-radio-group>
   </ion-list>

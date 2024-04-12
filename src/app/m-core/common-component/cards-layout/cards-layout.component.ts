@@ -260,12 +260,17 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.downloadandprint(data);
     })
 
-    this.gridRunningDataSubscriber = this.dataShareService.gridRunningData.subscribe(data =>{
+    this.gridRunningDataSubscriber = this.dataShareService.gridRunningData.subscribe((data:any) =>{
       if(data && data?.data?.length >0 &&this.scannerForm){
-        let form = this.commonFunctionService.getForm(this.card?.card?.form,'UPDATE',this.gridButtons);
+        if(data?.data?.[0].status=="SUBMIT"){
+          this.checkLoader();
+          this.notificationService.showAlert("","This Sample is already Submitted",['Dismiss']);
+        }else{
+          let form = this.commonFunctionService.getForm(this.card?.card?.form,'UPDATE',this.gridButtons);
+          // this.loaderService.showLoader("Loading...");
+          this.openFormModalForScanner(form,data?.data?.[0]);
+        }
         this.scannerForm=false;
-        this.loaderService.showLoader("Loading...");
-        this.openFormModalForScanner(form,data?.data?.[0]);
       }
       // else if(this.scannerForm){
       //   this.scannerForm=false;
@@ -428,6 +433,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if(this.enableScanner){
       this.appStorageService.setObject('scannedData',this.carddata);
     }
+    if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
   }
   checkLoader() {
     new Promise(async (resolve)=>{
@@ -889,7 +895,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       if (card.card_type !== '') {
         this.cardType = card.card_type.name;
       }      
-      if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
+      // if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
       // this.childColumn = card.child_card;
       if(card.fields && card.fields.length > 0){
         this.columnList = card.fields;      
@@ -1906,6 +1912,7 @@ async checkScannedData(barcodeDetails?:any){
 openScannedData(forms:any,formTypeName:any,resultValue:any){
   // if(forms && forms[formTypeName] && resultValue != ''){
     this.scannerForm=true;
+    this.loaderService.showLoader("Loading...");
     let criterai ="uniqueId;eq;"+resultValue+";STATIC";
     let payload = this.apiCallService.getPaylodWithCriteria(this.collectionname,"",[criterai],{});
     payload["pageSize"] = 25;
