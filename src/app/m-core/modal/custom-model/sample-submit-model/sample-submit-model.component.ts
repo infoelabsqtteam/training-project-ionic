@@ -26,7 +26,6 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   centerPresent:boolean = false;
   selectedCenter:any={};
   staticData:any={};
-  sampleFormDate:any=[{name:"F012",checked:false},{name:"F015",checked:false},{name:"F066",checked:false}];
   staticDataSubscriber:Subscription;  
   saveResponceSubscription:Subscription;
   userCurrentLocation = {
@@ -38,6 +37,7 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   selectedItems: any = [];
   submitBtnText:string='Submit';
   submitLoader:boolean=false;
+  selectAll: boolean = false;
 
 
   constructor(
@@ -134,6 +134,9 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   }
 
   inputOnChangeFunc(event:any,item:any,index:number) {
+    this.selectAll = this.scannedDataList.every(function(item:any) {
+      return item.checked == true;
+    })
     if(item){
       if(item?.checked){
         this.scannedDataList[index] = item;
@@ -142,13 +145,13 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
         this.scannedDataList[index] = item;
       }
     }
+
   }
 
-  selectAll(e:any){
-    console.log(e);
-    this.scannedDataList.forEach((element)=>{
-      element.checked=!e?.target?.checked
-    });
+  selectAllChanged(e?:any) {
+      for (var i = 0; i < this.scannedDataList.length; i++) {
+        this.scannedDataList[i].checked = e?.target?.checked;
+      }
   }
 
   submit(){
