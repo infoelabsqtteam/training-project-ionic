@@ -55,7 +55,7 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
     private loaderService: LoaderService
   ) {
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
-      this.setStaticData(data);
+      if(data)this.setStaticData(data);
     });
     this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
       this.setSaveResponce(responce);
@@ -274,6 +274,7 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
         }
       })
     }
+    if(staticDatas['collection_center_list']&& Object.keys(staticDatas['collection_center_list']).length>0 && !this.centerPresent)this.selectedCenter=staticDatas['collection_center_list'][0]
   }
   unsubscribe(){
     if(this.staticDataSubscriber){

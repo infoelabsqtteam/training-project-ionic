@@ -42,6 +42,7 @@ export class CollectionCentreModelComponent implements OnInit {
   onLoadSetData(){
     if(this.data?.['collection_center_list']){
       this.collectionCenterList = this.data?.['collection_center_list']
+      if(this.collectionCenterList.length>0)this.selectedCenter=this.collectionCenterList[0];
     }
     // this.staticData.collection_centre=[
     //   {
@@ -78,7 +79,6 @@ export class CollectionCentreModelComponent implements OnInit {
   }
 
   public async closeModal(role?:string): Promise<void> {
-    console.log(this.selectedCenter);
     if(Object.keys(this.selectedCenter).length != 0 || role == 'close'){
       if(this.modal && this.modal?.offsetParent['hasController']){
         this.modal?.offsetParent?.dismiss({

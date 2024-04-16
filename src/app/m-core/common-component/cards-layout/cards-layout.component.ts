@@ -1893,10 +1893,11 @@ async checkScannedData(barcodeDetails?:any){
           this.formTypeName = barcodeValue?.form_name;
           resultValue=barcodeValue?.serialId;
         }else{
-          const confirm= await this.notificationService.confirmAlert('Barcode result','Barcode is not supported',"Close");
+          const confirm= await this.notificationService.showAlert('Barcode result','Please Scan the right Barcode',["Dismiss"]);
         }
   }
-  if(resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
+  if(!resultValue)await this.notificationService.showAlert('','Please Scan the right Barcode',["Dismiss"]);
+  if(resultValue && resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
   // this.openScannedData(forms,this.formTypeName,resultValue)
   //   if(forms && forms[this.formTypeName] && resultValue != ''){
   //     this.scannerForm=true;
