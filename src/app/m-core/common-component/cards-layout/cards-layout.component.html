@@ -66,7 +66,7 @@
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'time'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'boolean'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'icon'" [innerHTML]="getValueForGrid(column,card)"></p>
-              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'file_with_print'" (click)="clickOnGridElement(column,card,j,$event)"><ion-icon name="print-outline" class="printIcon"></ion-icon></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'file_with_print'"><ion-icon name="print-outline" color="appcolor" class="mediumSize" (click)="clickOnGridElement(column,card,j,$event)"></ion-icon></p>
               <!-- <div class="ion-text-end status_button" *ngIf="column.type == 'apibutton'">
                 <ion-button [ngClass]="column.class_name ? 'status_' + column.class_name : 'default-status'" *ngIf="column.type == 'apibutton'" [innerHTML]="getValueForGrid(column,card)" (click)="onClickApiButton(column.apiName,card)">
                 </ion-button>

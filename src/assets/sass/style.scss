@@ -60,7 +60,7 @@ ion-header {
 }
 //***---------- Home page Category List  ----------***//
 .catlist {
-    .homecard {display:flex;align-items:center;background:var(--card-bg-light);border-radius:5px;padding:10px;
+    .homecard {display:flex;align-items:center;background:var(--card-bg-light);border-radius:5px;padding:10px;height: 100%;
         ion-avatar { width:auto;height:auto;
             img {width:28px;height:28px;vertical-align:middle;border-radius: 0;}
         } 
@@ -135,7 +135,7 @@ ion-tabs.footertab {
         }
     }
 }
-.printIcon{font-size: x-large;color: darkblue;};
+.mediumSize{font-size: x-large;};
 
 @supports ((-webkit-margin-start: 0) or (margin-inline-start: 0)) or (-webkit-margin-start: 0)
 {
