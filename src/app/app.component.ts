@@ -261,6 +261,11 @@ export class AppComponent implements OnInit, OnDestroy {
   
   ionViewWillEnter() {}
   onLogout() {
+    //for destroying home page 
+    const currentUrl = this.router.url;
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigate([currentUrl]);
+    });
     this.authService.Logout('');
   }
   
