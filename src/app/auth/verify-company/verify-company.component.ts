@@ -114,7 +114,7 @@ export class VerifyCompanyComponent implements OnInit {
   // Click Function Handling Start--------------------
   async verifyCompanyCode(){
     let clientCode:string = this.cCodeForm.value.code;
-    let hostname = await this.awsSecretManagerService.getServerHostFromAwsSecretManager(clientCode);
+    let hostname = await this.awsSecretManagerService.getserverHostByAwsOrLocal(clientCode);
     if(hostname || clientCode === "localhost"){
       this.storageService.removeDataFormStorage('all');
       this.loaderService.showLoader("Please wait while we are setting up the App for you.");
