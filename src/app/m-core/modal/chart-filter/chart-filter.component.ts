@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { NotificationService, AppPermissionService, AppDownloadService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
-import { File } from '@ionic-native/file/ngx';
+import { File } from '@awesome-cordova-plugins/file/ngx';
 import { ModalController, Platform, isPlatform } from '@ionic/angular';
 import { DatePipe } from '@angular/common';
 import { utcToZonedTime, format} from 'date-fns-tz';
