@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@ionic-native/native-geocoder/ngx';
+import { NativeGeocoder, NativeGeocoderOptions, NativeGeocoderResult } from '@awesome-cordova-plugins/native-geocoder/ngx';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
-// import { LocationAccuracy } from '@ionic-native/location-accuracy/ngx';
-import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
+// import { LocationAccuracy } from '@awesome-cordova-plugins/location-accuracy/ngx';
+import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 import { App_googleService, NotificationService } from '@core/ionic-core';
 import { AlertController, Platform } from '@ionic/angular';
-import { OpenNativeSettings } from '@ionic-native/open-native-settings/ngx';
+import { OpenNativeSettings } from '@awesome-cordova-plugins/open-native-settings/ngx';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer } from '@angular/platform-browser';
 
