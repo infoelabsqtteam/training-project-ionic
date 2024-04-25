@@ -11,6 +11,7 @@ def getMyVersionName = { ->
 }
 
 android {
+    namespace "com.tech.elabs.ai"
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "com.tech.elabs.ai"
