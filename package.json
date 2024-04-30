@@ -36,7 +36,7 @@
     "@awesome-cordova-plugins/open-native-settings": "6.7.0",
     "@awesome-cordova-plugins/sms-retriever": "6.7.0",
     "@aws-sdk/client-secrets-manager": "^3.525.0",
-    "@capacitor-community/file-opener": "^1.0.5",
+    "@capacitor-community/file-opener": "^1.0.4",
     "@capacitor-community/http": "^1.4.1",
     "@capacitor/android": "^4.8.2",
     "@capacitor/app": "^4.1.1",
