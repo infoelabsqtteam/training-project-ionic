@@ -118,6 +118,9 @@ export class VerifyCompanyComponent implements OnInit {
     if(hostname || clientCode === "localhost"){
       this.storageService.removeDataFormStorage('all');
       this.loaderService.showLoader("Please wait while we are setting up the App for you.");
+      setTimeout(async () => {        
+        await this.checkLoader();
+      }, 10000);
       this.storageService.setClientNAme(clientCode);
       this.storageService.setHostNameDinamically(hostname+"/rest/");
       this.dataShareService.shareServerHostName(hostname);
@@ -125,6 +128,17 @@ export class VerifyCompanyComponent implements OnInit {
     }else{
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
     }
+  }
+  checkLoader() {
+    new Promise(async (resolve)=>{
+      let checkLoader = await this.loaderService.loadingCtrl.getTop();
+      if(checkLoader && checkLoader['hasController']){
+        this.loaderService.hideLoader();
+        if(checkLoader['textContent'] === "Please wait while we are setting up the App for you."){
+          this,this.notificationService.presentToastOnBottom("Something went wrong, please try again.");
+        }
+      }
+    });
   }
   infoAlert(){
     this.alertController.create({
