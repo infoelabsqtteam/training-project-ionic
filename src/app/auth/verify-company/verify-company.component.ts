@@ -62,12 +62,12 @@ export class VerifyCompanyComponent implements OnInit {
   
   // Hardware Button Click Function Handling Start--------------------
   exitTheApp(){ 
-    this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+    this.platform.backButton.subscribeWithPriority(10, async (processNextHandler) => {
       console.log('Back press handler!');
       if (this._location.isCurrentPathEqualTo('/checkcompany')) {
-        let isloaderOpen:any = this.loaderService.loadingCtrl.getTop();
-        if(isloaderOpen){
-          this.loaderService.hideLoader();
+        let isloaderOpen:any = await this.loaderService.loadingCtrl.getTop();
+        if(isloaderOpen && isloaderOpen['hasController']){
+          await this.loaderService.hideLoader();
         }
         if(this.isExitAlertOpen){
           this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
@@ -118,9 +118,6 @@ export class VerifyCompanyComponent implements OnInit {
     if(hostname || clientCode === "localhost"){
       this.storageService.removeDataFormStorage('all');
       this.loaderService.showLoader("Please wait while we are setting up the App for you.");
-      setTimeout(async () => {        
-        await this.checkLoader();
-      }, 10000);
       this.storageService.setClientNAme(clientCode);
       this.storageService.setHostNameDinamically(hostname+"/rest/");
       this.dataShareService.shareServerHostName(hostname);
@@ -129,17 +126,7 @@ export class VerifyCompanyComponent implements OnInit {
       this.cCodeForm.controls['code'].setErrors({'invalid': true});
     }
   }
-  checkLoader() {
-    new Promise(async (resolve)=>{
-      let checkLoader = await this.loaderService.loadingCtrl.getTop();
-      if(checkLoader && checkLoader['hasController']){
-        this.loaderService.hideLoader();
-        if(checkLoader['textContent'] === "Please wait while we are setting up the App for you."){
-          this,this.notificationService.presentToastOnBottom("Something went wrong, please try again.");
-        }
-      }
-    });
-  }
+  
   infoAlert(){
     this.alertController.create({
       header: 'Code ?',
