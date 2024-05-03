@@ -224,9 +224,10 @@ export class GmapViewComponent implements OnInit {
           this.reachBtn = true;
         }else{
           this.reachBtn = false;
+          if(this.checkTimeAndDate())this.reachBtn = true;
         }
         if(this.reachBtn){
-          this.reachBtnText = "Reached";
+          this.reachBtnText = "Reach";
         }else{
           this.reachBtnText = "Reach";
         }
@@ -866,6 +867,9 @@ export class GmapViewComponent implements OnInit {
     });
   }
   openMapLink(){    
+    let leaveDateAndTime=this.getDateAndTime();
+    if(this.reachBtn)this.reachBtn=false;
+    this.appStorageService.setObject('leaveDateAndTime',leaveDateAndTime);
     let origin = "&origin=" + this.currentLatLng.lat + "," + this.currentLatLng.lng;
     let destination = "&destination=" + this.destinationLatLng.lat + "," + this.destinationLatLng.lng;
     const url = 'https://www.google.com/maps/dir/?api=1'+ origin + destination +'&travelmode=driving'+ ',13z?hl=en-US&amp;gl=US';
@@ -873,6 +877,36 @@ export class GmapViewComponent implements OnInit {
     a.click();
     window.open(url,"_blank")
     a.remove();
+  }
+  getDateAndTime(){
+    let currentDate = new Date();
+    console.log(currentDate.toISOString())
+    let hours = currentDate.getHours();
+    let amOrPm = hours >= 12 ? 'PM' : 'AM';
+    hours = (hours % 12) || 12; 
+    let minutes = currentDate.getMinutes().toString().padStart(2, '0'); 
+    let formattedTime = hours + ":" + minutes + " " + amOrPm;
+    return {
+      leaveDate:currentDate.toISOString(),
+      leaveTime:formattedTime
+    }
+  }
+
+  async checkTimeAndDate(){
+    try{
+      let leaveTime=this.appStorageService.getObject('leaveDateAndTime');
+      console.log(leaveTime);
+      leaveTime=JSON.parse(await leaveTime)
+      console.log(leaveTime);
+      if(leaveTime){
+        return false;
+      }
+      else{
+        return true;
+      }
+    }catch(error){
+      return true;
+    }
   }
   ongoogleMapOriginMarkerClick(){
     let markerHeading = "";

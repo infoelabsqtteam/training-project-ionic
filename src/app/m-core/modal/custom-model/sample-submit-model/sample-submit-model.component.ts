@@ -36,8 +36,10 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   scannedDataList:any = [];
   selectedItems: any = [];
   submitBtnText:string='Submit';
+  submission:boolean=false;
   submitLoader:boolean=false;
   selectAll: boolean = false;
+  leaveDateAndTime:any=undefined;
 
 
   constructor(
@@ -90,6 +92,12 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   async onload(){
     await this.checkPermissionandRequest();
     if(this.data){
+      try{
+        let leaveTime=JSON.parse( await this.appStorageService.getObject('leaveDateAndTime'));
+        this.leaveDateAndTime=leaveTime;
+      }catch(error){
+        this.leaveDateAndTime=undefined;
+      }
       this.selectedCenter = this.data?.selectedCollectionCenter;
       this.scannedDataList = this.data?.scannedData;
       if(this.selectedCenter != undefined) this.centerPresent = true;
@@ -155,20 +163,36 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   }
 
   submit(){
+    this.submission=true;
     if(this.selectedCenter == undefined){
       return this.notificationService.presentToastOnBottom("Please select collection centre","danger");
     }
     const collectionCenter:any = {
       '_id' : this.selectedCenter?._id,
-      'name' : this.selectedCenter?.name
+      'name' : this.selectedCenter?.name,
+      'type' : this.selectedCenter?.type
     }
+    // const collectionCenter:any = this.selectedCenter;
     const checkedSamples = this.scannedDataList.filter(sample => sample.checked);
     checkedSamples.forEach(item => {
       item['status'] = "SUBMIT";
       item['collectionCenter'] = collectionCenter;
+      if(this.leaveDateAndTime?.leaveTime && this.leaveDateAndTime?.leaveDate){
+          item['sampleLeaveTime']=this.leaveDateAndTime.leaveTime;
+          item['sampleLeaveDate']=this.leaveDateAndTime.leaveDate;
+      }
+      let curTimeAndDate=this.getDateAndTime();
+      if(this.selectedCenter?.type == "lab"){
+        item['labReachTime']=curTimeAndDate.leaveTime;
+        item['labReachTimeDate']=curTimeAndDate.leaveDate;
+      }
+      else{
+        item['centerReachTime']=curTimeAndDate.leaveTime;
+        item['centerReachDate']=curTimeAndDate.leaveDate;
+      }
       delete item.checked
     });
-
+// console.log(checkedSamples);
     if(checkedSamples?.length == 0){
       return this.notificationService.presentToastOnBottom("Please select sample to submit.","danger");
     }else if(checkedSamples?.length == this.scannedDataList.length){      
@@ -203,6 +227,19 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
     this.saveSelectedData(this.selectedItems[0]);
 
   }
+  getDateAndTime(){
+    let currentDate = new Date();
+    console.log(currentDate.toISOString())
+    let hours = currentDate.getHours();
+    let amOrPm = hours >= 12 ? 'PM' : 'AM';
+    hours = (hours % 12) || 12; 
+    let minutes = currentDate.getMinutes().toString().padStart(2, '0'); 
+    let formattedTime = hours + ":" + minutes + " " + amOrPm;
+    return {
+      leaveDate:currentDate.toISOString(),
+      leaveTime:formattedTime
+    }
+  }
   saveSelectedData(data:any){
     let payload = {
       'data': data,
@@ -217,7 +254,8 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
   setSaveResponce(saveFromDataRsponce){
     if (saveFromDataRsponce) {
       if (saveFromDataRsponce.success && saveFromDataRsponce.success != '') {
-        if (saveFromDataRsponce.success == 'success') {
+        if (saveFromDataRsponce.success == 'success' && this.submission) {
+          this.submission=false;
           if(this.selectedItems?.length == 1){
             const check = async () =>{
               this.checkLoader();

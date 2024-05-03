@@ -262,20 +262,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
     this.gridRunningDataSubscriber = this.dataShareService.gridRunningData.subscribe((data:any) =>{
       if(data && data?.data?.length >0 &&this.scannerForm){
-        if(data?.data?.[0].status=="SUBMIT"){
-          this.checkLoader();
-          this.notificationService.showAlert("","This Sample is already Submitted",['Dismiss']);
-        }else{
-          let form = this.commonFunctionService.getForm(this.card?.card?.form,'UPDATE',this.gridButtons);
-          // this.loaderService.showLoader("Loading...");
-          this.openFormModalForScanner(form,data?.data?.[0]);
-        }
+        this.checkStatusAndOpenForm(data);
         this.scannerForm=false;
       }
-      // else if(this.scannerForm){
-      //   this.scannerForm=false;
-      //   this.addNewForm()
-      // }
     });
     
   }
@@ -433,7 +422,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if(this.enableScanner){
       this.appStorageService.setObject('scannedData',this.carddata);
     }
-    if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
+    // if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
   }
   checkLoader() {
     new Promise(async (resolve)=>{
@@ -1001,7 +990,13 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if(card.collection_name=='sample_collection'){
       let user=this.storageService.GetUserInfo();
       const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
-      const cr2 = "status;eq;" + "PENDING" + ";STATIC";
+      let cr2;
+      if(this.cardType== 'summary'){
+        cr2 = "status;eq;" + "PENDING" + ";STATIC";
+      }
+      else{
+        cr2 = "status;eq;" + "RECEIVED" + ";STATIC";
+      }
       customCriteria.push(cr1);
       customCriteria.push(cr2);
       return customCriteria;
@@ -1207,6 +1202,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         "editedRowIndex": 0,
         "addform" : form,
         "formTypeName" : this.formTypeName,
+        "cardType" : this.cardType
       },
       id: form._id,
       showBackdrop:true,
@@ -1219,7 +1215,24 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       // this.unsubscribedSavecall();
     });
   }
-
+  checkStatusAndOpenForm(data:any){
+    if(this.cardType == "summary" && (data?.data?.[0].status=="SUBMIT" || data?.data?.[0].status=="RECEIVED")){
+      this.checkLoader();
+      this.notificationService.showAlert("","This Sample is already Submitted",['Dismiss']);
+    }
+    else if(this.cardType == "sampleSubmit" && data?.data?.[0].status=="RECEIVED"){
+      this.checkLoader();
+      this.notificationService.showAlert("","This Sample is already received",['Dismiss']);
+    }
+    else if(this.cardType == "sampleSubmit" && data?.data?.[0].status!="SUBMIT"){
+      this.checkLoader();
+      this.notificationService.showAlert("","This Sample is not submited by sample collector",['Dismiss']);
+    }else{
+      let form = this.commonFunctionService.getForm(this.card?.card?.form,'UPDATE',this.gridButtons);
+      // this.loaderService.showLoader("Loading...");
+      this.openFormModalForScanner(form,data?.data?.[0]);
+    }
+  }
   getFirstCharOfString(char:any){
     return this.commonFunctionService.getFirstCharOfString(char);
   }

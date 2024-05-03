@@ -176,6 +176,7 @@ tinymceConfig = {}
   @Input() childData: any;  
   @Input() addform: any;
   @Input() formTypeName:string;
+  @Input() cardType:string;
   @Input() modal: any;
   @Input() isBulkUpdate:boolean;
   @Input() bulkDataList:any;
@@ -2072,7 +2073,11 @@ tinymceConfig = {}
         }
       }
       if(this.currentMenu['name'] == 'sample_collection'){
-        saveFromData.data['status'] = 'PENDING';
+        if(this.cardType == 'sampleSubmit'){
+          saveFromData.data['status'] = 'RECEIVED';
+        }else{
+          saveFromData.data['status'] = 'PENDING';
+        }
       }
       if(this.getSavePayload){
         if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.api && this.currentActionButton.onclick.api != null && this.currentActionButton.onclick.api.toLowerCase() == 'send_email'){
@@ -4957,12 +4962,12 @@ tinymceConfig = {}
     if(parent == ''){
       tobedesabled = this.checkIfService.isDisable(chield,this.updateMode,formValue)
       if(tobedesabled){
-        if(!this.templateForm.get(chield.field_name).disabled){
-          this.templateForm.get(chield.field_name).disable()
+        if(!this.templateForm.get(chield.field_name)?.disabled){
+          this.templateForm.get(chield.field_name)?.disable()
         }        
       }else{
-        if(this.templateForm.get(chield.field_name).disabled){
-          this.templateForm.get(chield.field_name).enable()
+        if(this.templateForm.get(chield.field_name)?.disabled){
+          this.templateForm.get(chield.field_name)?.enable()
         }        
       }
     }else{
