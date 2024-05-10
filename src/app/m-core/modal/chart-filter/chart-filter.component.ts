@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { NotificationService, AppPermissionService, AppDownloadService, LoaderService, AppShareService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
-import { File } from '@awesome-cordova-plugins/file/ngx';
+// import { File } from '@awesome-cordova-plugins/file/ngx';
 import { ModalController, Platform, isPlatform } from '@ionic/angular';
 import { DatePipe } from '@angular/common';
 import { utcToZonedTime, format} from 'date-fns-tz';
@@ -538,16 +538,16 @@ export class ChartFilterComponent implements OnInit {
     }
   }
 
-  public async getDownloadPath() {
-    if (this.platform.is('android')) {    
-      const ReadWritePermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-      if(ReadWritePermission){
-        return this.file.externalRootDirectory + '/Download/';
-      }      
-    }else{
-      return this.file.documentsDirectory;
-    }
-  }
+  // public async getDownloadPath() {
+  //   if (this.platform.is('android')) {    
+  //     const ReadWritePermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
+  //     if(ReadWritePermission){
+  //       return this.file.externalRootDirectory + '/Download/';
+  //     }      
+  //   }else{
+  //     return this.file.documentsDirectory;
+  //   }
+  // }
 
   // Helper Function
   convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
