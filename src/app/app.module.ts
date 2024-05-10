@@ -13,7 +13,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 // import { MediaCapture } from '@awesome-cordova-plugins/media-capture/ngx';
 // import { Media } from '@awesome-cordova-plugins/media/ngx';
-import { File } from '@awesome-cordova-plugins/file/ngx';
+// import { File } from '@awesome-cordova-plugins/file/ngx';
 import { CallNumber } from '@awesome-cordova-plugins/call-number/ngx';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe, CurrencyPipe, TitleCasePipe} from '@angular/common';
