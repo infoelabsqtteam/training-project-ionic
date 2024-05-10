@@ -1690,6 +1690,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     if (!field.type) field.type = "Text";
     switch (field.type.toLowerCase()) {
+      case "file":
+      case "file_with_preview":
       case "file_with_print":
         if (value['data'] && value['data'] != '') {
           let previewFile:boolean = false;
