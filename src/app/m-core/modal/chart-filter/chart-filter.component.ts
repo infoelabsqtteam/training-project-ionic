@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { NotificationService, AppPermissionService, AppDownloadService } from '@core/ionic-core';
+import { NotificationService, AppPermissionService, AppDownloadService, LoaderService, AppShareService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { ModalController, Platform, isPlatform } from '@ionic/angular';
@@ -9,6 +9,7 @@ import { utcToZonedTime, format} from 'date-fns-tz';
 import { parseISO } from 'date-fns';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
 import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService, ApiCallService, FormCreationService } from '@core/web-core';
+import { FileOpener } from '@capacitor-community/file-opener';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -94,7 +95,9 @@ export class ChartFilterComponent implements OnInit {
     private appDownloadService: AppDownloadService,
     private modalController: ModalController,
     private apiCallService: ApiCallService,
-    private formCreationService: FormCreationService
+    private formCreationService: FormCreationService,
+    private loaderService: LoaderService,
+    private appShareService: AppShareService
   ) {
     this.accessToken = this.storageService.GetIdToken();
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
@@ -478,8 +481,8 @@ export class ChartFilterComponent implements OnInit {
     //   });
 
     // }
-    this.appDownloadService.downloadBlobDataIntoDevice(excelBlobData,fileName);
-
+    let downloadResponse:any =  this.appDownloadService.downloadAnyBlobData(excelBlobData,fileName,true);
+    this.downloadResponseHandler(downloadResponse);
     // // ======using filesaver
     // // FileSaver.saveAs(excelBlobData,fileName);
     // // FileSaver.saveAs(excelBlobData,fileName).then(() => {
@@ -495,6 +498,44 @@ export class ChartFilterComponent implements OnInit {
     // // })
 
     
+  }
+  async downloadResponseHandler(response:any){
+    if(response?.haspermission && response?.status){
+      await this.loaderService.hideLoader();
+      if(response?.openfile && !response?.sharefile){
+        const confirm:any = await this.notificationService.confirmAlert('Open file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Open", "Dismiss");
+        if(response?.fileuri && confirm == "confirm"){
+          FileOpener.open({filePath:response.fileuri, contentType:response?.mimetype}).then( res => {
+            console.log("File Opened");
+          }).catch((e)=>{
+            console.error("File Opening error ", JSON.stringify(e));
+            this.notificationService.presentToastOnBottom("No app found to open the file.");
+          })
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+        }
+      }else if(!response?.openfile && response?.sharefile){
+        const confirm:any = await this.notificationService.confirmAlert('Share file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Share", "Dismiss");
+        if(response?.fileuri && confirm == "confirm"){
+          const canShare = await this.appShareService.checkDeviceCanShare();
+          if(canShare){
+            let shareOption = {
+              title: response?.filename ? response.filename : "Share",
+              text: "Here is the file you requested.",
+              url: response?.fileuri,
+              dialogTitle: "Share " + response?.filename
+            }
+            this.appShareService.share(shareOption);
+          }
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+        }
+      }else{
+        this.notificationService.presentToastOnBottom("Downloaded into " + response.directoryname.toLowerCase(),"success")
+      }
+    }else{
+      this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
+    }
   }
 
   public async getDownloadPath() {
@@ -600,10 +641,11 @@ export class ChartFilterComponent implements OnInit {
     let chart = this.createdChartList[chartId];    
     let blobData:any = await this.chartService.getDownloadData(chart,object);
     if(isPlatform('hybrid')){
-      const response:any = await this.appDownloadService.downloadBlobData(blobData.url, blobData.name);
-      // console.log(response);
+      // const response:any = await this.appDownloadService.downloadBlobData(blobData.url, blobData.name);
+      const response:any = await this.appDownloadService.downloadAnyBlobData(blobData.url, blobData.name,true);
+      this.downloadResponseHandler(response);
     }else{
-      this.chartService.downlodBlobData(blobData.url, blobData.name)
+      this.chartService.downlodBlobData(blobData.url, blobData.name);
     }
   } 
   close(item:any){
