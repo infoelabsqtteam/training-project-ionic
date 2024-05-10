@@ -195,7 +195,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           this.nodatafound=true;
         }
       }
-      this.checkLoader();
+      this.loaderService.checkAndHideLoader();
     });
     
     this.pdfFileSubscription = this.dataShareService.downloadPdfData.subscribe(data =>{
@@ -361,14 +361,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.nodatafound=true;
     }
   }
-  checkLoader() {
-    new Promise(async (resolve)=>{
-      let checkLoader = await this.loaderService.loadingCtrl.getTop();
-      if(checkLoader && checkLoader['hasController']){
-        this.loaderService.hideLoader();
-      }
-    });
-  }
+  // checkLoader() {
+  //   new Promise(async (resolve)=>{
+  //     let checkLoader = await this.loaderService.loadingCtrl.getTop();
+  //     if(checkLoader && checkLoader['hasController']){
+  //       this.loaderService.hideLoader();
+  //     }
+  //   });
+  // }
   setDownloadPdfData(downloadPdfData){
     if (downloadPdfData != '' && downloadPdfData != null && this.downloadPdfCheck != '') {
       const file = new Blob([downloadPdfData.data], { type: "application/pdf" });
@@ -483,7 +483,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       document.body.appendChild(iframe);
       iframe.contentWindow.print();
     }    
-    this.checkLoader();
+    this.loaderService.checkAndHideLoader();
   }
   // Subscriber Functions Handling End -------------------
 
