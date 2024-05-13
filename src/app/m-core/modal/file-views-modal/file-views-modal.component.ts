@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { FileOpener } from '@capacitor-community/file-opener';
-import { AppShareService, LoaderService, NotificationService, AppDownloadService } from '@core/ionic-core';
+import { AppShareService, LoaderService, NotificationService, AppDownloadService, DeviceService, AppPermissionService } from '@core/ionic-core';
 import { CommonFunctionService, DataShareService, ApiService, GridCommonFunctionService } from '@core/web-core';
 import { ModalController, isPlatform } from '@ionic/angular';
 
@@ -26,6 +26,7 @@ export class FileViewsModalComponent implements OnInit {
   showPreview:boolean = false;
   showPrint:boolean = false;
   fieldType:string = '';
+  deviceInfo:any;
 
   @Input() id: string;
   @Input() modal: any;
@@ -43,7 +44,9 @@ export class FileViewsModalComponent implements OnInit {
     private appShareService: AppShareService,
     private loaderService: LoaderService,
     private notificationService: NotificationService,
-    private appDownloadService: AppDownloadService
+    private appDownloadService: AppDownloadService,
+    private deviceService: DeviceService,
+    private appPermissionService: AppPermissionService
     ) {
       this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
         if(this.showPreview){
@@ -105,7 +108,11 @@ export class FileViewsModalComponent implements OnInit {
   }
   downloadFile(file){
     this.downloadClick = file.rollName;
-    this.commonFunctionService.downloadFile(file);
+    if(isPlatform('hybrid')){
+      this.downloadImage(this.imageUrlList[file.rollName], this.downloadClick);
+    }else{
+      this.commonFunctionService.downloadFile(file);
+    }
   }
   // remove self from modal service when directive is destroyed
   dismissModal(role:string){
@@ -120,39 +127,59 @@ export class FileViewsModalComponent implements OnInit {
   }
   async downloadImage(imageUrl: string, fileName: string) {
     this.loaderService.showLoader("blank");
-    if(isPlatform('hybrid')){
-      const response = await this.appDownloadService.saveFileAndGetFileUriFromUrl(imageUrl,fileName,'Documents');
-      this.loaderService.hideLoader();
-      if(response?.path){
-        const confirm = await this.notificationService.confirmAlert(fileName, "Downloaded into Documents.  Do you want to open it ?", "Open");
-        if(confirm == "confirm"){
-          FileOpener.open({filePath:response?.path, openWithDefault:true,}).then( res => {
-            console.log("File Opened");
-          }).catch((e)=>{
-            console.error("File Opening error ", JSON.stringify(e));
-          })
+    if(imageUrl){
+      if(isPlatform('hybrid')){
+        // const mediaPermissions = await this.appDownloadService.checkFileSystemPermission();
+        // const newPermission = await this.appPermissionService.requestMediaPermission();
+        let response:any;        
+        let directoryName = 'DOCUMENTS';
+        response = await this.appDownloadService.saveAndGetFileUriFromUrl(imageUrl,fileName,directoryName);
+        if(response?.haspermission){
+          await this.loaderService.hideLoader();
+          if(response?.path){
+            const confirm = await this.notificationService.confirmAlert(fileName, "Downloaded into " + directoryName + ". Do you want to open it ?", "Open");
+            if(confirm == "confirm"){
+              FileOpener.open({filePath:response?.path, openWithDefault:true,}).then( res => {
+                console.log("File Opened");
+              }).catch((e)=>{
+                console.error("File Opening error ", JSON.stringify(e));
+              })
+            }
+          }else{
+            this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
+          }
+        }else{
+          await this.loaderService.hideLoader();
+          this.notificationService.presentToastOnBottom("Please allow media access permission to download !");
         }
       }else{
+        this.setFileDownloadUrl(imageUrl,fileName);
+      }
+    }else{
+      this.notificationService.presentToastOnBottom("Something went wrong, File Path doesn't exist !")
+    }
+    await this.loaderService.hideLoader();
+  }
+  async printFile(fileUrl:string,fileName:string){
+    await this.loaderService.showLoader("Preparing File to print");    
+    let directoryName = 'EXTERNAL';
+    let response:any = await this.appDownloadService.saveAndGetFileUriFromUrl(fileUrl,fileName,directoryName);
+    if(response?.haspermission){
+      let fileUri : any = {};
+      if(response?.path && response?.status){
+        fileUri = await this.appDownloadService.getFileUri(fileName,directoryName);
+        // fileUri.uri = response?.path;
+        if(fileUri?.uri){
+          await this.openShareDialogeForPrint(fileUri.uri,fileName);
+        }
+      }
+      await this.loaderService.hideLoader();
+      if(!response.status || !fileUri.status){
         this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
       }
     }else{
-      this.setFileDownloadUrl(imageUrl,fileName);
-    }
-    this.loaderService.hideLoader();
-  }
-  async printFile(fileUrl:string,fileName:string){
-    this.loaderService.showLoader("Preparing File to print");
-    const response = await this.appDownloadService.saveFileAndGetFileUriFromUrl(fileUrl,fileName);
-    let fileUri : any;
-    if(response?.path && response?.status){
-      fileUri = await this.appDownloadService.getFileUri(fileName);
-      if(fileUri?.uri){
-        await this.openShareDialogeForPrint(fileUri.uri,fileName);
-      }
-    }
-    await this.loaderService.hideLoader();
-    if(!response.status || !fileUri.status){
-      this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
+      await this.loaderService.hideLoader();
+      this.notificationService.presentToastOnBottom("Please allow media access permission !");
     }
   }
   // Click Functions Handling End----------------
@@ -174,6 +201,10 @@ export class FileViewsModalComponent implements OnInit {
     // this.fileViewModal.show()
     if(this.showPrint){
       this.showPreview = true;
+    }
+    
+    if(this.showPrint || this.showPreview){
+      this.showPreview = true;
       if(this.gridColumns.length == 0){
         this.getImagesUrl(this.data);
       }
@@ -190,9 +221,9 @@ export class FileViewsModalComponent implements OnInit {
       this.apiService.DownloadFile(payload);    
     }
   }
-  async openShareDialogeForPrint(fileUri,fileName){
-    const canShare = await this.appShareService.checkDeviceCanShare();    
-    await this.loaderService.hideLoader();
+  async openShareDialogeForPrint(fileUri:string,fileName:string){   
+    await this.loaderService.checkAndHideLoader();
+    const canShare = await this.appShareService.checkDeviceCanShare(); 
     if(canShare && fileUri){
       let shareOption = {
         title: fileName ? fileName : "Print File",

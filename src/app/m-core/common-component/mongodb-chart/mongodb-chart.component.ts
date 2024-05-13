@@ -1,9 +1,10 @@
 import { Component, OnInit, AfterViewInit, Input, SimpleChanges } from '@angular/core';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
-import { ModelService, AppDownloadService } from '@core/ionic-core';
+import { ModelService, AppDownloadService, AppShareService, NotificationService, LoaderService } from '@core/ionic-core';
 import { ChartFilterComponent } from '../../modal/chart-filter/chart-filter.component';
 import { ModalController, isPlatform } from '@ionic/angular';
 import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService, ApiCallService } from '@core/web-core';
+import { FileOpener } from '@capacitor-community/file-opener';
 
 @Component({
   selector: 'app-mongodb-chart',
@@ -33,7 +34,10 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     private modalController: ModalController,
     private modelService: ModelService,
     private appDownloadService: AppDownloadService,
-    private apiCallService: ApiCallService
+    private apiCallService: ApiCallService,
+    private notificationService: NotificationService,
+    private appShareService: AppShareService,
+    private loaderService: LoaderService
   ){
     // this.getMongoChartList([]);
     // this.accessToken = this.storageService.GetIdToken();
@@ -190,16 +194,53 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     return await modal.present();
   }
   async download(object){
+    this.loaderService.showLoader("Downloading...");
     let chartId = object.chartId;
-    let chart = this.createdChartList[chartId];    
+    let chart = this.createdChartList[chartId];
     let blobData:any = await this.chartService.getDownloadData(chart,object);
     if(isPlatform('hybrid')){
-      const response:any = await this.appDownloadService.downloadBlobData(blobData.url, blobData.name);
-      console.log(response);
+      const response:any = await this.appDownloadService.downloadAnyBlobData(blobData.url, blobData.name,true);
+      if(response.haspermission && response.status){
+        await this.loaderService.hideLoader();
+        if(response?.openfile && !response?.sharefile){
+          const confirm:any = await this.notificationService.confirmAlert('Open file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Open", "Dismiss");
+          if(response?.fileuri && confirm == "confirm"){
+            FileOpener.open({filePath:response.fileuri, contentType:response?.mimetype}).then( res => {
+              console.log("File Opened");
+            }).catch((e)=>{
+              console.error("File Opening error ", JSON.stringify(e));
+              this.notificationService.presentToastOnBottom("No app found to open the file.");
+            })
+          }else{
+            this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+          }
+        }else if(!response?.openfile && response?.sharefile){
+          const confirm:any = await this.notificationService.confirmAlert('Share file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Share", "Dismiss");
+          if(response?.fileuri && confirm == "confirm"){
+            const canShare = await this.appShareService.checkDeviceCanShare();
+            if(canShare){
+              let shareOption = {
+                title: response?.filename ? response.filename : "Share",
+                text: "Here is the file you requested.",
+                url: response?.fileuri,
+                dialogTitle: "Share " + response?.filename
+              }
+              this.appShareService.share(shareOption);
+            }
+          }else{
+            this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+          }
+        }else{
+          this.notificationService.presentToastOnBottom("Downloaded into " + response.directoryname.toLowerCase(),"success")
+        }
+      }else{
+        this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
+      }
     }else{
       this.chartService.downlodBlobData(blobData.url, blobData.name);
     }
-  }  
+    await this.loaderService.checkAndHideLoader();
+  }
   changeTheme(object,value){
     let chartId = object.chartId;
     let chart = this.createdChartList[chartId];

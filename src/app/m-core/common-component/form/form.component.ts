@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitte
 import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray, UntypedFormControl } from "@angular/forms";
 import { DatePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { App_googleService, NotificationService, AppDataShareService, AppPermissionService } from '@core/ionic-core';
+import { App_googleService, NotificationService, AppDataShareService, AppPermissionService, AppDownloadService, AppShareService, LoaderService } from '@core/ionic-core';
 import { AlertController, ItemReorderEventDetail, ModalController, isPlatform  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
@@ -13,8 +13,9 @@ import { Observable, Subscription, catchError, finalize, last, map, of } from 'r
 import { zonedTimeToUtc, utcToZonedTime} from 'date-fns-tz';
 import { parseISO, format, hoursToMilliseconds, isToday, add } from 'date-fns';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
-import {FileOpener} from '@awesome-cordova-plugins/file-opener/ngx';
-import { File } from '@awesome-cordova-plugins/file/ngx';
+// import {FileOpener} from '@awesome-cordova-plugins/file-opener/ngx';
+import { FileOpener } from '@capacitor-community/file-opener';
+// import { File } from '@awesome-cordova-plugins/file/ngx';
 import { AndroidpermissionsService } from 'src/app/service/androidpermissions.service';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 // import { GoogleMap, MapType } from '@capacitor/google-maps';
@@ -343,7 +344,6 @@ tinymceConfig = {}
     private actionSheetCtrl: ActionSheetController,
     private dataShareServiceService: DataShareServiceService,
     private envService: EnvService,
-    private fileOpener: FileOpener,
     private file: File,
     private apppermissionsService: AndroidpermissionsService,
     private app_googleService: App_googleService,
@@ -359,7 +359,10 @@ tinymceConfig = {}
     private fileHandlerService: FileHandlerService,
     private apiCallService: ApiCallService,
     private formCreationService: FormCreationService,
-    private checkIfService: CheckIfService
+    private checkIfService: CheckIfService,
+    private appDownloadService: AppDownloadService,
+    private appShareService: AppShareService,
+    private loaderService: LoaderService
     ) {
 
       // this.mapsApiLoaded();
@@ -5594,13 +5597,13 @@ tinymceConfig = {}
     }
     this.apiService.DownloadFile(payload);
   }
-  setFileData(getfileData){
+  async setFileData(getfileData){
     if (getfileData != '' && getfileData != null && this.checkForDownloadReport) {
       let link = document.createElement('a');
       link.setAttribute('type', 'hidden');
 
-      const file = new Blob([getfileData.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(file);
+      const blobData = new Blob([getfileData.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blobData);
       link.href = url;
       let fileExt:any = '';
       let fileName:any = '';
@@ -5614,7 +5617,9 @@ tinymceConfig = {}
       }
       
       if(this.plt.is("hybrid")){
-        this.downloadToMobile(file,fileName);
+        // this.downloadToMobile(file,fileName);
+        let downloadResponse = await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
+        this.downloadResponseHandler(downloadResponse);
         this.checkForDownloadReport = false;
       }else{
         link.download = getfileData.filename;
@@ -6552,23 +6557,27 @@ tinymceConfig = {}
     this.notificationService.showAlert("DO modal work","MODAL",['Ok']);
   }
   
-  arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
+  async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
     const fileExtension = extentionType;
-    let file_Type: any;
-    let file_prefix: any;
-    if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
-      file_Type = "image/" + extentionType;
-      file_prefix = "Image";
-    }else if(fileExtension == "xlsx" || fileExtension == "xls"){
-      file_Type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
-      file_prefix = "Excel";
-    }else if(fileExtension == "pdf"){
-      file_Type = "application/" + extentionType;
-      file_prefix = "PDF";
-    }else{
-      file_Type = "application/octet-stream";
-      file_prefix = "TEXT";
-    }
+    // let file_Type: any;
+    // let file_prefix: any;
+    // if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
+    //   file_Type = "image/" + extentionType;
+    //   file_prefix = "Image";
+    // }else if(fileExtension == "xlsx" || fileExtension == "xls"){
+    //   file_Type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
+    //   file_prefix = "Excel";
+    // }else if(fileExtension == "pdf"){
+    //   file_Type = "application/" + extentionType;
+    //   file_prefix = "PDF";
+    // }else{
+    //   file_Type = "application/octet-stream";
+    //   file_prefix = "TEXT";
+    // }
+
+    const response: any = await this.appDownloadService.getBlobTypeFromExtn(extentionType);
+    const file_Type:string = response?.mimeType ? response?.mimeType : '';
+    const file_prefix:string = response?.filePrefix ? response?.filePrefix : '';
 
     let fileName:any;
     if(filename && filename !=undefined){      
@@ -6578,64 +6587,107 @@ tinymceConfig = {}
     }
     const blobData:Blob = new Blob([arrayBufferData],{type:file_Type});
     
-    this.downloadToMobile(blobData,fileName);
+    // this.downloadToMobile(blobData,fileName);
+    let downloadResponse:any =  await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
+    this.downloadResponseHandler(downloadResponse);
+    
 
   }
 
-  async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
-    let file_Type:any = '';
-    let folderName:any = '';
-    if(blobData && blobData.type){
-      file_Type = blobData.type;
-    }
-    if(FolderName == undefined || FolderName == null){
-      folderName = 'Download'
-    }else{
-      folderName = FolderName;
-    }
-    let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-    let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
-
-    if(readPermission && writePermission){
-
-      // ==========using native file    
-      this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
-
-        this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
-          // confirm alert
-          let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
-          if(openFile == "confirm"){
-            const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
-            const mimeType = file_Type;      
-            this.fileOpener.open(path,mimeType)
-            .then(()=> console.log('File is opened'))
-            .catch(error => console.log('Error opening file ',error));
-          }
-        }).catch( (error:any) =>{
-          this.notificationService.presentToastOnBottom(JSON.stringify(error));
-        })
-        
-      }).catch( (error:any) =>{
-        if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
-          
-          this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
-            console.log('Directory create '+ response);
-            this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
-              this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
-            })
-
-          }).catch( (error:any) =>{
-              this.notificationService.presentToastOnBottom(JSON.stringify(error));
+  async downloadResponseHandler(response:any){
+    if(response?.haspermission && response?.status){
+      await this.loaderService.hideLoader();
+      if(response?.openfile && !response?.sharefile){
+        const confirm:any = await this.notificationService.confirmAlert('Open file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Open", "Dismiss");
+        if(response?.fileuri && confirm == "confirm"){
+          FileOpener.open({filePath:response.fileuri, contentType:response?.mimetype}).then( res => {
+            console.log("File Opened");
+          }).catch((e)=>{
+            console.error("File Opening error ", JSON.stringify(e));
+            this.notificationService.presentToastOnBottom("No app found to open the file.");
           })
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
         }
-      });
-    }else{
-      let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
-      if(gavepermission == "cancel"){
-        this.apppermissionsService.openNativeSettings('application_details');
+      }else if(!response?.openfile && response?.sharefile){
+        const confirm:any = await this.notificationService.confirmAlert('Share file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Share", "Dismiss");
+        if(response?.fileuri && confirm == "confirm"){
+          const canShare = await this.appShareService.checkDeviceCanShare();
+          if(canShare){
+            let shareOption = {
+              title: response?.filename ? response.filename : "Share",
+              text: "Here is the file you requested.",
+              url: response?.fileuri,
+              dialogTitle: "Share " + response?.filename
+            }
+            this.appShareService.share(shareOption);
+          }
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+        }
+      }else{
+        this.notificationService.presentToastOnBottom("Downloaded into " + response.directoryname.toLowerCase(),"success")
       }
+    }else{
+      this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
     }
   }
+
+  // async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
+  //   let file_Type:any = '';
+  //   let folderName:any = '';
+  //   if(blobData && blobData.type){
+  //     file_Type = blobData.type;
+  //   }
+  //   if(FolderName == undefined || FolderName == null){
+  //     folderName = 'Download'
+  //   }else{
+  //     folderName = FolderName;
+  //   }
+  //   let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
+  //   let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
+
+  //   if(readPermission && writePermission){
+
+  //     // ==========using native file    
+  //     this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
+
+  //       this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
+  //         // confirm alert
+  //         let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
+  //         if(openFile == "confirm"){
+  //           const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
+  //           const mimeType = file_Type;      
+  //           this.fileOpener.open(path,mimeType)
+  //           .then(()=> console.log('File is opened'))
+  //           .catch(error => console.log('Error opening file ',error));
+  //         }
+  //       }).catch( (error:any) =>{
+  //         this.notificationService.presentToastOnBottom(JSON.stringify(error));
+  //       })
+        
+  //     }).catch( (error:any) =>{
+  //       if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
+          
+  //         this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
+  //           console.log('Directory create '+ response);
+  //           this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
+  //             this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
+  //           })
+
+  //         }).catch( (error:any) =>{
+  //             this.notificationService.presentToastOnBottom(JSON.stringify(error));
+  //         })
+  //       }
+  //     });
+  //   }else{
+  //     let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
+  //     if(gavepermission == "cancel"){
+  //       this.apppermissionsService.openNativeSettings('application_details');
+  //     }
+  //   }
+  // }
+
   isMendetory(parent,chield){
     const  formValue = this.getFormValue(true);   
     let tobedesabled;

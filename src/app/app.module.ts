@@ -13,11 +13,11 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 // import { MediaCapture } from '@awesome-cordova-plugins/media-capture/ngx';
 // import { Media } from '@awesome-cordova-plugins/media/ngx';
-import { File } from '@awesome-cordova-plugins/file/ngx';
+// import { File } from '@awesome-cordova-plugins/file/ngx';
 import { CallNumber } from '@awesome-cordova-plugins/call-number/ngx';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe, CurrencyPipe, TitleCasePipe} from '@angular/common';
-import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
+// import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 import { NativeGeocoder} from '@awesome-cordova-plugins/native-geocoder/ngx';
 import { AuthInterceptor } from './shared/auth.interceptor';
@@ -56,11 +56,11 @@ import { AuthModule } from './auth/auth.module';
         // SplashScreen,
         // MediaCapture,
         // Media,
-        File,
+        // File,
         CallNumber,
         DatePipe,
         CurrencyPipe,
-        FileOpener,
+        // FileOpener,
         AndroidPermissions,
         NativeGeocoder,
         LocationAccuracy,
