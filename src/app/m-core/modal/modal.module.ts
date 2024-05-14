@@ -42,5 +42,6 @@ const modal =[
       NO_ERRORS_SCHEMA
   ],
   // providers : [File]
+  providers : []
 })
 export class ModalModule { }

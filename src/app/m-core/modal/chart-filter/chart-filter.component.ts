@@ -27,7 +27,7 @@ export const MY_DATE_FORMATS = {
   selector: 'app-chart-filter',
   templateUrl: './chart-filter.component.html',
   styleUrls: ['./chart-filter.component.scss'],
-  providers: [File]
+  providers: []
 })
 export class ChartFilterComponent implements OnInit {
 
@@ -85,7 +85,7 @@ export class ChartFilterComponent implements OnInit {
     public formBuilder: UntypedFormBuilder,
     private apiService:ApiService,
     private dataShareService:DataShareService,
-    private file: File,
+    // private file: File,
     private storageService:StorageService,
     private permissionService: AppPermissionService,
     private datePipe: DatePipe,

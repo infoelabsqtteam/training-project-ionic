@@ -35,7 +35,7 @@ declare var tinymce: any;
   selector: 'app-form',
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
-  providers: [File]
+  providers: []
 })
 export class FormComponent implements OnInit, OnDestroy {
 
@@ -344,7 +344,7 @@ tinymceConfig = {}
     private actionSheetCtrl: ActionSheetController,
     private dataShareServiceService: DataShareServiceService,
     private envService: EnvService,
-    private file: File,
+    // private file: File,
     private apppermissionsService: AndroidpermissionsService,
     private app_googleService: App_googleService,
     private alertController: AlertController,
