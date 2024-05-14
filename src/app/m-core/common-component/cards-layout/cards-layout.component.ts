@@ -22,7 +22,7 @@ import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views
   selector: 'app-cards-layout',
   templateUrl: './cards-layout.component.html',
   styleUrls: ['./cards-layout.component.scss'],
-  providers: [File]
+  providers: []
 })
 export class CardsLayoutComponent implements OnInit, OnChanges {
   
@@ -149,7 +149,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private notificationService: NotificationService,
     private permissionService:PermissionService,
     // private fileOpener: FileOpener,
-    private file: File,
+    // private file: File,
     private apppermissionsService: AndroidpermissionsService,
     public renderer: Renderer2,
     private app_googleService: App_googleService,
