@@ -16,7 +16,7 @@ android {
     defaultConfig {
         applicationId "com.tech.elabs.ai"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 34
+        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 34
         versionCode getMyVersionCode()
         versionName getMyVersionName()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -68,7 +68,7 @@ dependencies {
     implementation project(':capacitor-cordova-android-plugins')
 }
 
-apply from: 'capacitor.build.compileSdkVersion'
+apply from: 'capacitor.build.gradle'
 
 try {
     def servicesJSON = file('google-services.json')
