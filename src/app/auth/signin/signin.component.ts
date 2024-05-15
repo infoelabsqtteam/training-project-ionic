@@ -5,7 +5,7 @@ import {  LoaderService, NotificationService } from '@core/ionic-core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { App } from '@capacitor/app';
-import { ApiCallService, AuthDataShareService, AuthService, CoreFunctionService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
+import { ApiCallService, AuthDataShareService, AuthService, AwsSecretManagerService, CoreFunctionService, DataShareService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
 
 @Component({
   selector: 'app-signine',
@@ -40,7 +40,9 @@ export class SigninComponent implements OnInit {
     private ionLoaderService: LoaderService,
     private envService: EnvService,
     private authDataShareService: AuthDataShareService,
-    private apiCallService: ApiCallService
+    private apiCallService: ApiCallService,
+    private awsSecretManagerService: AwsSecretManagerService,
+    private dataShareService: DataShareService
   ) { 
     this.initializeApp();    
   }
@@ -237,6 +239,14 @@ export class SigninComponent implements OnInit {
         this.apiCallService.getApplicationAllSettings();
       }else{        
         this.storageService.removeKeyFromStorage("USER");
+        if(!isHostNameExist){
+          isHostNameExist =  await this.awsSecretManagerService.getserverHostByAwsOrLocal(isClientCodeExist);
+          if(isHostNameExist){
+            this.storageService.setHostNameDinamically(isHostNameExist+"/rest/");
+            this.dataShareService.shareServerHostName(isHostNameExist);
+            this.checkValues();
+          }
+        }
       }
     }else{
       this.router.navigateByUrl('/checkcompany');
