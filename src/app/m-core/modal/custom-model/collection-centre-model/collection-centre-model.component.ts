@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { NotificationService } from '@core/ionic-core';
+import { AppStorageService, NotificationService } from '@core/ionic-core';
 import { DataShareService,ApiCallService,ApiService } from '@core/web-core';
 import { AlertController } from '@ionic/angular';
 import { element } from 'protractor';
@@ -28,7 +28,8 @@ export class CollectionCentreModelComponent implements OnInit {
     private apiService:ApiService,
     private apiCallService:ApiCallService,
     private dataShareService:DataShareService,
-    private notificationService:NotificationService
+    private notificationService:NotificationService,
+    private appStorageService: AppStorageService,
   ) {
     // this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
     //   console.log(data);
@@ -80,6 +81,7 @@ export class CollectionCentreModelComponent implements OnInit {
 
   public async closeModal(role?:string): Promise<void> {
     if(Object.keys(this.selectedCenter).length != 0 || role == 'close'){
+      if(role=='NAVIGATE')this.setLeaveDateTime();
       if(this.modal && this.modal?.offsetParent['hasController']){
         this.modal?.offsetParent?.dismiss({
             'dismissed': true,
@@ -92,6 +94,25 @@ export class CollectionCentreModelComponent implements OnInit {
       }
     }else if(role=='submit'){
       this.notificationService.presentToast("Please select collection center")
+    }
+  }
+  async setLeaveDateTime() {
+    let leaveDateAndTime=this.getDateAndTime();
+    let time=JSON.parse(await this.appStorageService.getObject('leaveDateAndTime'));
+    if(!time){
+      this.appStorageService.setObject('leaveDateAndTime',leaveDateAndTime);
+    }
+  }
+  getDateAndTime(){
+    let currentDate = new Date();
+    let hours = currentDate.getHours();
+    let amOrPm = hours >= 12 ? 'PM' : 'AM';
+    hours = (hours % 12) || 12; 
+    let minutes = currentDate.getMinutes().toString().padStart(2, '0'); 
+    let formattedTime = hours + ":" + minutes + " " + amOrPm;
+    return {
+      leaveDate:currentDate.toISOString(),
+      leaveTime:formattedTime
     }
   }
 

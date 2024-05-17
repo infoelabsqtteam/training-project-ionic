@@ -197,6 +197,7 @@ export class SampleSubmitModelComponent implements OnInit, OnDestroy {
       return this.notificationService.presentToastOnBottom("Please select sample to submit.","danger");
     }else if(checkedSamples?.length == this.scannedDataList.length){      
       this.dataShareServiceService.removeKeyFromStorage('scannedData');
+      this.dataShareServiceService.removeKeyFromStorage('leaveDateAndTime');
     }else{
       if(checkedSamples?.length < this.scannedDataList.length){
         let newList:any = [] = this.scannedDataList;
