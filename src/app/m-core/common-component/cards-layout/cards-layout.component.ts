@@ -1838,10 +1838,18 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             this.startScan();
           });          
         }else{
-          if(result.camera === 'denied' || result.camera == "prompt"){
-            this.presentsettingAlert();
-          }
-          this.isBarCodeCameraPermissionGranted = false;
+          BarcodeScanner.requestPermissions().then((result)=>{
+            if(result.camera === 'granted' || result.camera === 'limited'){
+              this.isBarCodeCameraPermissionGranted = true;
+              BarcodeScanner.removeAllListeners().then(() => {
+                this.startScan();
+              });          
+            }
+            if(result.camera === 'denied' || result.camera == "prompt"){
+              this.presentsettingAlert();
+              this.isBarCodeCameraPermissionGranted = false;
+            }
+          })
         }
       }).catch(err => {
         console.log('checkCameraPermissionToSacn Error', err);
