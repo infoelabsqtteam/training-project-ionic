@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, OnDestroy, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
@@ -12,8 +12,7 @@ import { Title } from '@angular/platform-browser';
 import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService, MenuOrModuleCommonService, EnvService, CoreFunctionService, StorageTokenStatus, ApiCallService } from '@core/web-core';
 import { App } from '@capacitor/app';
 import { Share } from '@capacitor/share';
-
- 
+import { Network } from '@capacitor/network';
 @Component({ 
   selector: 'app-root',
   templateUrl: 'app.component.html'
@@ -24,7 +23,6 @@ export class AppComponent implements OnInit, OnDestroy {
   userInfo: any={};
   web_site:string='';
   app_Version: String = '';
-
   gridData: any;
   cardData: any;
   cardList: any = [];
@@ -34,6 +32,8 @@ export class AppComponent implements OnInit, OnDestroy {
   collectionName: any;
   collectionNameList: any = [];
   showSidebarMenu : boolean = false;
+  networkOffline=false;
+  pointerEvents :String="auto";
 
   // geoloaction
   coords:any;
@@ -80,7 +80,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private menuOrModuleCommonService: MenuOrModuleCommonService,    
     private envService: EnvService,
     private appStorageService: AppStorageService,
-    private apiCallService: ApiCallService
+    private apiCallService: ApiCallService,
+    private cdr: ChangeDetectorRef,
 
   ) {
     
@@ -149,10 +150,14 @@ export class AppComponent implements OnInit, OnDestroy {
       let platForm = Capacitor.getPlatform();
       // this.storageService.setPlatForm(platForm);
       window.addEventListener('offline', () => {
-        this.androidpermissionsService.internetExceptionError();
+        // this.androidpermissionsService.internetExceptionError();
+        this.networkOffline=true;
+        this.cdr.detectChanges();
       });
       window.addEventListener('online', () => {
-        this.notificationService.presentToastOnTop("Your internet connection is back.", "success");
+        // this.notificationService.presentToastOnTop("Your internet connection is back.", "success");
+        this.networkOffline=false;
+        this.cdr.detectChanges();
         this.getGridData();
       });
       if (Capacitor.isPluginAvailable('SplashScreen')) {

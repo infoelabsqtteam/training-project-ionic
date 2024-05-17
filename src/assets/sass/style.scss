@@ -531,3 +531,81 @@ ion-searchbar{
 .companyCode.has-focus {
     margin-top: 10px;
 }
+//***---------- Network Offline Status  ----------***//
+.networkModal {
+    background-color: #1B1B1B;
+    height: 100%;
+    .network-wrapper{
+      transform: translateY(30vh);
+      text-align: center;
+
+    button{
+        background-color: #0073CE;
+        color: white;
+        width: 90%;
+        border-radius: 5px;
+        padding: 10px;
+        font-size: larger;
+        margin-top: 2vh;
+      }
+      .ion-label {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: white;
+      }
+      p.subtitle {
+        color: #92949c;
+        margin-top: 3vh !important;
+        margin-bottom: 8px !important;
+        font-size:1.2rem;
+      }
+    }
+    .wifi-icon-wrapper {
+        width: 100%;
+        display: inline-block; 
+        border-radius: 50%; 
+        padding: 10px; 
+      }
+      
+      .wifi-icon {
+        font-size: 78px;
+        border-radius: 50%;
+        border: 2px solid #2E2E30;
+        padding: 5px;
+        background-color: #1B1B1B;
+        color: #0073CE;
+        display: inline-block;
+        width: 130px;
+        height: 130px;
+        line-height: 130px;
+        position: relative;
+      }
+      
+      .wifi-icon-wrapper::before,
+      .wifi-icon-wrapper::after {
+        content: '';
+        position: absolute; 
+        top: 25%; 
+        transform: translateY(-50%); 
+        width: 100px; 
+        height: 2px; 
+        background-color: #2E2E30; 
+      }
+      
+    
+      .wifi-icon-wrapper::before {
+        left: 28px; 
+      }
+      
+    
+      .wifi-icon-wrapper::after {
+        right: 28px; 
+      }
+  }
+
+  .networkOff{
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  //***---------- Network Offline Status  ----------***//
