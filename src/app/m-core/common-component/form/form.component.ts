@@ -2062,7 +2062,7 @@ tinymceConfig = {}
       this.getSavePayload = formDataResponce.getSavePayload;
       this.showNotify = formDataResponce.showNotify;
       this.dataSaveInProgress = formDataResponce.dataSaveInProgress;
-      formDataResponce.data['platForm'] = Capacitor.getPlatform().toUpperCase();
+      formDataResponce.data.data['platForm'] = Capacitor.getPlatform().toUpperCase();
       return formDataResponce.data;
     }else{
       let message = formDataResponce.message;
