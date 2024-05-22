@@ -709,12 +709,14 @@
                             {{ fields.label | titlecase}} is <strong>required</strong>
                           </ion-note>
                           <ion-button expand="round" slot="end" size="small" shape="round" *ngIf="fields.type == 'list_of_string'" (click)="setValue(tableField,fields,true)" [disabled]="tempVal[tableField.field_name+'_'+fields.field_name+'_add_button']">
-                            <ion-icon slot="icon-only" icon="add-outline" ></ion-icon></ion-button>
+                            <ion-icon slot="icon-only" icon="add-outline" *ngIf="addOrUpdateIconShowHideList && addOrUpdateIconShowHideList[tableField.field_name+'_'+fields.field_name+'_index'] == undefined"></ion-icon>
+                            <ion-icon slot="icon-only" icon="sync-outline" *ngIf="addOrUpdateIconShowHideList && addOrUpdateIconShowHideList[tableField.field_name+'_'+fields.field_name+'_index'] != undefined"></ion-icon>
+                          </ion-button>
                         </ion-item>
                         <ion-accordion-group expand="inset" class="ion-margin-horizontal-0 ion-margin-vertical-0">
                           <ion-accordion value="{{fields._id+'_'+fields.field_name+'_'+tableField.field_name}}" *ngIf="fields.type == 'list_of_string' && fields.datatype != 'chips' && fields.datatype != 'chips_with_mask' && custmizedFormValue[tableField.field_name+'_'+tableField.type] && custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name] && custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name].length > 0" class="">
                             <ion-item slot="header" color="light" line="inset">
-                              <ion-label class="ifh8r3g fqom">{{ tableField.label | titlecase}} </ion-label>
+                              <ion-label class="ifh8r3g fqom">{{ fields.label | titlecase}} </ion-label>
                               <ion-button type="button" expand="round" slot="end" size="small" fill="outline" *ngIf="tableField.type == 'list_of_string' && custmizedFormValue[tableField.field_name+'_'+tableField.type] && custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name] && custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name].length > 0">{{ "( " + custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name].length + " )" }}</ion-button>
                             </ion-item>
                             <div class="ion-padding" slot="content" class="">
@@ -722,6 +724,7 @@
                                 <ion-item *ngFor="let item of custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name]; let i = index;">
                                     <ion-reorder slot="start"></ion-reorder>
                                     <ion-label slot="">{{item.name ? item.name : item}}</ion-label>
+                                    <ion-icon slot="end" name="pencil" (click)="editListOfString(tableField,fields,i)"></ion-icon>
                                     <ion-icon slot="end" name="close-outline" (click)="openModal('confirm-modal',i,tableField,fields,item,'delete')"></ion-icon>
                                 </ion-item>
                               </ion-reorder-group>

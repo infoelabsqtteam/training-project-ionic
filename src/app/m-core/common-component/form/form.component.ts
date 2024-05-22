@@ -2983,10 +2983,13 @@ tinymceConfig = {}
     this.focusFieldParent={};
     this.term={};
   }
-
-
-
-
+  resetFlagForOnchange(){
+    this.listOfFieldUpdateMode=false; 
+    this.listOfFieldsUpdateIndex = -1; 
+    // this.serverReq = false;
+    this.updateAddNew = false;
+    this.addOrUpdateIconShowHideList = {};
+  }
 
   getGridSelectedData(data,field){
     let gridSelectedData = [];
@@ -3646,6 +3649,17 @@ tinymceConfig = {}
     }
     this.term = {};
     // this.checkFormFieldIfCondition();
+  }
+  editListOfString(parentfield,field,index){
+    let response = this.formControlService.editListOfString(parentfield,field,index,this.custmizedFormValue,this.templateForm);
+    this.templateForm = response.templateForm;
+    if(parentfield != ''){
+      this.addOrUpdateIconShowHideList[parentfield.field_name+'_'+field.field_name+'_index'] = index;
+      this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = false;
+    }else{
+      this.addOrUpdateIconShowHideList[field.field_name+'_index'] = index;
+      this.tempVal[field.field_name + "_add_button"] = false;
+    }
   }
 
   async openGridSelectionDetailModal(data:any, cardtype?:string) {
@@ -4406,6 +4420,7 @@ tinymceConfig = {}
     // this.modal.dismiss{
     //   "dissmised": true
     // });
+    this.resetFlagForOnchange()
     this.checkFormAfterCloseModel();
     //this.commonFunctionService.resetStaticAllData();
     
@@ -5830,92 +5845,101 @@ tinymceConfig = {}
       return data;
     }
   }
+  // CD
   editListOfFiedls(field:any,index:number){
-    let parentList = this.custmizedFormValue[field.field_name];
-    let object = parentList[index];
-    this.listOfFieldUpdateMode = true;
-    this.listOfFieldsUpdateIndex = index;
-    if(this.tableFields && this.tableFields.length > 0){
-      this.tableFields.forEach(element => {
-        switch (element.type) {
-          case "list_of_fields":
-            if(element.field_name == field.field_name){
-              this.templateForm.get(element.field_name).reset();
-              if (element.list_of_fields.length > 0) {
-                element.list_of_fields.forEach((data) => {
-                  switch (data.type) {
-                    case "list_of_string":
-                      const custmisedKey = this.commonFunctionService.custmizedKey(element);
-                      if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
-                      this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];
-                      break;
-                    case "typeahead":
-                      if (data.datatype == 'list_of_object') {
-                        const custmisedKey = this.commonFunctionService.custmizedKey(element);
-                        if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
-                        this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];    
-                      } else {
-                        this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
-                      }
-                      break;
-                    case "list_of_checkbox":
-                      let checkboxListValue = [];
-                      if(this.staticData && this.staticData[data.ddn_field] && this.staticData[data.ddn_field].length > 0){
-                        this.staticData[data.ddn_field].forEach((value, i) => {                      
-                          let arrayData = object[data.field_name];                        
-                          let selected = false;
-                          if (arrayData != undefined && arrayData != null) {
-                            for (let index = 0; index < arrayData.length; index++) {
-                              if (this.checkObjecOrString(value) == this.checkObjecOrString(arrayData[index])) {
-                                selected = true;
-                                break;
-                              }
-                            }
-                          }
-                          if (selected) {
-                            checkboxListValue.push(true);
-                          } else {
-                            checkboxListValue.push(false);
-                          }               
-                        });
-                      }
-                      this.templateForm.get(element.field_name).get(data.field_name).setValue(checkboxListValue);
-                      break; 
-                    case "file":
-                    case "input_with_uploadfile":
-                      if(object[data.field_name] != null && object[data.field_name] != undefined){
-                        let custmizedKey = this.commonFunctionService.custmizedKey(element);
-                        if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
-                        if (!this.dataListForUpload[custmizedKey][data.field_name]) this.dataListForUpload[custmizedKey][data.field_name] = [];
-                        this.dataListForUpload[custmizedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
-                        const value = this.fileHandlerService.modifyFileSetValue(object[data.field_name]);
-                        this.templateForm.get(element.field_name).get(data.field_name).setValue(value);
-                      }
-                      break;
-                    // case "date":
-                    //   let transformzonedTime:any = '';
-                    //   let zonedTime:any = ''
-                    //   if(object[data.field_name] != null && object[data.field_name] != undefined){
-                    //     zonedTime = utcToZonedTime(object[data.field_name], this.userTimeZone);
-                    //     transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'", this.userTimeZone);  
-                    //   }else{
-                    //     transformzonedTime='';
-                    //   }
-                    //   this.templateForm.get(element.field_name).get(data.field_name).setValue(transformzonedTime);
-                    //   break;
-                    default:
-                      this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
-                      break;
-                  }              
-                })
-              }
-            }
-            break;
-          default:          
-            break;
-        }
-      });
-    }
+    let responce = this.formControlService.editeListFieldData(this.templateForm,this.custmizedFormValue,this.tableFields,field,index,this.listOfFieldsUpdateIndex,this.staticData,this.dataListForUpload);
+    this.listOfFieldUpdateMode = responce['listOfFieldUpdateMode'];
+    this.listOfFieldsUpdateIndex = responce['listOfFieldsUpdateIndex'];
+    this.custmizedFormValue = responce['custmizedFormValue'];
+    this.dataListForUpload = responce['dataListForUpload'];
+    this.templateForm = responce['templateForm'];
+
+    // delete code
+    // let parentList = this.custmizedFormValue[field.field_name];
+    // let object = parentList[index];
+    // this.listOfFieldUpdateMode = true;
+    // this.listOfFieldsUpdateIndex = index;
+    // if(this.tableFields && this.tableFields.length > 0){
+    //   this.tableFields.forEach(element => {
+    //     switch (element.type) {
+    //       case "list_of_fields":
+    //         if(element.field_name == field.field_name){
+    //           this.templateForm.get(element.field_name).reset();
+    //           if (element.list_of_fields.length > 0) {
+    //             element.list_of_fields.forEach((data) => {
+    //               switch (data.type) {
+    //                 case "list_of_string":
+    //                   const custmisedKey = this.commonFunctionService.custmizedKey(element);
+    //                   if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
+    //                   this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];
+    //                   break;
+    //                 case "typeahead":
+    //                   if (data.datatype == 'list_of_object') {
+    //                     const custmisedKey = this.commonFunctionService.custmizedKey(element);
+    //                     if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
+    //                     this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];    
+    //                   } else {
+    //                     this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
+    //                   }
+    //                   break;
+    //                 case "list_of_checkbox":
+    //                   let checkboxListValue = [];
+    //                   if(this.staticData && this.staticData[data.ddn_field] && this.staticData[data.ddn_field].length > 0){
+    //                     this.staticData[data.ddn_field].forEach((value, i) => {                      
+    //                       let arrayData = object[data.field_name];                        
+    //                       let selected = false;
+    //                       if (arrayData != undefined && arrayData != null) {
+    //                         for (let index = 0; index < arrayData.length; index++) {
+    //                           if (this.checkObjecOrString(value) == this.checkObjecOrString(arrayData[index])) {
+    //                             selected = true;
+    //                             break;
+    //                           }
+    //                         }
+    //                       }
+    //                       if (selected) {
+    //                         checkboxListValue.push(true);
+    //                       } else {
+    //                         checkboxListValue.push(false);
+    //                       }               
+    //                     });
+    //                   }
+    //                   this.templateForm.get(element.field_name).get(data.field_name).setValue(checkboxListValue);
+    //                   break; 
+    //                 case "file":
+    //                 case "input_with_uploadfile":
+    //                   if(object[data.field_name] != null && object[data.field_name] != undefined){
+    //                     let custmizedKey = this.commonFunctionService.custmizedKey(element);
+    //                     if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
+    //                     if (!this.dataListForUpload[custmizedKey][data.field_name]) this.dataListForUpload[custmizedKey][data.field_name] = [];
+    //                     this.dataListForUpload[custmizedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
+    //                     const value = this.fileHandlerService.modifyFileSetValue(object[data.field_name]);
+    //                     this.templateForm.get(element.field_name).get(data.field_name).setValue(value);
+    //                   }
+    //                   break;
+    //                 // case "date":
+    //                 //   let transformzonedTime:any = '';
+    //                 //   let zonedTime:any = ''
+    //                 //   if(object[data.field_name] != null && object[data.field_name] != undefined){
+    //                 //     zonedTime = utcToZonedTime(object[data.field_name], this.userTimeZone);
+    //                 //     transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'", this.userTimeZone);  
+    //                 //   }else{
+    //                 //     transformzonedTime='';
+    //                 //   }
+    //                 //   this.templateForm.get(element.field_name).get(data.field_name).setValue(transformzonedTime);
+    //                 //   break;
+    //                 default:
+    //                   this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
+    //                   break;
+    //               }              
+    //             })
+    //           }
+    //         }
+    //         break;
+    //       default:          
+    //         break;
+    //     }
+    //   });
+    // }
   }
   // go to new page 2nd method
   async detailCardButton(data:any,index:number){
