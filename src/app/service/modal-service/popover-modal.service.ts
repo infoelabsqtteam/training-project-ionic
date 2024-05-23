@@ -25,7 +25,7 @@ async getModal(component: any, componentProps?: any, mode?: 'md' | 'ios', cssCla
   });
 }
 
-async presentModal(anyComponent:string, data:any) {
+async presentModal(anyComponent:any, data:any) {
   let id:any = anyComponent.toLowerCase;
   const modal = await this.modalController.create({
     component: anyComponent,
@@ -37,7 +37,11 @@ async presentModal(anyComponent:string, data:any) {
     keyboardClose: true,
     id:id
   });
-  return await modal.present();
+  modal.present();
+  return await modal.onDidDismiss()
+        .then((data) => {
+          return data;
+      });
 }
 
 async getPopover(component: any, event?: any, componentProps?: any, mode?: 'md' | 'ios', cssClass?: string | string[]): Promise<HTMLIonPopoverElement> {

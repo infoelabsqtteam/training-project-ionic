@@ -823,7 +823,7 @@
                                         
                                         <a *ngIf="checkRowDisabledIf(tableField,i)" floating="true" size="small" (click)="openModal('confirm-modal',i,'',tableField,listOfField,'delete')" class="grid-button removebtn"><span class="material-symbols-outlined">close</span></a>                        
                                     </td>
-                                    <td *ngFor="let item of getListOfFieldsGridColumn(tableField)" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField.field_name,item) ? 'd-none' : 'ion-text-center'" (click)="showListOfFieldData(listOfField, item)" [innerHtml]="showListFieldValue(listOfField, item)"></td>                                                
+                                    <td *ngFor="let item of getListOfFieldsGridColumn(tableField)" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField.field_name,item) ? 'd-none' : 'ion-text-center'" (click)="showListOfFieldData(tableField, i, item)" [innerHtml]="showListFieldValue(listOfField, item)"></td>                                                
                                 </tr>
                             </tbody>
                         </table>

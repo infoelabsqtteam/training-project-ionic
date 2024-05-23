@@ -22,6 +22,9 @@ import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-de
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
 import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common, GridCommonFunctionService, FileHandlerService, ApiCallService, FormCreationService, CheckIfService, FormControlService, MultipleFormService, ApiCallResponceService, FormValueService } from '@core/web-core';
 import { Capacitor } from '@capacitor/core';
+import { ModalComponent } from '../../modal/modal.component';
+import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
+import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
 
 interface User {
   id: number;
@@ -368,7 +371,8 @@ tinymceConfig = {}
     private formControlService: FormControlService,
     private multipleFormService: MultipleFormService,
     private apiCallResponceService: ApiCallResponceService,
-    private formValueService: FormValueService
+    private formValueService: FormValueService,
+    private popoverModalService: PopoverModalService
     ) {
 
       // this.mapsApiLoaded();
@@ -6035,35 +6039,40 @@ tinymceConfig = {}
   showListFieldValue(listOfField, item) {
     switch (item.type) {
       case "typeahead":
-          if(item.datatype == "list_of_object"){
-            if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
-              return '<i class="fa fa-eye text-pointer"></i>';
-            } else {
-              return '-';
-            }
-          }else if(item.datatype == "object"){
-            if (item.display_name && item.display_name != "") {
-              return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
-            } else {
-              return listOfField[item.field_name];
-            }
+        if(item.datatype == "list_of_object"){
+          if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
+            return '<i class="fa fa-eye text-pointer"></i>';
+          } else {
+            return '-';
           }
-          else if(item.datatype == "text"){
-            if (item.display_name && item.display_name != "") {
-              return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
-            } else {
-              return listOfField[item.field_name];
-            }
+        }else if(item.datatype == "object"){
+          if (item.display_name && item.display_name != "") {
+            return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+          } else {
+            return listOfField[item.field_name];
           }
+        }
+        else if(item.datatype == "text"){
+          if (item.display_name && item.display_name != "") {
+            return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+          } else {
+            return listOfField[item.field_name];
+          }
+        }
+        break;
       case "list_of_string":
       case "list_of_checkbox":
       case "grid_selection":
       case "list_of_fields":
         if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
-          return '<i class="fa fa-eye text-pointer"></i>';
+          // if (isPlatform('hybrid')){
+            return '<span class="material-symbols-outlined cursor-pointer">visibility</span>';
+          // }else{
+            // return '<i class="fa fa-eye text-pointer"></i>';
+          // }
         } else {
           return '-';
-        } 
+        }
       case "checkbox":
         let value:any = false;
         if (item.display_name && item.display_name != "") {
@@ -6071,7 +6080,7 @@ tinymceConfig = {}
         } else {
           value = this.getValueForGrid(item,listOfField);
         }
-        return value ? "Yes" : "No";     
+        return value ? "Yes" : "No";
       default:
         if (item.display_name && item.display_name != "") {
           return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
@@ -6081,21 +6090,16 @@ tinymceConfig = {}
     }   
 
   }
-  showListOfFieldData(listOfField,item){
+  showListOfFieldData(field,index,item){
     let value={};
+    let parentObject = this.custmizedFormValue[field.field_name];
+    let listOfField = parentObject[index];
     value['data'] = listOfField[item.field_name];
     let editemode = false;   
     switch (item.type) {
       case "typeahead":
-          if(item.datatype == "list_of_object"){  
-            // const editemode = false;    
-            // value['gridColumns'] = [
-            //   {
-            //     "field_name":"label",
-            //     "label":item.label
-            //   }
-            // ];      
-            this.viewModal('form_basic-modal', value, item,editemode);
+          if(item.datatype == "list_of_object"){    
+            // this.viewModal('form_basic-modal', value, item,editemode);
           }          
           break;
       case "list_of_string":
@@ -6105,30 +6109,89 @@ tinymceConfig = {}
       case "info":
         if(item["gridColumns"] && item["gridColumns"].length > 0){
           value['gridColumns']=item.gridColumns;
+        }else if(item["fields"] && item["fields"].length > 0){
+          value['gridColumns']=item.fields;
         }
-        this.viewModal('form_basic-modal', value, item,editemode);
+        // this.viewModal('form_basic-modal', value, item,editemode);
+        this.viewModal(value, item, index,editemode);
         break;
       case "file":
         if (value['data'] && value['data'] != '') {
           let fileData = {};
           fileData['data'] = this.fileHandlerService.modifyUploadFiles(value['data']);
-          this.viewModal('fileview-grid-modal', fileData, item, editemode);
+          // this.viewModal('fileview-grid-modal', fileData, item, editemode);
+          let previewFile:boolean = false;
+          let printFile:boolean = false;
+          if(field.type.toLowerCase() == "file_with_preview"){
+            previewFile = true;
+          }else if(field.type.toLowerCase() == "file_with_print"){
+            printFile = true;
+          }
+          const obj = {
+            'field_type': field.type.toLowerCase(),
+            'previewFile': previewFile,
+            'printFile' : printFile
+          }
+          this.viewFileModal(FileViewsModalComponent, value, field, index, field.field_name,editemode,obj);
         };
         break;      
       default:
         break;
     } 
   }
-  viewModal(id, object, field,editemode) {
-    this.alertData = {
-      "field": field,
-      "data": object,
-      "menu_name": this.currentMenu.name,
-      'editemode': editemode
+  // viewModal(id, object, field,editemode) {
+  //   this.alertData = {
+  //     "field": field,
+  //     "data": object,
+  //     "menu_name": this.currentMenu.name,
+  //     'editemode': editemode
+  //   }
+  //   // this.modalService.open(id, this.alertData);
+  //   this.notificationService.showAlert("DO modal work","MODAL",['Ok']);
+  // }
+  async viewModal(value:any, field:any, i:number, editemode){
+    let Data = {"data":value,
+      "field":field,
+      "index": i,
+      "editemode": editemode
     }
-    // this.modalService.open(id, this.alertData);
-    this.notificationService.showAlert("DO modal work","MODAL",['Ok']);
+    const objectValue = Data;
+    await this.popoverModalService.presentModal(ModalComponent,objectValue).then( data => {
+      if(data && data?.role == 'close'){
+        console.log('Modal ' + data?.role);
+      }
+    });
   }
+  async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
+    let objectValue:any = {
+      'data' : value,
+      'field' : field,
+      'index' : i,
+      'field_name': field_name,
+      'editemode' : editemode,
+      'field_type': obj?.field_type,
+      'previewFile': obj?.previewFile,
+      'printFile' : obj?.printFile
+    }
+    await this.popoverModalService.presentModal(FileViewsModalComponent,objectValue).then( data => {
+      if(data && data?.role == 'close'){
+        console.log('Modal ' + data?.role);
+      }
+    });
+    // const modal = await this.modalController.create({
+    //   component: FileViewsModalComponent,
+    //   cssClass: 'file-info-modal',
+    //   componentProps: {
+    //     "objectData": objectData,      
+    //   },
+    // });
+    // modal.componentProps.modal = modal;
+    // modal.onDidDismiss()
+    //   .then((data) => {
+    //       console.log("File Download Modal closed " , data.role);                
+    // });
+    // return await modal.present();
+  } 
   
   async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
     const fileExtension = extentionType;
