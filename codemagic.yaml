@@ -14,7 +14,7 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         APP_STORE_APP_ID: 1555555551 # <-- Put the app id number here. This is found in App Store Connect > App > General > App Information
-      node: v14.21.3
+      node: v18.20.2
       xcode: latest
       cocoapods: default
     triggering:
@@ -93,8 +93,8 @@ workflows:
         AWS_ACCESS_KEY_ID_HOLDER: $AWS_ACCESS_KEY_ID
         AWS_SECRET_ACCESS_KEY_HOLDER: $AWS_SECRET_ACCESS_KEY
         AWS_DEFAULT_REGION_HOLDER: $AWS_DEFAULT_REGION
-      node: v14.21.3
-      npm: 6.14.18
+      node: v18.20.2
+      npm: 10.5.0
     triggering:
       events:
         - push
@@ -227,8 +227,8 @@ workflows:
         AWS_ACCESS_KEY_ID_HOLDER: $AWS_ACCESS_KEY_ID
         AWS_SECRET_ACCESS_KEY_HOLDER: $AWS_SECRET_ACCESS_KEY
         AWS_DEFAULT_REGION_HOLDER: $AWS_DEFAULT_REGION
-      node: v14.21.3
-      npm: 6.14.18
+      node: v18.20.2
+      npm: 10.5.0
     triggering:
       events:
         - push

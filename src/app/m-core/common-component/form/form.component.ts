@@ -13,8 +13,8 @@ import { Observable, Subscription, catchError, finalize, last, map, of } from 'r
 import { zonedTimeToUtc, utcToZonedTime} from 'date-fns-tz';
 import { parseISO, format, hoursToMilliseconds, isToday, add } from 'date-fns';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
-import {FileOpener} from '@ionic-native/file-opener/ngx';
-import { File } from '@ionic-native/file/ngx';
+import {FileOpener} from '@awesome-cordova-plugins/file-opener/ngx';
+import { File } from '@awesome-cordova-plugins/file/ngx';
 import { AndroidpermissionsService } from 'src/app/service/androidpermissions.service';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 // import { GoogleMap, MapType } from '@capacitor/google-maps';

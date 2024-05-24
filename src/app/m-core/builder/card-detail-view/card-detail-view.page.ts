@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NotificationService,} from '@core/ionic-core';
 import { CommonAppDataShareService, GridCommonFunctionService, MenuOrModuleCommonService } from '@core/web-core';
 import { CommonFunctionService } from '@core/web-core';
-import { CallNumber } from '@ionic-native/call-number/ngx';
+import { CallNumber } from '@awesome-cordova-plugins/call-number/ngx';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 
 @Component({

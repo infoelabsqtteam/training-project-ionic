@@ -5,7 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
 import { AppStorageService, App_googleService, NotificationService } from '@core/ionic-core';
-import { StatusBar } from '@ionic-native/status-bar/ngx'; 
+// import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
 import { AndroidpermissionsService } from './service/androidpermissions.service';
 import { Title } from '@angular/platform-browser';
@@ -64,7 +64,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private storageService: StorageService,
     private router: Router,
-    private statusBar: StatusBar,
+    // private statusBar: StatusBar,
     private dataShareServiceService:DataShareServiceService,
     private app_googleService: App_googleService,
     private androidpermissionsService: AndroidpermissionsService,
@@ -162,7 +162,7 @@ export class AppComponent implements OnInit, OnDestroy {
         }),4000;
       }
       //this.statusBar.overlaysWebView(true);
-      this.statusBar.backgroundColorByHexString('#e30010');
+      // this.statusBar.backgroundColorByHexString('#e30010');
     });
 
   }
@@ -216,8 +216,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
   redirectToHomePageWithStorage(){
     let checkComapanyCode:any = this.storageService.getClientName();
+    let isHostNameExist:any = this.storageService.getHostNameDinamically();
     if(this.coreFunctionService.isNotBlank(checkComapanyCode)){
-      if(!this.checkApplicationSetting()){
+      if(!this.checkApplicationSetting() && isHostNameExist){
         this.apiCallService.getApplicationAllSettings();
       }else{
         this.loadPage();
