@@ -8,7 +8,7 @@
 
 <ion-content class="">
   <!-- error cards -->
-  <div *ngIf="nodatafound && this.carddata=='' && this.carddata.length == 0" class="appFullWebkitHeight">
+  <div *ngIf="nodatafound && this.carddata?.length == 0" class="appFullWebkitHeight">
     <ion-card class="appFullWebkitHeight" style="display: flex;
     align-content: center;
     justify-content: center;
@@ -66,6 +66,7 @@
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'time'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'boolean'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'icon'" [innerHTML]="getValueForGrid(column,card)"></p>
+              <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'file_with_print'"><ion-icon name="print-outline" color="appcolor" class="mediumSize" (click)="clickOnGridElement(column,card,j,$event)"></ion-icon></p>
               <!-- <div class="ion-text-end status_button" *ngIf="column.type == 'apibutton'">
                 <ion-button [ngClass]="column.class_name ? 'status_' + column.class_name : 'default-status'" *ngIf="column.type == 'apibutton'" [innerHTML]="getValueForGrid(column,card)" (click)="onClickApiButton(column.apiName,card)">
                 </ion-button>
@@ -74,23 +75,23 @@
           </ion-row>
         </ion-item>
         
-        <ion-item-options side="start" *ngIf="addCallingFeature || (gridButtons && gridButtons.length > 0)">
+        <ion-item-options side="start" *ngIf="addCallingFeature || (gridButtons && gridButtons?.length > 0)">
           <ion-item-option color="success" *ngIf="addCallingFeature" class="call" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
           <div class="ion-display-flex" *ngFor="let btn of gridButtons">
             <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
               <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
-              <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+              <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
             </ion-item-option>
           </div>
         </ion-item-options>
-        <ion-item-options side="end" *ngIf="gridButtons || addNewEnabled">
+        <ion-item-options side="end" *ngIf="(gridButtons && gridButtons?.length > 0 ) || addNewEnabled">
           <div class="ion-display-flex" *ngFor="let btn of gridButtons">
             <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : btn.onclick['action_name'] == 'google_tracking_start' ? 'success' : ''}}" [ngClass]="!btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="!btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
               <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
               <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
             </ion-item-option>
           </div>
-          <ion-item-option *ngIf="addNewEnabled && gridButtons.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>  
+          <ion-item-option *ngIf="addNewEnabled && form && form['default'] && gridButtons?.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>  
         </ion-item-options>
     </ion-item-sliding>
   </ion-list>
@@ -99,7 +100,7 @@
     <ion-item-sliding *ngFor="let card of carddata; index as i">
         <ion-item class="cardlist">
           <ion-avatar slot="start" class="ion-text-uppercase"><span *ngIf="card.first_name != ''" [innerHTML]="getFirstCharOfString(card.first_name)"></span></ion-avatar>
-          <ion-row *ngIf="columnList && columnList.length > 0" >
+          <ion-row *ngIf="columnList && columnList?.length > 0" >
             <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="detailCardButton(column,card)">
               <p [ngClass]="column.class_name ? column.class_name  : ''" class="ion-text-end" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
               <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
@@ -116,9 +117,9 @@
         <ion-item-options side="start">
           <ion-item-option *ngIf="addCallingFeature" class="call" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
         </ion-item-options>
-        <ion-item-options side="end" *ngIf="gridButtons || addNewEnabled">
+        <ion-item-options side="end" *ngIf="(gridButtons && gridButtons?.length > 0 ) || addNewEnabled">
           <!-- <ion-item-option *ngIf="callStatus" class="chatbox-ellipses-outline" (click)="editedRow(card, i)"><ion-icon slot="icon-only" name="chatbox-ellipses-outline"></ion-icon></ion-item-option> -->
-          <ion-item-option *ngIf="addNewEnabled && gridButtons.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
+          <ion-item-option *ngIf="addNewEnabled && form && form['default'] && gridButtons?.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>
           <ion-item-option *ngFor="let btn of gridButtons">
             <span class="material-symbols-outlined" (click)="gridButtonAction(card,i,btn)">{{btn.field_class}}</span>
           </ion-item-option>
@@ -182,23 +183,23 @@
               <ion-col><ion-button shape="round" size="small" expand="block" color="primary" (click)="gridButtonAction(card,i,btn)" *ngIf="card.status == 'DELIVERED'">Upload</ion-button></ion-col>
             </ion-row> -->
           </ion-item>
-          <ion-item-options side="start" *ngIf="addCallingFeature || (gridButtons && gridButtons.length > 0)">
+          <ion-item-options side="start" *ngIf="addCallingFeature || (gridButtons && gridButtons?.length > 0)">
             <ion-item-option *ngIf="addCallingFeature" class="call" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
             <div class="ion-display-flex" *ngFor="let btn of gridButtons">
               <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
                 <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
-                <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+                <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
               </ion-item-option>
             </div>
           </ion-item-options>
-          <ion-item-options side="end" *ngIf="gridButtons || addNewEnabled">
+          <ion-item-options side="end" *ngIf="(gridButtons && gridButtons?.length > 0 ) || addNewEnabled">
             <div class="ion-display-flex" *ngFor="let btn of gridButtons">
               <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : btn.onclick['action_name'] == 'google_tracking_start' ? 'success' : ''}}" [ngClass]="!btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="!btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
                 <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
                 <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
               </ion-item-option>
             </div>
-            <ion-item-option *ngIf="addNewEnabled && gridButtons.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>  
+            <ion-item-option *ngIf="addNewEnabled && form && form['default'] && gridButtons?.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>  
           </ion-item-options>
         </ion-item-sliding>
       </ion-list>
@@ -254,23 +255,23 @@
         </ion-button>
         </ion-col>
       </ion-row>
-      <ion-item-options side="start" *ngIf="addCallingFeature || (gridButtons && gridButtons.length > 0)">
+      <ion-item-options side="start" *ngIf="addCallingFeature || (gridButtons && gridButtons?.length > 0)">
         <ion-item-option *ngIf="addCallingFeature" class="call" (click)="call(card, i)"><ion-icon slot="icon-only" name="call"></ion-icon></ion-item-option>
         <div class="ion-display-flex" *ngFor="let btn of gridButtons">
           <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" [ngClass]="btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
             <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
-            <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label'}}</ion-label>
+            <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
           </ion-item-option>
         </div>
       </ion-item-options>
-      <ion-item-options side="end" *ngIf="gridButtons || addNewEnabled">
+      <ion-item-options side="end" *ngIf="(gridButtons && gridButtons?.length > 0 ) || addNewEnabled">
         <div class="ion-display-flex" *ngFor="let btn of gridButtons">
           <ion-item-option color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : btn.onclick['action_name'] == 'google_tracking_start' ? 'success' : ''}}" [ngClass]="!btn.leftToRightSwipeApp ? 'ion-show' : 'ion-hide'" *ngIf="!btn.leftToRightSwipeApp" (click)="gridButtonAction(card,i,btn)">
             <span [ngClass]=" " *ngIf="!btn.showOnlyLabelOnApp" class="material-symbols-outlined" >{{btn.field_class}}</span>
             <ion-label *ngIf="btn.showOnlyLabelOnApp">{{btn.label}}</ion-label>
           </ion-item-option>
         </div>
-        <ion-item-option *ngIf="addNewEnabled && gridButtons.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>  
+        <ion-item-option *ngIf="addNewEnabled && form && form['default'] && gridButtons.length == 0" class="pencil" (click)="editedRowData(i,'')"><ion-icon slot="icon-only" name="pencil"></ion-icon></ion-item-option>  
       </ion-item-options>
     </ion-item-sliding>
   </ion-list> -->
@@ -318,10 +319,10 @@
           </ion-row>
         <!-- </ion-item> -->
       </ion-card-content>
-      <ion-grid *ngIf="gridButtons && gridButtons.length > 0">
+      <ion-grid *ngIf="gridButtons && gridButtons?.length > 0">
         <ion-row>
           <ion-col class="" *ngFor="let btn of gridButtons">
-            <ion-button expand="{{gridButtons.length == 1 ? 'block' : ''}}" shape="" fill="outline" size="small" color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" (click)="gridButtonAction(card,i,btn)">
+            <ion-button expand="{{gridButtons?.length == 1 ? 'block' : ''}}" shape="" fill="outline" size="small" color="{{btn.actionBgColorApp != '' ? btn.actionBgColorApp : ''}}" (click)="gridButtonAction(card,i,btn)">
               <!-- <ion-icon slot="start" name="star"></ion-icon> -->
               <span [ngClass]=" "  class="material-symbols-outlined" >{{btn.field_class}}</span>
               {{btn.label}}
@@ -333,7 +334,7 @@
     </ion-card>
   </ion-list>
   <!-- Types of Cards End -->
-  <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" *ngIf="addNewEnabled && form && form['default']">
+  <ion-fab vertical="bottom" horizontal="end" [ngClass]="tabMenu && tabMenu?.length > 0 ? 'cardwithsubheader':'cardwithoutsubheader'" slot="fixed" *ngIf="addNewEnabled && form && form['default']">
     <ion-fab-button (click)="addNewForm()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>
   </ion-fab>
 
@@ -341,7 +342,7 @@
     <ion-img src="../../../assets/nodatafound.png"></ion-img>
   </div>
 
-  <ion-infinite-scroll threshold="5%" (ionInfinite)="loadData($event)" *ngIf="loadMoreData && this.carddata && this.carddata.length > 0">
+  <ion-infinite-scroll threshold="5%" (ionInfinite)="loadData($event)" *ngIf="loadMoreData && this.carddata && this.carddata?.length > 0">
     <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Hang on loading data...">      
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
+import { NavController, Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
@@ -12,7 +12,6 @@ import { Title } from '@angular/platform-browser';
 import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService, MenuOrModuleCommonService, EnvService, CoreFunctionService, StorageTokenStatus, ApiCallService } from '@core/web-core';
 import { App } from '@capacitor/app';
 import { Share } from '@capacitor/share';
-
  
 @Component({ 
   selector: 'app-root',
@@ -80,7 +79,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private menuOrModuleCommonService: MenuOrModuleCommonService,    
     private envService: EnvService,
     private appStorageService: AppStorageService,
-    private apiCallService: ApiCallService
+    private apiCallService: ApiCallService,
+    private navController: NavController,
 
   ) {
     
@@ -261,6 +261,9 @@ export class AppComponent implements OnInit, OnDestroy {
   
   ionViewWillEnter() {}
   onLogout() {
+    //for destroying home page 
+    const currentUrl = this.router.url;
+    this.navController.navigateRoot(currentUrl);
     this.authService.Logout('');
   }
   
