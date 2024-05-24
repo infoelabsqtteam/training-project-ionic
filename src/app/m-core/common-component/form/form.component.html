@@ -717,7 +717,7 @@
                           <ion-accordion value="{{fields._id+'_'+fields.field_name+'_'+tableField.field_name}}" *ngIf="fields.type == 'list_of_string' && fields.datatype != 'chips' && fields.datatype != 'chips_with_mask' && custmizedFormValue[tableField.field_name+'_'+tableField.type] && custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name] && custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name].length > 0" class="">
                             <ion-item slot="header" color="light" line="inset">
                               <ion-label class="ifh8r3g fqom">{{ fields.label | titlecase}} </ion-label>
-                              <ion-button type="button" expand="round" slot="end" size="small" fill="outline" *ngIf="tableField.type == 'list_of_string' && custmizedFormValue[tableField.field_name+'_'+tableField.type] && custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name] && custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name].length > 0">{{ "( " + custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name].length + " )" }}</ion-button>
+                              <ion-button type="button" expand="round" slot="end" size="small" fill="outline" *ngIf="fields.type == 'list_of_string' && custmizedFormValue[tableField.field_name+'_'+tableField.type] && custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name] && custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name].length > 0">{{ "( " + custmizedFormValue[tableField.field_name+'_'+tableField.type][fields.field_name].length + " )" }}</ion-button>
                             </ion-item>
                             <div class="ion-padding" slot="content" class="">
                               <ion-reorder-group disabled="false" (ionItemReorder)="handleReorder($any($event))">
@@ -811,7 +811,7 @@
                             <thead>
                                 <tr>
                                     <th width="25%" style="text-align: center" *ngIf="!tableField.add_list_field && tableField.add_list_field != 'add'">Action</th>
-                                    <th *ngFor="let item of getListOfFieldsGridColumn(tableField)" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField.field_name,item) ? 'd-none' : ''">{{item.label}}</th>                                                
+                                    <th *ngFor="let item of tableField.list_of_fields && tableField.list_of_fields.length > 0 ? tableField.list_of_fields : tableField.gridColumns && tableField.gridColumns.length > 0 ? tableField.gridColumns:[]" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField.field_name,item) ? 'd-none' : ''">{{item.label}}</th>                                                
                                 </tr>
                             </thead>
                             <tbody>
@@ -823,7 +823,7 @@
                                         
                                         <a *ngIf="checkRowDisabledIf(tableField,i)" floating="true" size="small" (click)="openModal('confirm-modal',i,'',tableField,listOfField,'delete')" class="grid-button removebtn"><span class="material-symbols-outlined">close</span></a>                        
                                     </td>
-                                    <td *ngFor="let item of getListOfFieldsGridColumn(tableField)" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField.field_name,item) ? 'd-none' : 'ion-text-center'" (click)="showListOfFieldData(tableField, i, item)" [innerHtml]="showListFieldValue(listOfField, item)"></td>                                                
+                                    <td *ngFor="let item of tableField.list_of_fields && tableField.list_of_fields.length > 0 ? tableField.list_of_fields : tableField.gridColumns && tableField.gridColumns.length > 0 ? tableField.gridColumns:[]" [ngClass]="item.hide_in_inline_grid  || checkShowIfListOfFiedlds(tableField.field_name,item) ? 'd-none' : 'ion-text-center'" (click)="showListOfFieldData(tableField, i, item)" [innerHtml]="showListFieldValue(listOfField,item)"></td>                                                
                                 </tr>
                             </tbody>
                         </table>

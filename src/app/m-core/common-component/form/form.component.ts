@@ -2179,43 +2179,45 @@ tinymceConfig = {}
     }     
   }
   
-
+  // CD
   resetForm(){
-    //this.formGroupDirective.resetForm();
-    this.setPreviousFormTargetFieldData();
-    if(this.tableFields && this.tableFields.length >0){
-      this.donotResetFieldLists = this.commonFunctionService.donotResetField(this.tableFields,this.getFormValue(true));
+    if(this.multipleFormCollection.length > 0){
+      this.multipleFormCollection = this.multipleFormService.setPreviousFormTargetFieldData(this.multipleFormCollection,this.getFormValue(true));
     }
-    if(this.templateForm){
+    this.donotResetField();
+    if(this.templateForm && this.templateForm.controls){
       this.templateForm.reset(); 
     }
     if(Object.keys(this.donotResetFieldLists).length > 0){
       this.custmizedFormValue = {};
-
-      //this.commonFunctionService.updateDataOnFormField(this.templateForm,this.tableFields,this.formFieldButtons,this.donotResetFieldLists,this.selectedRow,this.custmizedFormValue,this.dataListForUpload,this.treeViewData,this.copyStaticData);
+      this.modifyCustmizedFormValue = {};
+      this.dataListForUpload = {};
+      this.updateDataOnFormField(this.donotResetFieldLists);
       this.donotResetFieldLists = {};
     }else{
       this.custmizedFormValue = {};
-    }    
-    this.tableFields.forEach(element => {
-      switch (element.type) {
-        case 'checkbox':
-          this.templateForm.controls[element.field_name].setValue(false)
-          break; 
-        case 'list_of_checkbox':
-          const controls:any = this.templateForm.get(element.field_name)['controls'];
-          if(controls && controls.length > 0){
-            controls.forEach((child,i) => {
-              controls.at(i).patchValue(false);
-              //this.templateForm.get(element.field_name).at(i).patchValue(false);
-              //(<FormArray>this.templateForm.controls[element.field_name]).controls[i].patchValue(false);
-            });
-          }
-          break;     
-        default:
-          break;
-      }
-    });
+      this.custmizedFormValue = {};
+      this.modifyCustmizedFormValue = {};
+    }
+    if(this.tableFields.length > 0){
+      this.tableFields.forEach(element => {
+        switch (element.type) {
+          case 'checkbox':
+            this.templateForm.controls[element.field_name].setValue(false)
+            break; 
+          case 'list_of_checkbox':
+            const controls:any = this.templateForm.get(element.field_name)['controls'];
+            if(controls && controls.length > 0){
+              controls.forEach((child,i) => {
+                controls.at(i).patchValue(false);
+              });
+            }
+            break;     
+          default:
+            break;
+        }
+      });
+    }
   }
   close(){
     this.apiService.resetStaticAllData();
@@ -2387,6 +2389,7 @@ tinymceConfig = {}
       this.checkFormFieldIfCondition();      
     }
   }
+  // CD
   checkFormFieldIfCondition(){
     if(this.buttonIfList.length > 0){
       this.buttonIfList.forEach(element => {
@@ -3693,6 +3696,7 @@ tinymceConfig = {}
     // }
   }
 
+  // CD
   refreshListofField(field,updatemode){    
     if(field.do_not_refresh_on_add && updatemode){
       this.tableFields.forEach(tablefield => {
@@ -3709,6 +3713,9 @@ tinymceConfig = {}
     } 
     this.listOfFieldsUpdateIndex = -1
     this.listOfFieldUpdateMode = false;
+    // below code added for reset list_of_string in the list_of_fields
+    let keyName = this.commonFunctionService.custmizedKey(field);
+    if(this.custmizedFormValue[keyName]) this.custmizedFormValue[keyName] = {};
   }
 
   modifiedGridColumns(gridColumns){
@@ -4035,21 +4042,22 @@ tinymceConfig = {}
     // }
   }
 
-  setPreviousFormTargetFieldData(){
-    if(this.multipleFormCollection.length > 0){
-      const previousFormIndex = this.multipleFormCollection.length - 1;
-      const previousFormData = this.multipleFormCollection[previousFormIndex];
-      const previousFormField = previousFormData.current_field;
-      const formData = previousFormData.next_form_data;
-      if(previousFormField && previousFormField.add_new_target_field){
-        const targateFieldName = previousFormField.add_new_target_field;          
-        const currentFormValue = this.getFormValue(true)
-        const currentTargetFieldValue = currentFormValue[targateFieldName]
-        formData[targateFieldName] = currentTargetFieldValue;
-      }      
-      this.multipleFormCollection[previousFormIndex]['next_form_data'] = formData;
-    }
-  }
+  // delete code
+  // setPreviousFormTargetFieldData(){
+  //   if(this.multipleFormCollection.length > 0){
+  //     const previousFormIndex = this.multipleFormCollection.length - 1;
+  //     const previousFormData = this.multipleFormCollection[previousFormIndex];
+  //     const previousFormField = previousFormData.current_field;
+  //     const formData = previousFormData.next_form_data;
+  //     if(previousFormField && previousFormField.add_new_target_field){
+  //       const targateFieldName = previousFormField.add_new_target_field;          
+  //       const currentFormValue = this.getFormValue(true)
+  //       const currentTargetFieldValue = currentFormValue[targateFieldName]
+  //       formData[targateFieldName] = currentTargetFieldValue;
+  //     }      
+  //     this.multipleFormCollection[previousFormIndex]['next_form_data'] = formData;
+  //   }
+  // }
 
   changeDropdown(field, object,data_template) {
     let params = field.onchange_api_params;
@@ -5650,34 +5658,42 @@ tinymceConfig = {}
   //   }
   //   return checkDublic;
   // }
+
+  // CD
   donotResetField(){
-    //let FormValue = this.templateForm.getRawValue();
-    let FormValue = this.getFormValue(true);
-    this.tableFields.forEach(tablefield => {
-      if(tablefield.do_not_refresh_on_add && tablefield.type != "list_of_fields" && tablefield.type != "group_of_fields" && tablefield.type != "stepper"){
-        this.donotResetFieldLists[tablefield.field_name] = FormValue[tablefield.field_name];
-      }else if(tablefield.type == "group_of_fields"){
-        if(tablefield.list_of_fields && tablefield.list_of_fields.length > 0){
-          tablefield.list_of_fields.forEach(field => {
-            if(field.do_not_refresh_on_add){
-              this.donotResetFieldLists[tablefield.field_name][field.field_name] = FormValue[tablefield.field_name][field.field_name];
-            }
-          });
-        }
-      }else if(tablefield.type == "stepper"){
-        if(tablefield.list_of_fields && tablefield.list_of_fields.length > 0){
-          tablefield.list_of_fields.forEach(step => {
-            if(step.list_of_fields && step.list_of_fields.length > 0){
-              step.list_of_fields.forEach(field => {
-                if(field.do_not_refresh_on_add){
-                  this.donotResetFieldLists[step.field_name][field.field_name] = FormValue[step.field_name][field.field_name];
-                }
-              });
-            }
-          });
-        }
-      }
-    });
+    if(this.tableFields.length > 0){
+      let FormValue = this.getFormValue(true);
+      this.donotResetFieldLists = this.formCreationService.getDonotResetFields(this.tableFields,this.donotResetFieldLists,FormValue);
+    }
+
+    // delete code
+    // //let FormValue = this.templateForm.getRawValue();
+    // let FormValue = this.getFormValue(true);
+    // this.tableFields.forEach(tablefield => {
+    //   if(tablefield.do_not_refresh_on_add && tablefield.type != "list_of_fields" && tablefield.type != "group_of_fields" && tablefield.type != "stepper"){
+    //     this.donotResetFieldLists[tablefield.field_name] = FormValue[tablefield.field_name];
+    //   }else if(tablefield.type == "group_of_fields"){
+    //     if(tablefield.list_of_fields && tablefield.list_of_fields.length > 0){
+    //       tablefield.list_of_fields.forEach(field => {
+    //         if(field.do_not_refresh_on_add){
+    //           this.donotResetFieldLists[tablefield.field_name][field.field_name] = FormValue[tablefield.field_name][field.field_name];
+    //         }
+    //       });
+    //     }
+    //   }else if(tablefield.type == "stepper"){
+    //     if(tablefield.list_of_fields && tablefield.list_of_fields.length > 0){
+    //       tablefield.list_of_fields.forEach(step => {
+    //         if(step.list_of_fields && step.list_of_fields.length > 0){
+    //           step.list_of_fields.forEach(field => {
+    //             if(field.do_not_refresh_on_add){
+    //               this.donotResetFieldLists[step.field_name][field.field_name] = FormValue[step.field_name][field.field_name];
+    //             }
+    //           });
+    //         }
+    //       });
+    //     }
+    //   }
+    // });
   }
 
   searchTypeaheadData(field, currentObject,chipsInputValue) {
@@ -6036,59 +6052,62 @@ tinymceConfig = {}
     }
   }
 
+  // CD
   showListFieldValue(listOfField, item) {
-    switch (item.type) {
-      case "typeahead":
-        if(item.datatype == "list_of_object"){
-          if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
-            return '<i class="fa fa-eye text-pointer"></i>';
-          } else {
-            return '-';
-          }
-        }else if(item.datatype == "object"){
-          if (item.display_name && item.display_name != "") {
-            return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
-          } else {
-            return listOfField[item.field_name];
-          }
-        }
-        else if(item.datatype == "text"){
-          if (item.display_name && item.display_name != "") {
-            return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
-          } else {
-            return listOfField[item.field_name];
-          }
-        }
-        break;
-      case "list_of_string":
-      case "list_of_checkbox":
-      case "grid_selection":
-      case "list_of_fields":
-        if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
-          // if (isPlatform('hybrid')){
-            return '<span class="material-symbols-outlined cursor-pointer">visibility</span>';
-          // }else{
-            // return '<i class="fa fa-eye text-pointer"></i>';
-          // }
-        } else {
-          return '-';
-        }
-      case "checkbox":
-        let value:any = false;
-        if (item.display_name && item.display_name != "") {
-          value = this.commonFunctionService.getObjectValue(item.display_name, listOfField);
-        } else {
-          value = this.getValueForGrid(item,listOfField);
-        }
-        return value ? "Yes" : "No";
-      default:
-        if (item.display_name && item.display_name != "") {
-          return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
-        } else {
-          return this.getValueForGrid(item,listOfField);
-        }
-    }   
+    return this.gridCommonFunctionService.showListFieldValue(listOfField,item);
 
+    // delete code also need to delete this fucntion
+    // switch (item.type) {
+    //   case "typeahead":
+    //     if(item.datatype == "list_of_object"){
+    //       if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
+    //         return '<i class="fa fa-eye text-pointer"></i>';
+    //       } else {
+    //         return '-';
+    //       }
+    //     }else if(item.datatype == "object"){
+    //       if (item.display_name && item.display_name != "") {
+    //         return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+    //       } else {
+    //         return listOfField[item.field_name];
+    //       }
+    //     }
+    //     else if(item.datatype == "text"){
+    //       if (item.display_name && item.display_name != "") {
+    //         return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+    //       } else {
+    //         return listOfField[item.field_name];
+    //       }
+    //     }
+    //     break;
+    //   case "list_of_string":
+    //   case "list_of_checkbox":
+    //   case "grid_selection":
+    //   case "list_of_fields":
+    //     if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
+    //       // if (isPlatform('hybrid')){
+    //         return '<span class="material-symbols-outlined cursor-pointer">visibility</span>';
+    //       // }else{
+    //         // return '<i class="fa fa-eye text-pointer"></i>';
+    //       // }
+    //     } else {
+    //       return '-';
+    //     }
+    //   case "checkbox":
+    //     let value:any = false;
+    //     if (item.display_name && item.display_name != "") {
+    //       value = this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+    //     } else {
+    //       value = this.getValueForGrid(item,listOfField);
+    //     }
+    //     return value ? "Yes" : "No";
+    //   default:
+    //     if (item.display_name && item.display_name != "") {
+    //       return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+    //     } else {
+    //       return this.getValueForGrid(item,listOfField);
+    //     }
+    // }
   }
   showListOfFieldData(field,index,item){
     let value={};
