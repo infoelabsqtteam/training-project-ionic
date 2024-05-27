@@ -44,7 +44,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   @Output() nestedCard = new EventEmitter();
   @Output() parentCardName = new EventEmitter();
 
-
+  scannedData=''
   scannerForm=false
   scannerFormName="";
   web_site_name: string = '';
@@ -1146,7 +1146,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.dataShareServiceService.setcardData(card);
   }
   // add new card or record in cardlist 
-  async addNewForm(formName?:any,permissionName?:string){
+  async addNewForm(formName?:any,permissionName?:string,scannedData?:string){
     if (this.permissionService.checkPermission(this.currentMenu.name, 'add') || this.permissionService.checkPermission(this.currentMenu.name, 'edit') || this.permissionService.checkPermission(this.currentMenu.name, permissionName)) {
       if(formName){
         this.formTypeName = formName;
@@ -1176,6 +1176,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           "editedRowIndex": this.editedRowIndex,
           "addform" : form,
           "formTypeName" : this.formTypeName,
+          "scannedData": scannedData
         },
         id: form._id,
         showBackdrop:true,
@@ -1918,7 +1919,8 @@ async checkScannedData(barcodeDetails?:any){
         }
   }
   if(!resultValue)await this.notificationService.showAlert('','Please Scan the right Barcode',["Dismiss"]);
-  if(resultValue && resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
+  // if(resultValue && resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
+  if(resultValue && resultValue!='')this.addNewForm('','',resultValue);
   // this.openScannedData(forms,this.formTypeName,resultValue)
   //   if(forms && forms[this.formTypeName] && resultValue != ''){
   //     this.scannerForm=true;

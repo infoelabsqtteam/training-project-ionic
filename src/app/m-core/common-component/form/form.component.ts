@@ -180,6 +180,7 @@ tinymceConfig = {}
   @Input() modal: any;
   @Input() isBulkUpdate:boolean;
   @Input() bulkDataList:any;
+  @Input() scannedData:String;
   @ViewChild('capacitormap') capMapRef: ElementRef<HTMLElement>;
   @ViewChild('search', {read:ElementRef}) searchElementRef: ElementRef;
   @ViewChild(MapInfoWindow) infoWindow: MapInfoWindow;
@@ -871,7 +872,7 @@ tinymceConfig = {}
     this.customValidationFiels = [];
     if (this.tableFields.length > 0 && this.createFormgroup) {
       this.createFormgroup = false;
-      const forControl = {};
+      const forControl:any = {};
       this.checkBoxFieldListValue = [];
       let staticModalGroup = [];
       // this.filePreviewFields=[];
@@ -1208,6 +1209,9 @@ tinymceConfig = {}
             }
 
           });
+        }
+        if(this.scannedData && forControl["scannedKeyValue"] ){
+          forControl.scannedKeyValue.value=this.scannedData;
         }
         this.templateForm = this.formBuilder.group(forControl,validators);
         if(this.nextIndex){
