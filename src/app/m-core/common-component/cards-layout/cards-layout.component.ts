@@ -9,7 +9,7 @@ import { FormComponent } from '../form/form.component';
 import { DatePipe } from '@angular/common';
 import { CallDataRecordFormComponent } from '../../modal/call-data-record-form/call-data-record-form.component';
 // import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
-import { File } from '@awesome-cordova-plugins/file/ngx';
+// import { File } from '@awesome-cordova-plugins/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
@@ -21,11 +21,6 @@ import { PopoverModalService } from 'src/app/service/modal-service/popover-modal
 import { BarcodeScanningComponent } from '../../modal/barcode-scanning/barcode-scanning.component';
 import { FilePicker } from '@capawesome/capacitor-file-picker';
 import { Subscription } from 'rxjs';
-// import { Printer, PrintOptions } from '@awesome-cordova-plugins/printer/ngx';
-// import { Directory, Filesystem } from '@capacitor/filesystem';
-// import { DomSanitizer } from '@angular/platform-browser';
-// import { HttpClient } from '@angular/common/http';
-// import { Printer, PrintOptions } from '@awesome-cordova-plugins/printer/ngx';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { SampleSubmitModelComponent } from '../../modal/custom-model/sample-submit-model/sample-submit-model.component';
 import { CollectionCentreModelComponent } from '../../modal/custom-model/collection-centre-model/collection-centre-model.component';
@@ -35,7 +30,7 @@ import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views
   selector: 'app-cards-layout',
   templateUrl: './cards-layout.component.html',
   styleUrls: ['./cards-layout.component.scss'],
-  providers: [File]
+  providers: []
 })
 export class CardsLayoutComponent implements OnInit, OnChanges {
   
@@ -203,7 +198,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private notificationService: NotificationService,
     private permissionService:PermissionService,
     // private fileOpener: FileOpener,
-    private file: File,
+    // private file: File,
     private apppermissionsService: AndroidpermissionsService,
     public renderer: Renderer2,
     private app_googleService: App_googleService,
@@ -246,7 +241,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           this.nodatafound=true;
         }
       }
-      this.checkLoader();
+      this.loaderService.checkAndHideLoader();
     });
     
     this.pdfFileSubscription = this.dataShareService.downloadPdfData.subscribe(data =>{
@@ -431,18 +426,18 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     // if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
   }
-  checkLoader() {
-    new Promise(async (resolve)=>{
-      let checkLoader = await this.loaderService.loadingCtrl.getTop();
-      if(checkLoader && checkLoader['hasController']){
-        this.loaderService.hideLoader();
-      }
-    });
-  }
-  setDownloadPdfData(downloadPdfData){
+  // checkLoader() {
+  //   new Promise(async (resolve)=>{
+  //     let checkLoader = await this.loaderService.loadingCtrl.getTop();
+  //     if(checkLoader && checkLoader['hasController']){
+  //       this.loaderService.hideLoader();
+  //     }
+  //   });
+  // }
+  async setDownloadPdfData(downloadPdfData){
     if (downloadPdfData != '' && downloadPdfData != null && this.downloadPdfCheck != '') {
-      const file = new Blob([downloadPdfData.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(file);
+      const blobData = new Blob([downloadPdfData.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blobData);
       let fileExt:any = '';
       let fileName:any = '';
       if(downloadPdfData && downloadPdfData.filename){
@@ -450,7 +445,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         fileName = downloadPdfData.filename;
       }      
       if(this.platform.is("hybrid")){
-        this.downloadToMobile(file,fileName);
+        // this.downloadToMobile(blobData,fileName);
+        let downloadResponse = await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
+        this.downloadResponseHandler(downloadResponse);
       }else{
         this.downloadService.download(url,downloadPdfData?.filename);
       }
@@ -460,60 +457,99 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       fileName = '';
     }
   }
-  async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
-    let file_Type:any = '';
-    let folderName:any = '';
-    if(blobData && blobData.type){
-      file_Type = blobData.type;
-    }
-    if(FolderName == undefined || FolderName == null){
-      folderName = 'Download'
-    }else{
-      folderName = FolderName;
-    }
-    let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-    let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
-
-    if(readPermission && writePermission){
-
-      // ==========using native file    
-      this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
-
-        this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
-          // confirm alert
-          let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
-          if(openFile == "confirm"){
-            const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
-            const mimeType = file_Type;      
-            // this.fileOpener.open(path,mimeType)
-            // .then(()=> console.log('File is opened'))
-            // .catch(error => console.log('Error opening file ',error));
-          }
-        }).catch( (error:any) =>{
-          this.notificationService.presentToastOnBottom(JSON.stringify(error), 'danger');
-        })
-        
-      }).catch( (error:any) =>{
-        if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
-          
-          this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
-            console.log('Directory create '+ response);
-            this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
-              this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
-            })
-
-          }).catch( (error:any) =>{            
-            this.notificationService.presentToastOnBottom(JSON.stringify(error));
+  async downloadResponseHandler(response:any){
+    if(response?.haspermission && response?.status){
+      await this.loaderService.hideLoader();
+      if(response?.openfile && !response?.sharefile){
+        const confirm:any = await this.notificationService.confirmAlert('Open file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Open", "Dismiss");
+        if(response?.fileuri && confirm == "confirm"){
+          FileOpener.open({filePath:response.fileuri, contentType:response?.mimetype}).then( res => {
+            console.log("File Opened");
+          }).catch((e)=>{
+            console.error("File Opening error ", JSON.stringify(e));
+            this.notificationService.presentToastOnBottom("No app found to open the file.");
           })
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
         }
-      });
-    }else{
-      let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
-      if(gavepermission == "cancel"){
-        this.apppermissionsService.openNativeSettings('application_details');
+      }else if(!response?.openfile && response?.sharefile){
+        const confirm:any = await this.notificationService.confirmAlert('Share file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Share", "Dismiss");
+        if(response?.fileuri && confirm == "confirm"){
+          const canShare = await this.appShareService.checkDeviceCanShare();
+          if(canShare){
+            let shareOption = {
+              title: response?.filename ? response.filename : "Share",
+              text: "Here is the file you requested.",
+              url: response?.fileuri,
+              dialogTitle: "Share " + response?.filename
+            }
+            this.appShareService.share(shareOption);
+          }
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+        }
+      }else{
+        this.notificationService.presentToastOnBottom("Downloaded into " + response.directoryname.toLowerCase(),"success")
       }
+    }else{
+      this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
     }
   }
+  
+  // async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
+  //   let file_Type:any = '';
+  //   let folderName:any = '';
+  //   if(blobData && blobData.type){
+  //     file_Type = blobData.type;
+  //   }
+  //   if(FolderName == undefined || FolderName == null){
+  //     folderName = 'Download'
+  //   }else{
+  //     folderName = FolderName;
+  //   }
+  //   let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
+  //   let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
+
+  //   if(readPermission && writePermission){
+
+  //     // ==========using native file    
+  //     this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
+
+  //       this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
+  //         // confirm alert
+  //         let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
+  //         if(openFile == "confirm"){
+  //           const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
+  //           const mimeType = file_Type;      
+  //           // this.fileOpener.open(path,mimeType)
+  //           // .then(()=> console.log('File is opened'))
+  //           // .catch(error => console.log('Error opening file ',error));
+  //         }
+  //       }).catch( (error:any) =>{
+  //         this.notificationService.presentToastOnBottom(JSON.stringify(error), 'danger');
+  //       })
+        
+  //     }).catch( (error:any) =>{
+  //       if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
+          
+  //         this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
+  //           console.log('Directory create '+ response);
+  //           this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
+  //             this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
+  //           })
+
+  //         }).catch( (error:any) =>{            
+  //           this.notificationService.presentToastOnBottom(JSON.stringify(error));
+  //         })
+  //       }
+  //     });
+  //   }else{
+  //     let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
+  //     if(gavepermission == "cancel"){
+  //       this.apppermissionsService.openNativeSettings('application_details');
+  //     }
+  //   }
+  // }
   async downloadandprint(data){
     let template = data.data;
     const blob = new Blob([template], { type: 'application/pdf' });
@@ -553,7 +589,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       document.body.appendChild(iframe);
       iframe.contentWindow.print();
     }    
-    this.checkLoader();
+    this.loaderService.checkAndHideLoader();
   }
   // Subscriber Functions Handling End -------------------
 
@@ -1487,7 +1523,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
   // myFiles:any;
   
-  arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
+  async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
     const fileExtension = extentionType;
     // if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
     //   file_Type = "image/" + extentionType;
@@ -1503,7 +1539,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     //   file_prefix = "TEXT";
     // }
 
-    const response: any = this.appDownloadService.getBlobTypeFromExtn(extentionType);
+    const response: any = await this.appDownloadService.getBlobTypeFromExtn(extentionType);
     const file_Type:string = response?.mimeType ? response?.mimeType : '';
     const file_prefix:string = response?.filePrefix ? response?.filePrefix : '';
 
@@ -1515,7 +1551,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     const blobData:Blob = new Blob([arrayBufferData],{type:file_Type});
     
-    this.downloadToMobile(blobData,fileName);
+    // this.downloadToMobile(blobData,fileName);
+    let downloadResponse:any =  await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
+    this.downloadResponseHandler(downloadResponse);
 
   }
 
@@ -2404,6 +2442,8 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
     }
     if (!field.type) field.type = "Text";
     switch (field.type.toLowerCase()) {
+      case "file":
+      case "file_with_preview":
       case "file_with_print":
         if (value['data'] && value['data'] != '') {
           let previewFile:boolean = false;
