@@ -67,7 +67,7 @@
       </ion-card-content>
     </ion-card>
     <div *ngIf="showPreview">
-      <ion-accordion-group expand="inset" class="ion-margin-bottom-default" [value]="data?.length == 1 ? 0 : selectedIndex" (ionChange)="accordionGroupChange($event)">
+      <ion-accordion-group *ngIf="data && data.length>0" expand="inset" class="ion-margin-bottom-default" [value]="data?.length == 1 ? 0 : selectedIndex" (ionChange)="accordionGroupChange($event)">
         <ion-accordion [value]="i" *ngFor="let item of data;let i = index">
           <ion-item slot="header" color="light">
             <ion-label>{{item['rollName']}}</ion-label>

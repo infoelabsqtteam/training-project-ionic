@@ -1,14 +1,15 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService, AppDownloadService, AppShareService, AppStorageService } from '@core/ionic-core';
-import { CallNumber } from '@ionic-native/call-number/ngx';
+import { CallNumber } from '@awesome-cordova-plugins/call-number/ngx';
 import { Platform, ModalController, AlertController, PopoverController, isPlatform, ActionSheetController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card.component';
 import { FormComponent } from '../form/form.component';
 import { DatePipe } from '@angular/common';
 import { CallDataRecordFormComponent } from '../../modal/call-data-record-form/call-data-record-form.component';
-import { File } from '@ionic-native/file/ngx';
+// import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
+import { File } from '@awesome-cordova-plugins/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
@@ -20,9 +21,15 @@ import { PopoverModalService } from 'src/app/service/modal-service/popover-modal
 import { BarcodeScanningComponent } from '../../modal/barcode-scanning/barcode-scanning.component';
 import { FilePicker } from '@capawesome/capacitor-file-picker';
 import { Subscription } from 'rxjs';
+// import { Printer, PrintOptions } from '@awesome-cordova-plugins/printer/ngx';
+// import { Directory, Filesystem } from '@capacitor/filesystem';
+// import { DomSanitizer } from '@angular/platform-browser';
+// import { HttpClient } from '@angular/common/http';
+// import { Printer, PrintOptions } from '@awesome-cordova-plugins/printer/ngx';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { SampleSubmitModelComponent } from '../../modal/custom-model/sample-submit-model/sample-submit-model.component';
 import { CollectionCentreModelComponent } from '../../modal/custom-model/collection-centre-model/collection-centre-model.component';
+import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
 
 @Component({
   selector: 'app-cards-layout',
@@ -2374,5 +2381,79 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
     reader.readAsDataURL(blob);
   });
   
+  clickOnGridElement(field, object, i,e:Event) {
+    e.stopPropagation();
+    let value={};
+    value['data'] = this.commonFunctionService.getObjectValue(field.field_name, object);
+    if(value['data']!){
+      console.log('Data available in ' + field.field_label);
+    }else{
+      return console.log('No data available in ' + field.field_label);
+    }    
+    if(field.gridColumns && field.gridColumns.length > 0){
+      value['gridColumns'] = field.gridColumns;
+    }
+    let editemode = false;
+    if(field.editable){
+      editemode = true;
+    }
+    if(field.bulk_download){
+      value['bulk_download'] = true;
+    }else{
+      value['bulk_download'] = false;
+    }
+    if (!field.type) field.type = "Text";
+    switch (field.type.toLowerCase()) {
+      case "file_with_print":
+        if (value['data'] && value['data'] != '') {
+          let previewFile:boolean = false;
+          let printFile:boolean = false;
+          if(field.type.toLowerCase() == "file_with_preview"){
+            previewFile = true;
+          }else if(field.type.toLowerCase() == "file_with_print"){
+            printFile = true;
+          }
+          const obj = {
+            'data' : value,
+            'field' : field,
+            'index' : i,
+            'field_name': field?.field_name,
+            'editemode' : editemode,
+            'field_type': field.type.toLowerCase(),
+            'previewFile': previewFile,
+            'printFile' : printFile
+          }
+          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode,obj);
+        };
+        break;
+      default: return;
+    }
+  }
+
+  async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
+    let objectData:any = {
+      'data' : value,
+      'field' : field,
+      'index' : i,
+      'field_name': field_name,
+      'editemode' : editemode,
+      'field_type': obj?.field_type,
+      'previewFile': obj?.previewFile,
+      'printFile' : obj?.printFile
+    }
+    const modal = await this.modalController.create({
+      component: FileViewsModalComponent,
+      cssClass: 'file-info-modal',
+      componentProps: {
+        "objectData": objectData,      
+      },
+    });
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss()
+      .then((data) => {
+          console.log("File Download Modal closed " , data.role);                
+    });
+    return await modal.present();
+  }
 
 }

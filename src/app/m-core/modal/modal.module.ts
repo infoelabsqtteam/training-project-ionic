@@ -9,7 +9,7 @@ import { IonicModule } from '@ionic/angular';
 import { CallDataRecordFormComponent } from './call-data-record-form/call-data-record-form.component';
 import { ChartFilterComponent } from './chart-filter/chart-filter.component';
 import { NgChartsModule } from 'ng2-charts';
-import { GoogleChartsModule } from 'angular-google-charts';
+// import { GoogleChartsModule } from 'angular-google-charts';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ModalComponent } from './modal.component';
 import { FileViewsModalComponent } from './file-views-modal/file-views-modal.component';
@@ -38,7 +38,7 @@ const modal =[
     BrowserModule,
     IonicModule.forRoot(),
     NgChartsModule,
-    GoogleChartsModule,
+    // GoogleChartsModule,
     NgSelectModule
   ],
   declarations: modal,

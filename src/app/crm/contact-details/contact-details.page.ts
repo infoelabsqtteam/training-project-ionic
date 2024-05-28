@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppStorageService, NotificationService } from '@core/ionic-core';
-import { CallNumber } from '@ionic-native/call-number/ngx';
+import { CallNumber } from '@awesome-cordova-plugins/call-number/ngx';
 import { PopoverController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { SocialOptionComponent } from '../social-option/social-option.component';
