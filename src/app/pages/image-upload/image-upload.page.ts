@@ -488,7 +488,7 @@ export class ImageUploadPage implements OnInit {
   }
 
   async readBarcodeFromImage(): Promise<void> {
-    const { files } = await FilePicker.pickImages({ multiple: false });
+    const { files } = await FilePicker.pickImages({ limit: 1 });
     const path = files[0]?.path;
     if (!path) {
       return;
