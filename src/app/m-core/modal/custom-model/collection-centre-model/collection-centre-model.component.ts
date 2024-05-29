@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AppStorageService, NotificationService } from '@core/ionic-core';
 import { DataShareService,ApiCallService,ApiService } from '@core/web-core';
 import { AlertController } from '@ionic/angular';
-import { element } from 'protractor';
+// import { element } from 'protractor';
 import { Subscription } from 'rxjs';
 import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 @Component({

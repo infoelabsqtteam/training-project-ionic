@@ -4,7 +4,7 @@ import { FormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { App_googleService, NotificationService, AppStorageService, AppPermissionService, LoaderService } from '@core/ionic-core';
 import { DataShareService,ApiCallService,ApiService } from '@core/web-core';
 import { AlertController, isPlatform } from '@ionic/angular';
-import { element } from 'protractor';
+// import { element } from 'protractor';
 import { Subscription } from 'rxjs';
 import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
