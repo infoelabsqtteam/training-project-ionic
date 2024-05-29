@@ -19,7 +19,16 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
-            "allowedCommonJsDependencies":["@looker/chatty","lodash/isEmpty","lodash/isEqual","json-2-csv","date-fns-tz","fast-deep-equal"],
+            "allowedCommonJsDependencies":[
+              "@looker/chatty",
+              "lodash/isEmpty",
+              "lodash/isEqual",
+              "json-2-csv",
+              "date-fns-tz",
+              "fast-deep-equal",
+              "@aws-crypto/sha256-browser",
+              "fast-xml-parser"
+            ],
             "assets": [
               {
                 "glob": "**/*",

@@ -12,11 +12,11 @@ def getMyVersionName = { ->
 
 android {
     namespace "com.tech.elabs.ai"
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 34
     defaultConfig {
         applicationId "com.tech.elabs.ai"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 34
         versionCode getMyVersionCode()
         versionName getMyVersionName()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
