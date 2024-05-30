@@ -149,10 +149,13 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   public formGroup = new UntypedFormGroup({
     formats: new UntypedFormControl([]),
     lensFacing: new UntypedFormControl(LensFacing.Back),
+    googleBarcodeScannerModuleInstallState: new UntypedFormControl(0),
+    googleBarcodeScannerModuleInstallProgress: new UntypedFormControl(0),
   });
   public barcodes = [];
   public isBarCodeScannerSupported = false;
   public isBarCodeCameraPermissionGranted = false;
+  public isGoogleScannerModuleAvailable = false;
   public barCodeFormats:any = [
     ["AZTEC"],
     ["CODABAR"],
@@ -984,6 +987,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
       if(card.enableScanner){
         this.enableScanner = card.enableScanner;
+        this.checkBarcodeScannerSupportedorNot();
       }else{
         this.enableScanner=false;
       }
@@ -1212,6 +1216,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.commonAppDataShareService.setFormId(id);
       // this.router.navigate(['crm/form']);
       this.saveCallSubscribe();
+      const additionalData = {
+        'scannedData': scannedData,
+        'card': this.card?.card ? this.card?.card : this.card,
+        'enableScanner': this.enableScanner
+      }
       const modal = await this.modalController.create({
         component: FormComponent,
         componentProps: {
@@ -1219,7 +1228,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           "editedRowIndex": this.editedRowIndex,
           "addform" : form,
           "formTypeName" : this.formTypeName,
-          "scannedData": scannedData
+          "additionalData": additionalData,
         },
         id: form._id,
         showBackdrop:true,
@@ -1229,7 +1238,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       modal.componentProps.modal = modal;
       modal.onDidDismiss().then((result) => {  
         // if(this.scannerForm){this.scannerForm=false; this.ngOnChanges();}
-        this.getCardDataByCollection(this.selectedIndex);
+        if(!this.enableScanner){
+          this.getCardDataByCollection(this.selectedIndex);
+        }
         this.unsubscribedSavecall();
       });
     } else {
@@ -1260,22 +1271,31 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     });
   }
   checkStatusAndOpenForm(data:any){
+    let checkLoaderStatus = false;
+    let alertMsg = '';
     if(this.cardType == "summary" && (data?.data?.[0].status=="SUBMIT" || data?.data?.[0].status=="RECEIVED")){
-      this.checkLoader();
-      this.notificationService.showAlert("","This Sample is already Submitted",['Dismiss']);
+      checkLoaderStatus = true;
+      alertMsg = "This Sample is already Submitted";
     }
     else if(this.cardType == "sampleSubmit" && data?.data?.[0].status=="RECEIVED"){
-      this.checkLoader();
-      this.notificationService.showAlert("","This Sample is already received",['Dismiss']);
+      checkLoaderStatus = true;
+      alertMsg = "This Sample is already received";
     }
     else if(this.cardType == "sampleSubmit" && data?.data?.[0].status!="SUBMIT"){
-      this.checkLoader();
-      this.notificationService.showAlert("","This Sample is not submited by sample collector",['Dismiss']);
+      checkLoaderStatus = true;
+      alertMsg = "This Sample is not submited by sample collector";
     }else{
       let form = this.commonFunctionService.getForm(this.card?.card?.form,'UPDATE',this.gridButtons);
       // this.loaderService.showLoader("Loading...");
       this.openFormModalForScanner(form,data?.data?.[0]);
     }
+    if(checkLoaderStatus) {
+      const checkingLoader = async () => {
+        await this.loaderService.checkAndHideLoader();
+      }
+    }
+    if(alertMsg) this.notificationService.showAlert("",alertMsg,['Dismiss']);
+
   }
   getFirstCharOfString(char:any){
     return this.commonFunctionService.getFirstCharOfString(char);
@@ -1714,7 +1734,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
               criteria.push(element);
             });
           }
-          this.getGridData(this.collectionname,);
+          if(!this.enableScanner){
+            this.getGridData(this.collectionname,);
+          }else{
+            this.scannerSuccessAndConfirm(saveFromDataRsponce);
+          }
           // this.setCardDetails(this.card.card);
         }else if (saveFromDataRsponce.success == 'success' && this.updateMode) {
           this.carddata[this.editedRowIndex] == saveFromDataRsponce.data;
@@ -1724,6 +1748,14 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       }
       this.apiService.ResetSaveResponce();
+    }
+  }
+  async scannerSuccessAndConfirm(saveFromDataRsponce){
+    const confirm = await this.notificationService.confirmAlert(saveFromDataRsponce.success.toUpperCase(),"Scanned Successfuly","Scan Again","Cancel");
+    if(confirm === 'confirm'){
+      this.checkCameraPermissionToScan();
+    }else{                
+      this.getGridData(this.collectionname,);
     }
   }
   async startTracking(data:any,index:number,actionname?:any){
@@ -1849,16 +1881,136 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   mapOutPutData(index:number){
     this.editedRowData(index,"UPDATE");
   }
-  /*----BarCode Functions------------------------------------------------------------------------- */
-  checkBarcodeScannerSupportedorNot(){
-      BarcodeScanner.isSupported().then((result) => {
+
+  clickOnGridElement(field, object, i,e:Event) {
+    e.stopPropagation();
+    let value={};
+    value['data'] = this.commonFunctionService.getObjectValue(field.field_name, object);
+    if(value['data']!){
+      console.log('Data available in ' + field.field_label);
+    }else{
+      return console.log('No data available in ' + field.field_label);
+    }    
+    if(field.gridColumns && field.gridColumns.length > 0){
+      value['gridColumns'] = field.gridColumns;
+    }
+    let editemode = false;
+    if(field.editable){
+      editemode = true;
+    }
+    if(field.bulk_download){
+      value['bulk_download'] = true;
+    }else{
+      value['bulk_download'] = false;
+    }
+    if (!field.type) field.type = "Text";
+    switch (field.type.toLowerCase()) {
+      case "file":
+      case "file_with_preview":
+      case "file_with_print":
+        if (value['data'] && value['data'] != '') {
+          let previewFile:boolean = false;
+          let printFile:boolean = false;
+          if(field.type.toLowerCase() == "file_with_preview"){
+            previewFile = true;
+          }else if(field.type.toLowerCase() == "file_with_print"){
+            printFile = true;
+          }
+          const obj = {
+            'data' : value,
+            'field' : field,
+            'index' : i,
+            'field_name': field?.field_name,
+            'editemode' : editemode,
+            'field_type': field.type.toLowerCase(),
+            'previewFile': previewFile,
+            'printFile' : printFile
+          }
+          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode,obj);
+        };
+        break;
+      default: return;
+    }
+  }
+
+  async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
+    let objectData:any = {
+      'data' : value,
+      'field' : field,
+      'index' : i,
+      'field_name': field_name,
+      'editemode' : editemode,
+      'field_type': obj?.field_type,
+      'previewFile': obj?.previewFile,
+      'printFile' : obj?.printFile
+    }
+    const modal = await this.modalController.create({
+      component: FileViewsModalComponent,
+      cssClass: 'file-info-modal',
+      componentProps: {
+        "objectData": objectData,      
+      },
+    });
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss()
+      .then((data) => {
+          console.log("File Download Modal closed " , data.role);                
+    });
+    return await modal.present();
+  }
+  /*----BarCode Functions Start------------------------------------------------------------------------- */
+  async checkBarcodeScannerSupportedorNot(){
+      await BarcodeScanner.isSupported().then(async (result) => {
         this.isBarCodeScannerSupported = result.supported;
+        this.removeAllBarCodeListeners();
+        this.isGoogleScannerModuleAvailable = await this.isGoogleBarcodeScannerModuleAvailable();
+        if (!this.isGoogleScannerModuleAvailable) {
+          await this.installGoogleBarcodeScannerModule();
+        }
         // this.startScan();
-        this.checkCameraPermissionToScan()
+        // this.checkCameraPermissionToScan();
       }).catch(err => {
         this.barCodeNotExistAlert();
         console.log('checkBarcodeScannerSupportedorNot Error', err);
       });
+  }
+  async checkCameraPermissionToScan(){
+    if(this.isBarCodeScannerSupported){
+      try {
+        const permissionResult = await BarcodeScanner.checkPermissions();
+        if(permissionResult.camera === 'granted' || permissionResult.camera === 'limited'){
+          this.isBarCodeCameraPermissionGranted = true;
+          // this.removeAllBarCodeListeners();
+          if(this.isGoogleScannerModuleAvailable){
+            this.googleScan();
+          }else{
+            await BarcodeScanner.removeAllListeners().then(() => {
+              this.startScan();
+            }); 
+          }         
+        }else{
+          const requestResult = await BarcodeScanner.requestPermissions();
+          if(requestResult.camera === 'granted' || requestResult.camera === 'limited'){
+            this.isBarCodeCameraPermissionGranted = true;
+            if(this.isGoogleScannerModuleAvailable){
+              this.googleScan();
+            }else{
+              await BarcodeScanner.removeAllListeners().then(() => {
+                this.startScan();
+              }); 
+            }         
+          }
+          if(requestResult.camera === 'denied' || requestResult.camera == "prompt"){
+            this.presentsettingAlert();
+            this.isBarCodeCameraPermissionGranted = false;
+          }
+        }
+      }catch(err){
+        console.log('checkCameraPermissionToSacn Error', err);
+      };
+    }else{
+      this.barCodeNotExistAlert();
+    }
   }
   barCodeNotExistAlert(){
     let alertOpt = {
@@ -1873,50 +2025,18 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     this.popoverModalService.showErrorAlert(alertOpt);
   }
-  checkCameraPermissionToScan(){
-    if(this.isBarCodeScannerSupported){
-      BarcodeScanner.checkPermissions().then((result) => {
-        if(result.camera === 'granted' || result.camera === 'limited'){
-          this.isBarCodeCameraPermissionGranted = true;
-          // this.removeAllBarCodeListeners();
-          BarcodeScanner.removeAllListeners().then(() => {
-            console.log("removeAllListeners");
-            this.startScan();
-          });          
-        }else{
-          BarcodeScanner.requestPermissions().then((result)=>{
-            if(result.camera === 'granted' || result.camera === 'limited'){
-              this.isBarCodeCameraPermissionGranted = true;
-              BarcodeScanner.removeAllListeners().then(() => {
-                this.startScan();
-              });          
-            }
-            if(result.camera === 'denied' || result.camera == "prompt"){
-              this.presentsettingAlert();
-              this.isBarCodeCameraPermissionGranted = false;
-            }
-          })
-        }
-      }).catch(err => {
-        console.log('checkCameraPermissionToSacn Error', err);
-      });
-    }else{
-      this.barCodeNotExistAlert();
-    }
-  }
   removeAllBarCodeListeners(){
     BarcodeScanner.removeAllListeners().then(() => {
-      console.log("removeAllListeners")
       BarcodeScanner.addListener(
-        'barcodeScanned',
+        'googleBarcodeScannerModuleInstallProgress',
         (event) => {
           this.ngZone.run(() => {
-            console.log('barcodeScanned', event);
-            // const { state, progress } = event;
-            // this.formGroup.patchValue({
-            //   googleBarcodeScannerModuleInstallState: state,
-            //   googleBarcodeScannerModuleInstallProgress: progress,
-            // });
+            console.log('googleBarcodeScannerModuleInstallProgress', event);
+            const { state, progress } = event;
+            this.formGroup.patchValue({
+              googleBarcodeScannerModuleInstallState: state,
+              googleBarcodeScannerModuleInstallProgress: progress,
+            });
           });
         }
       );
@@ -1941,106 +2061,155 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         if(barcode)this.checkScannedData(barcode);
     });
   }
-
-async checkScannedData(barcodeDetails?:any){
-  let forms = this.card?.card?.form;
-  let resultValue='';
-  this.formTypeName ='';
-  // this.scannerFormName="upload_file";"F01-2402150016"
-  // this.formTypeName="upload_file";
-  let barCodeType=barcodeDetails?.format;
-  let barcodeValue=this.parseIfObject(barcodeDetails?.displayValue);
-  switch(barCodeType){
-      case "CODE_128":
-        this.formTypeName ="UPDATE";
-        resultValue=barcodeDetails?.displayValue;
-        break;
-      default:
-        if(forms){
-          this.formTypeName = barcodeValue?.form_name;
-          resultValue=barcodeValue?.serialId;
-        }else{
-          const confirm= await this.notificationService.showAlert('Barcode result','Please Scan the right Barcode',["Dismiss"]);
-        }
+  async googleScan(): Promise<void> {
+    const formats = this.formGroup.get('formats')?.value || [];
+    const { barcodes } = await BarcodeScanner.scan({
+      formats,
+    });
+    // this.barcodes = barcodes;
+    if(barcodes && barcodes.length == 1 ) this.checkScannedData(barcodes[0]);
   }
-  if(!resultValue)await this.notificationService.showAlert('','Please Scan the right Barcode',["Dismiss"]);
-  // if(resultValue && resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
-  if(resultValue && resultValue!='')this.addNewForm('','',resultValue);
-  // this.openScannedData(forms,this.formTypeName,resultValue)
-  //   if(forms && forms[this.formTypeName] && resultValue != ''){
-  //     this.scannerForm=true;
-  //     this.data={
-  //       filterFormData:{
-  //         "serialId": resultValue
-  //       }
-  //     }
-  //     this.ngOnChanges();
-  //     this.data={};
-  // }
-}
-openScannedData(forms:any,formTypeName:any,resultValue:any){
-  // if(forms && forms[formTypeName] && resultValue != ''){
-    this.scannerForm=true;
-    this.loaderService.showLoader("Loading...");
-    let criterai ="uniqueId;eq;"+resultValue+";STATIC";
-    let payload = this.apiCallService.getPaylodWithCriteria(this.collectionname,"",[criterai],{});
-    payload["pageSize"] = 25;
-    payload["pageNo."] = 0;
-    let finalPayload = {
-      "data" : payload,
-      "path" : null
+  async isGoogleBarcodeScannerModuleAvailable(){
+    try {
+      const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
+      return available;
+    } catch (error) {
+      console.error('Error checking barcode scanner availability:', error);
+      return false;
     }
-    this.apiService.getGridRunningData(finalPayload);
-    // this.data={
-    //   filterFormData:{
-    //     "serialId": resultValue
-    //   }
+  }
+  public async installGoogleBarcodeScannerModule(): Promise<void> {
+    try{
+      const result = await BarcodeScanner.installGoogleBarcodeScannerModule().then((valu) => {
+        console.log(valu)
+      }).catch(error => {
+        if(error && error?.message){
+          console.log(error.message);
+        }else{        
+          console.log(error);
+        }
+      })
+    }catch(err){
+      if(err && err?.message){
+        console.log(err.message);
+      }else{        
+        console.log(err);
+      }
+    }
+  }
+  async openSettings(): Promise<void> {
+    await BarcodeScanner.openSettings();
+  }
+  async requestPermissions(): Promise<void> {
+    await BarcodeScanner.requestPermissions();
+  }
+  async presentsettingAlert(): Promise<void> {
+    let openSetting:any = await this.notificationService.confirmAlert('Permission denied','Please grant camera permission to use the barcode scanner. And try again.', "Open","Cancel");
+    if(openSetting == "confirm"){
+      this.openSettings();
+    }
+  }
+
+
+  async checkScannedData(barcodeDetails?:any){
+    let forms = this.card?.card?.form;
+    let resultValue='';
+    this.formTypeName ='';
+    // this.scannerFormName="upload_file";"F01-2402150016"
+    // this.formTypeName="upload_file";
+    let barCodeType=barcodeDetails?.format;
+    let barcodeValue=this.parseIfObject(barcodeDetails?.displayValue);
+    switch(barCodeType){
+        case "CODE_128":
+          // this.formTypeName ="UPDATE";
+          resultValue=barcodeDetails?.displayValue;
+          break;
+        default:
+          if(forms && barcodeValue?.form_name){
+            this.formTypeName = barcodeValue?.form_name;
+            resultValue=barcodeValue?.serialId;
+          }else if(barcodeValue && typeof barcodeValue == "string"){
+            resultValue = barcodeValue;
+          }else{
+            // this.notificationService.showAlert('Barcode result','Please Scan the correct Barcode',["Dismiss"]);
+          }
+    }
+    if(!resultValue)await this.notificationService.showAlert('','Please Scan the correct Barcode',["Dismiss"]);
+    // if(resultValue && resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
+    if(resultValue && resultValue!='')this.addNewForm('','',resultValue);
+    // this.openScannedData(forms,this.formTypeName,resultValue)
+    //   if(forms && forms[this.formTypeName] && resultValue != ''){
+    //     this.scannerForm=true;
+    //     this.data={
+    //       filterFormData:{
+    //         "serialId": resultValue
+    //       }
+    //     }
+    //     this.ngOnChanges();
+    //     this.data={};
     // }
-    // this.ngOnChanges();
-    // this.data={};
-  // }
-}
-parseIfObject(variable:any) {
-  try {
-      return JSON.parse(variable);
-  } catch (error) {
-      return variable;
   }
-}
-
-async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
-  let alertHeader:string = 'Scanned Value';
-  let message: string = `Barcode value is <strong>${resultValue}</strong>`;
-  let res=''
-  const confirm= await this.notificationService.confirmAlert(alertHeader,message,"Proceed","Close");
-  if(confirm=="confirm"){
-    this.openScannedData(forms,this.formTypeName,resultValue);
+  openScannedData(forms:any,formTypeName:any,resultValue:any){
+    // if(forms && forms[formTypeName] && resultValue != ''){
+      this.scannerForm=true;
+      this.loaderService.showLoader("Loading...");
+      let criterai ="uniqueId;eq;"+resultValue+";STATIC";
+      let payload = this.apiCallService.getPaylodWithCriteria(this.collectionname,"",[criterai],{});
+      payload["pageSize"] = 25;
+      payload["pageNo."] = 0;
+      let finalPayload = {
+        "data" : payload,
+        "path" : null
+      }
+      this.apiService.getGridRunningData(finalPayload);
+      // this.data={
+      //   filterFormData:{
+      //     "serialId": resultValue
+      //   }
+      // }
+      // this.ngOnChanges();
+      // this.data={};
+    // }
   }
-  // const alert = await this.alertController.create({
-  //   cssClass: 'my-gps-class',
-  //   header: alertHeader,
-  //   message: message,
-  //   buttons: [
-  //     {
-  //       text: 'CLOSE',
-  //       role: 'cancel',
-  //       handler: () => {
-  //         console.log('Cancel clicked');
-  //       },
-  //     },
-  //     {
-  //       text: 'PROCEED',
-  //       role: 'confirmed',
-  //       handler:() => {
-  //         console.log('proceed clicked');
-  //         this.openScannedData(forms,this.formTypeName,resultValue);
-  //       },
-  //     }
-  //   ],
-  // })
-  // await alert.present();
-}
-
+  parseIfObject(variable:any) {
+    try {
+        return JSON.parse(variable);
+    } catch (error) {
+        return variable;
+    }
+  }
+  async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
+    let alertHeader:string = 'Scanned Value';
+    let message: string = `Barcode value is <strong>${resultValue}</strong>`;
+    let res=''
+    const confirm= await this.notificationService.confirmAlert(alertHeader,message,"Proceed","Close");
+    if(confirm=="confirm"){
+      this.openScannedData(forms,this.formTypeName,resultValue);
+    }
+    // const alert = await this.alertController.create({
+    //   cssClass: 'my-gps-class',
+    //   header: alertHeader,
+    //   message: message,
+    //   buttons: [
+    //     {
+    //       text: 'CLOSE',
+    //       role: 'cancel',
+    //       handler: () => {
+    //         console.log('Cancel clicked');
+    //       },
+    //     },
+    //     {
+    //       text: 'PROCEED',
+    //       role: 'confirmed',
+    //       handler:() => {
+    //         console.log('proceed clicked');
+    //         this.openScannedData(forms,this.formTypeName,resultValue);
+    //       },
+    //     }
+    //   ],
+    // })
+    // await alert.present();
+  }
   async goToSampleSubmit(collectionCenter?:any,scannedData?:any): Promise<void> {
     const scannedDataList = await this.appStorageService.getObject('scannedData');
     scannedData = JSON.parse(scannedDataList);
@@ -2083,7 +2252,6 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
       }
     });
   }
-
   async openGmapViewModal(data){
     let additionaldata : any = {
       'barcodeCenter':data,
@@ -2124,45 +2292,6 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
         this.goToSampleSubmit(result?.data);
       }
     });
-  }
-  
-  public async readBarcodeFromImage(): Promise<void> {
-    const { files } = await FilePicker.pickImages({ multiple: false });
-    const path = files[0]?.path;
-    if (!path) {
-      return;
-    }
-    const formats = this.formGroup.get('formats')?.value || [];
-    const { barcodes } = await BarcodeScanner.readBarcodesFromImage({
-      path,
-      formats,
-    });
-    this.barcodes = barcodes;
-    let alertType = "GPS";
-    let alertHeader:string = 'Barcode result';
-    let message:string;
-    if(this.barcodes.length==0){
-        message = `Please select Correct Image`;
-      }
-      else{
-       message= `your Barcode value is ${barcodes[0].displayValue}`;
-      }
-      const alert = await this.alertController.create({
-        cssClass: 'my-gps-class',
-        header: alertHeader,
-        message: message,
-        buttons: [
-          {
-            text: 'CLOSE',
-            role: 'confirmed',
-            handler: () => {
-              console.log(alertType.toUpperCase() + " alert action : ", "Confirmed");
-            },
-          },
-        ],
-      })
-      await alert.present();
-    console.log(barcodes);
   }
   async prepareQrCodeData(barCode:any){
     const isGpsEnable = await this.app_googleService.checkGeolocationPermission();
@@ -2219,18 +2348,6 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
   saveQRcodeData(saveFromData){  
     // this.popoverModalService.
     this.apiService.SaveFormData(saveFromData);
-  }
-  async openSettings(): Promise<void> {
-    await BarcodeScanner.openSettings();
-  }
-  async requestPermissions(): Promise<void> {
-    await BarcodeScanner.requestPermissions();
-  }
-  async presentsettingAlert(): Promise<void> {
-    let openSetting:any = await this.notificationService.confirmAlert('Permission denied','Please grant camera permission to use the barcode scanner. And try again.');
-    if(openSetting == "confirm"){
-      this.openSettings();
-    }
   }
   onlySuccessAlert(responseData?:any){
     let successData = responseData;
@@ -2391,7 +2508,7 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
   
   /*-------Custom Functions for Demo scanner End --------------*/
   
-  /* --------Let this below 2 functions at the end of this file--------------------------------- */
+  /* --------Let these below 2 functions at the end of this file--------------------------------- */
   async getGeocodeAddress(LatLng:any) {
     this.geocoder = new google.maps.Geocoder();
     // const latlngStr = ;
@@ -2418,82 +2535,5 @@ async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
     };
     reader.readAsDataURL(blob);
   });
-  
-  clickOnGridElement(field, object, i,e:Event) {
-    e.stopPropagation();
-    let value={};
-    value['data'] = this.commonFunctionService.getObjectValue(field.field_name, object);
-    if(value['data']!){
-      console.log('Data available in ' + field.field_label);
-    }else{
-      return console.log('No data available in ' + field.field_label);
-    }    
-    if(field.gridColumns && field.gridColumns.length > 0){
-      value['gridColumns'] = field.gridColumns;
-    }
-    let editemode = false;
-    if(field.editable){
-      editemode = true;
-    }
-    if(field.bulk_download){
-      value['bulk_download'] = true;
-    }else{
-      value['bulk_download'] = false;
-    }
-    if (!field.type) field.type = "Text";
-    switch (field.type.toLowerCase()) {
-      case "file":
-      case "file_with_preview":
-      case "file_with_print":
-        if (value['data'] && value['data'] != '') {
-          let previewFile:boolean = false;
-          let printFile:boolean = false;
-          if(field.type.toLowerCase() == "file_with_preview"){
-            previewFile = true;
-          }else if(field.type.toLowerCase() == "file_with_print"){
-            printFile = true;
-          }
-          const obj = {
-            'data' : value,
-            'field' : field,
-            'index' : i,
-            'field_name': field?.field_name,
-            'editemode' : editemode,
-            'field_type': field.type.toLowerCase(),
-            'previewFile': previewFile,
-            'printFile' : printFile
-          }
-          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode,obj);
-        };
-        break;
-      default: return;
-    }
-  }
-
-  async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
-    let objectData:any = {
-      'data' : value,
-      'field' : field,
-      'index' : i,
-      'field_name': field_name,
-      'editemode' : editemode,
-      'field_type': obj?.field_type,
-      'previewFile': obj?.previewFile,
-      'printFile' : obj?.printFile
-    }
-    const modal = await this.modalController.create({
-      component: FileViewsModalComponent,
-      cssClass: 'file-info-modal',
-      componentProps: {
-        "objectData": objectData,      
-      },
-    });
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss()
-      .then((data) => {
-          console.log("File Download Modal closed " , data.role);                
-    });
-    return await modal.present();
-  }
 
 }

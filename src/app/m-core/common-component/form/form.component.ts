@@ -181,7 +181,7 @@ tinymceConfig = {}
   @Input() modal: any;
   @Input() isBulkUpdate:boolean;
   @Input() bulkDataList:any;
-  @Input() scannedData:String;
+  @Input() additionalData:any;
   @ViewChild('capacitormap') capMapRef: ElementRef<HTMLElement>;
   @ViewChild('search', {read:ElementRef}) searchElementRef: ElementRef;
   @ViewChild(MapInfoWindow) infoWindow: MapInfoWindow;
@@ -731,7 +731,7 @@ tinymceConfig = {}
   setSaveResponce(saveFromDataRsponce){
     if(saveFromDataRsponce){
       if (saveFromDataRsponce.success && saveFromDataRsponce.success != '' && this.showNotify) {
-        if(saveFromDataRsponce.success == 'success' && !this.updateMode){
+        if(saveFromDataRsponce.success == 'success' && !this.updateMode && !this.additionalData?.enableScanner){
           if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick.success_msg && this.currentActionButton.onclick.success_msg != ''){
             this.notificationService.showAlert(this.currentActionButton.onclick.success_msg,'',['Dismiss']);
           }else if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
@@ -1212,8 +1212,8 @@ tinymceConfig = {}
 
           });
         }
-        if(this.scannedData && forControl["scannedKeyValue"] ){
-          forControl.scannedKeyValue.value=this.scannedData;
+        if(this.additionalData?.scannedData && forControl["name"] ){
+          forControl.name.value=this.additionalData?.scannedData;
         }
         this.templateForm = this.formBuilder.group(forControl,validators);
         if(this.nextIndex){
