@@ -11,6 +11,18 @@
 
 <ion-content>
   <div #square class="square" id="square"></div>
+  <div class="zoom-ratio-wrapper">
+    <ion-range
+      [min]="minZoomRatio"
+      [max]="maxZoomRatio"
+      [disabled]="minZoomRatio === undefined || maxZoomRatio === undefined"
+      (ionChange)="setZoomRatio($any($event))"
+      [value]="0" 
+      [pin]="true"
+      [snaps]="true"
+      [ticks]="true"
+    ></ion-range>
+  </div>
   <ion-fab
     *ngIf="isTorchAvailable"
     slot="fixed"
@@ -18,9 +30,9 @@
     vertical="bottom"
     class="scanner-button"
   >
-    <!-- <ion-fab-button (click)="readBarcodeFromImage()">
-      <ion-icon name="images-outline"></ion-icon>
-    </ion-fab-button> -->
+    <ion-fab-button (click)="readBarcodeFromImage()">
+      <ion-icon name="image-outline"></ion-icon>
+    </ion-fab-button>
     <ion-fab-button (click)="toggleTorch()">
       <ion-icon name="flashlight"></ion-icon>
     </ion-fab-button>
