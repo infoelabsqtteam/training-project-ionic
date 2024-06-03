@@ -18,6 +18,7 @@
               <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].errors?.required">{{ tableField.label | titlecase}} is <strong>required</strong></ion-note>
               <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('maxlenght')">Maximum of {{ tableField.max_length }} characters</ion-note>
               <ion-note slot="error" class="text-danger" *ngIf="templateFormControl[tableField.field_name].touched && templateFormControl[tableField.field_name].hasError('minlength')">Minimum of {{ tableField.min_length }} characters</ion-note>
+              <ion-note slot="helper" class="text-danger" *ngIf="additionalData?.enableScanner" color="primary">please verify scanned value before submitting.</ion-note>
             </ion-item>
           </div>
           <div *ngIf="tableField.type == 'grid_selection'">
