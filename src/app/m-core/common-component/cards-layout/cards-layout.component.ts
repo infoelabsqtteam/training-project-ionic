@@ -2119,14 +2119,16 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     // this.formTypeName="upload_file";
     let barCodeType=barcodeDetails?.format;
     let barcodeValue=this.parseIfObject(barcodeDetails?.displayValue);
+    let formName = '';
     switch(barCodeType){
         case "CODE_128":
-          // this.formTypeName ="UPDATE";
+          // For setting the custom key as formName for scanner form
+          formName ="scanner_form";
           resultValue=barcodeDetails?.displayValue;
           break;
         default:
           if(forms && barcodeValue?.form_name){
-            this.formTypeName = barcodeValue?.form_name;
+            formName = barcodeValue?.form_name;
             resultValue=barcodeValue?.serialId;
           }else if(barcodeValue && typeof barcodeValue == "string"){
             resultValue = barcodeValue;
@@ -2136,7 +2138,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     if(!resultValue)await this.notificationService.showAlert('','Please Scan the correct Barcode',["Dismiss"]);
     // if(resultValue && resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
-    if(resultValue && resultValue!='')this.addNewForm('','',resultValue);
+    if(resultValue && resultValue!='')this.addNewForm(formName,'',resultValue);
     // this.openScannedData(forms,this.formTypeName,resultValue)
     //   if(forms && forms[this.formTypeName] && resultValue != ''){
     //     this.scannerForm=true;
