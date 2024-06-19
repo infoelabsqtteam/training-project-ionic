@@ -338,13 +338,6 @@
     <ion-fab-button *ngIf="addNewEnabled && form && form['default'] && !enableScanner" (click)="addNewForm()" class="addNew" ><ion-icon name="add"></ion-icon></ion-fab-button>
     <ion-fab-button *ngIf="enableScanner"  (click)="checkCameraPermissionToScan()" class="addNew scannerButton" ><ion-icon name="scan-outline"></ion-icon></ion-fab-button>
   </ion-fab>
-  <!-- <ion-footer *ngIf="enableCustomGotoCollection" class="collectioncenterBtn">
-    <ion-button expand="block" shape="" fill="outline" size="" color="" (click)="checkPermissionandRequest()" [disabled]="(carddata?.length > 0 ? false : true) || getCollectionCentre">
-      <ion-icon slot="start" *ngIf="!getCollectionCentre" name="storefront-outline"></ion-icon> Go to Collection Centre
-      <ion-spinner slot="start" *ngIf="getCollectionCentre" name="circular" ></ion-spinner>
-      <span class="material-symbols-outlined" ></span>
-    </ion-button>
-  </ion-footer> -->
 
   <div *ngIf="totalDataCount == 0" class="nodatafound">
     <ion-img src="../../../assets/nodatafound.png"></ion-img>
