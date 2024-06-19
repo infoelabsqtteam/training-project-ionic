@@ -140,10 +140,6 @@ export class ModalDetailCardComponent implements OnInit {
       this.selectedIndex = 0;
     }
     if(this.childColumns && this.childColumns.length > 0) this.checkGridChild(this.childColumns);
-    console.log(card);
-    console.log(this.childColumns);
-    console.log(this.childDataValue);
-    console.log(this.childDataTitle);
   }
   checkGridChild(childColumns){
     this.childgridIds=[];

@@ -36,22 +36,6 @@ export class ImageUploadPage implements OnInit {
 
   /* --------Image upload variables End------------------------------------------- */
   
-  /* --------BarCode Scanning Variables------------------------------------------- */
-  public readonly barcodeFormat = BarcodeFormat;
-  public readonly lensFacing = LensFacing;
-
-  public formGroup = new FormGroup({
-    formats: new FormControl([]),
-    lensFacing: new FormControl(LensFacing.Back),
-    // googleBarcodeScannerModuleInstallState: new FormControl(0),
-    // googleBarcodeScannerModuleInstallProgress: new FormControl(0),
-  });
-  public barcodes: Barcode[] = [];
-  public isSupported = false;
-  public isPermissionGranted = false;
-  // ngZone: any;
-  /* --------BarCode Scanning Variables End------------------------------------------- */
- 
   constructor(
     private cameraService: CameraService, 
     private plt: Platform, 
@@ -69,8 +53,6 @@ export class ImageUploadPage implements OnInit {
   }
 
   ngOnInit(){
-    // barcode Scanner Initialize
-    this.checkBarcodeScannerSupportedorNot();
   }
  
   // method 2
@@ -405,112 +387,6 @@ export class ImageUploadPage implements OnInit {
  
     const blob = new Blob(byteArrays, { type: contentType });
     return blob;
-  }
-  /*----BarCode Functions------------------------------------------------------------------------- */
-  checkBarcodeScannerSupportedorNot(){
-    BarcodeScanner.isSupported().then((result) => {
-      this.isSupported = result.supported;
-    }).catch(err => {
-      console.log('checkBarcodeScannerSupportedorNot Error', err);
-    });
-  }
-  checkCameraPermissionToSacn(){
-    if(this.isSupported){
-      BarcodeScanner.checkPermissions().then((result) => {
-        if(result.camera === 'granted' || result.camera === 'limited'){
-          this.isPermissionGranted = true;
-          // this.removeAllBarCodeListeners();
-          BarcodeScanner.removeAllListeners().then(() => {
-            console.log("removeAllListeners");
-            this.startScan();
-          });          
-        }else{
-          if(result.camera === 'denied'){
-            this.presentsettingAlert();
-          }
-          this.isPermissionGranted = false;
-        }
-      }).catch(err => {
-        console.log('checkCameraPermissionToSacn Error', err);
-      });
-    }else{
-      let alertOpt = {
-        'header': "Alert",
-        'message':"Your device doesn't support barcode scanning.",
-        'buttons' : [
-          {
-            text: 'Dismiss',
-            role: 'cancel',
-          }
-        ]
-      }
-      this.popoverModalService.showErrorAlert(alertOpt);
-    }
-  }
-  removeAllBarCodeListeners(){
-    BarcodeScanner.removeAllListeners().then(() => {
-      console.log("removeAllListeners")
-      BarcodeScanner.addListener(
-        'barcodeScanned',
-        (event) => {
-          this.ngZone.run(() => {
-            console.log('barcodeScanned', event);
-            // const { state, progress } = event;
-            // this.formGroup.patchValue({
-            //   googleBarcodeScannerModuleInstallState: state,
-            //   googleBarcodeScannerModuleInstallProgress: progress,
-            // });
-          });
-        }
-      );
-    });
-  }
-  async startScan(): Promise<void> {
-    const formats = this.formGroup.get('formats')?.value || [];
-    const lensFacing =
-      this.formGroup.get('lensFacing')?.value || LensFacing.Back;
-    const modal = await this.popoverModalService.showModal({
-      component: BarcodeScanningComponent,
-      // Set `visibility` to `visible` to show the modal (see `src/theme/variables.scss`)
-      cssClass: 'barcode-scanning-modal',
-      showBackdrop: false,
-      componentProps: {
-        formats: formats,
-        lensFacing: lensFacing,
-      },
-    });
-    modal.onDidDismiss().then((result) => {
-      const barcode: Barcode | undefined = result.data?.barcode;
-      if (barcode) {
-        this.barcodes = [barcode];
-      }
-    });
-  }
-
-  async readBarcodeFromImage(): Promise<void> {
-    const { files } = await FilePicker.pickImages({ limit: 1 });
-    const path = files[0]?.path;
-    if (!path) {
-      return;
-    }
-    const formats = this.formGroup.get('formats')?.value || [];
-    const { barcodes } = await BarcodeScanner.readBarcodesFromImage({
-      path,
-      formats,
-    });
-    this.barcodes = barcodes;
-  }
-  async openSettings(): Promise<void> {
-    await BarcodeScanner.openSettings();
-  }
-  async requestPermissions(): Promise<void> {
-    await BarcodeScanner.requestPermissions();
-  }
-  async presentsettingAlert(): Promise<void> {
-    let openSetting:any = await this.notificationService.confirmAlert('Permission denied','Please grant camera permission to use the barcode scanner. And try again.');
-    if(openSetting == "confirm"){
-      this.openSettings();
-    }
   }
 
 }
