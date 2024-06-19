@@ -4,12 +4,12 @@ import { PopoverModalService } from 'src/app/service/modal-service/popover-modal
 import { FormControl, FormGroup } from '@angular/forms';
 import { Capacitor } from '@capacitor/core';
 import { BarcodeScanningComponent } from '../modal/barcode-scanning/barcode-scanning.component';
-import { Subject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ApiCallService, ApiService, CommonFunctionService, CoreFunctionService, DataShareService, StorageService } from '@core/web-core';
 import { AppPermissionService, AppStorageService, App_googleService, NotificationService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, IonModal, ModalController, Platform, isPlatform } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { OverlayEventDetail } from '@ionic/core/components';
+// import { OverlayEventDetail } from '@ionic/core/components';
 import { DataModalComponent } from './data-modal/data-modal.component';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
