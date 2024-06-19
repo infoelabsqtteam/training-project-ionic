@@ -8,8 +8,6 @@ import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card
 import { FormComponent } from '../form/form.component';
 import { DatePipe } from '@angular/common';
 import { CallDataRecordFormComponent } from '../../modal/call-data-record-form/call-data-record-form.component';
-// import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
-// import { File } from '@awesome-cordova-plugins/file/ngx';
 import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
@@ -19,11 +17,8 @@ import { Capacitor } from '@capacitor/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 import { BarcodeScanningComponent } from '../../modal/barcode-scanning/barcode-scanning.component';
-import { FilePicker } from '@capawesome/capacitor-file-picker';
 import { Subscription } from 'rxjs';
 import { FileOpener } from '@capacitor-community/file-opener';
-import { SampleSubmitModelComponent } from '../../modal/custom-model/sample-submit-model/sample-submit-model.component';
-import { CollectionCentreModelComponent } from '../../modal/custom-model/collection-centre-model/collection-centre-model.component';
 import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
 
 @Component({
