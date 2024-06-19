@@ -2110,7 +2110,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
   }
 
-
   async checkScannedData(barcodeDetails?:any){
     let forms = this.card?.card?.form;
     let resultValue='';
@@ -2151,28 +2150,30 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     //     this.data={};
     // }
   }
-  openScannedData(forms:any,formTypeName:any,resultValue:any){
-    // if(forms && forms[formTypeName] && resultValue != ''){
-      this.scannerForm=true;
-      this.loaderService.showLoader("Loading...");
-      let criterai ="uniqueId;eq;"+resultValue+";STATIC";
-      let payload = this.apiCallService.getPaylodWithCriteria(this.collectionname,"",[criterai],{});
-      payload["pageSize"] = 25;
-      payload["pageNo."] = 0;
-      let finalPayload = {
-        "data" : payload,
-        "path" : null
-      }
-      this.apiService.getGridRunningData(finalPayload);
-      // this.data={
-      //   filterFormData:{
-      //     "serialId": resultValue
-      //   }
-      // }
-      // this.ngOnChanges();
-      // this.data={};
-    // }
-  }
+
+  // openScannedData(forms:any,formTypeName:any,resultValue:any){
+  //   // if(forms && forms[formTypeName] && resultValue != ''){
+  //     this.scannerForm=true;
+  //     this.loaderService.showLoader("Loading...");
+  //     let criterai ="uniqueId;eq;"+resultValue+";STATIC";
+  //     let payload = this.apiCallService.getPaylodWithCriteria(this.collectionname,"",[criterai],{});
+  //     payload["pageSize"] = 25;
+  //     payload["pageNo."] = 0;
+  //     let finalPayload = {
+  //       "data" : payload,
+  //       "path" : null
+  //     }
+  //     this.apiService.getGridRunningData(finalPayload);
+  //     // this.data={
+  //     //   filterFormData:{
+  //     //     "serialId": resultValue
+  //     //   }
+  //     // }
+  //     // this.ngOnChanges();
+  //     // this.data={};
+  //   // }
+  // }
+
   parseIfObject(variable:any) {
     try {
         return JSON.parse(variable);
@@ -2180,121 +2181,100 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         return variable;
     }
   }
-  async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
-    let alertHeader:string = 'Scanned Value';
-    let message: string = `Barcode value is <strong>${resultValue}</strong>`;
-    let res=''
-    const confirm= await this.notificationService.confirmAlert(alertHeader,message,"Proceed","Close");
-    if(confirm=="confirm"){
-      this.openScannedData(forms,this.formTypeName,resultValue);
-    }
-    // const alert = await this.alertController.create({
-    //   cssClass: 'my-gps-class',
-    //   header: alertHeader,
-    //   message: message,
-    //   buttons: [
-    //     {
-    //       text: 'CLOSE',
-    //       role: 'cancel',
-    //       handler: () => {
-    //         console.log('Cancel clicked');
-    //       },
-    //     },
-    //     {
-    //       text: 'PROCEED',
-    //       role: 'confirmed',
-    //       handler:() => {
-    //         console.log('proceed clicked');
-    //         this.openScannedData(forms,this.formTypeName,resultValue);
-    //       },
-    //     }
-    //   ],
-    // })
-    // await alert.present();
-  }
-  async goToSampleSubmit(collectionCenter?:any,scannedData?:any): Promise<void> {
-    const scannedDataList = await this.appStorageService.getObject('scannedData');
-    scannedData = JSON.parse(scannedDataList);
-    const obj :any = {
-      'selectedCollectionCenter' : collectionCenter,
-      'scannedData' : scannedData
-    }
-    const modal = await this.popoverModalService.showModal({
-      component: SampleSubmitModelComponent,
-      showBackdrop: false,
-      componentProps: {
-        'data': obj
-      },
-    });
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss().then(async(result) => {
-      if(result?.role && result?.role == 'close' || result?.role == 'submit'){
-        this.router.navigate(['/home']);
-      };
-    });
-  }
-  async goToCollectioncenter(collectionCenter?:any): Promise<void> {
-    const modal = await this.popoverModalService.showModal({
-      component: CollectionCentreModelComponent,
-      showBackdrop: false,
-      componentProps: {
-        'data': collectionCenter
-      },
-    });
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss().then(async(result:any) => {      
-      const fieldName = {
-        "field" : "collection_center_list"
-      }
-      this.apiService.ResetStaticData(fieldName);
 
-      this.unsubscribeStaticData();
-      if(result?.role == 'submit' && result?.data?.data && result?.data?.data?.latitude){
-        this.openGmapViewModal(result?.data?.data);
-      }
-    });
-  }
-  async openGmapViewModal(data){
-    let additionaldata : any = {
-      'barcodeCenter':data,
-      'destinationAddress' : {
-        'geometry': {
-          'location': {
-            'lat': data?.latitude,
-            'lng': data?.longitude
-          }
-        },
-        'formatted_address': data?.collectionCenterName
-      },
-      'currentLatLng':{
-        'lat':this.userCurrentLocation.latitude,
-        'lng':this.userCurrentLocation.longitude
-      },
-      'collectionName':'sample_collection',
-      'customEntryForBarcode' : true
-    }
-    const modal = await this.modalController.create({
-      component: GmapViewComponent,
-      cssClass: 'my-custom-modal-css',
-      componentProps: { 
-        "additionalData": additionaldata,
-      },
-      id: data._id,
-      showBackdrop:true,
-      backdropDismiss:false,
-      initialBreakpoint : 1,
-      breakpoints : [0.75, 1],
-      backdropBreakpoint : 0.75,
-      handleBehavior:'cycle'
-    });
-    modal.present();
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss().then(async (result:any) => {
-      if(result?.data && result.role == "submit"){
-        this.goToSampleSubmit(result?.data);
-      }
-    });
-  }
+  // async alertPopUp(forms?:any,formTypeName?:any,resultValue?:any){
+  //   let alertHeader:string = 'Scanned Value';
+  //   let message: string = `Barcode value is <strong>${resultValue}</strong>`;
+  //   let res=''
+  //   const confirm= await this.notificationService.confirmAlert(alertHeader,message,"Proceed","Close");
+  //   if(confirm=="confirm"){
+  //     this.openScannedData(forms,this.formTypeName,resultValue);
+  //   }
+  // }
+
+  // async goToSampleSubmit(collectionCenter?:any,scannedData?:any): Promise<void> {
+  //   const scannedDataList = await this.appStorageService.getObject('scannedData');
+  //   scannedData = JSON.parse(scannedDataList);
+  //   const obj :any = {
+  //     'selectedCollectionCenter' : collectionCenter,
+  //     'scannedData' : scannedData
+  //   }
+  //   const modal = await this.popoverModalService.showModal({
+  //     component: SampleSubmitModelComponent,
+  //     showBackdrop: false,
+  //     componentProps: {
+  //       'data': obj
+  //     },
+  //   });
+  //   modal.componentProps.modal = modal;
+  //   modal.onDidDismiss().then(async(result) => {
+  //     if(result?.role && result?.role == 'close' || result?.role == 'submit'){
+  //       this.router.navigate(['/home']);
+  //     };
+  //   });
+  // }
+  // async goToCollectioncenter(collectionCenter?:any): Promise<void> {
+  //   const modal = await this.popoverModalService.showModal({
+  //     component: CollectionCentreModelComponent,
+  //     showBackdrop: false,
+  //     componentProps: {
+  //       'data': collectionCenter
+  //     },
+  //   });
+  //   modal.componentProps.modal = modal;
+  //   modal.onDidDismiss().then(async(result:any) => {      
+  //     const fieldName = {
+  //       "field" : "collection_center_list"
+  //     }
+  //     this.apiService.ResetStaticData(fieldName);
+
+  //     this.unsubscribeStaticData();
+  //     if(result?.role == 'submit' && result?.data?.data && result?.data?.data?.latitude){
+  //       this.openGmapViewModal(result?.data?.data);
+  //     }
+  //   });
+  // }
+  // async openGmapViewModal(data){
+  //   let additionaldata : any = {
+  //     'barcodeCenter':data,
+  //     'destinationAddress' : {
+  //       'geometry': {
+  //         'location': {
+  //           'lat': data?.latitude,
+  //           'lng': data?.longitude
+  //         }
+  //       },
+  //       'formatted_address': data?.collectionCenterName
+  //     },
+  //     'currentLatLng':{
+  //       'lat':this.userCurrentLocation.latitude,
+  //       'lng':this.userCurrentLocation.longitude
+  //     },
+  //     'collectionName':'sample_collection',
+  //     'customEntryForBarcode' : true
+  //   }
+  //   const modal = await this.modalController.create({
+  //     component: GmapViewComponent,
+  //     cssClass: 'my-custom-modal-css',
+  //     componentProps: { 
+  //       "additionalData": additionaldata,
+  //     },
+  //     id: data._id,
+  //     showBackdrop:true,
+  //     backdropDismiss:false,
+  //     initialBreakpoint : 1,
+  //     breakpoints : [0.75, 1],
+  //     backdropBreakpoint : 0.75,
+  //     handleBehavior:'cycle'
+  //   });
+  //   modal.present();
+  //   modal.componentProps.modal = modal;
+  //   modal.onDidDismiss().then(async (result:any) => {
+  //     if(result?.data && result.role == "submit"){
+  //       this.goToSampleSubmit(result?.data);
+  //     }
+  //   });
+  // }
   async prepareQrCodeData(barCode:any){
     const isGpsEnable = await this.app_googleService.checkGeolocationPermission();
     let currentposition:any = {};
@@ -2351,40 +2331,40 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     // this.popoverModalService.
     this.apiService.SaveFormData(saveFromData);
   }
-  onlySuccessAlert(responseData?:any){
-    let successData = responseData;
-    let alertMsg = '';
-    if(this.collectionname == "daily_scan_visit"){
-      if( successData && successData.customer){
-        if(typeof successData.customer == "object"){
-          alertMsg += `${successData.customer.name}` + ' scanned successfully !';
-        }else{
-          alertMsg += `${successData.customer}` + ' scanned successfully !';
-        }
-      }
-    }else{      
-      if( successData && successData.name){
-        if(typeof successData.name == "object"){
-          alertMsg += `${successData.name.name}` + 'added successfully !';
-        }else{
-          alertMsg += `${successData.name}` + 'added successfully !';
-        }
-      }
-    }
-    let alertOpt = {
-      'header': "Success",
-      'message':alertMsg,
-      'buttons' : [
-        {
-          text: 'Dismiss',
-          role: 'cancel',
-        }
-      ]
-    }
-    // this.popoverModalService.showAlert(alertOpt);
-    this.notificationService.presentToastOnMiddle(alertMsg,"success");
-    this.unsubscribedSavecall();
-  }
+  // onlySuccessAlert(responseData?:any){
+  //   let successData = responseData;
+  //   let alertMsg = '';
+  //   if(this.collectionname == "daily_scan_visit"){
+  //     if( successData && successData.customer){
+  //       if(typeof successData.customer == "object"){
+  //         alertMsg += `${successData.customer.name}` + ' scanned successfully !';
+  //       }else{
+  //         alertMsg += `${successData.customer}` + ' scanned successfully !';
+  //       }
+  //     }
+  //   }else{      
+  //     if( successData && successData.name){
+  //       if(typeof successData.name == "object"){
+  //         alertMsg += `${successData.name.name}` + 'added successfully !';
+  //       }else{
+  //         alertMsg += `${successData.name}` + 'added successfully !';
+  //       }
+  //     }
+  //   }
+  //   let alertOpt = {
+  //     'header': "Success",
+  //     'message':alertMsg,
+  //     'buttons' : [
+  //       {
+  //         text: 'Dismiss',
+  //         role: 'cancel',
+  //       }
+  //     ]
+  //   }
+  //   // this.popoverModalService.showAlert(alertOpt);
+  //   this.notificationService.presentToastOnMiddle(alertMsg,"success");
+  //   this.unsubscribedSavecall();
+  // }
   /*-------BarCode Functions End--------------*/
 
   
@@ -2435,10 +2415,10 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           }
         }
       })
-      if(this.staticData?.['collection_center_list']){
-        this.getCollectionCentre = false;
-        this.goToCollectioncenter(this.staticData);
-      }
+      // if(this.staticData?.['collection_center_list']){
+      //   this.getCollectionCentre = false;
+      //   this.goToCollectioncenter(this.staticData);
+      // }
     }
   }
   async checkPermissionandRequest(){
