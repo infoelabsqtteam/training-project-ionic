@@ -5,11 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CameraService, ApiImage } from 'src/app/service/camera-service/camera.service';
 import { finalize } from 'rxjs';
-import { Barcode, BarcodeFormat, BarcodeScanner, LensFacing } from '@capacitor-mlkit/barcode-scanning';
-import { FormGroup, FormControl } from '@angular/forms';
 import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
-import { FilePicker } from '@capawesome/capacitor-file-picker';
-import { BarcodeScanningComponent } from 'src/app/m-core/modal/barcode-scanning/barcode-scanning.component';
 import { NotificationService } from '@core/ionic-core';
 
 

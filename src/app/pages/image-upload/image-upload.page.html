@@ -10,8 +10,8 @@
 <ion-content>
   <ion-list>
     <ion-item *ngIf="files.length == 0"><ion-text>Select Camera Icon to capture & upload Image</ion-text></ion-item>
-    <ion-item *ngIf="barcodes.length == 0"><ion-text>Select BarCode Icon to Scan Barcode</ion-text></ion-item>
-    <ion-item *ngIf="barcodes.length == 0"><ion-text>Select Image Icon to Scan Barcode from Gallery</ion-text></ion-item>
+    <!-- <ion-item *ngIf="barcodes.length == 0"><ion-text>Select BarCode Icon to Scan Barcode</ion-text></ion-item> -->
+    <!-- <ion-item *ngIf="barcodes.length == 0"><ion-text>Select Image Icon to Scan Barcode from Gallery</ion-text></ion-item> -->
   </ion-list>
 
   <ng-container *ngIf="(files && files.length > 0) || (selectedphotos && selectedphotos.length > 0)">
@@ -68,84 +68,4 @@
       </ion-col>
     </ion-row>
   </ng-container>
-
-  <ng-container *ngFor="let barcode of barcodes">
-    <ion-card>
-      <ion-card-content>
-        <ion-item>
-          <ion-label position="fixed">Bytes</ion-label>
-          <ion-input
-            type="text"
-            readonly
-            [value]="barcode.bytes?.toString() || ''"
-          ></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="fixed">Corner Points</ion-label>
-          <ion-input
-            type="text"
-            readonly
-            [value]="barcode.cornerPoints?.toString() || ''"
-          ></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="fixed">Display Value</ion-label>
-          <ion-input
-            type="text"
-            readonly
-            [value]="barcode.displayValue"
-          ></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="fixed">Format</ion-label>
-          <ion-input type="text" readonly [value]="barcode.format"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="fixed">Raw Value</ion-label>
-          <ion-input
-            type="text"
-            readonly
-            [value]="barcode.rawValue"
-          ></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="fixed">Value Type</ion-label>
-          <ion-input
-            type="text"
-            readonly
-            [value]="barcode.valueType"
-          ></ion-input>
-        </ion-item>
-      </ion-card-content>
-    </ion-card>
-  </ng-container>
- 
-  <!-- <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <input
-      type="file" id="fileInput" multiple
-      #fileInput
-      (change)="uploadFile($event.target)"
-      hidden="true"
-      accept="image/*"
-    />
-    <ion-fab-button (click)="selectImageSource()" class="addNew">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab> -->
-  <ion-fab slot="fixed" vertical="top" horizontal="end" [edge]="true">
-    <ion-fab-button>
-      <ion-icon name="chevron-down-circle"></ion-icon>
-    </ion-fab-button>
-    <ion-fab-list side="bottom">
-      <ion-fab-button (click)="selectImageSource()">
-        <ion-icon name="camera"></ion-icon>
-      </ion-fab-button>
-      <ion-fab-button *ngIf="isSupported" (click)="checkCameraPermissionToSacn()">
-        <ion-icon name="scan"></ion-icon>
-      </ion-fab-button>
-      <ion-fab-button *ngIf="isSupported" (click)="readBarcodeFromImage()">
-        <ion-icon name="image"></ion-icon>
-      </ion-fab-button>
-    </ion-fab-list>
-  </ion-fab>
 </ion-content>
