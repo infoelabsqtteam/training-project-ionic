@@ -1403,16 +1403,9 @@ tinymceConfig = {}
       });
       this.pageLoading = false;
     }
-    this.checkLoader();
+    this.loaderService.checkAndHideLoader();
   }
-  checkLoader() {
-    new Promise(async (resolve)=>{
-      let checkLoader = await this.loaderService.loadingCtrl.getTop();
-      if(checkLoader && checkLoader['hasController']){
-        this.loaderService.hideLoader();
-      }
-    });
-  }
+  
   notifyFieldValueIsNull(formName,fieldNo){
     let msg = "Field No. "+ fieldNo + " value is null";
     this.notificationService.presentToastOnBottom(msg,"danger");
@@ -2076,13 +2069,6 @@ tinymceConfig = {}
           'latitude' : this.latitude,
           'longitude' : this.longitude,
           'address' : this.address,
-        }
-      }
-      if(this.currentMenu['name'] == 'sample_collection'){
-        if(this.cardType == 'sampleSubmit'){
-          saveFromData.data['status'] = 'RECEIVED';
-        }else{
-          saveFromData.data['status'] = 'PENDING';
         }
       }
       if(this.getSavePayload){
