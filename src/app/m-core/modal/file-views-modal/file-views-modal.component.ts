@@ -94,7 +94,7 @@ export class FileViewsModalComponent implements OnInit {
       this.notificationService.presentToastOnBottom(this.downloadClick + ' file, downloaded into downloads');
       this.downloadClick = '';
       this.apiService.ResetDownloadUrl();
-      this.checkLoader();
+      this.loaderService.checkAndHideLoader();
     }
   }
   // Subscriber Functions Handling End -----------
@@ -235,14 +235,6 @@ export class FileViewsModalComponent implements OnInit {
       }
       this.appShareService.share(shareOption);
     }
-  }  
-  async checkLoader(){
-    new Promise(async (resolve)=>{
-      const checkLoader = await this.loaderService.loadingCtrl.getTop();
-      if(checkLoader && checkLoader['hasController']){
-        this.loaderService.hideLoader();
-      }
-    });
   }
   // Dependency Functions Handling End ----------
 
