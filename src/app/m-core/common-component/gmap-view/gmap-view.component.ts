@@ -219,19 +219,19 @@ export class GmapViewComponent implements OnInit {
         }
         // this.createMap(this.center);
         break;
-      case "sample_collection":
-        this.isTracking = true;
-        if(!this.additionalData?.customEntryForBarcode){
-          this.reachBtn = true;
-        }else{
-          this.reachBtn = false;
-          if(this.checkTimeAndDate())this.reachBtn = true;
-        }
-        if(this.reachBtn){
-          this.reachBtnText = "Reach";
-        }else{
-          this.reachBtnText = "Reach";
-        }
+      // case "sample_collection":
+      //   this.isTracking = true;
+      //   if(!this.additionalData?.customEntryForBarcode){
+      //     this.reachBtn = true;
+      //   }else{
+      //     this.reachBtn = false;
+      //     if(this.checkTimeAndDate())this.reachBtn = true;
+      //   }
+      //   if(this.reachBtn){
+      //     this.reachBtnText = "Reach";
+      //   }else{
+      //     this.reachBtnText = "Reach";
+      //   }
       default: 
         // this.notificationService.presentToast("error ");
     }      
@@ -867,10 +867,7 @@ export class GmapViewComponent implements OnInit {
       infowindow.open(this.map, this.destinationLocationMarkerId);
     });
   }
-  openMapLink(){    
-    // let leaveDateAndTime=this.getDateAndTime();
-    if(this.reachBtn)this.reachBtn=false;
-    // this.appStorageService.setObject('leaveDateAndTime',leaveDateAndTime);
+  openMapLink(){
     let origin = "&origin=" + this.currentLatLng.lat + "," + this.currentLatLng.lng;
     let destination = "&destination=" + this.destinationLatLng.lat + "," + this.destinationLatLng.lng;
     const url = 'https://www.google.com/maps/dir/?api=1'+ origin + destination +'&travelmode=driving'+ ',13z?hl=en-US&amp;gl=US';
@@ -1067,9 +1064,6 @@ export class GmapViewComponent implements OnInit {
   }
   googleMapsRemoveMarker(data?:any){
     this.markers[data].setMap(null);
-  }
-  openSubmitModal(role?:string){
-
   }
   //END Testing Functions and sample example
 
