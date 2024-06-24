@@ -175,9 +175,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     'latitude' : 0,
     'longitude' : 0
   }
-  enableCustomGotoCollection:boolean = false;
-  gridRunningDataSubscriber:Subscription;
-  getCollectionCentre:boolean = false;
+  // enableCustomGotoCollection:boolean = false;
+  // gridRunningDataSubscriber:Subscription;
+  // getCollectionCentre:boolean = false;
 
   constructor(
     private platform: Platform,
@@ -260,12 +260,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.downloadandprint(data);
     })
 
-    this.gridRunningDataSubscriber = this.dataShareService.gridRunningData.subscribe((data:any) =>{
-      if(data && data?.data?.length >0 &&this.scannerForm){
-        this.checkStatusAndOpenForm(data);
-        this.scannerForm=false;
-      }
-    });
+    // this.gridRunningDataSubscriber = this.dataShareService.gridRunningData.subscribe((data:any) =>{
+    //   if(data && data?.data?.length >0 &&this.scannerForm){
+    //     this.checkStatusAndOpenForm(data);
+    //     this.scannerForm=false;
+    //   }
+    // });
     
   }
   // Test Functions Start
@@ -986,11 +986,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }else{
         this.enableScanner=false;
       }
-      if(card.enable_only_edit){
-        this.enableCustomGotoCollection = card.enable_only_edit;
-      }else{
-        this.enableCustomGotoCollection=false;
-      }
       this.collectionname = card.collection_name;
       if(this.collectionname !=''){
         if(this.currentMenu == undefined){
@@ -1029,20 +1024,20 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           break;
       }
     }
-    if(card.collection_name=='sample_collection'){
-      let user=this.storageService.GetUserInfo();
-      const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
-      let cr2;
-      if(this.cardType== 'summary'){
-        cr2 = "status;eq;" + "PENDING" + ";STATIC";
-      }
-      else{
-        cr2 = "status;eq;" + "RECEIVED" + ";STATIC";
-      }
-      customCriteria.push(cr1);
-      customCriteria.push(cr2);
-      return customCriteria;
-    }
+    // if(card.collection_name=='sample_collection'){
+    //   let user=this.storageService.GetUserInfo();
+    //   const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
+    //   let cr2;
+    //   if(this.cardType== 'summary'){
+    //     cr2 = "status;eq;" + "PENDING" + ";STATIC";
+    //   }
+    //   else{
+    //     cr2 = "status;eq;" + "RECEIVED" + ";STATIC";
+    //   }
+    //   customCriteria.push(cr1);
+    //   customCriteria.push(cr2);
+    //   return customCriteria;
+    // }
     if(card['enableGps']){
       if(this.platform.is("hybrid")){
         let isGpsEnabled = await this.app_googleService.checkGeolocationPermission();
@@ -1054,11 +1049,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     }
   }
-  search(searchcard) {
-    // const criteria = "quotation_status;stwic;"+this.searchcard+";STATIC";
-    // this.getGridData(this.collectionname, [criteria]);
-    // this.getGridData(this.collectionname);
-  }
+  // search(searchcard) {
+  //   // const criteria = "quotation_status;stwic;"+this.searchcard+";STATIC";
+  //   // this.getGridData(this.collectionname, [criteria]);
+  //   // this.getGridData(this.collectionname);
+  // }
   onChangeValue(myInput) {
     this.inValue = myInput.length;
     if (this.inValue <= 0) {
@@ -1243,55 +1238,55 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
   }
 
-  async openFormModalForScanner(form:any,selectedData:any){
-    this.commonAppDataShareService.setFormId(form?._id);
-    const modal = await this.modalController.create({
-      component: FormComponent,
-      componentProps: {
-        "childData": selectedData,
-        "editedRowIndex": 0,
-        "addform" : form,
-        "formTypeName" : this.formTypeName,
-        "cardType" : this.cardType
-      },
-      id: form._id,
-      showBackdrop:true,
-      backdropDismiss:false,
-    });
-    modal.present();
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss().then((result) => {  
-      this.getCardDataByCollection(this.selectedIndex);
-      // this.unsubscribedSavecall();
-    });
-  }
-  checkStatusAndOpenForm(data:any){
-    let checkLoaderStatus = false;
-    let alertMsg = '';
-    if(this.cardType == "summary" && (data?.data?.[0].status=="SUBMIT" || data?.data?.[0].status=="RECEIVED")){
-      checkLoaderStatus = true;
-      alertMsg = "This Sample is already Submitted";
-    }
-    else if(this.cardType == "sampleSubmit" && data?.data?.[0].status=="RECEIVED"){
-      checkLoaderStatus = true;
-      alertMsg = "This Sample is already received";
-    }
-    else if(this.cardType == "sampleSubmit" && data?.data?.[0].status!="SUBMIT"){
-      checkLoaderStatus = true;
-      alertMsg = "This Sample is not submited by sample collector";
-    }else{
-      let form = this.commonFunctionService.getForm(this.card?.card?.form,'UPDATE',this.gridButtons);
-      // this.loaderService.showLoader("Loading...");
-      this.openFormModalForScanner(form,data?.data?.[0]);
-    }
-    if(checkLoaderStatus) {
-      const checkingLoader = async () => {
-        await this.loaderService.checkAndHideLoader();
-      }
-    }
-    if(alertMsg) this.notificationService.showAlert("",alertMsg,['Dismiss']);
+  // async openFormModalForScanner(form:any,selectedData:any){
+  //   this.commonAppDataShareService.setFormId(form?._id);
+  //   const modal = await this.modalController.create({
+  //     component: FormComponent,
+  //     componentProps: {
+  //       "childData": selectedData,
+  //       "editedRowIndex": 0,
+  //       "addform" : form,
+  //       "formTypeName" : this.formTypeName,
+  //       "cardType" : this.cardType
+  //     },
+  //     id: form._id,
+  //     showBackdrop:true,
+  //     backdropDismiss:false,
+  //   });
+  //   modal.present();
+  //   modal.componentProps.modal = modal;
+  //   modal.onDidDismiss().then((result) => {  
+  //     this.getCardDataByCollection(this.selectedIndex);
+  //     // this.unsubscribedSavecall();
+  //   });
+  // }
+  // checkStatusAndOpenForm(data:any){
+  //   let checkLoaderStatus = false;
+  //   let alertMsg = '';
+  //   if(this.cardType == "summary" && (data?.data?.[0].status=="SUBMIT" || data?.data?.[0].status=="RECEIVED")){
+  //     checkLoaderStatus = true;
+  //     alertMsg = "This Sample is already Submitted";
+  //   }
+  //   else if(this.cardType == "sampleSubmit" && data?.data?.[0].status=="RECEIVED"){
+  //     checkLoaderStatus = true;
+  //     alertMsg = "This Sample is already received";
+  //   }
+  //   else if(this.cardType == "sampleSubmit" && data?.data?.[0].status!="SUBMIT"){
+  //     checkLoaderStatus = true;
+  //     alertMsg = "This Sample is not submited by sample collector";
+  //   }else{
+  //     let form = this.commonFunctionService.getForm(this.card?.card?.form,'UPDATE',this.gridButtons);
+  //     // this.loaderService.showLoader("Loading...");
+  //     this.openFormModalForScanner(form,data?.data?.[0]);
+  //   }
+  //   if(checkLoaderStatus) {
+  //     const checkingLoader = async () => {
+  //       await this.loaderService.checkAndHideLoader();
+  //     }
+  //   }
+  //   if(alertMsg) this.notificationService.showAlert("",alertMsg,['Dismiss']);
 
-  }
+  // }
   getFirstCharOfString(char:any){
     return this.commonFunctionService.getFirstCharOfString(char);
   }
@@ -1372,15 +1367,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
               criteria.push(cr);
             }      
           }
-          if(card && card.collection_name){
-            if(card.collection_name=='sample_collection'){
-              let user=this.storageService.GetUserInfo();
-              const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
-              const cr2 = "status;eq;" + "PENDING" + ";STATIC";
-              criteria.push(cr1);
-              criteria.push(cr2);
-            }
-          }
+          // if(card && card.collection_name){
+          //   if(card.collection_name=='sample_collection'){
+          //     let user=this.storageService.GetUserInfo();
+          //     const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
+          //     const cr2 = "status;eq;" + "PENDING" + ";STATIC";
+          //     criteria.push(cr1);
+          //     criteria.push(cr2);
+          //   }      
+          // }
           this.getGridData(this.collectionname, criteria, card);
         // }
       }, 2000);
@@ -1780,7 +1775,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             "currentLatLng":this.currentLatLng,
             "currentLatLngDetails": currentlatlngdetails['0'],
             "destinationAddress": destination,
-            "updateMode" : true
+            "updateMode" : true,
+            "card" : this.card?.card,
+            "cardType" : this.cardType
           }
           const modal = await this.modalController.create({
             component: GmapViewComponent,
@@ -2270,62 +2267,62 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   //     }
   //   });
   // }
-  async prepareQrCodeData(barCode:any){
-    const isGpsEnable = await this.app_googleService.checkGeolocationPermission();
-    let currentposition:any = {};
-    if(isGpsEnable){
-      let userLocationAccess:boolean = await this.requestLocationPermission();
-      if(userLocationAccess){
-        currentposition = await this.app_googleService.getAddressFromLatLong(this.currentLatLng.lat,this.currentLatLng.lng);
-      }
-    }else{      
-      await this.gpsEnableAlert('trackingAlert').then(async (confirm:any) => {
-        if(this.gpsAlertResult && this.gpsAlertResult.role == "confirmed" && this.currentLatLng && this.currentLatLng.lat){ 
-          this.notificationService.presentToastOnBottom("Getting your location, please wait..");          
-          this.prepareQrCodeData(barCode,);
-        }else{
-          this.notificationService.presentToastOnBottom("Please enable GPS to serve you better !");
-        }
-      }).catch(error => {
-        this.notificationService.presentToastOnBottom("Please enable GPS to serve you better !");
-      })
-    }
-    if(!currentposition && !currentposition.lat ) return ;
-    let data = {};
-    let currentpositionDetails = currentposition['0'];
-    let locationData = {
-      'latitude' : this.currentLatLng.lat,
-      'longitude' : this.currentLatLng.lng,
-    }
-    data['employee'] = this.storageService.GetUserReference();
-    data['customer'] = barCode.displayValue;
-    data['scannedLocation'] = locationData;
-    data['currentDate'] = JSON.parse(JSON.stringify(new Date()));
-    data['barCodeDetail'] = {
-      "barcodeFormat": barCode.format,
-      "barcodeValueType": barCode.valueType,
-    };
-    this.barcodes = [data];
-    data['log'] = this.storageService.getUserLog();
-    if(!data['refCode'] || data['refCode'] == '' || data['refCode'] == null){
-      data['refCode'] = this.storageService.getRefCode();
-    }
-    if(!data['appId'] || data['appId'] == '' || data['appId'] == null){
-      data['appId'] = this.storageService.getAppId();              
-    }
-    if(!this.coreFunctionService.isNotBlank(data['platForm'])){
-      data['platForm'] = Capacitor.getPlatform().toUpperCase();              
-    }
-    const saveFromData = {
-      'curTemp': this.collectionname,
-      'data': data
-    }
-    this.saveQRcodeData(saveFromData);
-  }
-  saveQRcodeData(saveFromData){  
-    // this.popoverModalService.
-    this.apiService.SaveFormData(saveFromData);
-  }
+  // async prepareQrCodeData(barCode:any){
+  //   const isGpsEnable = await this.app_googleService.checkGeolocationPermission();
+  //   let currentposition:any = {};
+  //   if(isGpsEnable){
+  //     let userLocationAccess:boolean = await this.requestLocationPermission();
+  //     if(userLocationAccess){
+  //       currentposition = await this.app_googleService.getAddressFromLatLong(this.currentLatLng.lat,this.currentLatLng.lng);
+  //     }
+  //   }else{      
+  //     await this.gpsEnableAlert('trackingAlert').then(async (confirm:any) => {
+  //       if(this.gpsAlertResult && this.gpsAlertResult.role == "confirmed" && this.currentLatLng && this.currentLatLng.lat){ 
+  //         this.notificationService.presentToastOnBottom("Getting your location, please wait..");          
+  //         this.prepareQrCodeData(barCode,);
+  //       }else{
+  //         this.notificationService.presentToastOnBottom("Please enable GPS to serve you better !");
+  //       }
+  //     }).catch(error => {
+  //       this.notificationService.presentToastOnBottom("Please enable GPS to serve you better !");
+  //     })
+  //   }
+  //   if(!currentposition && !currentposition.lat ) return ;
+  //   let data = {};
+  //   let currentpositionDetails = currentposition['0'];
+  //   let locationData = {
+  //     'latitude' : this.currentLatLng.lat,
+  //     'longitude' : this.currentLatLng.lng,
+  //   }
+  //   data['employee'] = this.storageService.GetUserReference();
+  //   data['customer'] = barCode.displayValue;
+  //   data['scannedLocation'] = locationData;
+  //   data['currentDate'] = JSON.parse(JSON.stringify(new Date()));
+  //   data['barCodeDetail'] = {
+  //     "barcodeFormat": barCode.format,
+  //     "barcodeValueType": barCode.valueType,
+  //   };
+  //   this.barcodes = [data];
+  //   data['log'] = this.storageService.getUserLog();
+  //   if(!data['refCode'] || data['refCode'] == '' || data['refCode'] == null){
+  //     data['refCode'] = this.storageService.getRefCode();
+  //   }
+  //   if(!data['appId'] || data['appId'] == '' || data['appId'] == null){
+  //     data['appId'] = this.storageService.getAppId();              
+  //   }
+  //   if(!this.coreFunctionService.isNotBlank(data['platForm'])){
+  //     data['platForm'] = Capacitor.getPlatform().toUpperCase();              
+  //   }
+  //   const saveFromData = {
+  //     'curTemp': this.collectionname,
+  //     'data': data
+  //   }
+  //   this.saveQRcodeData(saveFromData);
+  // }
+  // saveQRcodeData(saveFromData){  
+  //   // this.popoverModalService.
+  //   this.apiService.SaveFormData(saveFromData);
+  // }
   // onlySuccessAlert(responseData?:any){
   //   let successData = responseData;
   //   let alertMsg = '';
@@ -2365,122 +2362,122 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   
   /*-------Custom Functions for Demo scanner Start --------------*/
 
-  getCollectionCenterList(){
-    this.subscribeStaticData();
-    this.getCollectionCentre = true;
-    const api = "GET_NEARBY_GEO_LOCATION"
-    const params = "QTMP:"+api;
-    // const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
-    // let payload = {
-    //   'data':data,
-    //   'path':null
-    // }
-    let userObj = {};
-    if(this.userCurrentLocation?.latitude != 0 && this.userCurrentLocation?.longitude !=0){
-      userObj = {
-        'userCurrentLocation' : this.userCurrentLocation
-      }
-    }
-    const staticModalGroup = [];
-    if(userObj)
-    staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(params, '', [], userObj));
-    this.apiService.getStatiData(staticModalGroup);
-  }
-  subscribeStaticData(){
-    this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
-      this.setStaticData(data);
-    });
-  }
+  // getCollectionCenterList(){
+  //   this.subscribeStaticData();
+  //   this.getCollectionCentre = true;
+  //   const api = "GET_NEARBY_GEO_LOCATION"
+  //   const params = "QTMP:"+api;
+  //   // const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
+  //   // let payload = {
+  //   //   'data':data,
+  //   //   'path':null
+  //   // }
+  //   let userObj = {};
+  //   if(this.userCurrentLocation?.latitude != 0 && this.userCurrentLocation?.longitude !=0){
+  //     userObj = {
+  //       'userCurrentLocation' : this.userCurrentLocation
+  //     }
+  //   }
+  //   const staticModalGroup = [];
+  //   if(userObj)
+  //   staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(params, '', [], userObj));
+  //   this.apiService.getStatiData(staticModalGroup);
+  // }
+  // subscribeStaticData(){
+  //   this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
+  //     this.setStaticData(data);
+  //   });
+  // }
 
-  setStaticData(staticDatas:any){
-    if(staticDatas && Object.keys(staticDatas).length > 0) {
-      Object.keys(staticDatas).forEach(key => {
-        let staticData = {};
-        staticData[key] = staticDatas[key];
-        if(staticData['staticDataMessgae'] != null && staticData['staticDataMessgae'] != ''){
-          this.notificationService.presentToastOnBottom(staticData['staticDataMessgae'], "danger");
-          // const fieldName = {
-          //   "field" : "staticDataMessgae"
-          // }
-          // this.apiService.ResetStaticData(fieldName);
-        }
-        if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
-          if(staticData[key]) { 
-            this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
-          }
-        }
-      })
-      // if(this.staticData?.['collection_center_list']){
-      //   this.getCollectionCentre = false;
-      //   this.goToCollectioncenter(this.staticData);
-      // }
-    }
-  }
-  async checkPermissionandRequest(){
-    let permResult = false;
-    if(isPlatform('hybrid')){
-      permResult = await this.app_googleService.checkGeolocationPermission();
-      if(permResult){
-        this.requestLocationPermission();
-      }
-    }else{
-      permResult = await this.app_googleService.checkGeolocationPermission();
-    }   
-    if(!permResult){
-      let alreadyOpen = await this.alertController.getTop();
-      if(alreadyOpen == undefined){
-        this.gpsEnableAlert();
-      }
-    }else{
-      if(isPlatform('hybrid')){
-        this.setCurrentLocation();
-      }else{
-        this.getCoordinatesOnBrowser();
-      }
-    }
-  }
-  async getCoordinatesOnBrowser(){
-    const successCallback = (position) => {
-      let latLng = position.coords;
-      if(latLng && latLng['latitude'] && latLng['longitude']){ 
-        const latitude= latLng['latitude'];
-        const longitude = latLng['longitude'];
-        this.userCurrentLocation.latitude = latitude;
-        this.userCurrentLocation.longitude = longitude;
-        // this.center = {
-        //   lat:latLng.latitude,
-        //   lng:latLng.longitude
-        // }
-        this.getCollectionCenterList();
-      }
-    };      
-    const errorCallback = (error: any) => {
-      console.log(error);
-      this.notificationService.presentToastOnBottom("Geolocation is not supported by this browser.", "danger");
-    };
-    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-  }
-  async setCurrentLocation(){
-    if(isPlatform('hybrid')){
-      let currentLatLng:any = await this.app_googleService.getUserLocation();
-      if((currentLatLng && currentLatLng.lat) || (currentLatLng && currentLatLng.latitude)){
-        const latitude = currentLatLng.lat ? currentLatLng.lat : currentLatLng.latitude;
-        const longitude = currentLatLng.lng ? currentLatLng.lng : currentLatLng.longitude;
-        this.userCurrentLocation.latitude = latitude;
-        this.userCurrentLocation.longitude = longitude;
-        // this.center ={
-        //   'lat':this.latitude,
-        //   'lng':this.longitude
-        // }
-        this.getCollectionCenterList();
-      }else{
-        console.log("Error while getting Location")
-      }
-    }else{
-      await this.getCoordinatesOnBrowser();
-    }
-    // this.zoom = 17;
-  }
+  // setStaticData(staticDatas:any){
+  //   if(staticDatas && Object.keys(staticDatas).length > 0) {
+  //     Object.keys(staticDatas).forEach(key => {
+  //       let staticData = {};
+  //       staticData[key] = staticDatas[key];
+  //       if(staticData['staticDataMessgae'] != null && staticData['staticDataMessgae'] != ''){
+  //         this.notificationService.presentToastOnBottom(staticData['staticDataMessgae'], "danger");
+  //         // const fieldName = {
+  //         //   "field" : "staticDataMessgae"
+  //         // }
+  //         // this.apiService.ResetStaticData(fieldName);
+  //       }
+  //       if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
+  //         if(staticData[key]) { 
+  //           this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
+  //         }
+  //       }
+  //     })
+  //     // if(this.staticData?.['collection_center_list']){
+  //     //   this.getCollectionCentre = false;
+  //     //   this.goToCollectioncenter(this.staticData);
+  //     // }
+  //   }
+  // }
+  // async checkPermissionandRequest(){
+  //   let permResult = false;
+  //   if(isPlatform('hybrid')){
+  //     permResult = await this.app_googleService.checkGeolocationPermission();
+  //     if(permResult){
+  //       this.requestLocationPermission();
+  //     }
+  //   }else{
+  //     permResult = await this.app_googleService.checkGeolocationPermission();
+  //   }   
+  //   if(!permResult){
+  //     let alreadyOpen = await this.alertController.getTop();
+  //     if(alreadyOpen == undefined){
+  //       this.gpsEnableAlert();
+  //     }
+  //   }else{
+  //     if(isPlatform('hybrid')){
+  //       this.setCurrentLocation();
+  //     }else{
+  //       this.getCoordinatesOnBrowser();
+  //     }
+  //   }
+  // }
+  // async getCoordinatesOnBrowser(){
+  //   const successCallback = (position) => {
+  //     let latLng = position.coords;
+  //     if(latLng && latLng['latitude'] && latLng['longitude']){ 
+  //       const latitude= latLng['latitude'];
+  //       const longitude = latLng['longitude'];
+  //       this.userCurrentLocation.latitude = latitude;
+  //       this.userCurrentLocation.longitude = longitude;
+  //       // this.center = {
+  //       //   lat:latLng.latitude,
+  //       //   lng:latLng.longitude
+  //       // }
+  //       this.getCollectionCenterList();
+  //     }
+  //   };      
+  //   const errorCallback = (error: any) => {
+  //     console.log(error);
+  //     this.notificationService.presentToastOnBottom("Geolocation is not supported by this browser.", "danger");
+  //   };
+  //   navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+  // }
+  // async setCurrentLocation(){
+  //   if(isPlatform('hybrid')){
+  //     let currentLatLng:any = await this.app_googleService.getUserLocation();
+  //     if((currentLatLng && currentLatLng.lat) || (currentLatLng && currentLatLng.latitude)){
+  //       const latitude = currentLatLng.lat ? currentLatLng.lat : currentLatLng.latitude;
+  //       const longitude = currentLatLng.lng ? currentLatLng.lng : currentLatLng.longitude;
+  //       this.userCurrentLocation.latitude = latitude;
+  //       this.userCurrentLocation.longitude = longitude;
+  //       // this.center ={
+  //       //   'lat':this.latitude,
+  //       //   'lng':this.longitude
+  //       // }
+  //       this.getCollectionCenterList();
+  //     }else{
+  //       console.log("Error while getting Location")
+  //     }
+  //   }else{
+  //     await this.getCoordinatesOnBrowser();
+  //   }
+  //   // this.zoom = 17;
+  // }
 
   
   /*-------Custom Functions for Demo scanner End --------------*/
