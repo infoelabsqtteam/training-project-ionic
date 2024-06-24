@@ -877,20 +877,20 @@ export class GmapViewComponent implements OnInit {
     a.remove();
   }
 
-  async checkTimeAndDate(){
-    try{
-      let leaveTime=this.appStorageService.getObject('leaveDateAndTime');
-      leaveTime=JSON.parse(await leaveTime)
-      if(leaveTime){
-        return false;
-      }
-      else{
-        return true;
-      }
-    }catch(error){
-      return true;
-    }
-  }
+  // async checkTimeAndDate(){
+  //   try{
+  //     let leaveTime=this.appStorageService.getObject('leaveDateAndTime');
+  //     leaveTime=JSON.parse(await leaveTime)
+  //     if(leaveTime){
+  //       return false;
+  //     }
+  //     else{
+  //       return true;
+  //     }
+  //   }catch(error){
+  //     return true;
+  //   }
+  // }
   ongoogleMapOriginMarkerClick(){
     let markerHeading = "";
     if(this.directionsData && this.directionsData.start_address){
