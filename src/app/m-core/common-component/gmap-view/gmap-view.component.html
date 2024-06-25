@@ -75,7 +75,7 @@
                 <!-- <ion-button expand="full" size="" fill="outline" [ngClass]="isTracking == true ? 'ion-show':'ion-hide'" (click)="editPackage()">Upload Image<ion-icon slot="end" name="navigate-outline"></ion-icon></ion-button> -->
             </ion-col>
         </ion-row>
-        <ion-row *ngIf="this.additionalData?.cardType == 'trackOnMap' && this.additionalData?.collectionName == 'sample_collection'">
+        <!-- <ion-row *ngIf="this.additionalData?.cardType == 'trackOnMap' && this.additionalData?.collectionName == 'sample_collection'">
             <ion-col>
                 <div *ngIf="reachBtn" id="disabledButtonTooltip" class="tooltip ion-margin-default">Please Click Get Direction</div>
                 <ion-button expand="block" size="small" fill="outline" [ngClass]="isTracking == true ? 'ion-show':'ion-hide'" (click)="dismissModal('','submit')" [disabled]="reachBtn">{{reachBtnText}} 
@@ -83,6 +83,6 @@
                     <ion-spinner *ngIf="reachBtnSpinner" slot="end" name="circular" ></ion-spinner>
                 </ion-button>
             </ion-col>
-        </ion-row>
+        </ion-row> -->
     <!-- </ion-item> -->
 </ion-footer>
