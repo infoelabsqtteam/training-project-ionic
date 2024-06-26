@@ -23,4 +23,10 @@ ext {
     kotlinxCoroutinesVersion = '1.7.3'
     androidxCoreKTXVersion = '1.12.0'
     kotlin_version = '1.9.10'
+    androidxCameraCamera2Version = '1.1.0'
+    androidxCameraCoreVersion = '1.1.0'
+    androidxCameraLifecycleVersion = '1.1.0'
+    androidxCameraViewVersion = '1.1.0'
+    mlkitBarcodeScanningVersion = '17.1.0'
+    playServicesCodeScannerVersion = '16.1.0'
 }

@@ -8,7 +8,7 @@
       </ion-select>
       <div class="searchbox">
           <ion-title [ngClass]="{'visible-btn': !searching, 'hidden-btn': searching}">{{cardtitle}}</ion-title>
-          <ion-input [type]="selectedSearchCardField.type == 'date' || selectedSearchCardField.type == 'datetime' ? 'date' : 'text'" enterkeyhint="search" inputmode="" minlength="3" maxlength="30" placeholder="Enter value" [debounce]="1000" (ionChange)="filterCardByDropdownValue()" [(ngModel)]="searchcardvalue" clearInput animated="true" [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
+          <ion-input [type]="selectedSearchCardField.type == 'date' || selectedSearchCardField.type == 'datetime' ? 'date' : 'text'" enterkeyhint="search" inputmode="" minlength="3" maxlength="30" placeholder="Enter value" [debounce]="2000" (ionChange)="filterCardByDropdownValue()" [(ngModel)]="searchcardvalue" clearInput animated="true" [class.active-search]="searching" [class.inactive-search]="!searching" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}">
             <span (click)="togglesearch()"><ion-icon name="arrow-back" size="small" [ngClass]="{'visible-btn': searching, 'hidden-btn': !searching}"></ion-icon></span>
           </ion-input>
           <!-- <ion-buttons slot="end" (click)="togglesearch()">

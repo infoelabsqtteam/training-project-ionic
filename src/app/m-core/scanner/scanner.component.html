@@ -1,0 +1,149 @@
+<ion-header class="menutab">
+  <ion-toolbar>
+    <ion-title>{{headerTitle}}</ion-title>
+    <!-- <ion-buttons slot="start" (click)="goBack()"><ion-button><ion-icon name="arrow-back"></ion-icon></ion-button></ion-buttons> -->
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ng-container *ngIf="userType == 'employee'">
+    <div class="banner">
+      <ion-slides>
+          <ion-slide swiperSlide *ngFor="let banner of banner_img">
+              <div class="slideshow"><img [src]="banner"></div>
+          </ion-slide>
+      </ion-slides>
+    </div>
+    <ion-segment value="{{selectedTab}}" [(ngModel)]="selectedTab" color="appcolor" (ionChange)="segmentChanged($event)">
+      <ion-segment-button value="tab1">
+        <ion-label>Scanner</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="tab2">
+        <ion-label>Daily Visit</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+    <ng-container *ngIf="selectedTab == 'tab1'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Scan QR</ion-card-title>
+        </ion-card-header>          
+        <ion-card-content>
+          <ion-text>Scan Customer QR Code to view the Customer details and save your Daily Visits.</ion-text>
+          <ion-row class="ion-padding-top ion-margin-top ion-justify-content-center scacannerBtn">
+            <ion-col size="6" class="ion-text-center">          
+              <ion-button shape="round" size="large" (click)="checkCameraPermissionToSacn()">
+                  <ion-icon slot="start" name="scan"></ion-icon>
+                  Scan
+              </ion-button>
+            </ion-col>
+        </ion-row>
+        </ion-card-content>
+      </ion-card>
+    
+      <div class="scannerBtn">
+        <ion-row class="ion-justify-content-center scacannerBtn">
+            <ion-col size="12">          
+              <ion-button shape="round" size="large" (click)="checkCameraPermissionToSacn()">
+                  <ion-icon slot="start" name="scan"></ion-icon>
+                  Scan
+              </ion-button>
+            </ion-col>
+        </ion-row>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="selectedTab == 'tab2'">
+      <ng-container *ngIf="cardList && cardList.length > 0">
+        <ion-card *ngFor="let card of cardList;let i = index">          
+          <ion-card-content class="ion-padding-default">
+            <ion-row>
+              <ion-col size="8"><ion-text>{{card?.customer?.name}}</ion-text></ion-col>
+              <ion-col size="4" class="ion-text-end"><ion-text>{{card?.currentDate | date: 'mediumDate'}}</ion-text></ion-col>
+              <ion-col class="ion-text-end" size="12"><ion-button size="small">{{card.dailyVisitStatus}}</ion-button></ion-col>
+            </ion-row>            
+          </ion-card-content>
+        </ion-card>
+      </ng-container>
+      <ion-card *ngIf="cardList && cardList.length == 0">
+        <ion-card-header>
+          <ion-card-title>{{errorTitle}}</ion-card-title>
+        </ion-card-header>          
+        <ion-card-content>
+          {{errorMessage}}
+        </ion-card-content>
+      </ion-card>
+      <ion-refresher  slot="fixed" pullFactor="0.5" pullMin="100" pullMax="150" (ionRefresh)="doRefresh($event)" class="ion-margin-top">
+        <ion-refresher-content
+          pullingIcon="arrow-down-outline"
+          pullingText="Pull down to refresh"
+          refreshingSpinner="bubbles"
+          refreshingText="Refreshing...">
+        </ion-refresher-content>
+    </ion-refresher>
+    </ng-container>
+
+  </ng-container>
+
+  <ng-container *ngIf="userType == 'customer'">
+    <ion-segment value="{{selectedTab}}" [(ngModel)]="selectedTab" color="appcolor" (ionChange)="segmentChanged($event)">
+      <ion-segment-button value="tab1">
+        <ion-label>Complaint</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="tab2">
+        <ion-label>Request</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+    <ng-container *ngIf="selectedTab == 'tab1'">
+      <ng-container *ngIf="cardList && cardList.length > 0">
+        <ion-card *ngFor="let card of cardList;let i = index">
+          <ion-card-content class="ion-padding-default">
+            <ion-row>
+              <ion-col size="8"><ion-text class="ion-text-nowrap">{{card?.complaintSubject}}</ion-text></ion-col>
+              <ion-col size="4" class="ion-text-end"><ion-text>{{card?.createdDate | date: 'mediumDate'}}</ion-text></ion-col>
+              <ion-col size="8"><ion-text class="ion-text-wrap">{{card?.complaintDescription}}</ion-text></ion-col>
+              <ion-col size="4" class="ion-text-end"><ion-button size="small">{{card.complaintStatus}}</ion-button></ion-col>
+            </ion-row>            
+          </ion-card-content>
+        </ion-card>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="selectedTab == 'tab2'">
+      <ng-container *ngIf="cardList && cardList.length > 0">
+        <ion-card *ngFor="let card of cardList;let i = index">
+          <ion-card-content class="ion-padding-default">
+            <ion-row>
+              <ion-col size="8"><ion-text class="ion-text-nowrap">{{card?.requestType}}</ion-text></ion-col>
+              <ion-col size="4" class="ion-text-end"><ion-text>{{card?.createdDate | date: 'mediumDate'}}</ion-text></ion-col>
+              <ion-col size="8"><ion-text class="ion-text-wrap">{{card?.requestDescription}}</ion-text></ion-col>
+              <ion-col size="4" class="ion-text-end"><ion-button size="small">{{card.requestStatus}}</ion-button></ion-col>
+            </ion-row>            
+          </ion-card-content>
+        </ion-card>
+      </ng-container>
+    </ng-container>
+
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="customFabBtn" color="appColor">
+      <ion-fab-button color="appcolor" (click)="addNewForm()">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+    
+    <ion-card *ngIf="cardList && cardList.length == 0">
+      <ion-card-header>
+        <ion-card-title>{{errorTitle}}</ion-card-title>
+      </ion-card-header>          
+      <ion-card-content>
+        {{errorMessage}}
+      </ion-card-content>
+    </ion-card>
+    <ion-refresher  slot="fixed" pullFactor="0.5" pullMin="100" pullMax="150" (ionRefresh)="doRefresh($event)" class="ion-margin-top">
+      <ion-refresher-content
+        pullingIcon="arrow-down-outline"
+        pullingText="Pull down to refresh"
+        refreshingSpinner="bubbles"
+        refreshingText="Refreshing...">
+      </ion-refresher-content>
+    </ion-refresher>
+    
+  </ng-container>
+  
+
+</ion-content>

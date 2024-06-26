@@ -1,11 +1,12 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, NgZone, OnInit, ViewChild } from '@angular/core';
 import { Camera, CameraResultType, CameraSource, ImageOptions, Photo, GalleryImageOptions, GalleryPhoto, GalleryPhotos} from '@capacitor/camera';
 import { ActionSheetController, LoadingController, Platform } from '@ionic/angular';
-
 import { HttpClient } from '@angular/common/http';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CameraService, ApiImage } from 'src/app/service/camera-service/camera.service';
 import { finalize } from 'rxjs';
+import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
+import { NotificationService } from '@core/ionic-core';
 
 
 const IMAGE_DIR = 'stored-images';
@@ -23,18 +24,23 @@ export interface LocalFile {
 })
 export class ImageUploadPage implements OnInit {
 
+  /* --------Image upload variables------------------------------------------- */
   images: ApiImage[] = [];
   files: LocalFile[] = [];
   selectedphotos:any= [];
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
+
+  /* --------Image upload variables End------------------------------------------- */
   
- 
   constructor(
     private cameraService: CameraService, 
     private plt: Platform, 
     private actionSheetCtrl: ActionSheetController,
     private loadingCtrl: LoadingController,
-    private http: HttpClient
+    private http: HttpClient,
+    private popoverModalService: PopoverModalService,    
+    private readonly ngZone: NgZone,
+    private notificationService: NotificationService
   ) 
     {
       this.loadFiles();
@@ -276,7 +282,7 @@ export class ImageUploadPage implements OnInit {
       },
       {
         text: 'Choose From Photos',
-        icon: 'image',
+        icon: 'images',
         handler: () => {
           // this.addImage(CameraSource.Photos);
           // this.selectImage(CameraSource.Photos);

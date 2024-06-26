@@ -1,5 +1,6 @@
 import { Injectable,EventEmitter } from '@angular/core';
 import { Subject } from 'rxjs';
+import { Preferences, RemoveOptions } from '@capacitor/preferences';
 
 @Injectable({
   providedIn: 'root'
@@ -81,5 +82,9 @@ export class DataShareServiceService {
   setDownloadimage(responce){
     this.gridDownloadImage.next(responce);
   }
+  async removeKeyFromStorage(key: string){
+    const ret:any = await Preferences.remove({key});
+    return null;
+  } 
   
 }

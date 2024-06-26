@@ -2,6 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA, NgModule, NO_ERRORS_SCHEMA } from '@angular/cor
 import { CommonComponentModule } from './common-component/common-component.module';
 import { McoreRoutingModule } from './m-core-routing.module';
 import { ModalModule } from './modal/modal.module';
+import { MyScannerModule } from './scanner/scanner.module';
 
 
 @NgModule({
@@ -11,7 +12,8 @@ import { ModalModule } from './modal/modal.module';
     imports: [
         McoreRoutingModule,
         CommonComponentModule,
-        ModalModule
+        ModalModule,
+        MyScannerModule
     ],
     schemas: [
         CUSTOM_ELEMENTS_SCHEMA,

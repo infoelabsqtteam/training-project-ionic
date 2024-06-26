@@ -177,9 +177,11 @@ tinymceConfig = {}
   @Input() childData: any;  
   @Input() addform: any;
   @Input() formTypeName:string;
+  @Input() cardType:string;
   @Input() modal: any;
   @Input() isBulkUpdate:boolean;
   @Input() bulkDataList:any;
+  @Input() additionalData:any;
   @ViewChild('capacitormap') capMapRef: ElementRef<HTMLElement>;
   @ViewChild('search', {read:ElementRef}) searchElementRef: ElementRef;
   @ViewChild(MapInfoWindow) infoWindow: MapInfoWindow;
@@ -729,7 +731,7 @@ tinymceConfig = {}
   setSaveResponce(saveFromDataRsponce){
     if(saveFromDataRsponce){
       if (saveFromDataRsponce.success && saveFromDataRsponce.success != '' && this.showNotify) {
-        if(saveFromDataRsponce.success == 'success' && !this.updateMode){
+        if(saveFromDataRsponce.success == 'success' && !this.updateMode && !this.additionalData?.enableScanner){
           if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick.success_msg && this.currentActionButton.onclick.success_msg != ''){
             this.notificationService.showAlert(this.currentActionButton.onclick.success_msg,'',['Dismiss']);
           }else if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
@@ -872,7 +874,7 @@ tinymceConfig = {}
     this.customValidationFiels = [];
     if (this.tableFields.length > 0 && this.createFormgroup) {
       this.createFormgroup = false;
-      const forControl = {};
+      const forControl:any = {};
       this.checkBoxFieldListValue = [];
       let staticModalGroup = [];
       // this.filePreviewFields=[];
@@ -1210,6 +1212,9 @@ tinymceConfig = {}
 
           });
         }
+        if(this.additionalData?.scannedData && forControl["name"] ){
+          forControl.name.value=this.additionalData?.scannedData;
+        }
         this.templateForm = this.formBuilder.group(forControl,validators);
         if(this.nextIndex){
           this.nextIndex = false;
@@ -1398,8 +1403,9 @@ tinymceConfig = {}
       });
       this.pageLoading = false;
     }
-
+    this.loaderService.checkAndHideLoader();
   }
+  
   notifyFieldValueIsNull(formName,fieldNo){
     let msg = "Field No. "+ fieldNo + " value is null";
     this.notificationService.presentToastOnBottom(msg,"danger");
@@ -2141,7 +2147,7 @@ tinymceConfig = {}
   async closeModal(){
     if(this.modal && this.modal?.offsetParent['hasController']){
       this.modal?.offsetParent?.dismiss(undefined,"confirmed");
-    }else{        
+    }else{
       this.modalController.dismiss(undefined,"confirmed",);
     }
   }
@@ -2691,7 +2697,7 @@ tinymceConfig = {}
                     }    
                     if(this.longitude != 0 && this.latitude != 0){
                       this.getAddressfromLatLng(this.latitude,this.longitude)
-                    } 
+                    }
                     this.templateForm.controls[element.field_name].setValue(object)
                   }
                   break;
@@ -4948,12 +4954,12 @@ tinymceConfig = {}
     if(parent == ''){
       tobedesabled = this.checkIfService.isDisable(chield,this.updateMode,formValue)
       if(tobedesabled){
-        if(!this.templateForm.get(chield.field_name).disabled){
-          this.templateForm.get(chield.field_name).disable()
+        if(!this.templateForm.get(chield.field_name)?.disabled){
+          this.templateForm.get(chield.field_name)?.disable()
         }        
       }else{
-        if(this.templateForm.get(chield.field_name).disabled){
-          this.templateForm.get(chield.field_name).enable()
+        if(this.templateForm.get(chield.field_name)?.disabled){
+          this.templateForm.get(chield.field_name)?.enable()
         }        
       }
     }else{

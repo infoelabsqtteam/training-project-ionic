@@ -152,8 +152,8 @@ export class GmapViewComponent implements OnInit {
   }
 
   async onload(){
-    if(this.selectedRowData){
-      this.collectionCustomFunction(this.selectedRowData);      
+    if(this.selectedRowData || this.additionalData?.customEntryForBarcode){
+      this.collectionCustomFunction(this.selectedRowData);
     }else{
       // this.notificationService.presentToastOnBottom("Something went wrong.");
     }
@@ -176,7 +176,7 @@ export class GmapViewComponent implements OnInit {
       this.loadMap();
     }
   }
-  async collectionCustomFunction(selectedrowdata:any){
+  async collectionCustomFunction(selectedrowdata:any,customEntryForBarcode?:boolean){
     let collectionName:any ='';
     if(this.additionalData && this.additionalData.collectionName){
       collectionName= this.additionalData.collectionName
@@ -219,6 +219,19 @@ export class GmapViewComponent implements OnInit {
         }
         // this.createMap(this.center);
         break;
+      // case "sample_collection":
+      //   this.isTracking = true;
+      //   if(!this.additionalData?.customEntryForBarcode){
+      //     this.reachBtn = true;
+      //   }else{
+      //     this.reachBtn = false;
+      //     if(this.checkTimeAndDate())this.reachBtn = true;
+      //   }
+      //   if(this.reachBtn){
+      //     this.reachBtnText = "Reach";
+      //   }else{
+      //     this.reachBtnText = "Reach";
+      //   }
       default: 
         // this.notificationService.presentToast("error ");
     }      
@@ -469,6 +482,9 @@ export class GmapViewComponent implements OnInit {
     // }
   }
   dismissModal(data?:any,role?:any){
+    if(this.additionalData?.barcodeCenter){
+      data = this.additionalData?.barcodeCenter
+    }
     if(data != undefined && data != null){
       this.closeModal(data,role);     
     }else{
@@ -807,12 +823,28 @@ export class GmapViewComponent implements OnInit {
         this.ongoogleMapDestinationMarkerClick();
         this.ongoogleMapOriginMarkerClick();
       }else{
-        console.log("status: ", status);
-        // this.notificationService.presentToastOnBottom("status", "danger");
+        if(status == 'ZERO_RESULTS'){
+          this.noResultFoundError();
+        }else{          
+        console.error("RouteError: ", status);
+        }
       }
     }
     );
 
+  }
+  async noResultFoundError(){
+    await this.checkAlert();
+    const confirm = await this.notificationService.confirmAlert("Error","No such Destination present, please select different destination","OK");
+    if(confirm == "confirm"){
+      this.closeModal('','close');
+    }
+  }
+  async checkAlert(){    
+    const isAlertOpen = await this.alertCtrl.getTop();    
+    if(isAlertOpen && isAlertOpen['hasController']){
+      this.alertCtrl.dismiss();
+    }
   }
   ongoogleMapDestinationMarkerClick(){
     let origin = "&origin=" + this.currentLatLng.lat + "," + this.currentLatLng.lng;
@@ -835,7 +867,7 @@ export class GmapViewComponent implements OnInit {
       infowindow.open(this.map, this.destinationLocationMarkerId);
     });
   }
-  openMapLink(){    
+  openMapLink(){
     let origin = "&origin=" + this.currentLatLng.lat + "," + this.currentLatLng.lng;
     let destination = "&destination=" + this.destinationLatLng.lat + "," + this.destinationLatLng.lng;
     const url = 'https://www.google.com/maps/dir/?api=1'+ origin + destination +'&travelmode=driving'+ ',13z?hl=en-US&amp;gl=US';
@@ -844,6 +876,21 @@ export class GmapViewComponent implements OnInit {
     window.open(url,"_blank")
     a.remove();
   }
+
+  // async checkTimeAndDate(){
+  //   try{
+  //     let leaveTime=this.appStorageService.getObject('leaveDateAndTime');
+  //     leaveTime=JSON.parse(await leaveTime)
+  //     if(leaveTime){
+  //       return false;
+  //     }
+  //     else{
+  //       return true;
+  //     }
+  //   }catch(error){
+  //     return true;
+  //   }
+  // }
   ongoogleMapOriginMarkerClick(){
     let markerHeading = "";
     if(this.directionsData && this.directionsData.start_address){

@@ -525,9 +525,124 @@ ion-searchbar{
     font-size: 14px !important;
 }
 .customCheckbox{
- margin: 16px 0px;
- display: flex;
+    margin: 16px 0px;
+    display: flex;
 }
 .companyCode.has-focus {
     margin-top: 10px;
 }
+/*** Barcode Scanning * -------------------------------------------*/
+body.barcode-scanning-active {
+    visibility: hidden;
+    --background: transparent;
+    --ion-background-color: transparent;
+    
+    ion-content {
+        --background: transparent;
+    }
+}
+// #qrScanner{
+//     position: absolute;
+//     left: 200px;
+//     top: 350px;
+// }
+
+// Show only the barcode scanner modal
+.barcode-scanning-modal {
+    visibility: visible;
+}
+// Scanner Torch Button
+.scanner-button{
+    display: flex;
+    gap: 10px;
+    ion-fab-button{
+        margin: 10px;
+    }
+}
+// .scanner_component{
+//     display: flex;
+//     flex-direction: column;
+//     justify-content: center;
+//     align-items: center;
+//     height: 100%;
+// }
+@media (prefers-color-scheme: dark) {
+    .barcode-scanning-modal {
+        --background: transparent;
+        --ion-background-color: transparent;
+    }
+}
+.square {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 16px;
+    width: 200px;
+    height: 200px;
+    border: 6px solid #ffffff;
+    box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.4);
+}
+.zoom-ratio-wrapper {
+    position: absolute;
+    left: 50%;
+    bottom: 160px;
+    transform: translateX(-50%);
+    width: 50%;
+
+    ion-range {
+        --bar-height: 4px;
+        --bar-border-radius: 8px;
+        --knob-size: 40px;
+      }
+}
+.scannerBtn{height: 60vh;
+    align-items: flex-end;
+    display: flex;
+    justify-content: center;}
+@media screen and (min-width:420px){
+    .scannerBtn{
+        height: 55vh;
+    }
+}
+
+.custom_checkbox{ width: 20px;height: 20px;}
+.collectioncenterBtn{position: fixed; bottom: 0;}
+.scannerButton{margin-bottom: 40px;margin-top: 5px;}
+
+  /*** Barcode Scanning css End * -------------------------------------------*/
+
+  /*** detail2 *--------------------------------------*/
+
+  .detail2{
+    padding: 10px;
+    ion-label{
+        width: 100%;
+    }
+    .padding{    padding: 10px;padding-bottom: 0;}
+    .label{
+        background-color: var(--card-bg-light);
+        padding: 10px;
+        border-radius: 5px;
+        text-align: justify;
+    }
+    .custom-divider {
+        min-height: 2px;
+      }
+  }
+/*** get direction status css *--------------------------------------*/
+  #disabledButtonTooltip {
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    z-index: 1;
+  }
+  
+  .tooltip {
+    position: relative;
+  }
+  
+  .tooltip:hover #disabledButtonTooltip {
+    display: block;
+  }

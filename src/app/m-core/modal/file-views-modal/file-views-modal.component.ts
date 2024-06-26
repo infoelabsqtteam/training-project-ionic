@@ -91,8 +91,10 @@ export class FileViewsModalComponent implements OnInit {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      this.notificationService.presentToastOnBottom(this.downloadClick + ' file, downloaded into downloads');
       this.downloadClick = '';
       this.apiService.ResetDownloadUrl();
+      this.loaderService.checkAndHideLoader();
     }
   }
   // Subscriber Functions Handling End -----------

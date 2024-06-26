@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Scanned</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal('cancel')">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-card *ngFor="let item of data; let i = index">
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngIf="item && item.name">
+          <ion-label>Name : </ion-label>
+          <ion-label class="ion-text-wrap ion-text-capitalize">{{item.name ? item.name : 'No Name Found'}}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="item && item.mobile1">
+          <ion-label>Mobile : </ion-label>
+          <ion-label class="">{{item.mobile1 ? item.mobile1 : 'No Mobile Number Found'}}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="item && item.email">
+          <ion-label>Email : </ion-label>
+          <ion-label class="ion-text-wrap">{{item.email ? item.email : 'No Email Found'}}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="item && item?.type">
+          <ion-label>Type : </ion-label>
+          <ion-label class="ion-text-capitalize">{{item.type ? item.type : 'No Type Found'}}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="item && item?.code">
+          <ion-label>Code : </ion-label>
+          <ion-label class="ion-text-uppercase">{{item.Code ? item.Code : 'No Code Found'}}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="item && item?.address">
+          <ion-label>Address : </ion-label>
+          <ion-label class="ion-text-wrap ion-text-capitalize">{{item.address ? item.address : 'No Address Found'}}</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+<ion-footer class="ion">
+  <ion-row>
+    <ion-col size="6">
+      <ion-button color="primary" expand="block" size="large" (click)="dismissModal('newScan')"><ion-icon slot="start" name="scan-outline"></ion-icon>New Scan</ion-button>
+    </ion-col>
+    <ion-col size="6">
+      <ion-button color="success" expand="block" size="large" (click)="dismissModal('confirm')"><ion-icon slot="start" name="checkmark-done-outline"></ion-icon>Confirm</ion-button>
+    </ion-col>
+    <!-- <ion-col size="12">      
+      <ion-button color="danger" expand="block" size="large" (click)="dismissModal('cancel')"><ion-icon slot="start" name="trash-bin-outline"></ion-icon>Cancel</ion-button>
+    </ion-col> -->
+  </ion-row>
+</ion-footer>
