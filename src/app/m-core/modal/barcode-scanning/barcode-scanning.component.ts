@@ -1,3 +1,4 @@
+import { StorageService } from '@core/web-core';
 import { AfterViewInit, Component, ElementRef, Input, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -23,6 +24,8 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
   @ViewChild('square',{ static: false})
   public squareElement: ElementRef<HTMLDivElement> | undefined;
 
+  readBarCodeImageFromDevice = false;
+  listener:any;
   public isTorchAvailable = false;
   public minZoomRatio: number | undefined;
   public maxZoomRatio: number | undefined;
@@ -35,14 +38,14 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
 
   constructor(
     private readonly popoverModalService: PopoverModalService,
-    private router:Router,
     private readonly ngZone: NgZone,
-    private alertController:AlertController
+    private storageService : StorageService
   ) {}
 
   // Angular LifeCycle Function Handling Start--------------------
   public ngOnInit(): void {
     this.checkisTorchAvailable();
+    this.checkReadBarcodeOrQRCodeFromDevice();
   }
 
   public ngAfterViewInit(): void {
@@ -57,11 +60,6 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
   // Angular LifeCycle Function Handling End-----------------
 
   // Click Function Handling Start--------------------
-  async checkisTorchAvailable(){
-    await BarcodeScanner.isTorchAvailable().then((result) => {
-      this.isTorchAvailable = result.available;
-    });
-  }
   public async closeModal(barcode?: Barcode): Promise<void> {
     if(this.modal && this.modal?.offsetParent['hasController']){
       this.modal?.offsetParent?.dismiss({
@@ -130,7 +128,15 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
   }
   // Click Function Handling End--------------------
   // Dependency Function Handling Start--------------------
-  listener:any;
+  async checkisTorchAvailable(){
+    await BarcodeScanner.isTorchAvailable().then((result) => {
+      this.isTorchAvailable = result.available;
+    });
+  }
+  checkReadBarcodeOrQRCodeFromDevice(){
+    const mobileAppSettings:any = this.storageService.getApplicationValueByKey("mobileAppSettings");
+    this.readBarCodeImageFromDevice = mobileAppSettings?.readBarCodeImageFromDevice ?? false;
+  }
   private async startScan(): Promise<void> {
     // Hide everything behind the modal (see `src/theme/variables.scss`)
     document.querySelector('body')?.classList.add('barcode-scanning-active');
