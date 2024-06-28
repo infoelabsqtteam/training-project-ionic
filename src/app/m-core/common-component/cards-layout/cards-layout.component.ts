@@ -2103,31 +2103,29 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   async checkScannedData(barcodeDetails?:any){
-    let forms = this.card?.card?.form;
     let resultValue='';
-    this.formTypeName ='';
-    // this.scannerFormName="upload_file";"F01-2402150016"
-    // this.formTypeName="upload_file";
     let barCodeType=barcodeDetails?.format;
     let barcodeValue=this.parseIfObject(barcodeDetails?.displayValue);
     let formName = '';
+    let errorMsg = "Please Scan the valid Barcode";
     switch(barCodeType){
         case "CODE_128":
           // For setting the custom key as formName for scanner form
           formName ="scanner_form";
-          resultValue=barcodeDetails?.displayValue;
-          break;
-        default:
-          if(forms && barcodeValue?.form_name){
-            formName = barcodeValue?.form_name;
-            resultValue=barcodeValue?.serialId;
-          }else if(barcodeValue && typeof barcodeValue == "string"){
             resultValue = barcodeValue;
+          break;          
+        default:
+          if(barcodeValue && typeof barcodeValue == "object"){
+            formName = barcodeValue?.form_name;
+            resultValue = barcodeValue?.name ?? barcodeValue?._id;
           }else{
-            // this.notificationService.showAlert('Barcode result','Please Scan the correct Barcode',["Dismiss"]);
+            if(barcodeValue && typeof barcodeValue == "string"){
+              resultValue = barcodeValue;
+            }
           }
+          errorMsg = "Please Scan the valid Barcode or QR Code";
     }
-    if(!resultValue)await this.notificationService.showAlert('','Please Scan the correct Barcode',["Dismiss"]);
+    if(!resultValue) this.notificationService.showAlert('',errorMsg,["Dismiss"]);
     // if(resultValue && resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
     if(resultValue && resultValue!='')this.addNewForm(formName,'',resultValue);
     // this.openScannedData(forms,this.formTypeName,resultValue)
