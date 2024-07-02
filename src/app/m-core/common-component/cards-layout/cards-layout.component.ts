@@ -13,14 +13,14 @@ import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
 import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService, ApiCallService, GridCommonFunctionService, DownloadService, ChartService } from '@core/web-core';
 import { Barcode, BarcodeFormat, BarcodeScanner, LensFacing } from '@capacitor-mlkit/barcode-scanning';
-import { Capacitor } from '@capacitor/core';
+// import { Capacitor, CapacitorException } from '@capacitor/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 import { BarcodeScanningComponent } from '../../modal/barcode-scanning/barcode-scanning.component';
 import { Subscription } from 'rxjs';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
-
+import { CapacitorBarcodeScanner, CapacitorBarcodeScannerAndroidScanningLibrary, CapacitorBarcodeScannerCameraDirection, CapacitorBarcodeScannerOptions, CapacitorBarcodeScannerScanOrientation, CapacitorBarcodeScannerTypeHint } from '@capacitor/barcode-scanner'
 @Component({
   selector: 'app-cards-layout',
   templateUrl: './cards-layout.component.html',
@@ -1959,55 +1959,52 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         if (!this.isGoogleScannerModuleAvailable) {
           await this.installGoogleBarcodeScannerModule();
         }
-        // this.startScan();
-        // this.checkCameraPermissionToScan();
       }).catch(err => {
         this.barCodeNotExistAlert();
-        console.log('checkBarcodeScannerSupportedorNot Error', err);
+        console.error('checkBarcodeScannerSupportedorNot Error', err);
       });
   }
-  async checkCameraPermissionToScan(){
-    if(this.isBarCodeScannerSupported){
-      try {
+  async checkCameraPermissionToScan(){    
+    try {
+      if(this.isBarCodeScannerSupported){
+        const mobileAppSettings:any = this.storageService.getApplicationValueByKey("mobileAppSettings");
+        const enableGoogleScanner = mobileAppSettings?.enableGoogleScanner ?? false;
+        const readBarCodeImageFromDevice = mobileAppSettings?.readBarCodeImageFromDevice ?? false;
         const permissionResult = await BarcodeScanner.checkPermissions();
         if(permissionResult.camera === 'granted' || permissionResult.camera === 'limited'){
           this.isBarCodeCameraPermissionGranted = true;
           // this.removeAllBarCodeListeners();
-          if(this.isGoogleScannerModuleAvailable){
+          if(this.isGoogleScannerModuleAvailable && enableGoogleScanner && !readBarCodeImageFromDevice){
             this.googleScan();
-          }else{
+          }else if(readBarCodeImageFromDevice){
             await BarcodeScanner.removeAllListeners().then(() => {
               this.startScan();
             }); 
-          }         
+          }else{
+            this.startBarcodeScanner();
+          }       
         }else{
           const requestResult = await BarcodeScanner.requestPermissions();
           if(requestResult.camera === 'granted' || requestResult.camera === 'limited'){
-            this.isBarCodeCameraPermissionGranted = true;
-            if(this.isGoogleScannerModuleAvailable){
-              this.googleScan();
-            }else{
-              await BarcodeScanner.removeAllListeners().then(() => {
-                this.startScan();
-              }); 
-            }         
+            this.checkCameraPermissionToScan();       
           }
           if(requestResult.camera === 'denied' || requestResult.camera == "prompt"){
             this.presentsettingAlert();
             this.isBarCodeCameraPermissionGranted = false;
           }
         }
-      }catch(err){
-        console.log('checkCameraPermissionToSacn Error', err);
-      };
-    }else{
-      this.barCodeNotExistAlert();
-    }
+      }else{
+        this.barCodeNotExistAlert();
+      }
+    }catch(err){
+      console.error('checkCameraPermissionToSacn Error', err);
+      throw (err);
+    };
   }
   barCodeNotExistAlert(){
     let alertOpt = {
       'header': "Alert",
-      'message':"Your device doesn't support barcode scanning.",
+      'message':"This platform doesn't support barcode scanning.",
       'buttons' : [
         {
           text: 'Dismiss',
@@ -2096,7 +2093,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     await BarcodeScanner.requestPermissions();
   }
   async presentsettingAlert(): Promise<void> {
-    let openSetting:any = await this.notificationService.confirmAlert('Permission denied','Please grant camera permission to use the barcode scanner. And try again.', "Open","Cancel");
+    let openSetting:any = await this.notificationService.confirmAlert('Camera Access Not Enabled','To continue, please go to app settings and enable it.', "Settings","Dismiss");
     if(openSetting == "confirm"){
       this.openSettings();
     }
@@ -2105,7 +2102,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   async checkScannedData(barcodeDetails?:any){
     let resultValue='';
     let barCodeType=barcodeDetails?.format;
-    let barcodeValue=this.parseIfObject(barcodeDetails?.displayValue);
+    let barcodeValue=this.parseIfObject(barcodeDetails?.displayValue ? barcodeDetails?.displayValue : barcodeDetails);
     let formName = '';
     let errorMsg = "Please Scan the valid Barcode";
     switch(barCodeType){
@@ -2169,6 +2166,26 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         return JSON.parse(variable);
     } catch (error) {
         return variable;
+    }
+  }
+
+  async startBarcodeScanner(){
+    let options : CapacitorBarcodeScannerOptions = {
+      hint: CapacitorBarcodeScannerTypeHint.ALL, 
+      scanInstructions: "Place the barcode into the scanner", 
+      scanButton: false, 
+      scanText: "Scan", 
+      cameraDirection: CapacitorBarcodeScannerCameraDirection.BACK, 
+      scanOrientation: CapacitorBarcodeScannerScanOrientation.PORTRAIT, 
+      android: { scanningLibrary: CapacitorBarcodeScannerAndroidScanningLibrary.MLKIT, }, 
+      web: { 
+        showCameraSelection: false,
+        scannerFPS: 60 
+      } 
+    }
+    const result = await CapacitorBarcodeScanner.scanBarcode(options);
+    if(result?.ScanResult){
+      this.checkScannedData(result.ScanResult);
     }
   }
 
