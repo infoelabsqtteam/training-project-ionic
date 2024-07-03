@@ -1968,13 +1968,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     try {
       if(this.isBarCodeScannerSupported){
         const mobileAppSettings:any = this.storageService.getApplicationValueByKey("mobileAppSettings");
-        const enableGoogleScanner = mobileAppSettings?.enableGoogleScanner ?? false;
         const readBarCodeImageFromDevice = mobileAppSettings?.readBarCodeImageFromDevice ?? false;
         const permissionResult = await BarcodeScanner.checkPermissions();
         if(permissionResult.camera === 'granted' || permissionResult.camera === 'limited'){
           this.isBarCodeCameraPermissionGranted = true;
           // this.removeAllBarCodeListeners();
-          if(this.isGoogleScannerModuleAvailable && enableGoogleScanner && !readBarCodeImageFromDevice){
+          if(this.isGoogleScannerModuleAvailable && !readBarCodeImageFromDevice){
             this.googleScan();
           }else if(readBarCodeImageFromDevice){
             await BarcodeScanner.removeAllListeners().then(() => {
