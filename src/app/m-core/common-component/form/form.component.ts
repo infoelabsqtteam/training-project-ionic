@@ -466,7 +466,11 @@ tinymceConfig = {}
         this.typeAheadData = this.apiCallResponceService.setTypeaheadData(data,this.typeAheadData);
       });
       this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
-        this.setFileDownloadUrl(data);
+        if(isPlatform('hybrid')){
+          this.downloadFileFromUrl(data);
+        }else{
+          this.setFileDownloadUrl(data);
+        }
       });
       this.userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       this.userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
@@ -4675,21 +4679,21 @@ tinymceConfig = {}
               elementDetails.className += " d-block"; 
               element['show'] = true;
               if(element.is_mandatory){
-                if(element.type == "list_of_fields"){
-                  element.list_of_fields.forEach(field =>{
-                    if(field.is_mandatory){
-                      if(this.templateFormControl[element.field_name].get([field.field_name]).status == 'VALID'){
-                        this.templateFormControl[element.field_name].get([field.field_name]).setValidators([Validators.required]);
-                        this.templateFormControl[element.field_name].get([field.field_name]).updateValueAndValidity();
-                      }
-                    }
-                  })
-                }else{ 
+                // if(element.type == "list_of_fields"){
+                //   element.list_of_fields.forEach(field =>{
+                //     if(field.is_mandatory){
+                //       if(this.templateFormControl[element.field_name].get([field.field_name]).status == 'VALID'){
+                //         this.templateFormControl[element.field_name].get([field.field_name]).setValidators([Validators.required]);
+                //         this.templateFormControl[element.field_name].get([field.field_name]).updateValueAndValidity();
+                //       }
+                //     }
+                //   })
+                // }else{ 
                   if(this.templateFormControl[element.field_name].status == 'VALID'){
                     this.templateForm.get(element.field_name).setValidators([Validators.required]);
                     this.templateForm.get(element.field_name).updateValueAndValidity();
                   }
-                }             
+                // }             
               }
             }            
           }
@@ -5217,6 +5221,39 @@ tinymceConfig = {}
       this.dataSaveInProgress = true;
       this.apiService.ResetDownloadUrl();
     }
+  }
+  async downloadFileFromUrl(imageUrl: string, fileName?: string,file?:any) {
+    await this.loaderService.showLoader("blank");
+    let splitUrl = imageUrl.split('?')[0];
+    fileName = splitUrl.split('/').pop();
+    if(imageUrl){
+      // const mediaPermissions = await this.appDownloadService.checkFileSystemPermission();
+      // const newPermission = await this.appPermissionService.requestMediaPermission();
+      let response:any;        
+      let directoryName = 'DOCUMENTS';
+      response = await this.appDownloadService.saveAndGetFileUriFromUrl(imageUrl,fileName,directoryName);
+      if(response?.haspermission){
+        await this.loaderService.hideLoader();
+        if(response?.path){
+          const confirm = await this.notificationService.confirmAlert(fileName, "Downloaded into " + directoryName + ". Do you want to open it ?", "Open");
+          if(confirm == "confirm"){
+            FileOpener.open({filePath:response?.path, openWithDefault:true,}).then( res => {
+              console.log("File Opened");
+            }).catch((e)=>{
+              console.error("File Opening error ", JSON.stringify(e));
+            })
+          }
+        }else{
+          this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
+        }
+      }else{
+        await this.loaderService.hideLoader();
+        this.notificationService.presentToastOnBottom("Please allow media access permission to download !");
+      }
+    }else{      
+      this.commonFunctionService.downloadFile(file);
+    }
+    await this.loaderService.hideLoader();
   }
   getDivClass(field) {
       const fieldsLength = this.tableFields.length;
