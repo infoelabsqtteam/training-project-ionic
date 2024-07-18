@@ -49,14 +49,18 @@ export class FileViewsModalComponent implements OnInit {
     private appPermissionService: AppPermissionService
     ) {
       this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
+        let splitUrl =data.split('?')[0];
+        let imageName = splitUrl.split('/').pop();
         if(this.showPreview){
-          let splitUrl =data.split('?')[0];
-          let imageName = splitUrl.split('/').pop();
           this.imageUrlList[imageName] = data;
         }else{
-          this.setFileDownloadUrl(data);
+          if(isPlatform('hybrid')){
+            this.downloadImage(data,imageName);
+          }else{
+            this.setFileDownloadUrl(data);            
+          }
         }
-      })
+      });
   }
 
   // 
@@ -109,7 +113,7 @@ export class FileViewsModalComponent implements OnInit {
   downloadFile(file){
     this.downloadClick = file.rollName;
     if(isPlatform('hybrid')){
-      this.downloadImage(this.imageUrlList[file.rollName], this.downloadClick);
+      this.downloadImage(this.imageUrlList[file.rollName], this.downloadClick,file);
     }else{
       this.commonFunctionService.downloadFile(file);
     }
@@ -125,8 +129,12 @@ export class FileViewsModalComponent implements OnInit {
   accordionGroupChange(event:any){
     this.selectedIndex = event?.detail?.value;
   }
-  async downloadImage(imageUrl: string, fileName: string) {
-    this.loaderService.showLoader("blank");
+  async downloadImage(imageUrl: string, fileName: string,file?:any) {
+    await this.loaderService.showLoader("blank");
+    fileName = this.getFileName(fileName)
+    if(!imageUrl){
+      imageUrl = this.imageUrlList[fileName];
+    }
     if(imageUrl){
       if(isPlatform('hybrid')){
         // const mediaPermissions = await this.appDownloadService.checkFileSystemPermission();
@@ -155,32 +163,36 @@ export class FileViewsModalComponent implements OnInit {
       }else{
         this.setFileDownloadUrl(imageUrl,fileName);
       }
-    }else{
-      this.notificationService.presentToastOnBottom("Something went wrong, File Path doesn't exist !")
+    }else{      
+      this.commonFunctionService.downloadFile(file);
     }
     await this.loaderService.hideLoader();
   }
   async printFile(fileUrl:string,fileName:string){
-    await this.loaderService.showLoader("Preparing File to print");    
-    let directoryName = 'EXTERNAL';
-    let response:any = await this.appDownloadService.saveAndGetFileUriFromUrl(fileUrl,fileName,directoryName);
-    if(response?.haspermission){
-      let fileUri : any = {};
-      if(response?.path && response?.status){
-        fileUri = await this.appDownloadService.getFileUri(fileName,directoryName);
-        // fileUri.uri = response?.path;
-        if(fileUri?.uri){
-          await this.openShareDialogeForPrint(fileUri.uri,fileName);
+    await this.loaderService.showLoader("Preparing File to print");
+    fileName = this.getFileName(fileName);
+    if(isPlatform('hybrid')){
+      let directoryName = 'EXTERNAL';
+      let response:any = await this.appDownloadService.saveAndGetFileUriFromUrl(fileUrl,fileName,directoryName);
+      if(response?.haspermission){
+        let fileUri : any = {};
+        if(response?.path && response?.status){
+          fileUri = await this.appDownloadService.getFileUri(fileName,directoryName);
+          // fileUri.uri = response?.path;
+          if(fileUri?.uri){
+            await this.openShareDialogeForPrint(fileUri.uri,fileName);
+          }
         }
-      }
-      await this.loaderService.hideLoader();
-      if(!response.status || !fileUri.status){
-        this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
+        if(!response.status || !fileUri.status){
+          this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
+        }
+      }else{
+        this.notificationService.presentToastOnBottom("Please allow media access permission !");
       }
     }else{
-      await this.loaderService.hideLoader();
-      this.notificationService.presentToastOnBottom("Please allow media access permission !");
+      this.notificationService.presentToastOnBottom("Not Supported on this Platform !");
     }
+    await this.loaderService.hideLoader();
   }
   // Click Functions Handling End----------------
   
@@ -217,9 +229,21 @@ export class FileViewsModalComponent implements OnInit {
         path: 'download',
         data: element
       }
-      this.imageUrlList[element['rollName']] = '';
+      let imageName = this.getFileName(element['rollName']);
+      this.imageUrlList[imageName] = '';
       this.apiService.DownloadFile(payload);    
     }
+  }
+  getFileName(rollName:string){
+    const contains:boolean = this.iContainsForwardSlash(rollName);
+    let imageName:string = rollName;
+    if(contains){
+      imageName = rollName.split('/').pop();
+    }
+    return imageName;
+  }
+  iContainsForwardSlash(str: string): boolean {
+    return str.includes('/');
   }
   async openShareDialogeForPrint(fileUri:string,fileName:string){   
     await this.loaderService.checkAndHideLoader();
