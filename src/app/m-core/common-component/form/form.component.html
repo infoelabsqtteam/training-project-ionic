@@ -246,7 +246,7 @@
                   {{ tableField.label | titlecase}} is <strong>invalidData</strong>
               </ion-note>
             </div>
-            <div *ngIf="tableField.datatype == 'chips'" class="r3vburhbcwh">
+            <div *ngIf="tableField.datatype == 'chips'" class="">
               <div class="ion-padding-horizontal">
                 <ion-label position="stacked" class="chips-stacked-label">{{ tableField.label }} <ion-text color="danger" *ngIf="tableField.is_mandatory"> *</ion-text></ion-label>
                 <span *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length > 0">

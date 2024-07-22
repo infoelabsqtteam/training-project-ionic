@@ -235,14 +235,14 @@ export class FileViewsModalComponent implements OnInit {
     }
   }
   getFileName(rollName:string){
-    const contains:boolean = this.iContainsForwardSlash(rollName);
+    const contains:boolean = this.isContainsForwardSlash(rollName);
     let imageName:string = rollName;
     if(contains){
       imageName = rollName.split('/').pop();
     }
     return imageName;
   }
-  iContainsForwardSlash(str: string): boolean {
+  isContainsForwardSlash(str: string): boolean {
     return str.includes('/');
   }
   async openShareDialogeForPrint(fileUri:string,fileName:string){   
