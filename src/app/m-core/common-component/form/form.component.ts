@@ -490,8 +490,8 @@ tinymceConfig = {}
           this.openNextForm(false);
         }
       })
-      this.gridRealTimeDataSubscription = this.dataShareService.gridRunningData.subscribe(data =>{
-        this.updateRunningData(data.data);
+      this.gridRealTimeDataSubscription = this.dataShareService.gridRunningData.subscribe(res =>{
+        this.updateRunningData(res.data);
       })
       this.gridDownloadImageSubscription = this.dataShareServiceService.gridDownloadImage.subscribe(data => {
         this.imageDownload(data);
@@ -583,13 +583,13 @@ tinymceConfig = {}
   }
 
   //CD
-  updateRunningData(data:any){
+  updateRunningData(listData:any){
     if (this.editedRowIndex >= 0) {
       this.selectedRowIndex = this.editedRowIndex;
       if(this.childData && this.childData._id){
-        if(data && data.data){
-          if(this.childData._id == data.data[0]._id){
-            this.editedRowData(data.data[0]);
+        if(listData && listData.length > 0){
+          if(this.childData._id == listData[0]._id){
+            this.editedRowData(listData[0]);
           }
         }else{
           this.editedRowData(this.childData);
@@ -598,9 +598,9 @@ tinymceConfig = {}
     }else{
       this.selectedRowIndex = -1;
       if(this.editedRowIndex == -1) {
-        if(data && data._id == undefined) {
+        if(listData && listData._id == undefined) {
           setTimeout(() => {
-            this.updateDataOnFormField(data);
+            this.updateDataOnFormField(listData);
           }, 100);
         }
       }
@@ -797,7 +797,7 @@ tinymceConfig = {}
         this.notificationService.showAlert(result.message.msg,'',['Dismiss']);
       } 
       if(this.saveResponceSubscription){
-        this.saveResponceSubscription.unsubscribe();
+      this.saveResponceSubscription.unsubscribe();
       }
 
       // delete code
