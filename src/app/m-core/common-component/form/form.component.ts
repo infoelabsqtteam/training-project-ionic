@@ -2290,74 +2290,77 @@ tinymceConfig = {}
       this.templateForm = this.formControlService.setCheckboxFileListValue(this.checkBoxFieldListValue,this.templateForm, this.staticData,this.selectedRow,this.updateMode);
     }
   }
+  // CD
   getStaticDataWithDependentData(){
-    const staticModal = []
     let formValueWithCustomData = this.getFormValue(true)
     let formValue = this.getFormValue(false)
-    if(this.tableFields && this.tableFields.length > 0){
-      this.tableFields.forEach(element => {
-        if(element.field_name && element.field_name != ''){
-          if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
-            const checkFormGroup = element.onchange_call_back_field.indexOf("FORM_GROUP");
-            const checkCLTFN = element.onchange_api_params.indexOf('CLTFN')
-            if(checkFormGroup == -1 && checkCLTFN == -1){
+    // delete code
+    // const staticModal = []
+    // if(this.tableFields && this.tableFields.length > 0){
+    //   this.tableFields.forEach(element => {
+    //     if(element.field_name && element.field_name != ''){
+    //       if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
+    //         const checkFormGroup = element.onchange_call_back_field.indexOf("FORM_GROUP");
+    //         const checkCLTFN = element.onchange_api_params.indexOf('CLTFN')
+    //         if(checkFormGroup == -1 && checkCLTFN == -1){
 
-              const payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, formValueWithCustomData)
-              if(element.onchange_api_params.indexOf('QTMP') >= 0){
-                if(element && element.formValueAsObjectForQtmp){
-                  payload["data"]=formValue;
-                }else{
-                  payload["data"]=formValueWithCustomData;
-                }
-              } 
-              staticModal.push(payload);
-            }
-          }
-          switch (element.type) {
-            case "stepper":
-              if (element.list_of_fields.length > 0) {
-                element.list_of_fields.forEach((step) => {                
-                  if (step.list_of_fields.length > 0) {
-                    step.list_of_fields.forEach((data) => {
-                      if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) {
-                        const checkFormGroup = data.onchange_call_back_field.indexOf("FORM_GROUP");
-                        if(checkFormGroup == -1){
+    //           const payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, formValueWithCustomData)
+    //           if(element.onchange_api_params.indexOf('QTMP') >= 0){
+    //             if(element && element.formValueAsObjectForQtmp){
+    //               payload["data"]=formValue;
+    //             }else{
+    //               payload["data"]=formValueWithCustomData;
+    //             }
+    //           } 
+    //           staticModal.push(payload);
+    //         }
+    //       }
+    //       switch (element.type) {
+    //         case "stepper":
+    //           if (element.list_of_fields.length > 0) {
+    //             element.list_of_fields.forEach((step) => {                
+    //               if (step.list_of_fields.length > 0) {
+    //                 step.list_of_fields.forEach((data) => {
+    //                   if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) {
+    //                     const checkFormGroup = data.onchange_call_back_field.indexOf("FORM_GROUP");
+    //                     if(checkFormGroup == -1){
               
-                          const payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, formValueWithCustomData)
-                          if(data.onchange_api_params.indexOf('QTMP') >= 0){
-                            if(element && element.formValueAsObjectForQtmp){
-                               payload["data"]=formValue;
-                            }else{
-                              payload["data"]=formValueWithCustomData;
-                            }
-                          } 
-                          staticModal.push(payload);
-                        }
-                      }
-                      if(data.tree_view_object && data.tree_view_object.field_name != ""){
-                        let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
-                        if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
-                          staticModal.push(this.apiCallService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
-                        }
-                      }
-                    });
-                  }
-                });
-              }
-              break;
-          }
-          if(element.tree_view_object && element.tree_view_object.field_name != ""){
-            let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
-            if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
-              staticModal.push(this.apiCallService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
-            }
-          }
-        }
-        if(element.type && element.type == 'pdf_view'){
-          staticModal.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,formValueWithCustomData))
-        }
-      });
-    }
+    //                       const payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, formValueWithCustomData)
+    //                       if(data.onchange_api_params.indexOf('QTMP') >= 0){
+    //                         if(element && element.formValueAsObjectForQtmp){
+    //                            payload["data"]=formValue;
+    //                         }else{
+    //                           payload["data"]=formValueWithCustomData;
+    //                         }
+    //                       } 
+    //                       staticModal.push(payload);
+    //                     }
+    //                   }
+    //                   if(data.tree_view_object && data.tree_view_object.field_name != ""){
+    //                     let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
+    //                     if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
+    //                       staticModal.push(this.apiCallService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
+    //                     }
+    //                   }
+    //                 });
+    //               }
+    //             });
+    //           }
+    //           break;
+    //       }
+    //       if(element.tree_view_object && element.tree_view_object.field_name != ""){
+    //         let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
+    //         if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
+    //           staticModal.push(this.apiCallService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
+    //         }
+    //       }
+    //     }
+    //     if(element.type && element.type == 'pdf_view'){
+    //       staticModal.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,formValueWithCustomData))
+    //     }
+    //   });
+    // }
+    const staticModal:[] = this.apiCallService.getOnchangePayload(this.tableFields,formValue,formValueWithCustomData);
     this.getStaticData(staticModal,formValueWithCustomData,formValue);    
   }
   getStaticData(staticModal,object,formDataObject){
@@ -5386,7 +5389,8 @@ tinymceConfig = {}
     const parentfield = formCollecition['parent_field'];
     if(!this.previousFormFocusField.multi_select && this.previousFormFocusField.type != 'list_of_fields' && this.previousFormFocusField.type != 'hidden'){
       if(parentfield != ''){
-        this.templateForm.get(parentfield.field_name).get(this.previousFormFocusField.field_name).setValue(previousFormFocusFieldValue)
+        this.templateForm.get(parentfield.field_name).get(this.previousFormFocusField.field_name).setValue(previousFormFocusFieldValue);
+        // delete code
         //(<FormGroup>this.templateForm.controls[parentfield.field_name]).controls[this.previousFormFocusField.field_name].patchValue(previousFormFocusFieldValue);       
       }else{      
         this.templateForm.get(this.previousFormFocusField.field_name).setValue(previousFormFocusFieldValue);
