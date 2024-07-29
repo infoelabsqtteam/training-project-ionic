@@ -791,14 +791,17 @@ tinymceConfig = {}
       
       if(result.resetResponce) this.apiService.ResetSaveResponce();
       if(result.successAction) this.checkOnSuccessAction();
-      if(result.message && result.message.msg && result.message.msg != '' && !this.additionalData?.enableScanner){
+      if(this.additionalData?.enableScanner && result.message.class == "bg-success"){
+        result.message.msg = "";
+      }
+      if(result.message && result.message.msg && result.message.msg != ''){
         // this.notificationService.notify(result.message.class, result.message.msg);
         // this.notificationService.presentToastOnMiddle(result.message.msg, result.message.class);
         this.notificationService.showAlert(result.message.msg,'',['Dismiss']);
       } 
-      if(this.saveResponceSubscription){
-      this.saveResponceSubscription.unsubscribe();
-      }
+      // if(this.saveResponceSubscription){
+      //   this.saveResponceSubscription.unsubscribe();
+      // }
 
       // delete code
       // if (saveFromDataRsponce.success && saveFromDataRsponce.success != '' && this.showNotify) {
