@@ -449,9 +449,14 @@ tinymceConfig = {}
             this.form = form;
             this.resetFlag();
             this.setForm();
-            if(this.editedRowIndex >= 0 ){
-              this.editedRowData(this.childData);
-            }
+            // delete code as 1 sec delay is added in cardLayout for getting data from db 
+            // if(this.editedRowIndex >= 0 ){
+            //   if(this.selectedRow && this.selectedRow?.['_id']){
+            //     this.editedRowData(this.selectedRow);
+            //   }else{
+            //     this.editedRowData(this.childData);
+            //   }
+            // }
           }
         }
       });
@@ -762,7 +767,8 @@ tinymceConfig = {}
     if(form && form.DINAMIC_FORM){
       this.dinamic_form = form.DINAMIC_FORM;
       if(this.formName == 'DINAMIC_FORM' && this.getTableField){
-        this.form = this.dinamic_form
+        // this.grid_view_mode = this.dinamic_form.view_mode;
+        this.form = this.dinamic_form;
         this.setForm();
       }        
     }
@@ -2282,12 +2288,12 @@ tinymceConfig = {}
     }
   };
   editedRowData(object) {
-    this.selectedRow = JSON.parse(JSON.stringify(object)); 
-    this.updateMode = true;
-    this.updateDataOnFormField(this.selectedRow); 
-    this.getStaticDataWithDependentData();     
-    if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
-      this.templateForm = this.formControlService.setCheckboxFileListValue(this.checkBoxFieldListValue,this.templateForm, this.staticData,this.selectedRow,this.updateMode);
+      this.selectedRow = JSON.parse(JSON.stringify(object)); 
+      this.updateMode = true;
+      this.updateDataOnFormField(this.selectedRow); 
+      this.getStaticDataWithDependentData();     
+      if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
+        this.templateForm = this.formControlService.setCheckboxFileListValue(this.checkBoxFieldListValue,this.templateForm, this.staticData,this.selectedRow,this.updateMode);
     }
   }
   // CD

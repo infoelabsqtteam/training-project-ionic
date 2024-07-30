@@ -1183,7 +1183,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.dataShareServiceService.setcardData(card);
   }
   // add new card or record in cardlist 
-  async addNewForm(formName?:any,permissionName?:string,scannedData?:string){
+  addNewForm(formName?:any,permissionName?:string,scannedData?:string){
     if (this.permissionService.checkPermission(this.currentMenu.name, 'add') || this.permissionService.checkPermission(this.currentMenu.name, 'edit') || this.permissionService.checkPermission(this.currentMenu.name, permissionName)) {
       if(formName){
         this.formTypeName = formName;
@@ -1211,31 +1211,34 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         'card': this.card?.card ? this.card?.card : this.card,
         'enableScanner': this.enableScanner
       }
-      const modal = await this.modalController.create({
-        component: FormComponent,
-        componentProps: {
-          "childData": this.gridData,
-          "editedRowIndex": this.editedRowIndex,
-          "addform" : form,
-          "formTypeName" : this.formTypeName,
-          "additionalData": additionalData,
-        },
-        id: form._id,
-        showBackdrop:true,
-        backdropDismiss:false,
-      });
-      modal.present();
-      modal.componentProps.modal = modal;
-      modal.onDidDismiss().then((result) => {  
-        // if(this.scannerForm){this.scannerForm=false; this.ngOnChanges();}
-        if(!this.enableScanner){
-          this.getCardDataByCollection(this.selectedIndex);
-        }
-        this.unsubscribedSavecall();
-      });
+      this.openFormModal(form,additionalData);
     } else {
       this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
     }
+  }
+  async openFormModal(form,additionalData){
+    const modal = await this.modalController.create({
+      component: FormComponent,
+      componentProps: {
+        "childData": this.gridData,
+        "editedRowIndex": this.editedRowIndex,
+        "addform" : form,
+        "formTypeName" : this.formTypeName,
+        "additionalData": additionalData,
+      },
+      id: form._id,
+      showBackdrop:true,
+      backdropDismiss:false,
+    });
+    modal.present();
+    modal.componentProps.modal = modal;
+    modal.onDidDismiss().then((result) => {  
+      // if(this.scannerForm){this.scannerForm=false; this.ngOnChanges();}
+      if(!this.enableScanner){
+        this.getCardDataByCollection(this.selectedIndex);
+      }
+      this.unsubscribedSavecall();
+    });
   }
 
   // async openFormModalForScanner(form:any,selectedData:any){
@@ -1407,14 +1410,18 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }   
         if(this.checkFieldsAvailability('UPDATE')){
           this.addNewForm(formName);
-          this.apiCallService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
+          setTimeout(() => {
+            this.apiCallService.getRealTimeGridData(this.currentMenu, this.carddata[index]);            
+          }, 1000);
         }else{
           return;
         }  
         // this.addNewForm(formName, 'edit');      
       }else{
         this.addNewForm(formName, 'edit');
-        this.apiCallService.getRealTimeGridData(this.currentMenu, this.carddata[index]);
+        setTimeout(() => {
+          this.apiCallService.getRealTimeGridData(this.currentMenu, this.carddata[index]);            
+        }, 1000);
       }  
       this.selectedIndex = index;    
     } else {
@@ -1677,39 +1684,39 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.currentLatLng = {};
     }
   }
-  async actionBtnClicked(index:number,btnStatus:any){
-    this.updateMode=true;
-    this.editedRowIndex = index;
-    let header:string = "Are you sure !";
-    let msg:string = "Wanna do this?";
-    if(btnStatus == "reject"){
-      header = 'Reject Item';
-      msg = 'Do you wanna Reject the Item Delivery ?'
-    }else if(btnStatus == "accept"){
-      header = 'Accept Item';
-      msg = 'Accept this Item for Delivery ?'
-    }
-    let confirmDelete:any = await this.notificationService.confirmAlert(header,msg);
-    let selectedRow:any = {};
-    selectedRow = this.carddata[index];
-    if(confirmDelete === "confirm"){
-      if(btnStatus == "reject"){ 
-        selectedRow['status'] = "REJECTED";
-        selectedRow['rejectedDateTime'] = this.datePipe.transform(new Date(), "dd-MM-yyyyThh:mm:ss");
-        // this.carddata.splice(index,1);
-      }
-      if(btnStatus == "accept"){ 
-        selectedRow['status'] = "ACCEPTED";
-        selectedRow['acceptedDateTime'] = this.datePipe.transform(new Date(), "dd-MM-yyyyThh:mm:ss");
-      }
-      this.carddata[index]=selectedRow;
-      let payload = {
-        'data':selectedRow,
-        'curTemp': this.collectionname
-      }
-      this.apiService.SaveFormData(payload);
-    }
-  }
+  // async actionBtnClicked(index:number,btnStatus:any){
+  //   this.updateMode=true;
+  //   this.editedRowIndex = index;
+  //   let header:string = "Are you sure !";
+  //   let msg:string = "Wanna do this?";
+  //   if(btnStatus == "reject"){
+  //     header = 'Reject Item';
+  //     msg = 'Do you wanna Reject the Item Delivery ?'
+  //   }else if(btnStatus == "accept"){
+  //     header = 'Accept Item';
+  //     msg = 'Accept this Item for Delivery ?'
+  //   }
+  //   let confirmDelete:any = await this.notificationService.confirmAlert(header,msg);
+  //   let selectedRow:any = {};
+  //   selectedRow = this.carddata[index];
+  //   if(confirmDelete === "confirm"){
+  //     if(btnStatus == "reject"){ 
+  //       selectedRow['status'] = "REJECTED";
+  //       selectedRow['rejectedDateTime'] = this.datePipe.transform(new Date(), "dd-MM-yyyyThh:mm:ss");
+  //       // this.carddata.splice(index,1);
+  //     }
+  //     if(btnStatus == "accept"){ 
+  //       selectedRow['status'] = "ACCEPTED";
+  //       selectedRow['acceptedDateTime'] = this.datePipe.transform(new Date(), "dd-MM-yyyyThh:mm:ss");
+  //     }
+  //     this.carddata[index]=selectedRow;
+  //     let payload = {
+  //       'data':selectedRow,
+  //       'curTemp': this.collectionname
+  //     }
+  //     this.apiService.SaveFormData(payload);
+  //   }
+  // }
   setSaveResponce(saveFromDataRsponce){
     if (saveFromDataRsponce) {
       if (saveFromDataRsponce.success && saveFromDataRsponce.success != '') {
@@ -1730,14 +1737,15 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
             this.scannerSuccessAndConfirm(saveFromDataRsponce);
           }
           // this.setCardDetails(this.card.card);
-        }else if (saveFromDataRsponce.success == 'success' && this.updateMode) {
-          this.carddata[this.editedRowIndex] == saveFromDataRsponce.data;
-          if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
-            this.notificationService.showAlert(saveFromDataRsponce.success_msg,'',['Dismiss']);
-          }
         }
+        // else if (saveFromDataRsponce.success == 'success' && this.updateMode) {
+        //   this.carddata[this.editedRowIndex] == saveFromDataRsponce.data;
+        //   if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
+        //     this.notificationService.showAlert(saveFromDataRsponce.success_msg,'',['Dismiss']);
+        //   }
+        // }
       }
-      this.apiService.ResetSaveResponce();
+      // this.apiService.ResetSaveResponce();
     }
   }
   async scannerSuccessAndConfirm(saveFromDataRsponce){
