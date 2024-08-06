@@ -1,12 +1,11 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { AppStorageService, NotificationService } from '@core/ionic-core';
-import { Platform, AlertController } from '@ionic/angular';
+import { AppStorageService, NotificationService, AppSpeechRecognition } from '@core/ionic-core';
+import { Platform, AlertController, isPlatform } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { App } from '@capacitor/app';
-import { ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService, StorageService, MenuOrModuleCommonService, ApiCallService } from '@core/web-core';
-
+import { ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService, StorageService, MenuOrModuleCommonService, ApiCallService, VoiceRecognitionService } from '@core/web-core';
 
 @Component({
   selector: 'app-home',
@@ -75,7 +74,9 @@ export class HomePage implements OnInit, OnDestroy {
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
     private appStorageService: AppStorageService,
-    private apiCallService: ApiCallService
+    private apiCallService: ApiCallService,
+    private voiceRecognitionService: VoiceRecognitionService,
+    private appSpeechRecognition: AppSpeechRecognition
   ) 
   {
     this.initializeApp();
@@ -102,6 +103,12 @@ export class HomePage implements OnInit, OnDestroy {
     this.unsubscribeVariabbles();
   }
   // Angular LifeCycle Function Handling End -----------------------
+
+  // Ionic LifeCycle Function Handling Start -----------------
+  ionViewWillEnter() {
+    // this.checkIfMicSupport();
+  }
+  // Ionic LifeCycle Function Handling End -----------------
 
   // Subscribed Variable Function Handling Start-------------------
   griddataResponse(data){
@@ -222,6 +229,17 @@ export class HomePage implements OnInit, OnDestroy {
   comingSoon() {
     this.notificationService.presentToastOnBottom('Comming Soon...','danger');
   }
+  async checkAndRequestMicPermission(){
+    try{
+      if(isPlatform('hybrid')){
+        await this.checkAppMicPermission();
+      }else{
+        this.checkWebMicPermission();
+      }
+    }catch(error){
+        console.error(error);
+      }
+  }
   // Click Functions Handling End-------------------- 
   
   // search Module Function Handling Start--------------
@@ -248,6 +266,76 @@ export class HomePage implements OnInit, OnDestroy {
     // }
   }
   // Ionic Event Handling Function End--------------
+  // Capacitor SpeechRecognition Functions Start --------------
+  async checkAppMicPermission(){
+    try{
+      const responsehowVal = await this.appSpeechRecognition.checkSpeechRecognitionAvailable();
+      if(responsehowVal.msg){
+        // this.notificationService.presentToastOnBottom(responsehowVal.msg,"danger");
+        this.notificationService.presentToastOnBottom("Speech recognition is not available in this browser.","danger");
+        return;
+      }
+      if(responsehowVal.isSpeechRecognitionAvailable){
+        let checkPermissions = await this.appSpeechRecognition.checkPermissions();
+        if(checkPermissions){
+          this.startListening();
+        }else{
+          checkPermissions = await this.appSpeechRecognition.requestPermissions();
+          if(checkPermissions){
+            this.startListening();
+          }else {
+            console.error('Mic permission denied');
+          }
+        }
+      }
+    }catch(error){
+      if (error?.message) {
+        if(error?.message != "0"){
+          this.notificationService.presentToastOnBottom(error?.message);
+        }
+      } else {
+        console.error(error);
+      }
+    }
+  }
+  async startListening(){
+    try{
+      const state = await this.appSpeechRecognition.addListener('listeningState');
+      let voiceResult:any = await this.appSpeechRecognition.startListening();   
+      if(voiceResult.msg){
+        this.notificationService.presentToastOnBottom(voiceResult.msg,"danger");
+        return;
+      }
+      if(voiceResult?.matches && voiceResult.matches.length > 0){
+        this.appSpeechRecognition.stopListening();
+        this.myInput = voiceResult.matches[0];
+        this.search();
+      }
+    }catch(error){
+      if (error?.message) {
+        if(error?.message != "0"){
+          this.notificationService.presentToastOnBottom(error?.message);
+        }
+      } else {
+        console.error(error);
+      }
+    }
+  }
+  async checkWebMicPermission() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // You now have access to the user's microphone
+      // const returnval = this.voiceRecognitionService.init();
+      // console.log(returnval);
+      // const speech = await this.voiceRecognitionService.start();
+      // console.log(speech);
+      // const speech2 = this.voiceRecognitionService.speechInput();
+      // console.log(speech2);
+    } catch (error) {
+      console.error('Error requesting mic permission:', error);
+    }
+  }
+  // Capacitor SpeechRecognition Functions End --------------
 
 
   // NOt In used  
