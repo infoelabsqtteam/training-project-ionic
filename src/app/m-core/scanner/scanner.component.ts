@@ -114,8 +114,6 @@ export class MyScannerComponent implements OnInit {
     this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
       if(data && data.data && data.data.length > 0){
         this.cardList = data.data;
-        // this.commonAppDataShareService.setModuleList(this.cardMasterList);
-        // this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(this.cardMasterList);
       }else{
         this.cardList = [];
         if(this.userType == 'employee'){

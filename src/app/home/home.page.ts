@@ -114,12 +114,18 @@ export class HomePage implements OnInit, OnDestroy {
   griddataResponse(data){
     if(data && data.data && data.data.length > 0){
       this.cardMasterList = data.data;
-      this.commonAppDataShareService.setModuleList(this.cardMasterList);
+      if(this.ionEvent?.type === 'ionRefresh' || !this.myInput){
+        this.commonAppDataShareService.setModuleList(this.cardMasterList);
+      }
       this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(this.cardMasterList);
       if(this.cardList == null){
         this.errorTitle = "No module assign";
         this.errorMessage = "Permission denied, No module found!";
         this.notificationService.presentToastOnBottom("You don't have any permission or assign module.","danger")
+      }else{
+        if(this.cardList.length == 1){
+          this.showCardTemplate(this.cardList[0],0);
+        }
       }
     }else{
       if(this.myInput && this.myInput.length > 0 ){
@@ -244,7 +250,7 @@ export class HomePage implements OnInit, OnDestroy {
   
   // search Module Function Handling Start--------------
   search() {
-    const criteria = "name;stwic;"+this.myInput+";STATIC";
+    const criteria = "name;cnts;"+this.myInput+";STATIC";
     this.getGridData([criteria]);
   }
   // search Module Function Handling End--------------
