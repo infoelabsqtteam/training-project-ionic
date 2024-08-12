@@ -39,7 +39,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAlvBSDoXj5p3D1Qdnee_j_cF8jIGo5pz8"
+            android:value="AIzaSyAK_vzkb782W3kU76wy5d7GjF8DpzcqRto"
         />
 
         <!-- Trigger Google Play services to install the backported photo picker module. -->

@@ -8,13 +8,13 @@ export class PopoverModalService {
 
   constructor(
     private alertCtrl: AlertController,
-    private modalCtrl: ModalController, 
+    private modalController: ModalController, 
     private popoverCtrl: PopoverController
   ) { }
 
   async getModal(component: any, componentProps?: any, mode?: 'md' | 'ios', cssClass?: string | string[], back_dis?: boolean,id?:any): Promise<HTMLIonModalElement> {
     let backdropDismiss = back_dis === false ? false : true;
-    return await this.modalCtrl.create({
+    return await this.modalController.create({
       component,
       animated: true,
       componentProps,
@@ -26,20 +26,24 @@ export class PopoverModalService {
     });
   }
 
-  async presentModal(anyComponent:string, data:any) {
-    let id:any = anyComponent.toLowerCase;
-    const modal = await this.modalCtrl.create({
-      component: anyComponent,
-      cssClass: id+"-class",
-      componentProps: {
-        'Data': data,
-      },
-      animated: true,
-      keyboardClose: true,
-      id:id
-    });
-    return await modal.present();
-  }
+async presentModal(anyComponent:any, data:any) {
+  let id:any = anyComponent.toLowerCase;
+  const modal = await this.modalController.create({
+    component: anyComponent,
+    cssClass: id+"-class",
+    componentProps: {
+      'Data': data,
+    },
+    animated: true,
+    keyboardClose: true,
+    id:id
+  });
+  modal.present();
+  return await modal.onDidDismiss()
+        .then((data) => {
+          return data;
+      });
+}
 
   async getPopover(component: any, event?: any, componentProps?: any, mode?: 'md' | 'ios', cssClass?: string | string[]): Promise<HTMLIonPopoverElement> {
     return await this.popoverCtrl.create({
@@ -54,11 +58,11 @@ export class PopoverModalService {
   }
   dismiss() {
     // can "dismiss" itself and optionally pass back data
-    this.modalCtrl.dismiss(null, 'cancel');
+    this.modalController.dismiss(null, 'cancel');
   }
   /* -----Genric Services-------------- */
   public async dismissModal(data?: any,role?:string,id?:string): Promise<boolean> {
-    return this.modalCtrl.dismiss(data,role,id);
+    return this.modalController.dismiss(data,role,id);
   }
 
   public async showAlert(opts?: AlertOptions): Promise<HTMLIonAlertElement> {
@@ -79,7 +83,7 @@ export class PopoverModalService {
   }
 
   public async showModal(opts: ModalOptions): Promise<HTMLIonModalElement> {
-    const modal = await this.modalCtrl.create(opts);
+    const modal = await this.modalController.create(opts);
     await modal.present();
     return modal;
   }
