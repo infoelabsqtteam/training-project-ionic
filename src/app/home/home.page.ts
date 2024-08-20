@@ -152,7 +152,7 @@ export class HomePage implements OnInit, OnDestroy {
         }
       }
     }
-    this.unsubscribeGridData();
+    // this.unsubscribeGridData();
   }
   // Subscribed Variable Function Handling End-------------------
 
@@ -267,7 +267,7 @@ export class HomePage implements OnInit, OnDestroy {
   // search Module Function Handling Start--------------
   search() {
     if(this.myInput){
-      this.subscribeGridData();
+      // this.subscribeGridData();
       const criteria = "name;cnts;"+this.myInput+";STATIC";
       this.getGridData([criteria]);
     }else{
