@@ -59,6 +59,9 @@ export class HomePage implements OnInit, OnDestroy {
   isExitAlertOpen:boolean = false;
   errorTitle:string= "Please Wait !";
   errorMessage:string= "We are getting modules.";
+  // VoiceRecognition Variables
+  isUserSpeaking:boolean = false; 
+  VoiceRecognitionSubscription:Subscription;
 
 
   constructor(
@@ -75,7 +78,7 @@ export class HomePage implements OnInit, OnDestroy {
     private menuOrModuleCommonService: MenuOrModuleCommonService,
     private appStorageService: AppStorageService,
     private apiCallService: ApiCallService,
-    private voiceRecognitionService: VoiceRecognitionService,
+    private voiceRecognition: VoiceRecognitionService,
     private appSpeechRecognition: AppSpeechRecognition
   ) 
   {
@@ -89,18 +92,18 @@ export class HomePage implements OnInit, OnDestroy {
     this.homePageLayout = this.appStorageService.getAppHomePageLayout();
     this.web_site_name = this.appStorageService.getWebSiteName();
     this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
-    this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
-      this.griddataResponse(data);
-    });
+    this.subscribeGridData();
 
   }
   
-  // Angular LifeCycle Function Handling End -----------------------
+  // Angular LifeCycle Function Handling Start -----------------------
   ngOnInit() {
     this.getGridData();
+    // Web Voice Recognition...
+    this.initVoiceInput();
   }
   ngOnDestroy(): void {
-    this.unsubscribeVariabbles();
+    this.unsubscribeGridData();
   }
   // Angular LifeCycle Function Handling End -----------------------
 
@@ -111,10 +114,18 @@ export class HomePage implements OnInit, OnDestroy {
   // Ionic LifeCycle Function Handling End -----------------
 
   // Subscribed Variable Function Handling Start-------------------
-  griddataResponse(data){
-    if(data && data.data && data.data.length > 0){
-      this.cardMasterList = data.data;
-      if(this.ionEvent?.type === 'ionRefresh' || !this.myInput){
+  subscribeGridData(){
+    this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
+      if(data?.data){
+        this.gridDataResponse(data.data);
+      }
+    });
+  }
+  gridDataResponse(data){
+    let moduleList = this.commonAppDataShareService.getModuleList();
+    if(data && data.length > 0){
+      this.cardMasterList = data;
+      if(!this.myInput || this.cardMasterList?.length > moduleList?.length){
         this.commonAppDataShareService.setModuleList(this.cardMasterList);
       }
       this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(this.cardMasterList);
@@ -128,20 +139,25 @@ export class HomePage implements OnInit, OnDestroy {
         }
       }
     }else{
-      if(this.myInput && this.myInput.length > 0 ){
+      if(this.myInput){
         this.errorTitle = "No matching module found";
         this.errorMessage = "Try again by adjusting your search value!";
         this.cardList = [];
       }else{
-        this.errorTitle = "No module assign";
-        this.errorMessage = "Permission denied, No module found!";
+        if(moduleList?.length > 0){
+          this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(moduleList);
+        }else{
+          this.errorTitle = "No module assign";
+          this.errorMessage = "Permission denied, No module found!";
+        }
       }
     }
+    this.unsubscribeGridData();
   }
   // Subscribed Variable Function Handling End-------------------
 
   // UnSubscribed Variable Function Handling Start-------------------
-  unsubscribeVariabbles(){
+  unsubscribeGridData(){
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
@@ -250,14 +266,20 @@ export class HomePage implements OnInit, OnDestroy {
   
   // search Module Function Handling Start--------------
   search() {
-    const criteria = "name;cnts;"+this.myInput+";STATIC";
-    this.getGridData([criteria]);
+    if(this.myInput){
+      this.subscribeGridData();
+      const criteria = "name;cnts;"+this.myInput+";STATIC";
+      this.getGridData([criteria]);
+    }else{
+      this.gridDataResponse([]);
+    }
   }
   // search Module Function Handling End--------------
   
   // Ionic Event Handling Function Start-----Pull from Top to Do refreshing or update card list 
   doRefresh(event:any) {
     // if(this.refreshlist){
+    this.subscribeGridData();
       this.ionEvent = event;
       console.log('Begin doRefresh async operation');
       // this.updateMode = false;  
@@ -272,7 +294,9 @@ export class HomePage implements OnInit, OnDestroy {
     // }
   }
   // Ionic Event Handling Function End--------------
-  // Capacitor SpeechRecognition Functions Start --------------
+  
+  // SpeechRecognition Functions Start --------------
+  // Capacitor Functions Start
   async checkAppMicPermission(){
     try{
       const responsehowVal = await this.appSpeechRecognition.checkSpeechRecognitionAvailable();
@@ -306,6 +330,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
   async startListening(){
     try{
+      this.isUserSpeaking=true;
       const state = await this.appSpeechRecognition.addListener('listeningState');
       let voiceResult:any = await this.appSpeechRecognition.startListening();   
       if(voiceResult.msg){
@@ -316,8 +341,10 @@ export class HomePage implements OnInit, OnDestroy {
         this.appSpeechRecognition.stopListening();
         this.myInput = voiceResult.matches[0];
         this.search();
+        this.isUserSpeaking=false;
       }
     }catch(error){
+      this.isUserSpeaking=false;
       if (error?.message) {
         if(error?.message != "0"){
           this.notificationService.presentToastOnBottom(error?.message);
@@ -327,27 +354,66 @@ export class HomePage implements OnInit, OnDestroy {
       }
     }
   }
+  // Capacitor Functions End
+  // WebMic Functions Start
   async checkWebMicPermission() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // You now have access to the user's microphone
-      // const returnval = this.voiceRecognitionService.init();
-      // console.log(returnval);
-      // const speech = await this.voiceRecognitionService.start();
-      // console.log(speech);
-      // const speech2 = this.voiceRecognitionService.speechInput();
-      // console.log(speech2);
+      if(stream.active){
+        this.startRecording();
+      }
     } catch (error) {
       console.error('Error requesting mic permission:', error);
     }
   }
-  // Capacitor SpeechRecognition Functions End --------------
+
+  /**
+   * @description Function for initializing voice input so user can chat with machine.
+   */
+  initVoiceInput() {
+    // Subscription for initializing and this will call when user stopped speaking.
+    this.voiceRecognition.init().subscribe(() => {
+      // User has stopped recording
+      // Do whatever when mic finished listening
+      console.log('this is init subscribe');
+    });
+
+    // Subscription to detect user input from voice to text.
+    this.voiceRecognition.speechInput().subscribe((input) => {
+      // Set voice text output to
+      console.log(input);
+      if(input){
+        this.myInput = input;
+        this.search();
+        this.stopRecording();
+      }
+    });
+  }
+
+  /**
+   * @description Function to stop recording.
+   */
+  stopRecording() {
+    this.voiceRecognition.stop();
+    this.isUserSpeaking = false;
+  }
+
+  /**
+   * @description Function to enable voice input.
+   */
+  startRecording() {
+    this.isUserSpeaking = true;
+    this.voiceRecognition.start();
+    // this.searchForm.controls.searchText.reset();
+  }
+  // WebMic Functions End
+  // SpeechRecognition Functions End --------------
 
 
   // NOt In used  
   // resetVariables(){
   //   this.cardList = [];
   // }
- 
+
   
 }

@@ -5,8 +5,11 @@
         </ion-buttons>
         <ion-searchbar show-cancel-button="focus" [debounce]="1000" enterkeyhint="search" inputmode="search" [(ngModel)]="myInput" (ionChange)="search()"></ion-searchbar>
         <ion-buttons *ngIf="notification" slot="end" (click)="comingSoon()"><img src="assets/img/icons/bell-Bold.svg"></ion-buttons>
-        <ion-buttons slot="end" (click)="checkAndRequestMicPermission()">
+        <ion-buttons *ngIf="!isUserSpeaking" slot="end" (click)="checkAndRequestMicPermission()">
             <ion-icon slot="icon-only" name="mic-outline"></ion-icon>
+        </ion-buttons>
+        <ion-buttons *ngIf="isUserSpeaking" slot="end" (click)="stopRecording()">
+            <ion-icon slot="icon-only" name="mic-off-outline"></ion-icon>
         </ion-buttons>
     </ion-toolbar>
 </ion-header>
