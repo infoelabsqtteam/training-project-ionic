@@ -1,11 +1,31 @@
 [
 	{
+		"pkg": "@capacitor-community/file-opener",
+		"classpath": "com.ryltsov.alex.plugins.file.opener.FileOpenerPlugin"
+	},
+	{
+		"pkg": "@capacitor-community/http",
+		"classpath": "com.getcapacitor.plugin.http.Http"
+	},
+	{
+		"pkg": "@capacitor-mlkit/barcode-scanning",
+		"classpath": "io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.BarcodeScannerPlugin"
+	},
+	{
 		"pkg": "@capacitor/app",
 		"classpath": "com.capacitorjs.plugins.app.AppPlugin"
 	},
 	{
+		"pkg": "@capacitor/barcode-scanner",
+		"classpath": "com.capacitorjs.barcodescanner.CapacitorBarcodeScannerPlugin"
+	},
+	{
 		"pkg": "@capacitor/camera",
 		"classpath": "com.capacitorjs.plugins.camera.CameraPlugin"
+	},
+	{
+		"pkg": "@capacitor/device",
+		"classpath": "com.capacitorjs.plugins.device.DevicePlugin"
 	},
 	{
 		"pkg": "@capacitor/filesystem",
@@ -14,10 +34,6 @@
 	{
 		"pkg": "@capacitor/geolocation",
 		"classpath": "com.capacitorjs.plugins.geolocation.GeolocationPlugin"
-	},
-	{
-		"pkg": "@capacitor/google-maps",
-		"classpath": "com.capacitorjs.plugins.googlemaps.CapacitorGoogleMapsPlugin"
 	},
 	{
 		"pkg": "@capacitor/haptics",
@@ -46,5 +62,13 @@
 	{
 		"pkg": "@capacitor/status-bar",
 		"classpath": "com.capacitorjs.plugins.statusbar.StatusBarPlugin"
+	},
+	{
+		"pkg": "@capawesome/capacitor-file-picker",
+		"classpath": "io.capawesome.capacitorjs.plugins.filepicker.FilePickerPlugin"
+	},
+	{
+		"pkg": "capacitor-blob-writer",
+		"classpath": "com.equimaps.capacitorblobwriter.BlobWriter"
 	}
 ]

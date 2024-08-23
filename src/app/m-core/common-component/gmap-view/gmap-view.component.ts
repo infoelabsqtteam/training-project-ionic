@@ -2,7 +2,8 @@ import { Component, ElementRef, EventEmitter, Input, OnInit, Output, Renderer2, 
 import { App_googleService, NotificationService, AppPermissionService, AppStorageService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, ModalController, Platform } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
-import { GoogleMap, MapType } from '@capacitor/google-maps';
+// import { GoogleMap, MapType } from '@capacitor/google-maps';
+import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ApiService, CoreFunctionService, DataShareService, StorageService } from '@core/web-core';
 import { Subscription } from 'rxjs';
@@ -151,8 +152,8 @@ export class GmapViewComponent implements OnInit {
   }
 
   async onload(){
-    if(this.selectedRowData){
-      this.collectionCustomFunction(this.selectedRowData);      
+    if(this.selectedRowData || this.additionalData?.customEntryForBarcode){
+      this.collectionCustomFunction(this.selectedRowData);
     }else{
       // this.notificationService.presentToastOnBottom("Something went wrong.");
     }
@@ -175,7 +176,7 @@ export class GmapViewComponent implements OnInit {
       this.loadMap();
     }
   }
-  async collectionCustomFunction(selectedrowdata:any){
+  async collectionCustomFunction(selectedrowdata:any,customEntryForBarcode?:boolean){
     let collectionName:any ='';
     if(this.additionalData && this.additionalData.collectionName){
       collectionName= this.additionalData.collectionName
@@ -218,6 +219,19 @@ export class GmapViewComponent implements OnInit {
         }
         // this.createMap(this.center);
         break;
+      // case "sample_collection":
+      //   this.isTracking = true;
+      //   if(!this.additionalData?.customEntryForBarcode){
+      //     this.reachBtn = true;
+      //   }else{
+      //     this.reachBtn = false;
+      //     if(this.checkTimeAndDate())this.reachBtn = true;
+      //   }
+      //   if(this.reachBtn){
+      //     this.reachBtnText = "Reach";
+      //   }else{
+      //     this.reachBtnText = "Reach";
+      //   }
       default: 
         // this.notificationService.presentToast("error ");
     }      
@@ -468,6 +482,9 @@ export class GmapViewComponent implements OnInit {
     // }
   }
   dismissModal(data?:any,role?:any){
+    if(this.additionalData?.barcodeCenter){
+      data = this.additionalData?.barcodeCenter
+    }
     if(data != undefined && data != null){
       this.closeModal(data,role);     
     }else{
@@ -501,146 +518,146 @@ export class GmapViewComponent implements OnInit {
   }
 
   // create Capacitor  map and add markers
-  async createMap(data) {
-    try{
-      this.newMap = await GoogleMap.create({
-        id: 'google-map'+"-"+this.selectedRowData.recordId,
-        element: this.mapRef.nativeElement,
-        apiKey: this.appStorageService.getGoogleMapApiKey(),
-        config: {
-          center: data,
-          zoom: 15,
-        },
-      });
-      console.log("NewMap Created :",this.newMap);
-      await this.addMarker(this.destinationLocationData);     
-      await this.newMap.enableTrafficLayer(true);
-      if(this.platform.is('hybrid')){
-        await this.newMap.enableIndoorMaps(true);
-        await this.newMap.setMapType(MapType.Satellite);
-        await this.newMap.enableCurrentLocation(true); 
-      }
-      this.addListeners();
-    }catch(e){
-      console.log("createMap Error :", e);
-    }
-  }
-  async addMarker(marker){
-    if(this.destinationLocationMarkerId) this.removeMarker(this.destinationLocationMarkerId);
-    this.destinationLocationMarkerId = await this.newMap.addMarker({
-      coordinate: {
-        lat: marker.latitude,
-        lng: marker.longitude
-      },
-      title: marker.heading,
-      snippet: marker.heading,
-      draggable : false,
-    })
-    const CameraConfig:any = {
-      coordinate: {
-        lat: marker.latitude,
-        lng: marker.longitude
-      },
-      zoom: 15
-    }
-    this.newMap.setCamera(CameraConfig);
-  }
-  async removeMarker(markerId?:any){
-    await  this.newMap.removeMarker(markerId);
-  }
-  async addListeners(){
-    await this.newMap.setOnMarkerClickListener((event) => {
-      console.log("setOnMarkerClickListener :",event);
-    })
-    // await this.newMap.setOnMapClickListener((event) => {
-    //   console.log("setOnMapClickListener :",event);
-    //   this.addMarker(event);
-    // })
-    await this.newMap.setOnMyLocationButtonClickListener((event) => {
-      console.log("setOnMyLocationButtonClickListener :",event);
-      this.addMarker(event);
-    })
-    await this.newMap.setOnMyLocationClickListener((event) => {
-      console.log("setOnMyLocationClickListener :",event);
-      this.addMarker(event);
-    })
+  // async createMap(data) {
+  //   try{
+  //     this.newMap = await GoogleMap.create({
+  //       id: 'google-map'+"-"+this.selectedRowData.recordId,
+  //       element: this.mapRef.nativeElement,
+  //       apiKey: this.appStorageService.getGoogleMapApiKey(),
+  //       config: {
+  //         center: data,
+  //         zoom: 15,
+  //       },
+  //     });
+  //     console.log("NewMap Created :",this.newMap);
+  //     await this.addMarker(this.destinationLocationData);     
+  //     await this.newMap.enableTrafficLayer(true);
+  //     if(this.platform.is('hybrid')){
+  //       await this.newMap.enableIndoorMaps(true);
+  //       await this.newMap.setMapType(MapType.Satellite);
+  //       await this.newMap.enableCurrentLocation(true); 
+  //     }
+  //     this.addListeners();
+  //   }catch(e){
+  //     console.log("createMap Error :", e);
+  //   }
+  // }
+  // async addMarker(marker){
+  //   if(this.destinationLocationMarkerId) this.removeMarker(this.destinationLocationMarkerId);
+  //   this.destinationLocationMarkerId = await this.newMap.addMarker({
+  //     coordinate: {
+  //       lat: marker.latitude,
+  //       lng: marker.longitude
+  //     },
+  //     title: marker.heading,
+  //     snippet: marker.heading,
+  //     draggable : false,
+  //   })
+  //   const CameraConfig:any = {
+  //     coordinate: {
+  //       lat: marker.latitude,
+  //       lng: marker.longitude
+  //     },
+  //     zoom: 15
+  //   }
+  //   this.newMap.setCamera(CameraConfig);
+  // }
+  // async removeMarker(markerId?:any){
+  //   await  this.newMap.removeMarker(markerId);
+  // }
+  // async addListeners(){
+  //   await this.newMap.setOnMarkerClickListener((event) => {
+  //     console.log("setOnMarkerClickListener :",event);
+  //   })
+  //   // await this.newMap.setOnMapClickListener((event) => {
+  //   //   console.log("setOnMapClickListener :",event);
+  //   //   this.addMarker(event);
+  //   // })
+  //   await this.newMap.setOnMyLocationButtonClickListener((event) => {
+  //     console.log("setOnMyLocationButtonClickListener :",event);
+  //     this.addMarker(event);
+  //   })
+  //   await this.newMap.setOnMyLocationClickListener((event) => {
+  //     console.log("setOnMyLocationClickListener :",event);
+  //     this.addMarker(event);
+  //   })
     
-  }
+  // }
   
-  async getCurrentLocation() {
-    const enableGPS = await this.app_googleService.checkGeolocationPermission();
-    if(enableGPS){
-      if(this.platform.is("hybrid")){
-        const currentLatLng = await this.app_googleService.getUserLocation();
-        console.log(currentLatLng);
-        if(currentLatLng && currentLatLng['lat'] && currentLatLng['lng']){
-          this.currentLatLng = {
-            lat:currentLatLng['lat'],
-            lng:currentLatLng['lng']
-          }
-          return true;
-        }
-      }else{
-        this.positionOptions={
-          enableHighAccuracy: true,
-        }
-        let coordinates:any = {};
-        const successCallback = (position) => {
-          coordinates = position.coords;
-          if(coordinates && coordinates['latitude'] && coordinates['longitude']){          
-            this.currentLatLng = {
-              lat:coordinates.latitude,
-              lng:coordinates.longitude
-            }
-            return true;
-          }
-        };      
-        const errorCallback = (error: any) => {
-          console.log(error);
-          this.notificationService.presentToastOnBottom(error, "danger");
-        };
-        navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-        // let coordinates:any =  await Geolocation.getCurrentPosition(this.positionOptions);
-        // let coordinates:any = await this.app_googleService.getUserLocation();
-        if(coordinates && coordinates['message'] == "Timeout expired"){
-          this.notificationService.presentToastOnBottom("Something Went wrong. Please try again.");
-        }else if(coordinates && coordinates['lat'] && coordinates['lng']){          
-          this.center = {
-            lat:coordinates.lat,
-            lng:coordinates.lng
-          }
-          // this.addMarkerOnCurrentLocation(coordinates);
-        }else if(coordinates && coordinates['latitude'] && coordinates['longitude']){
-          this.center = {
-            lat:coordinates.lat,
-            lng:coordinates.lng
-          }
-        }
+  // async getCurrentLocation() {
+  //   const enableGPS = await this.app_googleService.checkGeolocationPermission();
+  //   if(enableGPS){
+  //     if(this.platform.is("hybrid")){
+  //       const currentLatLng = await this.app_googleService.getUserLocation();
+  //       console.log(currentLatLng);
+  //       if(currentLatLng && currentLatLng['lat'] && currentLatLng['lng']){
+  //         this.currentLatLng = {
+  //           lat:currentLatLng['lat'],
+  //           lng:currentLatLng['lng']
+  //         }
+  //         return true;
+  //       }
+  //     }else{
+  //       this.positionOptions={
+  //         enableHighAccuracy: true,
+  //       }
+  //       let coordinates:any = {};
+  //       const successCallback = (position) => {
+  //         coordinates = position.coords;
+  //         if(coordinates && coordinates['latitude'] && coordinates['longitude']){          
+  //           this.currentLatLng = {
+  //             lat:coordinates.latitude,
+  //             lng:coordinates.longitude
+  //           }
+  //           return true;
+  //         }
+  //       };      
+  //       const errorCallback = (error: any) => {
+  //         console.log(error);
+  //         this.notificationService.presentToastOnBottom(error, "danger");
+  //       };
+  //       navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+  //       // let coordinates:any =  await Geolocation.getCurrentPosition(this.positionOptions);
+  //       // let coordinates:any = await this.app_googleService.getUserLocation();
+  //       if(coordinates && coordinates['message'] == "Timeout expired"){
+  //         this.notificationService.presentToastOnBottom("Something Went wrong. Please try again.");
+  //       }else if(coordinates && coordinates['lat'] && coordinates['lng']){          
+  //         this.center = {
+  //           lat:coordinates.lat,
+  //           lng:coordinates.lng
+  //         }
+  //         // this.addMarkerOnCurrentLocation(coordinates);
+  //       }else if(coordinates && coordinates['latitude'] && coordinates['longitude']){
+  //         this.center = {
+  //           lat:coordinates.lat,
+  //           lng:coordinates.lng
+  //         }
+  //       }
 
-      }
-    }
-  }
-  async addMarkerOnCurrentLocation(CurrentPostionlatLng){
-    if(this.currentLocationMarkerId) this.removeMarker(this.currentLocationMarkerId);
-    this.currentLocationMarkerId = await this.newMap.addMarker({
-      coordinate: {
-        lat: CurrentPostionlatLng.latitude,
-        lng: CurrentPostionlatLng.longitude
-      },
-      title: CurrentPostionlatLng.heading,
-      draggable : false,
-      snippet: CurrentPostionlatLng.heading
-    })
-    const CameraConfig:any = {
-      coordinate: {
-        lat: CurrentPostionlatLng.latitude,
-        lng: CurrentPostionlatLng.longitude
-      },
-      zoom: 8
-    }
-    await this.newMap.setMapType(MapType.Terrain);
-    this.newMap.setCamera(CameraConfig);
-  }
+  //     }
+  //   }
+  // }
+  // async addMarkerOnCurrentLocation(CurrentPostionlatLng){
+  //   if(this.currentLocationMarkerId) this.removeMarker(this.currentLocationMarkerId);
+  //   this.currentLocationMarkerId = await this.newMap.addMarker({
+  //     coordinate: {
+  //       lat: CurrentPostionlatLng.latitude,
+  //       lng: CurrentPostionlatLng.longitude
+  //     },
+  //     title: CurrentPostionlatLng.heading,
+  //     draggable : false,
+  //     snippet: CurrentPostionlatLng.heading
+  //   })
+  //   const CameraConfig:any = {
+  //     coordinate: {
+  //       lat: CurrentPostionlatLng.latitude,
+  //       lng: CurrentPostionlatLng.longitude
+  //     },
+  //     zoom: 8
+  //   }
+  //   await this.newMap.setMapType(MapType.Terrain);
+  //   this.newMap.setCamera(CameraConfig);
+  // }
   // End create Capacitor  map and add markers
 
   setGridData(gridData){
@@ -806,12 +823,28 @@ export class GmapViewComponent implements OnInit {
         this.ongoogleMapDestinationMarkerClick();
         this.ongoogleMapOriginMarkerClick();
       }else{
-        console.log("status: ", status);
-        // this.notificationService.presentToastOnBottom("status", "danger");
+        if(status == 'ZERO_RESULTS'){
+          this.noResultFoundError();
+        }else{          
+        console.error("RouteError: ", status);
+        }
       }
     }
     );
 
+  }
+  async noResultFoundError(){
+    await this.checkAlert();
+    const confirm = await this.notificationService.confirmAlert("Error","No such Destination present, please select different destination","OK");
+    if(confirm == "confirm"){
+      this.closeModal('','close');
+    }
+  }
+  async checkAlert(){    
+    const isAlertOpen = await this.alertCtrl.getTop();    
+    if(isAlertOpen && isAlertOpen['hasController']){
+      this.alertCtrl.dismiss();
+    }
   }
   ongoogleMapDestinationMarkerClick(){
     let origin = "&origin=" + this.currentLatLng.lat + "," + this.currentLatLng.lng;
@@ -834,7 +867,7 @@ export class GmapViewComponent implements OnInit {
       infowindow.open(this.map, this.destinationLocationMarkerId);
     });
   }
-  openMapLink(){    
+  openMapLink(){
     let origin = "&origin=" + this.currentLatLng.lat + "," + this.currentLatLng.lng;
     let destination = "&destination=" + this.destinationLatLng.lat + "," + this.destinationLatLng.lng;
     const url = 'https://www.google.com/maps/dir/?api=1'+ origin + destination +'&travelmode=driving'+ ',13z?hl=en-US&amp;gl=US';
@@ -843,6 +876,21 @@ export class GmapViewComponent implements OnInit {
     window.open(url,"_blank")
     a.remove();
   }
+
+  // async checkTimeAndDate(){
+  //   try{
+  //     let leaveTime=this.appStorageService.getObject('leaveDateAndTime');
+  //     leaveTime=JSON.parse(await leaveTime)
+  //     if(leaveTime){
+  //       return false;
+  //     }
+  //     else{
+  //       return true;
+  //     }
+  //   }catch(error){
+  //     return true;
+  //   }
+  // }
   ongoogleMapOriginMarkerClick(){
     let markerHeading = "";
     if(this.directionsData && this.directionsData.start_address){

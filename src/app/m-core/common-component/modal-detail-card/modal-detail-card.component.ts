@@ -75,78 +75,8 @@ export class ModalDetailCardComponent implements OnInit {
     }
   }
   // Angular LifeCycle Function Handling Start--------------------
-  
-  // Click Functions Handling Start------------
-  dismissModal(){
-    this.modal?.offsetParent.dismiss({'dismissed': true},"backClicked");
-  }
 
-  clickOnGridElement(field, object, i) {
-    let value={};
-    value['data'] = this.commonFunctionService.getObjectValue(field.field_name, object);
-    if(value['data']!){
-      console.log('Data available in ' + field.field_label);
-    }else{
-      return console.log('No data available in ' + field.field_label);
-    }
-    if(field && field.grid && field.grid['_id'] && field.type.toLowerCase() == "info"){ 
-      field['gridColumns'] = this.childGridFields[field.field_name]
-    }    
-    if(field.gridColumns && field.gridColumns.length > 0){
-      value['gridColumns'] = field.gridColumns;
-    }
-    let editemode = false;
-    if(field.editable){
-      editemode = true;
-    }
-    if(field.bulk_download){
-      value['bulk_download'] = true;
-    }else{
-      value['bulk_download'] = false;
-    }
-    if (!field.type) field.type = "Text";
-    switch (field.type.toLowerCase()) {
-      case "info":
-        if (value && value != '') {
-          this.selectedViewRowIndex = -1;
-          this.viewColumnName = '';
-          this.viewModal(value, field, i, field.field_name,editemode);
-        };
-        break;
-      case "template":
-        if (value && value != '') {
-          this.selectedViewRowIndex = -1;
-          this.viewColumnName = '';
-          //this.templateModal('template-modal',object,i, field.field_name)
-        };
-        break;
-      case "file":
-        if (value['data'] && value['data'] != '') {
-          this.selectedViewRowIndex = -1;
-          this.viewColumnName = '';
-          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode);
-        };
-        break;
-      case "download_file":
-        this.checkForDownloadReport = true;
-        let data = object[field.field_name];
-        const payload = {
-          "_id":object._id,
-          "data":{
-            "current_tab":this.currentMenu.name,
-            "field_name":field.field_name,
-            "data":data
-          }
-        }
-        this.commonFunctionService.download_file(payload);
-        break;
-      default: return;
-    }
-
-  }
-  // Click Functions Handling End------------
-
-  // need to sort below Functions Handling Start---------
+  // ngOnInit Functions Handling Start  ------------
   getChildData(){
     let module = this.menuOrModuleCommonService.getModuleBySelectedIndex();
     let tabDetail:any = '';
@@ -161,7 +91,7 @@ export class ModalDetailCardComponent implements OnInit {
       tabDetail = moduleList[tabIndex];
       }
     }
-    let child_card = {};
+    let child_card:any = {};
     if(tabDetail != ''){
       if(tabDetail && tabDetail.child_card){
         const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tabDetail.child_card._id,"_id");
@@ -184,6 +114,8 @@ export class ModalDetailCardComponent implements OnInit {
       }else{
         this.childDataTitle = this.childDataValue.name;
       }
+    }else if(child_card?.name){
+      this.childDataTitle=child_card?.name;
     }
     this.setCard(child_card);
     
@@ -224,9 +156,103 @@ export class ModalDetailCardComponent implements OnInit {
       });
     }
   }  
-  getValueForGrid(field,object){
-    return this.gridCommonFunctionService.getValueForGrid(field,object);
+  getChildGridFieldsbyId(childrGridId:string){
+    const params = "grid";
+    const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
+    const payload = this.apiCallService.getPaylodWithCriteria(params, '', criteria, {});
+    this.apiService.GetChildGrid(payload);
   }
+  // ngOnInit Functions Handling End  ------------   
+  
+  // Click Functions Handling Start  ------------
+  dismissModal(){
+    this.modal?.offsetParent.dismiss({'dismissed': true},"backClicked");
+  }
+  clickOnGridElement(field, object, i) {
+    let value={};
+    value['data'] = this.commonFunctionService.getObjectValue(field.field_name, object);
+    if(value['data']!){
+      console.log('Data available in ' + field.field_label);
+    }else{
+      return console.log('No data available in ' + field.field_label);
+    }
+    if(field && field.grid && field.grid['_id'] && field.type.toLowerCase() == "info"){ 
+      field['gridColumns'] = this.childGridFields[field.field_name]
+    }    
+    if(field.gridColumns && field.gridColumns.length > 0){
+      value['gridColumns'] = field.gridColumns;
+    }
+    let editemode = false;
+    if(field.editable){
+      editemode = true;
+    }
+    if(field.bulk_download){
+      value['bulk_download'] = true;
+    }else{
+      value['bulk_download'] = false;
+    }
+    if (!field.type) field.type = "Text";
+    switch (field.type.toLowerCase()) {
+      case "info":
+        if (value && value != '') {
+          this.selectedViewRowIndex = -1;
+          this.viewColumnName = '';
+          this.viewModal(value, field, i, field.field_name,editemode);
+        };
+        break;
+      case "template":
+        if (value && value != '') {
+          this.selectedViewRowIndex = -1;
+          this.viewColumnName = '';
+          //this.templateModal('template-modal',object,i, field.field_name)
+        };
+        break;
+      case "file":
+      case "file_with_preview":
+      case "file_with_print":
+        if (value['data'] && value['data'] != '') {
+          this.selectedViewRowIndex = -1;
+          this.viewColumnName = '';
+          let previewFile:boolean = false;
+          let printFile:boolean = false;
+          if(field.type.toLowerCase() == "file_with_preview"){
+            previewFile = true;
+          }else if(field.type.toLowerCase() == "file_with_print"){
+            printFile = true;
+          }
+          const obj = {
+            'data' : value,
+            'field' : field,
+            'index' : i,
+            'field_name': field?.field_name,
+            'editemode' : editemode,
+            'field_type': field.type.toLowerCase(),
+            'previewFile': previewFile,
+            'printFile' : printFile
+          }
+          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode,obj);
+        };
+        break;
+      case "download_file":
+        this.checkForDownloadReport = true;
+        let data = object[field.field_name];
+        const payload = {
+          "_id":object._id,
+          "data":{
+            "current_tab":this.currentMenu.name,
+            "field_name":field.field_name,
+            "data":data
+          }
+        }
+        this.commonFunctionService.download_file(payload);
+        break;
+      default: return;
+    }
+
+  }
+  // Click Functions Handling End------------
+
+  // Dependency Functions Handling Start------------
   async viewModal(value:any, field:any, i:number, field_name:any, editemode){
     const modal = await this.modalController.create({
       component: ModalComponent,
@@ -243,13 +269,16 @@ export class ModalDetailCardComponent implements OnInit {
     });
     return await modal.present();
   }
-  async viewFileModal(component:any, value, field, i,field_name,editemode){    
+  async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
     let objectData:any = {
       'data' : value,
       'field' : field,
       'index' : i,
       'field_name': field_name,
-      'editemode' : editemode
+      'editemode' : editemode,
+      'field_type': obj?.field_type,
+      'previewFile': obj?.previewFile,
+      'printFile' : obj?.printFile
     }
     // this.modelService.openModal(component,objectData).then((data:any) => {
     //   if(data && data.role == 'closed'){
@@ -269,12 +298,10 @@ export class ModalDetailCardComponent implements OnInit {
           console.log("File Download Modal closed " , data.role);                
     });
     return await modal.present();
-  }
-  getChildGridFieldsbyId(childrGridId:string){
-      const params = "grid";
-      const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
-      const payload = this.apiCallService.getPaylodWithCriteria(params, '', criteria, {});
-      this.apiService.GetChildGrid(payload);
+  }  
+  // Dependency Functions Handling End------------
+  getValueForGrid(field,object){
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   }
 
 }

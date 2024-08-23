@@ -9,10 +9,11 @@ import { IonicModule } from '@ionic/angular';
 import { CallDataRecordFormComponent } from './call-data-record-form/call-data-record-form.component';
 import { ChartFilterComponent } from './chart-filter/chart-filter.component';
 import { NgChartsModule } from 'ng2-charts';
-import { GoogleChartsModule } from 'angular-google-charts';
+// import { GoogleChartsModule } from 'angular-google-charts';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ModalComponent } from './modal.component';
 import { FileViewsModalComponent } from './file-views-modal/file-views-modal.component';
+import { BarcodeScanningComponent } from './barcode-scanning/barcode-scanning.component';
 
 const modal =[
   ModalComponent,
@@ -21,7 +22,8 @@ const modal =[
   GridSelectionDetailModalComponent,
   CallDataRecordFormComponent,
   ChartFilterComponent,
-  FileViewsModalComponent
+  FileViewsModalComponent,
+  BarcodeScanningComponent
 ]
 
 @NgModule({
@@ -32,7 +34,7 @@ const modal =[
     BrowserModule,
     IonicModule.forRoot(),
     NgChartsModule,
-    GoogleChartsModule,
+    // GoogleChartsModule,
     NgSelectModule
   ],
   declarations: modal,
@@ -42,5 +44,6 @@ const modal =[
       NO_ERRORS_SCHEMA
   ],
   // providers : [File]
+  providers : []
 })
 export class ModalModule { }

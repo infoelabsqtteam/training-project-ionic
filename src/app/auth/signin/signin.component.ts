@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
-import {  NotificationService } from '@core/ionic-core';
+import {  LoaderService, NotificationService } from '@core/ionic-core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { IonLoaderService } from 'src/app/service/ion-loader.service';
 import { App } from '@capacitor/app';
-import { ApiCallService, AuthDataShareService, AuthService, CoreFunctionService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
+import { ApiCallService, AuthDataShareService, AuthService, AwsSecretManagerService, CoreFunctionService, DataShareService, EnvService, StorageService, StorageTokenStatus } from '@core/web-core';
 
 @Component({
   selector: 'app-signine',
@@ -38,10 +37,12 @@ export class SigninComponent implements OnInit {
     private coreFunctionService: CoreFunctionService,
     private notificationService:NotificationService,
     private platform: Platform,
-    private ionLoaderService: IonLoaderService,
+    private ionLoaderService: LoaderService,
     private envService: EnvService,
     private authDataShareService: AuthDataShareService,
-    private apiCallService: ApiCallService
+    private apiCallService: ApiCallService,
+    private awsSecretManagerService: AwsSecretManagerService,
+    private dataShareService: DataShareService
   ) { 
     this.initializeApp();    
   }
@@ -92,10 +93,10 @@ export class SigninComponent implements OnInit {
   // subscribe Varibale rather than Constructor start-------- 
   initializeApp() {
     this.platform.ready().then(() => {});
-    this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
-      let isloaderOpen:any = this.ionLoaderService.loadingController.getTop();
-      if(isloaderOpen){
-        this.ionLoaderService.hideLoader();
+    this.platform.backButton.subscribeWithPriority(10, async (processNextHandler) => {
+      let isloaderOpen:any = await this.ionLoaderService.loadingCtrl.getTop();
+      if(isloaderOpen && isloaderOpen['hasController']){
+        await this.ionLoaderService.hideLoader();
       }
       if(this.isExitAlertOpen){
         this.notificationService.presentToastOnBottom("Please Click On the exit button to exit the app.");
@@ -238,6 +239,14 @@ export class SigninComponent implements OnInit {
         this.apiCallService.getApplicationAllSettings();
       }else{        
         this.storageService.removeKeyFromStorage("USER");
+        if(!isHostNameExist){
+          isHostNameExist =  await this.awsSecretManagerService.getserverHostByAwsOrLocal(isClientCodeExist);
+          if(isHostNameExist){
+            this.storageService.setHostNameDinamically(isHostNameExist+"/rest/");
+            this.dataShareService.shareServerHostName(isHostNameExist);
+            this.checkValues();
+          }
+        }
       }
     }else{
       this.router.navigateByUrl('/checkcompany');
@@ -249,9 +258,9 @@ export class SigninComponent implements OnInit {
       this.logoPath = this.storageService.getLogoPath() + "logo-signin.png";
       this.imageTitle = this.storageService.getPageTitle();
       this.appTitle = this.storageService.getPageTitle();
-      let loader:any = await this.ionLoaderService.loadingController.getTop();
-      if(loader){
-        this.ionLoaderService.hideLoader();
+      let loader:any = await this.ionLoaderService.loadingCtrl.getTop();
+      if(loader && loader['hasController']){
+        await this.ionLoaderService.hideLoader();
       }
     }else{
       setTimeout(() => {

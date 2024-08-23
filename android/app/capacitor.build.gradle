@@ -2,18 +2,22 @@
 
 android {
   compileOptions {
-      sourceCompatibility JavaVersion.VERSION_11
-      targetCompatibility JavaVersion.VERSION_11
+      sourceCompatibility JavaVersion.VERSION_17
+      targetCompatibility JavaVersion.VERSION_17
   }
 }
 
 apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
+    implementation project(':capacitor-community-file-opener')
+    implementation project(':capacitor-community-http')
+    implementation project(':capacitor-mlkit-barcode-scanning')
     implementation project(':capacitor-app')
+    implementation project(':capacitor-barcode-scanner')
     implementation project(':capacitor-camera')
+    implementation project(':capacitor-device')
     implementation project(':capacitor-filesystem')
     implementation project(':capacitor-geolocation')
-    implementation project(':capacitor-google-maps')
     implementation project(':capacitor-haptics')
     implementation project(':capacitor-keyboard')
     implementation project(':capacitor-preferences')
@@ -21,6 +25,8 @@ dependencies {
     implementation project(':capacitor-share')
     implementation project(':capacitor-splash-screen')
     implementation project(':capacitor-status-bar')
+    implementation project(':capawesome-capacitor-file-picker')
+    implementation project(':capacitor-blob-writer')
     implementation "com.google.android.gms:play-services-location:16.+"
 }
 

@@ -12,15 +12,25 @@
     <p class="enquerylist" *ngFor="let column of childColumns; index as j">
       <span [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.field_label">{{column.field_label}}</span>
       <span [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.label">{{column.label}}</span>
-      <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime' || column.type == 'info' || column.type == 'file'" (click)="clickOnGridElement(column,childDataValue,j)" [innerHTML]="getValueForGrid(column,childDataValue)"></strong>
+      <strong [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime' || column.type == 'info' || column.type == 'file' || column.type == 'file_with_preview' || column.type == 'file_with_print'" (click)="clickOnGridElement(column,childDataValue,j)" [innerHTML]="getValueForGrid(column,childDataValue)"></strong>
 
       <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="(column.type == 'button' || column.type == 'iconbutton') && childDataValue[column.field_name]" color="medium" fill="outline" size="small" >{{childDataValue[column.field_name]}}</ion-button>
     </p>
+  </div>
+  <div *ngIf="cardType == 'detail2'" class="detail2">
+      <ion-list  *ngFor="let column of childColumns; index as j">
+        <ion-row class="label" [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.field_label" >{{column.field_label}}</ion-row>
+        <ion-row  [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.label">{{column.label}}</ion-row>
+        <ion-row><strong class="padding" [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number' || column.type == 'currency' || column.type == 'email' || column.type == 'text' || column.type == 'date' || column.type == 'datetime' || column.type == 'info' || column.type == 'file' || column.type == 'file_with_preview' || column.type == 'file_with_print'" (click)="clickOnGridElement(column,childDataValue,j)"  [innerHTML]="getValueForGrid(column,childDataValue)"></strong></ion-row>
+        <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="(column.type == 'button' || column.type == 'iconbutton') && childDataValue[column.field_name]" color="medium" fill="outline" size="small" >{{childDataValue[column.field_name]}}</ion-button>
+        <!-- <ion-item-divider class="custom-divider">
+        </ion-item-divider> -->
+      </ion-list>
   </div>
 
 </ion-content>
 <ion-footer>
   <ion-item>
-    <ion-button type="button" mdbBtn color="primary" outline="true" slot="end" size="small" class="waves-light" mdbWavesEffect data-dismiss="modal" (click)="dismissModal()">Close</ion-button>
+    <ion-button type="button" mdbBtn color="primary" outline="true" slot="end" size="small" class="waves-light" mdbWavesEffect data-dismiss="modal" (click)="dismissModal()">Back</ion-button>
   </ion-item>
 </ion-footer>

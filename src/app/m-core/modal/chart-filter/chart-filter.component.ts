@@ -1,14 +1,15 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { NotificationService, AppPermissionService, DownloadService } from '@core/ionic-core';
+import { NotificationService, AppPermissionService, AppDownloadService, LoaderService, AppShareService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
-import { File } from '@ionic-native/file/ngx';
+// import { File } from '@awesome-cordova-plugins/file/ngx';
 import { ModalController, Platform, isPlatform } from '@ionic/angular';
 import { DatePipe } from '@angular/common';
 import { utcToZonedTime, format} from 'date-fns-tz';
 import { parseISO } from 'date-fns';
 import ChartsEmbedSDK from "@mongodb-js/charts-embed-dom";
 import { ApiService, CommonFunctionService, DataShareService, ChartService, StorageService, ApiCallService, FormCreationService } from '@core/web-core';
+import { FileOpener } from '@capacitor-community/file-opener';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -26,7 +27,7 @@ export const MY_DATE_FORMATS = {
   selector: 'app-chart-filter',
   templateUrl: './chart-filter.component.html',
   styleUrls: ['./chart-filter.component.scss'],
-  providers: [File]
+  providers: []
 })
 export class ChartFilterComponent implements OnInit {
 
@@ -35,7 +36,7 @@ export class ChartFilterComponent implements OnInit {
   @Input() modal;
   @Input() dashletData;
   @Input() filter;
-  @Input() staticData;
+  @Input() staticData = {};
   @ViewChild('startDate', { static: false }) startDateSelected:ElementRef<any>;  
   @ViewChild('endDate', { static: false }) endDateSelected:ElementRef<any>;
   // @ViewChild('chartFilterModal') public chartFilterModal: ModalDirective;  
@@ -84,17 +85,19 @@ export class ChartFilterComponent implements OnInit {
     public formBuilder: UntypedFormBuilder,
     private apiService:ApiService,
     private dataShareService:DataShareService,
-    private file: File,
+    // private file: File,
     private storageService:StorageService,
     private permissionService: AppPermissionService,
     private datePipe: DatePipe,
     private notificationService:NotificationService,
     private chartService:ChartService,
     private commonFunctionService: CommonFunctionService,
-    private downloadService: DownloadService,
+    private appDownloadService: AppDownloadService,
     private modalController: ModalController,
     private apiCallService: ApiCallService,
-    private formCreationService: FormCreationService
+    private formCreationService: FormCreationService,
+    private loaderService: LoaderService,
+    private appShareService: AppShareService
   ) {
     this.accessToken = this.storageService.GetIdToken();
     this.staticDataSubscription = this.dataShareService.staticData.subscribe(data =>{
@@ -421,119 +424,130 @@ export class ChartFilterComponent implements OnInit {
   async downloadtomobile(excelBuffer:any, extentionType?:any){ 
     
     const fileExtension = extentionType;
-    let file_Type: any;
-    let file_prefix: any;
-    if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
-      file_Type = "image/" + extentionType;
-      file_prefix = "Image";
-    }else if(fileExtension == "xlsx" || fileExtension == "xls"){
-      file_Type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
-      file_prefix = "Excel";
-    }else if(fileExtension == "pdf"){
-      file_Type = "application/" + extentionType;
-      file_prefix = "PDF";
-    }else{
-      file_Type = "application/octet-stream";
-      file_prefix = "TEXT";
-    }
-    const fileName = file_prefix + '_' + new Date().getTime() + "." + fileExtension;
-    const excelBlobData:Blob = new Blob([excelBuffer],{type:file_Type});
+    // let file_Type: any;
+    // let file_prefix: any;
+    // if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
+    //   file_Type = "image/" + extentionType;
+    //   file_prefix = "Image";
+    // }else if(fileExtension == "xlsx" || fileExtension == "xls"){
+    //   file_Type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
+    //   file_prefix = "Excel";
+    // }else if(fileExtension == "pdf"){
+    //   file_Type = "application/" + extentionType;
+    //   file_prefix = "PDF";
+    // }else{
+    //   file_Type = "application/octet-stream";
+    //   file_prefix = "TEXT";
+    // }
+    let response:any = this.appDownloadService.getBlobTypeFromExtn(extentionType);
+    const fileName = response?.filePrefix + '_' + new Date().getTime() + "." + fileExtension;
+    const excelBlobData:Blob = new Blob([excelBuffer],{type:response?.mimeType});
     
-    let readPermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-    let writePermission = await this.permissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
+    // let readPermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
+    // let writePermission = await this.permissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
 
-    if(readPermission && writePermission){  
+    // if(readPermission && writePermission){ 
 
-    // === using Write_blob
-    // const fileDataBlob = await writeFile({
-    //   path: fileName,
-    //   directory: Directory.ExternalStorage,
-    //   data: excelBlobData
-    // }).then(() => {
-    //     this.storageService.presentToast(this.dashboardItem.name + "Saved")
-    //   }).catch( (error:any) =>{
-    //     this.storageService.presentToast(error)
-    //   })
-
-    //=== using capacitor filesystem
-    // const base64 = await this.convertBlobToBase64(excelBlobData);
-    // console.log(base64);
-    // Filesystem.writeFile({
-    //   path: fileName,
-    //   directory: Directory.Documents,
-    //   data: <string>base64
-    // }).then(() => {
-    //     this.storageService.presentToast(fileName + " Saved")
-    //   }).catch( (error:any) =>{
-    //     if(error && error.message){
-    //       this.storageService.presentToast(error.message);
-    //     }else{
-    //       this.storageService.presentToast(error);
-    //     }
-    //   })
-
-
-    // ==========using native file
+    // // ==========using native file
     
-      this.file.checkDir(this.file.externalRootDirectory, "Download").then(() => {
+    //   this.file.checkDir(this.file.externalRootDirectory, "Download").then(() => {
 
-        this.file.writeFile(this.file.externalRootDirectory + '/Download/',fileName,excelBlobData,{replace:true}).then(() => {
-          this.notificationService.presentToastOnBottom(fileName + " Saved in Downloads");
-        }).catch( (error:any) =>{
-          if(error && error.message){
-            this.notificationService.presentToastOnBottom(error.message);
-          }else{
-            this.notificationService.presentToastOnBottom(error);
-          }
-        })
+    //     this.file.writeFile(this.file.externalRootDirectory + '/Download/',fileName,excelBlobData,{replace:true}).then(() => {
+    //       this.notificationService.presentToastOnBottom(fileName + " Saved in Downloads");
+    //     }).catch( (error:any) =>{
+    //       if(error && error.message){
+    //         this.notificationService.presentToastOnBottom(error.message);
+    //       }else{
+    //         this.notificationService.presentToastOnBottom(error);
+    //       }
+    //     })
         
-      }).catch( (error:any) =>{
-        if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
-        this.file.createDir(this.file.externalRootDirectory, "Download", true).then(() => {
+    //   }).catch( (error:any) =>{
+    //     if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
+    //     this.file.createDir(this.file.externalRootDirectory, "Download", true).then(() => {
           
-          this.file.writeFile(this.file.externalRootDirectory + "/Download/",fileName,excelBlobData,{replace:true}).then(() => {
-            this.notificationService.presentToastOnBottom(fileName + " Saved in Download");
-          })
+    //       this.file.writeFile(this.file.externalRootDirectory + "/Download/",fileName,excelBlobData,{replace:true}).then(() => {
+    //         this.notificationService.presentToastOnBottom(fileName + " Saved in Download");
+    //       })
 
-        }).catch( (error:any) =>{
-          if(error && error.message){
-            this.notificationService.presentToastOnBottom(error.message);
-          }else{
-            this.notificationService.presentToastOnBottom(error);
-          }
-        })
-        }
-      });
+    //     }).catch( (error:any) =>{
+    //       if(error && error.message){
+    //         this.notificationService.presentToastOnBottom(error.message);
+    //       }else{
+    //         this.notificationService.presentToastOnBottom(error);
+    //       }
+    //     })
+    //     }
+    //   });
 
-    }
-
-    // ======using filesaver
-    // FileSaver.saveAs(excelBlobData,fileName);
-    // FileSaver.saveAs(excelBlobData,fileName).then(() => {
-    //   this.storageService.presentToast(this.dashboardItem.name + "Saved");
-    //   // alert("Excel file saved in device");
-    // }).catch( (error:any) =>{
-    //   if(error && error.message){
-    //     this.storageService.presentToast(error.message);
-    //   }else{
-    //     this.storageService.presentToast(error);
-    //   }
-    //   // alert(error);
-    // })
+    // }
+    let downloadResponse:any =  this.appDownloadService.downloadAnyBlobData(excelBlobData,fileName,true);
+    this.downloadResponseHandler(downloadResponse);
+    // // ======using filesaver
+    // // FileSaver.saveAs(excelBlobData,fileName);
+    // // FileSaver.saveAs(excelBlobData,fileName).then(() => {
+    // //   this.storageService.presentToast(this.dashboardItem.name + "Saved");
+    // //   // alert("Excel file saved in device");
+    // // }).catch( (error:any) =>{
+    // //   if(error && error.message){
+    // //     this.storageService.presentToast(error.message);
+    // //   }else{
+    // //     this.storageService.presentToast(error);
+    // //   }
+    // //   // alert(error);
+    // // })
 
     
   }
-
-  public async getDownloadPath() {
-    if (this.platform.is('android')) {    
-      const ReadWritePermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-      if(ReadWritePermission){
-        return this.file.externalRootDirectory + '/Download/';
-      }      
+  async downloadResponseHandler(response:any){
+    if(response?.haspermission && response?.status){
+      await this.loaderService.hideLoader();
+      if(response?.openfile && !response?.sharefile){
+        const confirm:any = await this.notificationService.confirmAlert('Open file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Open", "Dismiss");
+        if(response?.fileuri && confirm == "confirm"){
+          FileOpener.open({filePath:response.fileuri, contentType:response?.mimetype}).then( res => {
+            console.log("File Opened");
+          }).catch((e)=>{
+            console.error("File Opening error ", JSON.stringify(e));
+            this.notificationService.presentToastOnBottom("No app found to open the file.");
+          })
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+        }
+      }else if(!response?.openfile && response?.sharefile){
+        const confirm:any = await this.notificationService.confirmAlert('Share file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Share", "Dismiss");
+        if(response?.fileuri && confirm == "confirm"){
+          const canShare = await this.appShareService.checkDeviceCanShare();
+          if(canShare){
+            let shareOption = {
+              title: response?.filename ? response.filename : "Share",
+              text: "Here is the file you requested.",
+              url: response?.fileuri,
+              dialogTitle: "Share " + response?.filename
+            }
+            this.appShareService.share(shareOption);
+          }
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+        }
+      }else{
+        this.notificationService.presentToastOnBottom("Downloaded into " + response.directoryname.toLowerCase(),"success")
+      }
     }else{
-      return this.file.documentsDirectory;
+      this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
     }
   }
+
+  // public async getDownloadPath() {
+  //   if (this.platform.is('android')) {    
+  //     const ReadWritePermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
+  //     if(ReadWritePermission){
+  //       return this.file.externalRootDirectory + '/Download/';
+  //     }      
+  //   }else{
+  //     return this.file.documentsDirectory;
+  //   }
+  // }
 
   // Helper Function
   convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
@@ -627,9 +641,11 @@ export class ChartFilterComponent implements OnInit {
     let chart = this.createdChartList[chartId];    
     let blobData:any = await this.chartService.getDownloadData(chart,object);
     if(isPlatform('hybrid')){
-      this.downloadService.downloadBlobData(blobData.url, blobData.name)
+      // const response:any = await this.appDownloadService.downloadBlobData(blobData.url, blobData.name);
+      const response:any = await this.appDownloadService.downloadAnyBlobData(blobData.url, blobData.name,true);
+      this.downloadResponseHandler(response);
     }else{
-      this.chartService.downlodBlobData(blobData.url, blobData.name)
+      this.chartService.downlodBlobData(blobData.url, blobData.name);
     }
   } 
   close(item:any){
