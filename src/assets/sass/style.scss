@@ -51,7 +51,13 @@ ion-header {
         ion-icon {font-size:18px;margin:10px;color:#999;}
         ion-note {font-size:12px;}
     } 
-    .menulist {height:calc(100% - 208px);overflow-y:scroll;}
+    .menulist {height:calc(100% - 208px);overflow-y:scroll;
+        ion-menu-toggle {
+            ion-label.sidebarLabel-left-margin{
+                margin-left : 6px;
+            }
+        }
+    }
 }
 //***---------- Banner  ----------***//
 .banner {

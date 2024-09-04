@@ -1,5 +1,5 @@
 <ion-app>
-    <ion-menu side="start" menuId="custom" contentId="main" *ngIf="showSidebarMenu">
+    <ion-menu side="start" menuId="sideNavbar" contentId="main" *ngIf="showSidebarMenu" (ionDidClose)="CheckSideMenu(false)" (ionWillOpen)="CheckSideMenu(true)" autoHide="false">
         <ion-content class="sidenav" >
             <div class="sidebarheader">
                 <div class="profilpic"><ion-icon name="person-circle-outline"></ion-icon></div>
@@ -8,34 +8,34 @@
                 </div>
                 <ion-menu-toggle (click)="onLogout()"><ion-icon name="power-outline"></ion-icon></ion-menu-toggle>
             </div>
+            <!-- <ion-item lines="none"> -->
+                <ion-searchbar type="search" show-cancel-button="focus" [debounce]="1000" enterkeyhint="search" inputmode="search" [(ngModel)]="myInput" (ionChange)="search()"></ion-searchbar>                        
+            <!-- </ion-item> -->
             <ion-list class="menulist">
                 <ion-menu-toggle>
                     <ion-item lines="none" [routerLink]="['/home']">
                         <ion-icon name="home-outline"></ion-icon>
-                        <ion-label class="ion-margin-start">Home</ion-label>
+                        <ion-label class="sidebarLabel-left-margin">Home</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
                 <ion-menu-toggle>
                     <ion-item lines="none" [routerLink]="['/createpwd']">
                         <ion-icon name="key-outline"></ion-icon>
-                        <ion-label class="ion-margin-start">Change Password</ion-label>
+                        <ion-label class="sidebarLabel-left-margin">Change Password</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
-                <!-- Dynamic Sidebar -->
                 <ion-menu-toggle auto-hide="false">
                     <ion-item lines="none" *ngFor="let cardItem of cardList; let i = index"
                         (click)="showCardTemplate(cardItem, i)" lines="none" detail="false"
                         [class.selected]="selectedIndex == i" [ngClass]="cardItem.sidebar_menu?'ion-show':'ion-hide'">
                         <ion-avatar slot="start"><img [src]="cardItem.image_src"></ion-avatar>
-                        <ion-label class="ion-margin-start">{{cardItem.name}}</ion-label>
+                        <ion-label class="">{{cardItem.name}}</ion-label>
                     </ion-item>
                 </ion-menu-toggle>
-                <!-- Dynamic Sidebar End -->
                 <ion-menu-toggle>
                     <ion-item (click)="shareApp()">
                         <ion-icon name="share" slot="start" style="margin-right:16px;"></ion-icon>
-                        <!-- <span class="material-symbols-outlined"slot="start" >share</span> -->
-                        <ion-label class="ion-margin-start">Share</ion-label>
+                        <ion-label class="">Share</ion-label>
                     </ion-item>                    
                 </ion-menu-toggle>
             </ion-list>

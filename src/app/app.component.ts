@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, OnDestroy, EventEmitter, Output, ViewChild } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { NavController, Platform } from '@ionic/angular';
+import { IonMenu, NavController, Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
@@ -50,6 +50,7 @@ export class AppComponent implements OnInit, OnDestroy {
   appCardMasterDataSize:number;
 
   @Output() collection_name = new EventEmitter<string>();
+  @ViewChild('sideNavbar') sideNavbar: IonMenu;
 
   selectedIndex= -1;
   themeSettingSubscription: Subscription;
@@ -58,6 +59,8 @@ export class AppComponent implements OnInit, OnDestroy {
   themeName:any = '';
   clinetNameSubscription: Subscription;
   loginAndLogoutResponce: Subscription;
+  myInput:string;
+  isSideBarOpen:boolean;
 
   constructor(
     private platform: Platform,
@@ -91,14 +94,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // this.web_site = appConstants.siteName;
     let newdate = new Date().getFullYear()
     this.app_Version  = newdate +"@" + this.envService.getAppName();
-    this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
-      if(data && data.data && data.data.length > 0){
-        // this.cardList = data.data;
-        this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(data.data);
-      }else{
-        console.log("Something went wrong, please try again later");
-      }
-    });
+    // this.subscribeGridData();
     if(this.dataShareService.themeSetting != undefined){
       this.themeSettingSubscription = this.dataShareService.themeSetting.subscribe(
         data =>{
@@ -127,8 +123,7 @@ export class AppComponent implements OnInit, OnDestroy {
             this.dataShareService.resetApplicationSetting([]);
           }
         })
-    } 
-    
+    }
     this.loginAndLogoutResponce = this.authDataShareService.settingData.subscribe(data =>{      
       if(data == "logged_in"){
         this.userInfo = this.storageService.GetUserInfo();
@@ -171,23 +166,10 @@ export class AppComponent implements OnInit, OnDestroy {
     // this.storageService.setObject('JsGoogleMap',this.app_googleService.loadGoogleMaps());
     localStorage.setItem('JsGoogleMap',JSON.stringify(await this.app_googleService.loadGoogleMaps()));
   }
-
-  unsubscribeVariabbles(){
-    if (this.authSub) {
-      this.authSub.unsubscribe();
-    }
-    if (this.gridDataSubscription) {
-      this.gridDataSubscription.unsubscribe();
-    }
-    if (this.loginAndLogoutResponce) {
-      this.loginAndLogoutResponce.unsubscribe();
-    }
-  }
-
+  // Angular LifeCycle Function Handling Start -----------------------
   ngOnDestroy() {
     this.unsubscribeVariabbles();
-  }  
-  
+  }
   ngOnInit() {
     this.router.events.subscribe(event =>{
       if (event instanceof NavigationEnd) {
@@ -203,16 +185,166 @@ export class AppComponent implements OnInit, OnDestroy {
       }      
     })
   }
-  isClientCodeExist(){
-      const clientCode = this.storageService.getClientName();
-      if(this.coreFunctionService.isNotBlank(clientCode)){
-        // this.authService.appLogout();
-      }else{            
-        this.router.navigateByUrl("/checkcompany");
+  // Angular LifeCycle Function Handling End -----------------------
+  // Ionic LifeCycle Function Handling Start -----------------
+  ionViewWillEnter(){
+    console.log("Will Leave");
+  }
+  ionViewDidEnter(){
+    console.log("Did Enter");
+  }
+  ionViewWillLeave(){
+    console.log("Will Leave");
+  }
+  ionViewDidLeave(){
+    console.log("Did Leave");
+  }
+  // Ionic LifeCycle Function Handling End -----------------
+  
+  // Subscribed Variable Function Handling start --------------
+  subscribeGridData(){
+    this.gridDataSubscription = this.dataShareService.gridData.subscribe(data =>{
+      if(data?.data){
+        this.gridDataResponse(data.data);
       }
+    });
+  }
+  gridDataResponse(data:any){
+    let moduleList = this.commonAppDataShareService.getModuleList();
+    if(data && data.length > 0){
+      let setResponseData = false;
+      if(data.length > moduleList?.length){
+        setResponseData = true;
+      }else{
+        if(this.myInput){
+          setResponseData = true;
+        }
+      }
+      if(setResponseData){
+        this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(data);
+      }else{
+        this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(moduleList);
+      }
+      this.dataShareService.shareGridData([]);
+    }else{
+      if(!this.myInput){
+        this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(moduleList);
+      }else{
+        this.notificationService.presentToastOnBottom("No matching module found, try again by adjusting search value!")
+      }
+    }
+  }
+  unsubscribeGridData(){    
+    if (this.gridDataSubscription) {
+      this.gridDataSubscription.unsubscribe();
+    }
+  }
+  unsubscribeVariabbles(){
+    if (this.authSub) {
+      this.authSub.unsubscribe();
+    }
+    if (this.loginAndLogoutResponce) {
+      this.loginAndLogoutResponce.unsubscribe();
+    }
+  }
+  isClientCodeExist(){
+    const clientCode = this.storageService.getClientName();
+    if(this.coreFunctionService.isNotBlank(clientCode)){
+      // this.authService.appLogout();
+    }else{            
+      this.router.navigateByUrl("/checkcompany");
+    }
+  }
+  resetVariables(){
+    this.cardList = [];
+    this.showSidebarMenu = false;
+    this.userInfo = {};
   }
   redirectToHomePage(){
     this.redirectToHomePageWithStorage();
+  }
+  // Subscribed Variable Function Handling End --------------
+  // Click Functions Handling Start--------------------
+  onLogout() {
+    //for destroying home page 
+    const currentUrl = this.router.url;
+    this.navController.navigateRoot(currentUrl);
+    this.authService.Logout('');
+  }
+  showCardTemplate(card:any, index:number){    
+    const moduleList = this.commonAppDataShareService.getModuleList();
+    const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
+    this.commonAppDataShareService.setModuleIndex(cardclickedindex);
+    const selectedcard = moduleList[cardclickedindex];
+    this.router.navigate(['card-view']);
+    this.dataShareServiceService.setcardData(selectedcard);
+  } 
+  async shareApp(){
+    let appInfo:any = {};
+    if(Capacitor.isNativePlatform()){
+      appInfo = await App.getInfo();
+    }else{
+      appInfo = {
+        'name': this.storageService.getClientCodeEnviorment().appName,
+        'id' : this.storageService.getClientCodeEnviorment().appId
+      }
+    }
+    await Share.share({
+      title: appInfo.name,
+      text: 'E-Labs Mobile application is perfect companion for your next generation E-Labs LIMS.',
+      url: 'https://play.google.com/store/apps/details?id='+ appInfo.id,
+      dialogTitle: 'Share with friends',
+    });
+  }
+  CheckSideMenu(isopen:boolean){
+    // if(isopen){
+    //   this.subscribeGridData();
+    // }else{
+    //   this.unsubscribeGridData();
+    // }
+    this.isSideBarOpen = isopen;
+    this.search(isopen);
+  }
+  search(isopen?:boolean) {
+    if(this.myInput && this.isSideBarOpen){
+      // const criteria = "name;cnts;"+this.myInput+";STATIC";
+      // this.getGridData([criteria]);
+      const query = this.myInput.toLowerCase();
+      let moduleList = this.commonAppDataShareService.getModuleList();
+      this.cardList = moduleList.filter((mod) => {
+        return mod.name.toLowerCase().includes(query);
+      });
+    }else{
+      if(!this.myInput){
+        this.gridDataResponse([]);
+      }
+    }
+  }
+  openSidenav(){
+    this.sideNavbar.open();
+  }
+  onCloseMenu(event: boolean) {
+    console.log('Menu closed:', event);
+  }
+  comingSoon() {
+    this.notificationService.presentToastOnBottom('Comming Soon...',"primary");
+  } 
+  // Click Functions Handling End--------------------
+  // Dependency Functions Handling Start------------ 
+  getGridData(criteria?){
+    let criteriaList = [];
+    if(criteria){
+      criteriaList = criteria;
+    }
+    const params = 'card_master';
+    let data = this.apiCallService.getPaylodWithCriteria(params,'',criteria,{});
+    data['pageNo'] = 0;
+    data['pageSize'] = this.appCardMasterDataSize;
+    let payload = {
+      'data':data,
+      'path':null
+    }
+    this.apiService.getGridData(payload);
   }
   redirectToHomePageWithStorage(){
     let checkComapanyCode:any = this.storageService.getClientName();
@@ -235,71 +367,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.router.navigate(['/checkcompany']);
     }
   }
-  checkIdTokenStatus(){
-    let tokenStatus = false;
-    if (this.storageService != null && this.storageService.GetIdToken() != null) {      
-      if(this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE){
-        tokenStatus = true;           
-      }else{
-        tokenStatus = false; 
-      }
-    }else{
-      tokenStatus = false; 
-    }
-    return tokenStatus;
-  }
-
-  // forwardLocation(inputaddress){
-  //   let options: NativeGeocoderOptions = {
-  //     useLocale: false,
-  //     maxResults: 1
-  //   };
-  //   this.nativeGeocoder.forwardGeocode(inputaddress, options)
-  //     .then((result: NativeGeocoderResult[]) => console.log('The coordinates are latitude=' + result[0].latitude + ' and longitude=' + result[0].longitude  ))
-  //     .catch((error: any) => console.log(error));
-  // }
-  
-  
-  ionViewWillEnter() {}
-  onLogout() {
-    //for destroying home page 
-    const currentUrl = this.router.url;
-    this.navController.navigateRoot(currentUrl);
-    this.authService.Logout('');
-  }
-  
-  resetVariables(){
-    this.cardList = [];
-    this.showSidebarMenu = false;
-    this.userInfo = {};
-  }
-  getGridData(criteria?){
-    let criteriaList = [];
-    if(criteria){
-      criteriaList = criteria;
-    }
-    const params = 'card_master';
-    let data = this.apiCallService.getPaylodWithCriteria(params,'',criteria,{});
-    data['pageNo'] = 0;
-    data['pageSize'] = this.appCardMasterDataSize;
-    let payload = {
-      'data':data,
-      'path':null
-    }
-    this.apiService.getGridData(payload);
-  } 
-
-  showCardTemplate(card:any, index:number){    
-    const moduleList = this.commonAppDataShareService.getModuleList();
-    const cardclickedindex = this.commonFunctionService.getIndexInArrayById(moduleList,card._id,"_id"); 
-    this.commonAppDataShareService.setModuleIndex(cardclickedindex);
-    const selectedcard = moduleList[cardclickedindex];
-    this.router.navigate(['card-view']);
-    this.dataShareServiceService.setcardData(selectedcard);
-  }
-  comingSoon() {
-    this.notificationService.presentToastOnBottom('Comming Soon...',"primary");
-  }
   checkApplicationSetting(){
     let exists = false;
     let applicationSetting = this.storageService.getApplicationSetting();
@@ -315,22 +382,31 @@ export class AppComponent implements OnInit, OnDestroy {
     this.titleService.setTitle(this.storageService.getPageTitle());
     this.themeName = this.storageService.getPageThmem();
   }
-  async shareApp(){
-    let appInfo:any = {};
-    if(Capacitor.isNativePlatform()){
-      appInfo = await App.getInfo();
-    }else{
-      appInfo = {
-        'name': this.storageService.getClientCodeEnviorment().appName,
-        'id' : this.storageService.getClientCodeEnviorment().appId
+  checkIdTokenStatus(){
+    let tokenStatus = false;
+    if (this.storageService != null && this.storageService.GetIdToken() != null) {      
+      if(this.storageService.GetIdTokenStatus() == StorageTokenStatus.ID_TOKEN_ACTIVE){
+        tokenStatus = true;           
+      }else{
+        tokenStatus = false; 
       }
+    }else{
+      tokenStatus = false; 
     }
-    await Share.share({
-      title: appInfo.name,
-      text: 'E-Labs Mobile application is perfect companion for your next generation E-Labs LIMS.',
-      url: 'https://play.google.com/store/apps/details?id='+ appInfo.id,
-      dialogTitle: 'Share with friends',
-    });
+    return tokenStatus;
   }
+  // Dependency Functions Handling End------------  
+  
+
+  // forwardLocation(inputaddress){
+  //   let options: NativeGeocoderOptions = {
+  //     useLocale: false,
+  //     maxResults: 1
+  //   };
+  //   this.nativeGeocoder.forwardGeocode(inputaddress, options)
+  //     .then((result: NativeGeocoderResult[]) => console.log('The coordinates are latitude=' + result[0].latitude + ' and longitude=' + result[0].longitude  ))
+  //     .catch((error: any) => console.log(error));
+  // }
+
 
 }

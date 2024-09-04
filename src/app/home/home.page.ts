@@ -1,12 +1,11 @@
 import { Component, OnInit, EventEmitter, Output , OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { AppStorageService, NotificationService } from '@core/ionic-core';
-import { Platform, AlertController } from '@ionic/angular';
+import { AppStorageService, NotificationService, AppSpeechRecognition } from '@core/ionic-core';
+import { Platform, AlertController, isPlatform } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { App } from '@capacitor/app';
-import { ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService, StorageService, MenuOrModuleCommonService, ApiCallService } from '@core/web-core';
-
+import { ApiService, CommonFunctionService, DataShareService, CommonAppDataShareService, StorageService, MenuOrModuleCommonService, ApiCallService, VoiceRecognitionService } from '@core/web-core';
 
 @Component({
   selector: 'app-home',
@@ -60,6 +59,9 @@ export class HomePage implements OnInit, OnDestroy {
   isExitAlertOpen:boolean = false;
   errorTitle:string= "Please Wait !";
   errorMessage:string= "We are getting modules.";
+  // VoiceRecognition Variables
+  isUserSpeaking:boolean = false; 
+  VoiceRecognitionSubscription:Subscription;
 
 
   constructor(
@@ -75,7 +77,9 @@ export class HomePage implements OnInit, OnDestroy {
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
     private appStorageService: AppStorageService,
-    private apiCallService: ApiCallService
+    private apiCallService: ApiCallService,
+    private voiceRecognition: VoiceRecognitionService,
+    private appSpeechRecognition: AppSpeechRecognition
   ) 
   {
     this.initializeApp();
@@ -88,47 +92,72 @@ export class HomePage implements OnInit, OnDestroy {
     this.homePageLayout = this.appStorageService.getAppHomePageLayout();
     this.web_site_name = this.appStorageService.getWebSiteName();
     this.appCardMasterDataSize = this.appStorageService.getAppCardMasterDataSize();
-    this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
-      this.griddataResponse(data);
-    });
+    this.subscribeGridData();
 
   }
   
-  // Angular LifeCycle Function Handling End -----------------------
+  // Angular LifeCycle Function Handling Start -----------------------
   ngOnInit() {
     this.getGridData();
+    // Web Voice Recognition...
+    this.initVoiceInput();
   }
   ngOnDestroy(): void {
-    this.unsubscribeVariabbles();
+    this.unsubscribeGridData();
   }
   // Angular LifeCycle Function Handling End -----------------------
 
+  // Ionic LifeCycle Function Handling Start -----------------
+  ionViewWillEnter() {
+    // this.checkIfMicSupport();
+  }
+  // Ionic LifeCycle Function Handling End -----------------
+
   // Subscribed Variable Function Handling Start-------------------
-  griddataResponse(data){
-    if(data && data.data && data.data.length > 0){
-      this.cardMasterList = data.data;
-      this.commonAppDataShareService.setModuleList(this.cardMasterList);
+  subscribeGridData(){
+    this.gridDataSubscription = this.dataShareService.gridData.subscribe((data:any) =>{
+      if(data?.data){
+        this.gridDataResponse(data.data);
+      }
+    });
+  }
+  gridDataResponse(data){
+    let moduleList = this.commonAppDataShareService.getModuleList();
+    if(data && data.length > 0){
+      this.cardMasterList = data;
+      if(!this.myInput || this.cardMasterList?.length > moduleList?.length){
+        this.commonAppDataShareService.setModuleList(this.cardMasterList);
+      }
       this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(this.cardMasterList);
       if(this.cardList == null){
         this.errorTitle = "No module assign";
         this.errorMessage = "Permission denied, No module found!";
         this.notificationService.presentToastOnBottom("You don't have any permission or assign module.","danger")
+      }else{
+        if(this.cardList.length == 1){
+          this.showCardTemplate(this.cardList[0],0);
+        }
       }
     }else{
-      if(this.myInput && this.myInput.length > 0 ){
+      if(this.myInput){
         this.errorTitle = "No matching module found";
         this.errorMessage = "Try again by adjusting your search value!";
         this.cardList = [];
       }else{
-        this.errorTitle = "No module assign";
-        this.errorMessage = "Permission denied, No module found!";
+        if(moduleList?.length > 0){
+          this.cardList = this.menuOrModuleCommonService.getUserAutherisedCards(moduleList);
+        }else{
+          this.errorTitle = "No module assign";
+          this.errorMessage = "Permission denied, No module found!";
+        }
       }
     }
+    // this.unsubscribeGridData();
   }
   // Subscribed Variable Function Handling End-------------------
 
   // UnSubscribed Variable Function Handling Start-------------------
-  unsubscribeVariabbles(){
+  unsubscribeGridData(){
     if (this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
@@ -222,18 +251,35 @@ export class HomePage implements OnInit, OnDestroy {
   comingSoon() {
     this.notificationService.presentToastOnBottom('Comming Soon...','danger');
   }
+  async checkAndRequestMicPermission(){
+    try{
+      if(isPlatform('hybrid')){
+        await this.checkAppMicPermission();
+      }else{
+        this.checkWebMicPermission();
+      }
+    }catch(error){
+        console.error(error);
+      }
+  }
   // Click Functions Handling End-------------------- 
   
   // search Module Function Handling Start--------------
   search() {
-    const criteria = "name;stwic;"+this.myInput+";STATIC";
-    this.getGridData([criteria]);
+    if(this.myInput){
+      // this.subscribeGridData();
+      const criteria = "name;cnts;"+this.myInput+";STATIC";
+      this.getGridData([criteria]);
+    }else{
+      this.gridDataResponse([]);
+    }
   }
   // search Module Function Handling End--------------
   
   // Ionic Event Handling Function Start-----Pull from Top to Do refreshing or update card list 
   doRefresh(event:any) {
     // if(this.refreshlist){
+    this.subscribeGridData();
       this.ionEvent = event;
       console.log('Begin doRefresh async operation');
       // this.updateMode = false;  
@@ -248,12 +294,126 @@ export class HomePage implements OnInit, OnDestroy {
     // }
   }
   // Ionic Event Handling Function End--------------
+  
+  // SpeechRecognition Functions Start --------------
+  // Capacitor Functions Start
+  async checkAppMicPermission(){
+    try{
+      const responsehowVal = await this.appSpeechRecognition.checkSpeechRecognitionAvailable();
+      if(responsehowVal.msg){
+        // this.notificationService.presentToastOnBottom(responsehowVal.msg,"danger");
+        this.notificationService.presentToastOnBottom("Speech recognition is not available in this browser.","danger");
+        return;
+      }
+      if(responsehowVal.isSpeechRecognitionAvailable){
+        let checkPermissions = await this.appSpeechRecognition.checkPermissions();
+        if(checkPermissions){
+          this.startListening();
+        }else{
+          checkPermissions = await this.appSpeechRecognition.requestPermissions();
+          if(checkPermissions){
+            this.startListening();
+          }else {
+            console.error('Mic permission denied');
+          }
+        }
+      }
+    }catch(error){
+      if (error?.message) {
+        if(error?.message != "0"){
+          this.notificationService.presentToastOnBottom(error?.message);
+        }
+      } else {
+        console.error(error);
+      }
+    }
+  }
+  async startListening(){
+    try{
+      this.isUserSpeaking=true;
+      const state = await this.appSpeechRecognition.addListener('listeningState');
+      let voiceResult:any = await this.appSpeechRecognition.startListening();   
+      if(voiceResult.msg){
+        this.notificationService.presentToastOnBottom(voiceResult.msg,"danger");
+        return;
+      }
+      if(voiceResult?.matches && voiceResult.matches.length > 0){
+        this.appSpeechRecognition.stopListening();
+        this.myInput = voiceResult.matches[0];
+        this.search();
+        this.isUserSpeaking=false;
+      }
+    }catch(error){
+      this.isUserSpeaking=false;
+      if (error?.message) {
+        if(error?.message != "0"){
+          this.notificationService.presentToastOnBottom(error?.message);
+        }
+      } else {
+        console.error(error);
+      }
+    }
+  }
+  // Capacitor Functions End
+  // WebMic Functions Start
+  async checkWebMicPermission() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if(stream.active){
+        this.startRecording();
+      }
+    } catch (error) {
+      console.error('Error requesting mic permission:', error);
+    }
+  }
+
+  /**
+   * @description Function for initializing voice input so user can chat with machine.
+   */
+  initVoiceInput() {
+    // Subscription for initializing and this will call when user stopped speaking.
+    this.voiceRecognition.init().subscribe(() => {
+      // User has stopped recording
+      // Do whatever when mic finished listening
+      console.log('this is init subscribe');
+    });
+
+    // Subscription to detect user input from voice to text.
+    this.voiceRecognition.speechInput().subscribe((input) => {
+      // Set voice text output to
+      console.log(input);
+      if(input){
+        this.myInput = input;
+        this.search();
+        this.stopRecording();
+      }
+    });
+  }
+
+  /**
+   * @description Function to stop recording.
+   */
+  stopRecording() {
+    this.voiceRecognition.stop();
+    this.isUserSpeaking = false;
+  }
+
+  /**
+   * @description Function to enable voice input.
+   */
+  startRecording() {
+    this.isUserSpeaking = true;
+    this.voiceRecognition.start();
+    // this.searchForm.controls.searchText.reset();
+  }
+  // WebMic Functions End
+  // SpeechRecognition Functions End --------------
 
 
   // NOt In used  
   // resetVariables(){
   //   this.cardList = [];
   // }
- 
+
   
 }
