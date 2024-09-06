@@ -180,7 +180,6 @@ export class FileViewsModalComponent implements OnInit {
         let fileUri : any = {};
         if(response?.path && response?.status){
           fileUri = await this.appDownloadService.getFileUri(fileName,directoryName);
-          // fileUri.uri = response?.path;
           if(fileUri?.uri){
             await this.openShareDialogeForPrint(fileUri.uri,fileName);
           }
@@ -211,14 +210,11 @@ export class FileViewsModalComponent implements OnInit {
     } 
     if(alert.data?.gridColumns){
       this.gridColumns = JSON.parse(JSON.stringify(alert.data.gridColumns));
-    }     
-    // this.fileViewModal.show()
+    }
     if(this.showPrint){
       this.showPreview = true;
-    }
-    
+    }    
     if(this.showPrint || this.showPreview){
-      this.showPreview = true;
       if(this.gridColumns.length == 0){
         this.getImagesUrl(this.data);
       }
@@ -259,14 +255,12 @@ export class FileViewsModalComponent implements OnInit {
       }
       this.appShareService.share(shareOption);
     }
-  }
-  // Dependency Functions Handling End ----------
-
+  } 
   getddnDisplayVal(val) {
     return this.commonFunctionService.getddnDisplayVal(val);    
   }
   getValueForGrid(field,object){
     return this.gridCommonFunctionService.getValueForGrid(field,object);
   }
-
+  // Dependency Functions Handling End ----------
 }

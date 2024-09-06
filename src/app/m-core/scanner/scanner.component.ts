@@ -1,12 +1,11 @@
 import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
 import { Barcode, BarcodeFormat, BarcodeScanner, LensFacing } from '@capacitor-mlkit/barcode-scanning';
-import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Capacitor } from '@capacitor/core';
 import { BarcodeScanningComponent } from '../modal/barcode-scanning/barcode-scanning.component';
 import { Subscription } from 'rxjs';
 import { ApiCallService, ApiService, CommonFunctionService, CoreFunctionService, DataShareService, StorageService } from '@core/web-core';
-import { AppPermissionService, AppStorageService, App_googleService, NotificationService } from '@core/ionic-core';
+import { AppPermissionService, AppStorageService, App_googleService, NotificationService, AppModelService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, IonModal, ModalController, Platform, isPlatform } from '@ionic/angular';
 import { Router } from '@angular/router';
 // import { OverlayEventDetail } from '@ionic/core/components';
@@ -85,7 +84,7 @@ export class MyScannerComponent implements OnInit {
   headerTitle:String = '';
 
   constructor(
-    private popoverModalService: PopoverModalService,
+    private appModelService: AppModelService,
     private readonly ngZone: NgZone,
     private dataShareService:DataShareService,
     private apiService: ApiService,
@@ -349,7 +348,7 @@ export class MyScannerComponent implements OnInit {
         }
       ]
     }
-    this.popoverModalService.showErrorAlert(alertOpt);
+    this.notificationService.showErrorAlert(alertOpt);
   }
   checkCameraPermissionToSacn(){
     if(this.isBarCodeScannerSupported){
@@ -396,7 +395,7 @@ export class MyScannerComponent implements OnInit {
     const formats = this.formGroup.get('formats')?.value || this.barCodeFormats;
     const lensFacing =
       this.formGroup.get('lensFacing')?.value || LensFacing.Back;
-    const modal = await this.popoverModalService.showModal({
+    let modal:any = await this.appModelService.showModal({
       component: BarcodeScanningComponent,
       // Set `visibility` to `visible` to show the modal (see `src/theme/variables.scss`)
       cssClass: 'barcode-scanning-modal',
@@ -602,7 +601,7 @@ export class MyScannerComponent implements OnInit {
         }
       ]
     }
-    this.popoverModalService.showAlert(alertOpt);
+    this.notificationService.showIonAlert(alertOpt);
     // this.notificationService.presentToastOnMiddle(alertMsg,"success");
     this.unsubscribeSavecall();
   }

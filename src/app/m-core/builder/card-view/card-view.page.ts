@@ -1,9 +1,9 @@
-import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2, ChangeDetectorRef} from '@angular/core';
+import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, Renderer2, ChangeDetectorRef} from '@angular/core';
 import { NotificationService } from '@core/ionic-core';
 import { ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { UntypedFormBuilder, UntypedFormGroup} from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, AuthService, FormCreationService } from '@core/web-core';
+import { MenuOrModuleCommonService, CommonAppDataShareService, FormCreationService } from '@core/web-core';
 
 @Component({
   selector: 'app-card-view',

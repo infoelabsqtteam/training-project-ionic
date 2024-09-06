@@ -5,9 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Subscription } from 'rxjs';
 import { AppStorageService, App_googleService, NotificationService } from '@core/ionic-core';
-// import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx'; 
 import { DataShareServiceService } from './service/data-share-service.service';
-import { AndroidpermissionsService } from './service/androidpermissions.service';
 import { Title } from '@angular/platform-browser';
 import { AuthService, ApiService, CommonFunctionService, DataShareService, StorageService, CommonAppDataShareService, AuthDataShareService, MenuOrModuleCommonService, EnvService, CoreFunctionService, StorageTokenStatus, ApiCallService } from '@core/web-core';
 import { App } from '@capacitor/app';
@@ -67,10 +65,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private storageService: StorageService,
     private router: Router,
-    // private statusBar: StatusBar,
     private dataShareServiceService:DataShareServiceService,
     private app_googleService: App_googleService,
-    private androidpermissionsService: AndroidpermissionsService,
     private apiService: ApiService,
     private dataShareService: DataShareService,
     private notificationService: NotificationService,
@@ -144,7 +140,7 @@ export class AppComponent implements OnInit, OnDestroy {
       let platForm = Capacitor.getPlatform();
       // this.storageService.setPlatForm(platForm);
       window.addEventListener('offline', () => {
-        this.androidpermissionsService.internetExceptionError();
+        this.notificationService.internetExceptionError();
       });
       window.addEventListener('online', () => {
         this.notificationService.presentToastOnTop("Your internet connection is back.", "success");

@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, EventEmitte
 import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray, UntypedFormControl } from "@angular/forms";
 import { DatePipe } from '@angular/common'; 
 import { Router } from '@angular/router';
-import { App_googleService, NotificationService, AppDataShareService, AppPermissionService, AppDownloadService, AppShareService, LoaderService } from '@core/ionic-core';
+import { App_googleService, NotificationService, AppDataShareService, AppPermissionService, AppDownloadService, AppShareService, LoaderService, AppModelService } from '@core/ionic-core';
 import { AlertController, ItemReorderEventDetail, ModalController, isPlatform  } from '@ionic/angular';
 import { GridSelectionModalComponent } from '../../modal/grid-selection-modal/grid-selection-modal.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
@@ -13,17 +13,13 @@ import { Observable, Subscription, catchError, finalize, last, map, of } from 'r
 import { zonedTimeToUtc, utcToZonedTime} from 'date-fns-tz';
 import { parseISO, format, hoursToMilliseconds, isToday, add } from 'date-fns';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
-// import {FileOpener} from '@awesome-cordova-plugins/file-opener/ngx';
 import { FileOpener } from '@capacitor-community/file-opener';
-// import { File } from '@awesome-cordova-plugins/file/ngx';
-import { AndroidpermissionsService } from 'src/app/service/androidpermissions.service';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 // import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
 import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common, GridCommonFunctionService, FileHandlerService, ApiCallService, FormCreationService, CheckIfService, FormControlService, MultipleFormService, ApiCallResponceService, FormValueService } from '@core/web-core';
 import { Capacitor } from '@capacitor/core';
 import { ModalComponent } from '../../modal/modal.component';
-import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
 
 interface User {
@@ -351,8 +347,6 @@ tinymceConfig = {}
     private actionSheetCtrl: ActionSheetController,
     private dataShareServiceService: DataShareServiceService,
     private envService: EnvService,
-    // private file: File,
-    private apppermissionsService: AndroidpermissionsService,
     private app_googleService: App_googleService,
     private alertController: AlertController,
     private ngZone: NgZone,
@@ -374,7 +368,7 @@ tinymceConfig = {}
     private multipleFormService: MultipleFormService,
     private apiCallResponceService: ApiCallResponceService,
     private formValueService: FormValueService,
-    private popoverModalService: PopoverModalService
+    private appModelService: AppModelService
     ) {
 
       // this.mapsApiLoaded();
@@ -6231,7 +6225,7 @@ tinymceConfig = {}
       "editemode": editemode
     }
     const objectValue = Data;
-    await this.popoverModalService.presentModal(ModalComponent,objectValue).then( data => {
+    await this.appModelService.openModal(ModalComponent,objectValue).then( data => {
       if(data && data?.role == 'close'){
         console.log('Modal ' + data?.role);
       }
@@ -6248,7 +6242,7 @@ tinymceConfig = {}
       'previewFile': obj?.previewFile,
       'printFile' : obj?.printFile
     }
-    await this.popoverModalService.presentModal(FileViewsModalComponent,objectValue).then( data => {
+    await this.appModelService.openModal(FileViewsModalComponent,objectValue).then( data => {
       if(data && data?.role == 'close'){
         console.log('Modal ' + data?.role);
       }

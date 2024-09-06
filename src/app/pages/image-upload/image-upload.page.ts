@@ -5,7 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CameraService, ApiImage } from 'src/app/service/camera-service/camera.service';
 import { finalize } from 'rxjs';
-import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 import { NotificationService } from '@core/ionic-core';
 
 
@@ -37,8 +36,7 @@ export class ImageUploadPage implements OnInit {
     private plt: Platform, 
     private actionSheetCtrl: ActionSheetController,
     private loadingCtrl: LoadingController,
-    private http: HttpClient,
-    private popoverModalService: PopoverModalService,    
+    private http: HttpClient,   
     private readonly ngZone: NgZone,
     private notificationService: NotificationService
   ) 

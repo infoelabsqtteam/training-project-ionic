@@ -1,21 +1,18 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService, AppDownloadService, AppShareService, AppStorageService } from '@core/ionic-core';
+import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService, AppDownloadService, AppShareService, AppStorageService, AppPopoverService, AppModelService } from '@core/ionic-core';
 import { CallNumber } from '@awesome-cordova-plugins/call-number/ngx';
-import { Platform, ModalController, AlertController, PopoverController, isPlatform, ActionSheetController } from '@ionic/angular';
+import { Platform, ModalController, AlertController, isPlatform, ActionSheetController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card.component';
 import { FormComponent } from '../form/form.component';
 import { DatePipe } from '@angular/common';
 import { CallDataRecordFormComponent } from '../../modal/call-data-record-form/call-data-record-form.component';
-import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
 import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService, ApiCallService, GridCommonFunctionService, DownloadService, ChartService } from '@core/web-core';
 import { Barcode, BarcodeFormat, BarcodeScanner, LensFacing } from '@capacitor-mlkit/barcode-scanning';
-// import { Capacitor, CapacitorException } from '@capacitor/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 import { BarcodeScanningComponent } from '../../modal/barcode-scanning/barcode-scanning.component';
 import { Subscription } from 'rxjs';
 import { FileOpener } from '@capacitor-community/file-opener';
@@ -195,9 +192,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private datePipe: DatePipe,
     private notificationService: NotificationService,
     private permissionService:PermissionService,
-    // private fileOpener: FileOpener,
-    // private file: File,
-    private apppermissionsService: AndroidpermissionsService,
     public renderer: Renderer2,
     private app_googleService: App_googleService,
     private commonFunctionService: CommonFunctionService,
@@ -211,10 +205,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private gridCommonFunctionService: GridCommonFunctionService,
     private downloadService: DownloadService,
     private appDownloadService: AppDownloadService,
-    private androidpermissionsService: AndroidpermissionsService,
     private chartService: ChartService,
     private appShareService: AppShareService,
-    private popoverModalService: PopoverModalService,
+    private appModelService: AppModelService,
     private appStorageService: AppStorageService
   ) 
   {
@@ -350,8 +343,8 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       //   .catch(e => console.log(" hasReadPermission " + JSON.stringify(e)));
 
     });
-
   }
+
   setCardData(data:any){
     if( this.currentPage < this.totalPageCount){
       if(this.loadMoreData && this.carddata.length !== 0 && this.totalDataCount !== 0 && this.updateMode){
@@ -417,21 +410,12 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.editedRowData(0,this.formTypeName)
       }
       this.formTypeName='';
-      // this.scannerForm=false;
     }
     if(this.enableScanner){
       this.appStorageService.setObject('scannedData',this.carddata);
     }
-    // if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
   }
-  // checkLoader() {
-  //   new Promise(async (resolve)=>{
-  //     let checkLoader = await this.loaderService.loadingCtrl.getTop();
-  //     if(checkLoader && checkLoader['hasController']){
-  //       this.loaderService.hideLoader();
-  //     }
-  //   });
-  // }
+
   async setDownloadPdfData(downloadPdfData){
     if (downloadPdfData != '' && downloadPdfData != null && this.downloadPdfCheck != '') {
       const blobData = new Blob([downloadPdfData.data], { type: "application/pdf" });
@@ -443,7 +427,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         fileName = downloadPdfData.filename;
       }      
       if(this.platform.is("hybrid")){
-        // this.downloadToMobile(blobData,fileName);
         let downloadResponse = await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
         this.downloadResponseHandler(downloadResponse);
       }else{
@@ -493,61 +476,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
     }
   }
-  
-  // async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
-  //   let file_Type:any = '';
-  //   let folderName:any = '';
-  //   if(blobData && blobData.type){
-  //     file_Type = blobData.type;
-  //   }
-  //   if(FolderName == undefined || FolderName == null){
-  //     folderName = 'Download'
-  //   }else{
-  //     folderName = FolderName;
-  //   }
-  //   let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-  //   let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
 
-  //   if(readPermission && writePermission){
-
-  //     // ==========using native file    
-  //     this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
-
-  //       this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
-  //         // confirm alert
-  //         let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
-  //         if(openFile == "confirm"){
-  //           const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
-  //           const mimeType = file_Type;      
-  //           // this.fileOpener.open(path,mimeType)
-  //           // .then(()=> console.log('File is opened'))
-  //           // .catch(error => console.log('Error opening file ',error));
-  //         }
-  //       }).catch( (error:any) =>{
-  //         this.notificationService.presentToastOnBottom(JSON.stringify(error), 'danger');
-  //       })
-        
-  //     }).catch( (error:any) =>{
-  //       if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
-          
-  //         this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
-  //           console.log('Directory create '+ response);
-  //           this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
-  //             this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
-  //           })
-
-  //         }).catch( (error:any) =>{            
-  //           this.notificationService.presentToastOnBottom(JSON.stringify(error));
-  //         })
-  //       }
-  //     });
-  //   }else{
-  //     let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
-  //     if(gavepermission == "cancel"){
-  //       this.apppermissionsService.openNativeSettings('application_details');
-  //     }
-  //   }
-  // }
   async downloadandprint(data){
     let template = data.data;
     const blob = new Blob([template], { type: 'application/pdf' });
@@ -593,7 +522,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   // Unsubscribe Functions Handling Start -------------------
   unSubscribed(){
-    if (this.gridDataSubscription) {
+    if(this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
     if(this.pdfFileSubscription){
@@ -2019,7 +1948,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       ]
     }
-    this.popoverModalService.showErrorAlert(alertOpt);
+    this.notificationService.showErrorAlert(alertOpt);
   }
   removeAllBarCodeListeners(){
     BarcodeScanner.removeAllListeners().then(() => {
@@ -2042,7 +1971,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     const formats = this.formGroup.get('formats')?.value || this.barCodeFormats;
     const lensFacing =
       this.formGroup.get('lensFacing')?.value || LensFacing.Back;
-    const modal = await this.popoverModalService.showModal({
+    const modal = await this.appModelService.showModal({
       component: BarcodeScanningComponent,
       // Set `visibility` to `visible` to show the modal (see `src/theme/variables.scss`)
       cssClass: 'barcode-scanning-modal',
