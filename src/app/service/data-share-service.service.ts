@@ -25,28 +25,28 @@ export class DataShareServiceService {
   confirmationCheck: Subject<any> = new Subject();
   gridDownloadImage: Subject<any> = new Subject();
 
-  setCurrentLatitude(responce){
-    this.Latitude.emit(responce);
-    this.latitudeValue = responce;
-  }
-  getCurrentLatitude(){
-    return this.latitudeValue;
-  }
-  setCurrentLongitude(responce){
-    this.Longitude.emit(responce);
-    this.longitudeValue = responce;
-  }
-  getCurrentLongitude(){
-    return this.longitudeValue;
-  }
-  setUserPostalCode(responce){
-    this.PostalCode.emit(responce);
-    this.userpostalcode = responce;
-  }
-  getUserPostalCode(){
-    return this.userpostalcode;
-  }
-  //Elab card Master 
+  // setCurrentLatitude(responce){
+  //   this.Latitude.emit(responce);
+  //   this.latitudeValue = responce;
+  // }
+  // getCurrentLatitude(){
+  //   return this.latitudeValue;
+  // }
+  // setCurrentLongitude(responce){
+  //   this.Longitude.emit(responce);
+  //   this.longitudeValue = responce;
+  // }
+  // getCurrentLongitude(){
+  //   return this.longitudeValue;
+  // }
+  // setUserPostalCode(responce){
+  //   this.PostalCode.emit(responce);
+  //   this.userpostalcode = responce;
+  // }
+  // getUserPostalCode(){
+  //   return this.userpostalcode;
+  // }
+  // //Elab card Master 
   setcardData(responce){
     this.setCardmasterData.emit(responce);
     this.cardmasterData = responce;
@@ -82,9 +82,9 @@ export class DataShareServiceService {
   setDownloadimage(responce){
     this.gridDownloadImage.next(responce);
   }
-  async removeKeyFromStorage(key: string){
-    const ret:any = await Preferences.remove({key});
-    return null;
-  } 
+  // async removeKeyFromStorage(key: string){
+  //   const ret:any = await Preferences.remove({key});
+  //   return null;
+  // } 
   
 }

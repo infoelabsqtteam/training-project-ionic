@@ -275,7 +275,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
 
   async addremoveparticipant(data,index){
     if(this.field && this.field.add_new_enabled && data.customEntry){
-      if(data.approvedStatus == !"Approved" || data.approvedStatus == !"Rejected"){
+      if(data.approvedStatus != "Approved" || data.approvedStatus != "Rejected"){
         this.addremoveitem(data,index);
       }else{
         this.edite(index);
