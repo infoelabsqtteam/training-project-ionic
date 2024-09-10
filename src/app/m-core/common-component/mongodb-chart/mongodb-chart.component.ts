@@ -89,15 +89,23 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
   }
   // Angular LifeCycle Function Handling End--------------------
 
-  getMongoChartList(Criteria){
-    const data = this.apiCallService.getPaylodWithCriteria('mongo_dashlet_master','',Criteria,'');
-      data['pageNo'] = this.pageNumber - 1;
-      data['pageSize'] = this.itemNumOfGrid; 
-      const getFilterData = {
-        data: data,
-        path: null
-      }
-      this.apiService.getMongoDashletMster(getFilterData);
+  // Initial Function Handling Start-------------
+  
+  // Initial Function Handling End-------------
+
+  // Subscriber Function Handling Start--------------------
+  setStaticData(staticDatas){
+    if(Object.keys(staticDatas).length > 0) {
+      Object.keys(staticDatas).forEach(key => {  
+        let staticData = {};
+        staticData[key] = staticDatas[key];  
+        if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
+          if(staticData[key]) { 
+            this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
+          }
+        } 
+      });
+    }
   }
   populateMongodbChart(){
     if(this.accessToken != "" && this.accessToken != null){      
@@ -135,64 +143,10 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
       }
     }
   }
-  getChartList(){
-    const payload = this.apiCallService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
-    this.apiService.getStatiData([payload]);
-  }
-  setStaticData(staticDatas){
-    if(Object.keys(staticDatas).length > 0) {
-      Object.keys(staticDatas).forEach(key => {  
-        let staticData = {};
-        staticData[key] = staticDatas[key];  
-        if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
-          if(staticData[key]) { 
-            this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
-          }
-        } 
-      });
-    }
-  }
-  filterModel(data:any,filter:any,index:number){
-    let object = {
-      'dashboardItem' : data,
-      'dashletData' : "",
-      'filter':filter,
-      'index' : index
-    }
-    // this.chartFilterModal(object);
-    this.openModal(ChartFilterComponent,object);
-    // this.appModelService.open('chart-filter',object);
-    
-  }
-  openModal(component:any, objectData:object){
-    this.appModelService.openModal(component,objectData).then((data:any) => {
-      if(data && data.role == 'closed'){
-        console.log("ModalIs",data.role);
-      }
-    });
-  }
-  async chartFilterModal(data:any){
-    // this.showfilter = true;
-    const modal = await this.modalController.create({
-      component: ChartFilterComponent,
-      cssClass: 'my-custom-modal-css',
-      componentProps: {
-        'dashboardItem' : data.dashboardItem,
-        'dashletData' : data.dashletData,
-        'filter':data.filter,
-        'selectedIndex': data.index,
-        'staticData': this.staticData
-      },
-      showBackdrop:true,
-      backdropDismiss:false,
-    });
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss()
-        .then((data) => {
-          console.log(data.role);
-        })
-    return await modal.present();
-  }
+  // Subscriber Function Handling End--------------------
+
+  // Click Function Handling Start--------------------
+  
   async download(object){
     this.loaderService.showLoader("Downloading...");
     let chartId = object.chartId;
@@ -241,6 +195,26 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     }
     await this.loaderService.checkAndHideLoader();
   }
+  filterModel(data:any,filter:any,index:number){
+    let object = {
+      'dashboardItem' : data,
+      'dashletData' : "",
+      'filter':filter,
+      'index' : index
+    }
+    // this.chartFilterModal(object);
+    this.openModal(ChartFilterComponent,object);
+    // this.appModelService.open('chart-filter',object);    
+  }
+
+  // Pull from Top for Do refreshing or update card list
+  doRefresh(event:any) {
+    console.log('Begin doRefresh async operation');
+    setTimeout(() => {
+      event.target.complete();
+      this.getMongoChartList([]);
+    }, 3000);
+  }
   changeTheme(object,value){
     let chartId = object.chartId;
     let chart = this.createdChartList[chartId];
@@ -253,6 +227,30 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
   selectNoOfItem(){
     this.getPage(1);
   }
+  // Click Function Handling End--------------------
+
+  // Dependency Function Handling Start--------------------
+  getMongoChartList(Criteria){
+    const data = this.apiCallService.getPaylodWithCriteria('mongo_dashlet_master','',Criteria,'');
+      data['pageNo'] = this.pageNumber - 1;
+      data['pageSize'] = this.itemNumOfGrid; 
+      const getFilterData = {
+        data: data,
+        path: null
+      }
+      this.apiService.getMongoDashletMster(getFilterData);
+  }
+  getChartList(){
+    const payload = this.apiCallService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
+    this.apiService.getStatiData([payload]);
+  }
+  openModal(component:any, objectData:object){
+    this.appModelService.openModal(component,objectData).then((data:any) => {
+      if(data && data.role == 'closed'){
+        console.log("ModalIs",data.role);
+      }
+    });
+  }
   getPage(page: number,criteria?:any) {
     let Criteria:any = [];
     if(criteria && criteria.length > 0){
@@ -262,14 +260,31 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     this.getMongoChartList(Criteria);
     // this.checkGetDashletData = true;
   }
-  // Pull from Top for Do refreshing or update card list 
-  doRefresh(event:any) {
-      console.log('Begin doRefresh async operation');
-      setTimeout(() => {
-        event.target.complete();
-        this.getMongoChartList([]);
-      }, 3000);
-  }
+  // Dependency Function Handling End--------------------
+  
+  
+  // async chartFilterModal(data:any){
+  //   // this.showfilter = true;
+  //   const modal = await this.modalController.create({
+  //     component: ChartFilterComponent,
+  //     cssClass: 'my-custom-modal-css',
+  //     componentProps: {
+  //       'dashboardItem' : data.dashboardItem,
+  //       'dashletData' : data.dashletData,
+  //       'filter':data.filter,
+  //       'selectedIndex': data.index,
+  //       'staticData': this.staticData
+  //     },
+  //     showBackdrop:true,
+  //     backdropDismiss:false,
+  //   });
+  //   modal.componentProps.modal = modal;
+  //   modal.onDidDismiss()
+  //       .then((data) => {
+  //         console.log(data.role);
+  //       })
+  //   return await modal.present();
+  // }  
 
 }
 

@@ -57,17 +57,24 @@ export class GridSelectionModalComponent implements OnInit {
     private gridCommonFunctionService: GridCommonFunctionService
   ) { }
 
+  // Ionic LifeCycle Function Handling Start ------------------
+  ionViewWillLeave(){
+    // this.unsubscribe();
+  }
+  // Ionic LifeCycle Function Handling End ------------------
+
+  // Angular LifeCycle Function Handling Start --------------------
   ngOnInit() {
     this.onload();
     this.subscribe();
-  }  
-  ionViewWillLeave(){
-    // this.unsubscribe();
   }
   ngOnDestroy() {
     //Above ionViewwillLeave is working fine.
     this.unsubscribe();
   }
+  // Angular LifeCycle Function Handling End ---------------
+
+  // Subscriber Functions Handling Start -------------------
   subscribe(){
     this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
       if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field)  && data[this.field.ddn_field]){
@@ -89,7 +96,7 @@ export class GridSelectionModalComponent implements OnInit {
       if(this.setGridData && this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null){
         this.setStaticData(data);
         if(this.gridData.length > 0 && this.listOfGridFieldName.length > 0){
-          this.modifiedGridData = this.modifyGridData(this.gridData,this.listOfGridFieldName,this.field,this.editableGridColumns,[]);
+          this.modifiedGridData = this.gridCommonFunctionService.modifyGridData(this.gridData,this.listOfGridFieldName,this.field,this.editableGridColumns,[]);
           if(this.modifiedGridData && this.modifiedGridData.length < 50){
             this.editEnable = true;
           }
@@ -101,32 +108,9 @@ export class GridSelectionModalComponent implements OnInit {
       }
     })
   }
-  reloadStaticData(){
-    this.reloadBtn = true;
-    let data:any = this.dataShareService.getStatiData();
-    this.copyStaticData = data;
-    if(this.setGridData && this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null && data[this.field.ddn_field] != undefined){
-      if((Array.isArray(data[this.field.ddn_field]) && data[this.field.ddn_field].length > 0)){
-        this.setStaticData(data);
-      }else if(!Array.isArray(data[this.field.ddn_field])){
-        this.setStaticData(data);
-      }else{
-        this.resetReloadBtn();
-      }
-    }else{
-      this.resetReloadBtn();      
-    }
-  }
-  resetReloadBtn(){
-    setTimeout(() => {
-      this.reloadBtn = false;
-    }, 1000);
-  }
-  unsubscribe(){
-    if(this.staticDataSubscriber){
-      this.staticDataSubscriber.unsubscribe();
-    }
-  }
+  // Subscriber Functions Handling End -------------------
+
+  // Initial Function Handling Start ---------------- 
   onload(){
     if(this.Data?.updateMode && this.Data.updateMode){      
       this.selectedTab = "added";
@@ -152,7 +136,7 @@ export class GridSelectionModalComponent implements OnInit {
     }
     if(this.Data.field.onchange_api_params == "" || this.Data.field.onchange_api_params == null){
       this.gridData = this.selectedData;
-      this.modifiedGridData = this.modifyGridData(this.selecteData,this.listOfGridFieldName,this.field,this.editableGridColumns,[]);      
+      this.modifiedGridData = this.gridCommonFunctionService.modifyGridData(this.selecteData,this.listOfGridFieldName,this.field,this.editableGridColumns,[]);      
       if(this.grid_row_selection && this.modifiedGridData && this.modifiedGridData.length < 50){
         this.editEnable = true;
       }
@@ -179,7 +163,7 @@ export class GridSelectionModalComponent implements OnInit {
           this.listOfGridFieldName.push(field);
           index = index + 1;
         }
-        this.editableGridColumns = this.getListByKeyValueToList(this.listOfGridFieldName,"editable",true);
+        this.editableGridColumns = this.gridCommonFunctionService.getListByKeyValueToList(this.listOfGridFieldName,"editable",true);
       }); 
     }else{
       this.notificationService.showAlert("Grid Columns are not available In This Field.",'',['dismiss']);
@@ -198,153 +182,69 @@ export class GridSelectionModalComponent implements OnInit {
     //For dropdown data in grid selection
     this.getStaticDataWithDependentData();
   }
-  getStaticDataWithDependentData(){
-    const staticModal = []
-    let staticModalGroup = this.apiCallService.commanApiPayload([],this.listOfGridFieldName,[],{});
-    if(staticModalGroup.length > 0){
-      staticModalGroup.forEach(element => {
-        staticModal.push(element);
+  // Initial Function Handling End ------------
+
+  // Click Functions Handling Start -------------------
+  reloadStaticData(){
+    this.reloadBtn = true;
+    let data:any = this.dataShareService.getStatiData();
+    this.copyStaticData = data;
+    if(this.setGridData && this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null && data[this.field.ddn_field] != undefined){
+      if((Array.isArray(data[this.field.ddn_field]) && data[this.field.ddn_field].length > 0)){
+        this.setStaticData(data);
+      }else if(!Array.isArray(data[this.field.ddn_field])){
+        this.setStaticData(data);
+      }else{
+        this.resetReloadBtn();
+      }
+    }else{
+      this.resetReloadBtn();      
+    }
+  }
+  resetReloadBtn(){
+    setTimeout(() => {
+      this.reloadBtn = false;
+    }, 1000);
+  }
+  dismissModal(data){
+    this.closeModal();
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss({
+        'dismissed': true,
+        'data':data
       });
-    } 
-    if(staticModal.length > 0){    
-      this.apiService.getStatiData(staticModal);
+    }else{        
+      this.modalController.dismiss({
+        'dismissed': true,
+        'data':data
+      },);
     }
   }
-  setStaticData(staticData){
-    if(staticData){
-      if(this.field.ddn_field && staticData[this.field.ddn_field] && staticData[this.field.ddn_field] != null){
-        this.gridData = [];
-        if(staticData[this.field.ddn_field] && staticData[this.field.ddn_field].length>0){
-          staticData[this.field.ddn_field].forEach(element => {
-            const gridData = JSON.parse(JSON.stringify(element))
-            if(gridData.selected && this.selecteData.length < 0){
-              gridData.selected = false;
+  // CD
+  refreshRowWithMasterData(index) {
+    let rowData = this.gridData[index];
+    if (this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length > 0) {
+      var validity = true;
+      if (Array.isArray(this.responseData)) {
+        this.responseData.forEach(element => {
+          this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
+            if (this.commonFunctionService.getObjectValue(matchcriteria, rowData) == this.commonFunctionService.getObjectValue(matchcriteria, element)) {
+              validity = validity && true;
             }
-            this.gridData.push(gridData);
+            else {
+              validity = validity && false;
+            }
           });
-        }
-       
-        if(this.gridData && this.gridData.length > 0){
-
-          if(this.field.onchange_function && this.field.onchange_function_param != ""){
-            switch(this.field.onchange_function_param){
-              case "calculateQquoteAmount":
-                this.gridData = this.limsCalculationService.calculateAutoEffRate(this.gridData);
-                break;
-            }
+          if (validity == true) {
+            const grid_data = JSON.parse(JSON.stringify(element))
+            grid_data.selected = this.gridData[index]['selected'];
+            this.gridData[index] = grid_data;
           }
+        });
+      }
 
-          // this.selecteData.forEach(element => {
-          //   this.gridData.forEach((row, i) => {
-          //     if(this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length>0){
-          //       var validity = true;
-          //       this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
-          //         if(this.coreFunctionService.getObjectValue(matchcriteria,element) == this.coreFunctionService.getObjectValue(matchcriteria,row)){
-          //           validity = validity && true;
-          //         }
-          //         else{
-          //           validity = validity && false;
-          //         }
-          //       });
-          //       if(validity == true){
-          //         this.gridData[i]= element
-          //         const grid_data = JSON.parse(JSON.stringify(this.gridData[i]))
-          //         grid_data.selected = true;
-          //         this.gridData[i] = grid_data;
-          //         const selectedData = this.selectedData[i];
-          //         selectedData.selected = true;
-          //         this.selectedData[i] = selectedData;
-          //       }
-          //     }
-          //     else{
-          //        if(this.coreFunctionService.getObjectValue("_id",element) == this.coreFunctionService.getObjectValue('_id',row)){
-          //         this.gridData[i]= element
-          //         const grid_data = JSON.parse(JSON.stringify(this.gridData[i]))
-          //         grid_data.selected = true;
-          //         this.gridData[i] = grid_data;
-          //         const selectedData = this.selectedData[i];
-          //         selectedData.selected = true;
-          //         this.selectedData[i] = selectedData;
-          //       }
-          //     }
-          //   });
-          // });  
-          // this.setGridData = false; 
-          // this.reloadBtn = false; 
-          if(this.selecteData && this.selecteData.length > 0){
-            this.updateSelectedDataInGridData(this.selecteData); 
-          }
-          this.setGridData = false; 
-          this.reloadBtn = false;     
-        }
-      }        
     }
   }
-
-  updateSelectedDataInGridData(selecteData){
-    if(selecteData && selecteData.length > 0){
-      selecteData.forEach(element => {
-        for (let i = 0; i < this.gridData.length; i++) {
-          const row = this.gridData[i];
-          if (this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length > 0) {
-            var validity = true;
-            for (let index = 0; index < this.field.matching_fields_for_grid_selection.length; index++) {
-              const matchcriteria = this.field.matching_fields_for_grid_selection[index];
-              if (this.commonFunctionService.getObjectValue(matchcriteria, element) == this.commonFunctionService.getObjectValue(matchcriteria, row)) {
-                validity = validity && true;
-              }
-              else {
-                validity = validity && false;
-                break;
-              }
-            };
-            if (validity == true) {
-              this.updateRowData(element,i);
-              break;
-            }
-          }
-          else {
-            if (this.commonFunctionService.getObjectValue("_id", element) == this.commonFunctionService.getObjectValue('_id', row)) {
-              this.updateRowData(element,i);
-              break;
-            }
-          }
-        };
-      });  
-    }
-  }
-  updateRowData(element,i){
-    this.gridData[i] = element
-    const grid_data = JSON.parse(JSON.stringify(this.gridData[i]));
-    grid_data.selected = true;
-    // if(this.editableGridColumns.length > 0){
-    //   this.editableGridColumns.forEach(column => {
-    //     grid_data[column.field_name] = element[column.field_name];
-    //   });
-    // }
-    this.gridData[i] = grid_data;  
-    const selectedData = this.selectedData[i];
-    selectedData.selected = true;
-    this.selectedData[i] = selectedData;
-  }
-
-  getValueForGrid(field, object) {
-    return this.gridCommonFunctionService.getValueForGrid(field, object);
-  }
-  isDisable(field,object){
-    const updateMode = false;
-    if(field.is_disabled){
-      return true;
-    }else if(field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != ''){
-      return this.checkIfService.isDisable(field.etc_fields,updateMode,object);
-    }
-    return false;
-  }
-  calculateNetAmount(data, fieldName, index){
-
-    this.limsCalculationService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
-  }
-
   async addremoveparticipant(data,index){
     let alreadyAdded = false;
       this.selectedData.forEach(element => {
@@ -372,29 +272,22 @@ export class GridSelectionModalComponent implements OnInit {
     });
     return await modal.present();
   }
+  // CD
   selectGridData(){
-    this.selectedData = this.updateGridDataToModifiedData(this.grid_row_selection,this.gridData,this.modifiedGridData,this.listOfGridFieldName,);
-    // this.selectedData = [];
-    // if(this.grid_row_selection == false){
-    //   this.selectedData = [...this.gridData];
-    // }else{
-    //   this.gridData.forEach((row:any) => {
-    //     if(row.selected){
-    //       this.selectedData.push(row);
-    //     }
-    //   });
-    // }
+    this.selectedData = this.gridCommonFunctionService.updateGridDataToModifiedData(this.grid_row_selection,this.gridData,this.modifiedGridData,this.listOfGridFieldName,);
     let check = 0;
     let validation = {
       'msg' : ''
     }
     if(this.field && this.field.mendetory_fields && this.field.mendetory_fields.length > 0){            
       if(this.selectedData && this.selectedData.length > 0){
+        this.field.mendetory_fields = this.gridCommonFunctionService.getModifiedGridColumns(this.field.mendetory_fields,this.parentObject)
         this.field.mendetory_fields.forEach((mField:any) => {
           const fieldName = mField.field_name;
           if(mField.display){
           this.selectedData.forEach((row,i) => {
-            let checkDisable = this.isDisable(mField,row);
+            // let checkDisable = this.isDisable(mField,row);
+            let checkDisable = this.checkIfService.isDisableRuntime(mField,row,i,this.gridData,this.field,'');
             if(row && !checkDisable && (row[fieldName] == undefined || row[fieldName] == '' || row[fieldName] == null)){
               if(validation.msg == ''){
                 const rowNo = i + 1;
@@ -411,35 +304,24 @@ export class GridSelectionModalComponent implements OnInit {
       this.selectedData = [];
       this.notificationService.presentToastOnBottom(validation.msg);
     }else{
-      this.selectedData = this.updateGridDataToModifiedData(this.grid_row_selection,this.gridData,this.modifiedGridData,this.listOfGridFieldName,);
+      // this.selectedData = this.gridCommonFunctionService.updateGridDataToModifiedData(this.grid_row_selection,this.gridData,this.modifiedGridData,this.listOfGridFieldName,);
       this.dismissModal(this.selectedData); 
     }
+  }  
+  calculateNetAmount(data, fieldName, index){
+    this.limsCalculationService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
   }
-  closeModal(){
-    this.gridData=[];
-    this.selectedData = [];
-    this.selecteData=[];
-    this.data = '';
-    this.onlySelected=false;
-    this.checkSelectedData = false;
-    this.onlySelectedData = false;
-    this.modifiedGridData = [];
-    this.editEnable=false;
-  }
-  dismissModal(data){
-    this.closeModal();
-    if(this.modal && this.modal?.offsetParent['hasController']){
-      this.modal?.offsetParent?.dismiss({
-        'dismissed': true,
-        'data':data
-      });
-    }else{        
-      this.modalController.dismiss({
-        'dismissed': true,
-        'data':data
-      },);
+  segmentChanged(ev: any) {
+    this.selectedTab = ev.target.value;
+    if(ev.target.value == 'added'){
+      this.onlySelected = true;
+    }else{
+      this.onlySelected = false;
     }
   }
+  // Click Functions Handling End -------------------
+
+  // Dependency Functions Handling Start -------------------
   toggle(data:any,event:any, indx:any) {
     let index:any;
     if(data._id != undefined){
@@ -479,6 +361,181 @@ export class GridSelectionModalComponent implements OnInit {
     
     this.checkSelectedDataLength();
   }
+  isDisable(field,object){
+    const updateMode = false;
+    if(field.is_disabled){
+      return true;
+    }else if(field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != ''){
+      return this.checkIfService.isDisable(field.etc_fields,updateMode,object);
+    }
+    return false;
+  }
+  // CD
+  setStaticData(staticData){
+    if(staticData){
+      if(this.field.ddn_field && staticData[this.field.ddn_field] && staticData[this.field.ddn_field] != null){
+        this.gridData = [];
+        if(staticData[this.field.ddn_field] && staticData[this.field.ddn_field].length>0){
+          staticData[this.field.ddn_field].forEach(element => {
+            const gridData = JSON.parse(JSON.stringify(element))
+            if(gridData.selected && this.selecteData.length < 0){
+              gridData.selected = false;
+            }
+            this.gridData.push(gridData);
+          });
+        }
+       
+        if(this.gridData && this.gridData.length > 0){
+
+          if(this.field.onchange_function && this.field.onchange_function_param != ""){
+            switch(this.field.onchange_function_param){
+              case "calculateQquoteAmount":
+                this.gridData = this.limsCalculationService.calculateAutoEffRate(this.gridData);
+                break;
+            }
+          } 
+          if(this.selecteData && this.selecteData.length > 0){
+            this.updateSelectedDataInGridData(this.selecteData); 
+          }
+          this.setGridData = false; 
+          this.reloadBtn = false;     
+        }
+      }        
+    }
+  }
+  // CD
+  updateSelectedDataInGridData(selecteData){
+    if(selecteData && selecteData.length > 0){
+      selecteData.forEach(element => {
+        for (let i = 0; i < this.gridData.length; i++) {
+          const row = this.gridData[i];
+          if (this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length > 0) {
+            var validity = true;
+            for (let index = 0; index < this.field.matching_fields_for_grid_selection.length; index++) {
+              const matchcriteria = this.field.matching_fields_for_grid_selection[index];
+              if (this.commonFunctionService.getObjectValue(matchcriteria, element) == this.commonFunctionService.getObjectValue(matchcriteria, row)) {
+                validity = validity && true;
+              }
+              else {
+                validity = validity && false;
+                break;
+              }
+            };
+            if (validity == true) {
+              this.updateRowData(element,i);
+              break;
+            }
+          }
+          else {
+            if (this.commonFunctionService.getObjectValue("_id", element) == this.commonFunctionService.getObjectValue('_id', row)) {
+              this.updateRowData(element,i);
+              break;
+            }
+          }
+        };
+      });  
+    }
+  }
+  // CD
+  updateRowData(element,i){
+    this.gridData[i] = element
+    const grid_data = JSON.parse(JSON.stringify(this.gridData[i]));
+    grid_data.selected = true;
+    // if(this.editableGridColumns.length > 0){
+    //   this.editableGridColumns.forEach(column => {
+    //     grid_data[column.field_name] = element[column.field_name];
+    //   });
+    // }
+    this.gridData[i] = grid_data;  
+    const selectedData = this.selectedData[i];
+    selectedData.selected = true;
+    this.selectedData[i] = selectedData;
+  }
+  // CD
+  getStaticDataWithDependentData(){
+    const staticModal = []
+    let staticModalGroup = this.apiCallService.commanApiPayload([],this.listOfGridFieldName,[],{});
+    if(staticModalGroup.length > 0){
+      staticModalGroup.forEach(element => {
+        staticModal.push(element);
+      });
+    } 
+    if(staticModal.length > 0){    
+      this.apiService.getStatiData(staticModal);
+    }
+  }
+  getValueForGrid(field, object) {
+    return this.gridCommonFunctionService.getValueForGrid(field, object);
+  }
+  // CD
+  checkSelectedDataLength(){
+    if(this.modifiedGridData.length > 0){
+      let count = 0;
+      for (let i = 0; i < this.modifiedGridData.length; i++) {
+        const data = this.modifiedGridData[i];        
+        if(data.selected){
+          count++;
+        }
+        if(count >= 2){
+          if(this.editableGridColumns && this.editableGridColumns.length > 0){
+            this.checkSelectedData = true;
+            this.onlySelectedData = true;
+          }else{
+            this.checkSelectedData = false;
+            this.onlySelectedData = true;
+          }          
+          break;
+        }else if(count >= 1){
+          this.onlySelectedData = true;
+          this.checkSelectedData = false;
+        }else{
+          this.checkSelectedData = false;
+          this.onlySelectedData = false;
+        }
+        
+      }
+    }
+  }
+  closeModal(){
+    this.gridData=[];
+    this.selectedData = [];
+    this.selecteData=[];
+    this.data = '';
+    this.onlySelected=false;
+    this.checkSelectedData = false;
+    this.onlySelectedData = false;
+    this.modifiedGridData = [];
+    this.editEnable=false;
+  }
+  // NOt in use
+  getSelectedData(){
+    this.selectedData = [];    
+    if(this.gridData && this.gridData.length > 0){
+      this.gridData.forEach(element => {
+        if(element && element.selected){
+          this.selectedData.push(element);
+        }
+      });
+    }
+    if(this.selecteData && this.selecteData.length > 0 && this.field.add_new_enabled){
+      this.selecteData.forEach(element => {
+        if(element && element.customEntry){
+          this.selectedData.push(element);
+        }
+      });      
+    }
+  }
+  // Dependency Functions Handling End -------------------  
+
+  // Unsubscriber Functions Handling Start -------------------
+  unsubscribe(){
+    if(this.staticDataSubscriber){
+      this.staticDataSubscriber.unsubscribe();
+    }
+  }
+  // Unsubscriber Functions Handling End -------------------
+  
+  
   // exists(item) {
   //   return this.selectedData.indexOf(item) > -1;
   // };
@@ -520,187 +577,114 @@ export class GridSelectionModalComponent implements OnInit {
   //   }
   //   //console.log(this.selected3);
   // }
-  checkValidator(){
-    // if(this.preSelectedData){
-    //   let selectedItem = 0;
-    //   this.gridData.forEach(element => {
-    //     if(element.selected  && selectedItem == 0){
-    //       selectedItem = 1;
-    //     }
-    //   });
-    //   if(selectedItem == 1){
-    //     return false;
-    //   }else{
-    //     return true;
-    //   }
-    // }
-    // return false;
-  }
-
-  segmentChanged(ev: any) {
-    this.selectedTab = ev.target.value;
-    if(ev.target.value == 'added'){
-      this.onlySelected = true;
-    }else{
-      this.onlySelected = false;
-    }
-  }
-  getSelectedData(){
-    this.selectedData = [];    
-    if(this.gridData && this.gridData.length > 0){
-      this.gridData.forEach(element => {
-        if(element && element.selected){
-          this.selectedData.push(element);
-        }
-      });
-    }
-    if(this.selecteData && this.selecteData.length > 0 && this.field.add_new_enabled){
-      this.selecteData.forEach(element => {
-        if(element && element.customEntry){
-          this.selectedData.push(element);
-        }
-      });      
-    }
-  }
-  refreshRowWithMasterData(index) {
-    let rowData = this.gridData[index];
-    if (this.field.matching_fields_for_grid_selection && this.field.matching_fields_for_grid_selection.length > 0) {
-      var validity = true;
-      if (Array.isArray(this.responseData)) {
-        this.responseData.forEach(element => {
-          this.field.matching_fields_for_grid_selection.forEach(matchcriteria => {
-            if (this.commonFunctionService.getObjectValue(matchcriteria, rowData) == this.commonFunctionService.getObjectValue(matchcriteria, element)) {
-              validity = validity && true;
-            }
-            else {
-              validity = validity && false;
-            }
-          });
-          if (validity == true) {
-            const grid_data = JSON.parse(JSON.stringify(element))
-            grid_data.selected = this.gridData[index]['selected'];
-            this.gridData[index] = grid_data;
-          }
-        });
-      }
-
-    }
-  }
-  checkSelectedDataLength(){
-    if(this.modifiedGridData.length > 0){
-      let count = 0;
-      for (let i = 0; i < this.modifiedGridData.length; i++) {
-        const data = this.modifiedGridData[i];        
-        if(data.selected){
-          count++;
-        }
-        if(count >= 2){
-          if(this.editableGridColumns && this.editableGridColumns.length > 0){
-            this.checkSelectedData = true;
-            this.onlySelectedData = true;
-          }else{
-            this.checkSelectedData = false;
-            this.onlySelectedData = true;
-          }          
-          break;
-        }else if(count >= 1){
-          this.onlySelectedData = true;
-          this.checkSelectedData = false;
-        }else{
-          this.checkSelectedData = false;
-          this.onlySelectedData = false;
-        }
-        
-      }
-    }
-  }
-
-  updateGridDataToModifiedData(grid_row_selection,gridData,modifiedGridData,listOfGridFieldName){  
-    let gridSelectedData = []; 
-    let modifiedSelectedData = [];
-    if (grid_row_selection == false) {
-      gridSelectedData = [...gridData];
-      modifiedSelectedData = [...modifiedGridData];
-    }
-    else {
-      gridSelectedData = this.getListByKeyValueToList(gridData,"selected",true); 
-      modifiedSelectedData = this.getListByKeyValueToList(modifiedGridData,"selected",true);
-    } 
-    if(listOfGridFieldName.length > 0){  
-      gridSelectedData.forEach((data,i) => {
-        listOfGridFieldName.forEach(column => {
-          if(column.editable || column.type == 'number'){
-            gridSelectedData[i][column.field_name] = modifiedSelectedData[i][column.field_name];
-          }         
-        });
-      });
-    }  
-    return gridSelectedData;  
-  }
   
-  getListByKeyValueToList(list,key,value){
-    let getlist = [];
-    for (let i = 0; i < list.length; i++) {
-      const element = list[i];
-      if(element && element[key] == value){
-        getlist.push(element);
-      }
-    }
-    return getlist;
-  }
-  modifyGridData(gridData,gridColumns,field,editableGridColumns,typegrapyCriteriaList){
-    let modifiedData = [];
-    if(gridColumns.length > 0){      
-      for (let i = 0; i < gridData.length; i++) {
-        const row = gridData[i];
-        let modifyRow = this.rowModify(row,field,gridColumns,editableGridColumns,typegrapyCriteriaList);     
-        modifiedData.push(modifyRow);
-      }
-    }
-    return modifiedData;
-  }
-  rowModify(row,field,gridColumns,editableGridColumns,typegrapyCriteriaList){
-    let modifyRow = JSON.parse(JSON.stringify(row));
-    modifyRow["disabled"] = this.checkRowIf(row,field);
-    for (let j = 0; j < gridColumns.length; j++) {
-      const column = gridColumns[j];  
-      if(!column.editable || editableGridColumns.length == 0){        
-        modifyRow[column.field_name] = this.gridCommonFunctionService.getValueForGrid(column,row);
-      }          
-      if(column.editable){
-        modifyRow[column.field_name+"_disabled"] = this.isDisable(column,row);            
-      }
-    }
-    if(editableGridColumns && (editableGridColumns.length == 1 || (field && !field.grid_row_selection) || row.selected)){
-      modifyRow["column_edit"] = true;
-    }else{
-      modifyRow["column_edit"] = false;
-    }  
-    if(editableGridColumns && editableGridColumns.length == 0 && field && Object.keys(field).length > 0){
-      modifyRow['actionBtnDisplay'] = this.gridCommonFunctionService.checkRowDisabledIf(field,row);
-    } 
-    // if(typegrapyCriteriaList && typegrapyCriteriaList.length > 0){
-    //   modifyRow['background-color'] = this.checkTypgraphCondition(typegrapyCriteriaList,row,'background-color');
-    // }
-    return modifyRow;
-  }
-  checkRowIf(data,field){
-    let check = false;
-    if(data.selected || field.checkDisableRowIf){
-      let condition = '';
-      if(field.disableRowIf && field.disableRowIf != ''){
-        condition = field.disableRowIf;
-      }
-      if(condition != ''){
-        if(this.checkIfService.checkDisableRowIf(condition,data)){
-          check = true;
-        }else{
-          check = false;
-        }
-      }
-    }
-    return check;
-  }
+  // checkValidator(){
+  //   // if(this.preSelectedData){
+  //   //   let selectedItem = 0;
+  //   //   this.gridData.forEach(element => {
+  //   //     if(element.selected  && selectedItem == 0){
+  //   //       selectedItem = 1;
+  //   //     }
+  //   //   });
+  //   //   if(selectedItem == 1){
+  //   //     return false;
+  //   //   }else{
+  //   //     return true;
+  //   //   }
+  //   // }
+  //   // return false;
+  // }  
+
+  // updateGridDataToModifiedData(grid_row_selection,gridData,modifiedGridData,listOfGridFieldName){  
+  //   let gridSelectedData = []; 
+  //   let modifiedSelectedData = [];
+  //   if (grid_row_selection == false) {
+  //     gridSelectedData = [...gridData];
+  //     modifiedSelectedData = [...modifiedGridData];
+  //   }
+  //   else {
+  //     gridSelectedData = this.getListByKeyValueToList(gridData,"selected",true); 
+  //     modifiedSelectedData = this.getListByKeyValueToList(modifiedGridData,"selected",true);
+  //   } 
+  //   if(listOfGridFieldName.length > 0){  
+  //     gridSelectedData.forEach((data,i) => {
+  //       listOfGridFieldName.forEach(column => {
+  //         if(column.editable || column.type == 'number'){
+  //           gridSelectedData[i][column.field_name] = modifiedSelectedData[i][column.field_name];
+  //         }         
+  //       });
+  //     });
+  //   }  
+  //   return gridSelectedData;  
+  // }
+  
+  // getListByKeyValueToList(list,key,value){
+  //   let getlist = [];
+  //   for (let i = 0; i < list.length; i++) {
+  //     const element = list[i];
+  //     if(element && element[key] == value){
+  //       getlist.push(element);
+  //     }
+  //   }
+  //   return getlist;
+  // }
+
+  // modifyGridData(gridData,gridColumns,field,editableGridColumns,typegrapyCriteriaList){
+  //   let modifiedData = [];
+  //   if(gridColumns.length > 0){      
+  //     for (let i = 0; i < gridData.length; i++) {
+  //       const row = gridData[i];
+  //       let modifyRow = this.rowModify(row,field,gridColumns,editableGridColumns,typegrapyCriteriaList);     
+  //       modifiedData.push(modifyRow);
+  //     }
+  //   }
+  //   return modifiedData;
+  // }
+
+  // rowModify(row,field,gridColumns,editableGridColumns,typegrapyCriteriaList){
+  //   let modifyRow = JSON.parse(JSON.stringify(row));
+  //   modifyRow["disabled"] = this.checkRowIf(row,field);
+  //   for (let j = 0; j < gridColumns.length; j++) {
+  //     const column = gridColumns[j];  
+  //     if(!column.editable || editableGridColumns.length == 0){        
+  //       modifyRow[column.field_name] = this.gridCommonFunctionService.getValueForGrid(column,row);
+  //     }          
+  //     if(column.editable){
+  //       modifyRow[column.field_name+"_disabled"] = this.isDisable(column,row);            
+  //     }
+  //   }
+  //   if(editableGridColumns && (editableGridColumns.length == 1 || (field && !field.grid_row_selection) || row.selected)){
+  //     modifyRow["column_edit"] = true;
+  //   }else{
+  //     modifyRow["column_edit"] = false;
+  //   }  
+  //   if(editableGridColumns && editableGridColumns.length == 0 && field && Object.keys(field).length > 0){
+  //     modifyRow['actionBtnDisplay'] = this.gridCommonFunctionService.checkRowDisabledIf(field,row);
+  //   } 
+  //   // if(typegrapyCriteriaList && typegrapyCriteriaList.length > 0){
+  //   //   modifyRow['background-color'] = this.checkTypgraphCondition(typegrapyCriteriaList,row,'background-color');
+  //   // }
+  //   return modifyRow;
+  // }
+
+  // checkRowIf(data,field){
+  //   let check = false;
+  //   if(data.selected || field.checkDisableRowIf){
+  //     let condition = '';
+  //     if(field.disableRowIf && field.disableRowIf != ''){
+  //       condition = field.disableRowIf;
+  //     }
+  //     if(condition != ''){
+  //       if(this.checkIfService.checkDisableRowIf(condition,data)){
+  //         check = true;
+  //       }else{
+  //         check = false;
+  //       }
+  //     }
+  //   }
+  //   return check;
+  // }
+
   // checkRowDisabledIf(field,data){  
   //   if(field && field.disableRowIf && field.disableRowIf != ''){  
   //     const condition = field.disableRowIf;

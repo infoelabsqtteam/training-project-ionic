@@ -59,10 +59,13 @@ export class CallDataRecordFormComponent implements OnInit {
 
    }
 
+  // Angular LifeCycle Function Handling Start --------------------
   ngOnInit() {
     this.initForm();
   }
+  // Angular LifeCycle Function Handling End --------------------
 
+  // Initial Function Handling Start --------------------
   initForm(){
     this.cdrForm = this.formBuilder.group({
       // accountname: [''],
@@ -80,36 +83,37 @@ export class CallDataRecordFormComponent implements OnInit {
     
     this.setData();
   }
+  // Initial Function Handling End --------------------
 
-  setData(){
-    if(this.coreFunctionService.isNotBlank(this.cardData?.mobile) && this.cardData?.mobile.length > 0){
-      // this.mobileList= true
-      this.contactNumber = this.cardData.mobile;
-    }else if(this.coreFunctionService.isNotBlank(this.cardData?.phone) && this.cardData?.phone.length >=10){
-      this.contactNumber = this.cardData.phone;
-    }else{
-      this.contactNumber = '';
-    }
-
-    if(this.coreFunctionService.isNotBlank(this.cardData?.name)){
-      this.contactName = this.cardData.name;
-    }else if(this.coreFunctionService.isNotBlank(this.cardData?.first_name) && this.coreFunctionService.isNotBlank(this.cardData?.last_name)){
-      this.contactName = this.cardData.first_name + " " + this.cardData.last_name;
-    }else if(this.coreFunctionService.isNotBlank(this.cardData?.first_name)){
-      this.contactName = this.cardData.first_name;
-    }else{
-      this.contactName = '';
+  // Subscriber Function Handling Start --------------------
+  setSaveResponce(saveFromDataRsponce){
+    if (saveFromDataRsponce) {
+      if (saveFromDataRsponce.success && saveFromDataRsponce.success != '') {
+        if (saveFromDataRsponce.success == 'success') {
+          if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
+            this.notificationService.showAlert(saveFromDataRsponce.success_msg,'',['Dismiss']);
+          }else{
+            this.notificationService.showAlert(" Form Data Save successfull !!!" ,'',['Dismiss']);
+          }
+        }
+        this.apiService.ResetSaveResponce();
+      }
+      else if (saveFromDataRsponce.error && saveFromDataRsponce.error != '') {
+        this.notificationService.showAlert(saveFromDataRsponce.error,'',['Dismiss']);
+        this.apiService.ResetSaveResponce()
+      }
+      else{
+        this.notificationService.showAlert("No data return",'',['Dismiss']);
+      }
     }
   }
+  // Subscriber Function Handling End --------------------
 
-  get f() { return this.cdrForm.controls; }
-
+  // Click Function Handling Start --------------------
   async onSubmit() {
-
     let endTime:any = new Date();
     let endTimeMs:any = endTime.getTime(endTime);
-    let callduration:any = await this.getDataDiff(endTimeMs);
-    
+    let callduration:any = await this.getDataDiff(endTimeMs);    
     let cdr = this.cdrForm.value;
     const date:any = new Date(Date.now());
     let obj: any = {};
@@ -151,7 +155,37 @@ export class CallDataRecordFormComponent implements OnInit {
       this.modalController.dismiss({'dismissed': true},"backClicked",);
     }
   }
-  
+  call(Number:any) {
+    let callingNumber:any = Number;
+    this.callNumber.callNumber(callingNumber, true)
+      .then(res => console.log('Launched dialer!' + res))
+      .catch(err => console.log('Error launching dialer ' + err));
+
+      this.mobileList= false;
+  }
+  // Click Function Handling End --------------------
+
+  // Dependency Function Handling Start --------------------
+  setData(){
+    if(this.coreFunctionService.isNotBlank(this.cardData?.mobile) && this.cardData?.mobile.length > 0){
+      // this.mobileList= true
+      this.contactNumber = this.cardData.mobile;
+    }else if(this.coreFunctionService.isNotBlank(this.cardData?.phone) && this.cardData?.phone.length >=10){
+      this.contactNumber = this.cardData.phone;
+    }else{
+      this.contactNumber = '';
+    }
+
+    if(this.coreFunctionService.isNotBlank(this.cardData?.name)){
+      this.contactName = this.cardData.name;
+    }else if(this.coreFunctionService.isNotBlank(this.cardData?.first_name) && this.coreFunctionService.isNotBlank(this.cardData?.last_name)){
+      this.contactName = this.cardData.first_name + " " + this.cardData.last_name;
+    }else if(this.coreFunctionService.isNotBlank(this.cardData?.first_name)){
+      this.contactName = this.cardData.first_name;
+    }else{
+      this.contactName = '';
+    }
+  }
   async getDataDiff(endTimeMs:any) {    
     let  diffMillisec:any = endTimeMs - this.startTime;
 
@@ -181,38 +215,9 @@ export class CallDataRecordFormComponent implements OnInit {
     // let  minutes:any = Math.floor(diffMillisec / 60000);
     // let seconds:any = ((diffMillisec % 60000) / 1000).toFixed(0);
     // return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
-
-  }
-  
-  setSaveResponce(saveFromDataRsponce){
-    if (saveFromDataRsponce) {
-      if (saveFromDataRsponce.success && saveFromDataRsponce.success != '') {
-        if (saveFromDataRsponce.success == 'success') {
-          if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
-            this.notificationService.showAlert(saveFromDataRsponce.success_msg,'',['Dismiss']);
-          }else{
-            this.notificationService.showAlert(" Form Data Save successfull !!!" ,'',['Dismiss']);
-          }
-        }
-        this.apiService.ResetSaveResponce();
-      }
-      else if (saveFromDataRsponce.error && saveFromDataRsponce.error != '') {
-        this.notificationService.showAlert(saveFromDataRsponce.error,'',['Dismiss']);
-        this.apiService.ResetSaveResponce()
-      }
-      else{
-        this.notificationService.showAlert("No data return",'',['Dismiss']);
-      }
-    }
   }
 
-  call(Number:any) {
-    let callingNumber:any = Number;
-    this.callNumber.callNumber(callingNumber, true)
-      .then(res => console.log('Launched dialer!' + res))
-      .catch(err => console.log('Error launching dialer ' + err));
-
-      this.mobileList= false;
-  }
+  get f() { return this.cdrForm.controls; }
+  // Dependency Function Handling End --------------------
   
 }

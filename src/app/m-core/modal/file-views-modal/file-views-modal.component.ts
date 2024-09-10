@@ -63,7 +63,7 @@ export class FileViewsModalComponent implements OnInit {
       });
   }
 
-  // 
+  // Angular LifeCycle Function Handling Start --------------------
   ngOnInit(): void {
     let modal = this;
     // ensure id attribute exists
@@ -81,6 +81,8 @@ export class FileViewsModalComponent implements OnInit {
       this.fileDownloadUrlSubscription.unsubscribe();
     }
   }
+  // Angular LifeCycle Function Handling End --------------------
+
   // Subscriber Functions Handling Start -------------------
   setFileDownloadUrl(fileDownloadUrl:string,fileName?:string){
     if(this.showPreview){
