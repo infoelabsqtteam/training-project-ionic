@@ -58,6 +58,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   ) { }
   
 
+  /*---- Angular LifeCycle Function Handling Start ------------*/
   ngOnInit() {
     this.samePageGridSelection = this.appDataShareService.getgridselectioncheckvalue();    
   }
@@ -67,44 +68,14 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       this.subscribe();
     } 
   }
-  subscribe(){
-    this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
-      this.reloadBtn = true;
-      if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field) && data[this.field.ddn_field]){
-        this.responseData[this.field.ddn_field] = data[this.field.ddn_field];
-        this.reloadBtn = false;
-      }else{
-        this.responseData = {};
-      }
-      this.setStaticData(data);
-    })
-  }
-  reloadStaticData(){
-    this.reloadBtn = true;
-    let data:any = this.dataShareService.getStatiData();
-    this.copyStaticData = data;
-    if(this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null && data[this.field.ddn_field] != undefined){
-      if((Array.isArray(data[this.field.ddn_field]) && data[this.field.ddn_field].length > 0)){
-        this.setStaticData(data);
-      }else if(!Array.isArray(data[this.field.ddn_field])){
-        this.setStaticData(data);
-      }else{
-        this.resetReloadBtn();
-      }
-    }else{
-      this.resetReloadBtn();      
-    }
-  }
-  resetReloadBtn(){
-    setTimeout(() => {
-      this.reloadBtn = false;
-    }, 1000);
-  }
   ngOnDestroy(){
     if(this.staticDataSubscriber){
       this.staticDataSubscriber.unsubscribe();
     }
   }
+  /*---- Angular LifeCycle Function Handling End ------------*/
+
+  /*---- Initial Function Handling Start ------------*/
   onload(){
     this.selecteData = [];  
     this.selecteData = JSON.parse(JSON.stringify(this.Data.selectedData)); 
@@ -136,7 +107,73 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       this.updateMode = this.Data.updateMode;
     }  
   }
-  
+  subscribe(){
+    this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
+      this.reloadBtn = true;
+      if(this.coreFunctionService.isNotBlank(this.field) && this.coreFunctionService.isNotBlank(this.field.ddn_field) && data[this.field.ddn_field]){
+        this.responseData[this.field.ddn_field] = data[this.field.ddn_field];
+        this.reloadBtn = false;
+      }else{
+        this.responseData = {};
+      }
+      this.setStaticData(data);
+    })
+  }
+  /*---- Initial Function Handling End ------------*/
+
+  /*---- Click Function Handling Start ------------*/  
+  async addremoveparticipant(data,index){
+    if(this.field && this.field.add_new_enabled && data.customEntry){
+      if(data.approvedStatus != "Approved" || data.approvedStatus != "Rejected"){
+        this.addremoveitem(data,index);
+      }else{
+        this.edite(index);
+      }
+    }else{
+      this.addremoveitem(data,index);
+    }
+  }
+  async delete(index:number){
+    //confirmation alert
+    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
+    if(confirmDelete === "confirm"){
+      this.selectedData.splice(index,1);
+      this.setSelectTab();
+      let obj =this.getSendData()
+      this.gridSelectionResponce.emit(obj);
+    }
+  }
+  edite(index:number){
+    let obj =this.getSendData()
+    obj['action'] = "edite";
+    obj['index'] = index;
+    this.gridSelectionResponce.emit(obj);
+  }
+  reloadStaticData(){
+    this.reloadBtn = true;
+    let data:any = this.dataShareService.getStatiData();
+    this.copyStaticData = data;
+    if(this.field.ddn_field && data[this.field.ddn_field] && data[this.field.ddn_field] != null && data[this.field.ddn_field] != undefined){
+      if((Array.isArray(data[this.field.ddn_field]) && data[this.field.ddn_field].length > 0)){
+        this.setStaticData(data);
+      }else if(!Array.isArray(data[this.field.ddn_field])){
+        this.setStaticData(data);
+      }else{
+        this.resetReloadBtn();
+      }
+    }else{
+      this.resetReloadBtn();      
+    }
+  }
+  resetReloadBtn(){
+    setTimeout(() => {
+      this.reloadBtn = false;
+    }, 1000);
+  }
+  /*---- Click Function Handling End ------------*/
+
+  /*---- Dependency Function Handling Start ------------*/  
+   
   setStaticData(staticData) {
     if (staticData) {
       if (staticData) {
@@ -175,9 +212,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
         }
       }
     }
-  }
-  
-  
+  }  
   updateSelectedDataInGridData(selecteData){
     if(selecteData && selecteData.length > 0){
       selecteData.forEach(element => {
@@ -221,7 +256,6 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     // }
     this.gridData[i] = grid_data;
   }
-
   getValueForGrid(field, object) {
     return this.gridCommonFunctionService.getValueForGrid(field, object);
   }
@@ -232,7 +266,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
       return true;
     } 
     if(this.field.disableRowIf && this.field.disableRowIf != ''){
-      disabledrow = this.checkRowIf(object);
+      disabledrow = this.checkIfService.checkRowIf(object,field);
     }
     if(disabledrow){
       this.readonly = true;
@@ -243,46 +277,13 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }   
     return false;
   }
-  checkRowIf(data:any){
-    let check = false;
-    if(data.selected){
-      let condition = '';
-      if(this.field.disableRowIf && this.field.disableRowIf != ''){
-        condition = this.field.disableRowIf;
-      }
-      if(condition != ''){
-        if(this.checkIfService.checkDisableRowIf(condition,data)){
-          check = true;
-        }else{
-          check = false;
-        }
-      }
-    }
-    return check;
-  }
   checkRowDisabledIf(field,index){
     const data = this.selectedData[index];
     const condition = field.disableRowIf;
     if(condition){
       return !this.checkIfService.checkDisableRowIf(condition,data);
     }
-    return true;    
-  }
-  calculateNetAmount(data, fieldName, index){
-
-    this.limsCalculationsService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
-  }
-
-  async addremoveparticipant(data,index){
-    if(this.field && this.field.add_new_enabled && data.customEntry){
-      if(data.approvedStatus != "Approved" || data.approvedStatus != "Rejected"){
-        this.addremoveitem(data,index);
-      }else{
-        this.edite(index);
-      }
-    }else{
-      this.addremoveitem(data,index);
-    }
+    return true;
   }
   async addremoveitem(data,index){
     let alreadyAdded = false;
@@ -378,8 +379,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
   }
   getFirstCharOfString(char:any){
     return this.commonFunctionService.getFirstCharOfString(char);
-  }
-  
+  }  
   getName(object:any){
     let columns = this.field.gridColumns;
     let field_name : string = "";
@@ -397,24 +397,7 @@ export class GridSelectionComponent implements OnInit, OnChanges {
     }
     let value = this.commonFunctionService.getObjectValue(field_name,object);
     return value;
-  }
-
-  async delete(index:number){
-    //confirmation alert
-    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
-    if(confirmDelete === "confirm"){
-      this.selectedData.splice(index,1);
-      this.setSelectTab();
-      let obj =this.getSendData()
-      this.gridSelectionResponce.emit(obj);
-    }
-  }
-  edite(index:number){
-    let obj =this.getSendData()
-    obj['action'] = "edite";
-    obj['index'] = index;
-    this.gridSelectionResponce.emit(obj);
-  }
+  }  
   getSendData(){
     let obj ={
       "action":'',
@@ -450,5 +433,31 @@ export class GridSelectionComponent implements OnInit, OnChanges {
         this.gridSelectionResponce.emit(obj);
       // }
     }
-  }
+  }  
+
+  /*---- Dependency Function Handling End ------------*/
+
+  
+  // checkRowIf(data:any){
+  //   let check = false;
+  //   if(data.selected){
+  //     let condition = '';
+  //     if(this.field.disableRowIf && this.field.disableRowIf != ''){
+  //       condition = this.field.disableRowIf;
+  //     }
+  //     if(condition != ''){
+  //       if(this.checkIfService.checkDisableRowIf(condition,data)){
+  //         check = true;
+  //       }else{
+  //         check = false;
+  //       }
+  //     }
+  //   }
+  //   return check;
+  // }
+  
+  // calculateNetAmount(data, fieldName, index){
+  //   this.limsCalculationsService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
+  // }
+
 }

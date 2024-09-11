@@ -334,7 +334,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
     });
   }
-
   setCardData(data:any){
     if( this.currentPage < this.totalPageCount){
       if(this.loadMoreData && this.carddata.length !== 0 && this.totalDataCount !== 0 && this.updateMode){
@@ -405,7 +404,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.appStorageService.setObject('scannedData',this.carddata);
     }
   }
-
   async setDownloadPdfData(downloadPdfData){
     if (downloadPdfData != '' && downloadPdfData != null && this.downloadPdfCheck != '') {
       const blobData = new Blob([downloadPdfData.data], { type: "application/pdf" });
@@ -466,7 +464,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
     }
   }
-
   async downloadandprint(data){
     let template = data.data;
     const blob = new Blob([template], { type: 'application/pdf' });
@@ -719,16 +716,188 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     }
   }
+  clickOnGridElement(field, object, i,e:Event) {
+    e.stopPropagation();
+    let value={};
+    value['data'] = this.commonFunctionService.getObjectValue(field.field_name, object);
+    if(value['data']!){
+      console.log('Data available in ' + field.field_label);
+    }else{
+      return console.log('No data available in ' + field.field_label);
+    }    
+    if(field.gridColumns && field.gridColumns.length > 0){
+      value['gridColumns'] = field.gridColumns;
+    }
+    let editemode = false;
+    if(field.editable){
+      editemode = true;
+    }
+    if(field.bulk_download){
+      value['bulk_download'] = true;
+    }else{
+      value['bulk_download'] = false;
+    }
+    if (!field.type) field.type = "Text";
+    switch (field.type.toLowerCase()) {
+      case "file":
+      case "file_with_preview":
+      case "file_with_print":
+        if (value['data'] && value['data'] != '') {
+          let previewFile:boolean = false;
+          let printFile:boolean = false;
+          if(field.type.toLowerCase() == "file_with_preview"){
+            previewFile = true;
+          }else if(field.type.toLowerCase() == "file_with_print"){
+            printFile = true;
+          }
+          const obj = {
+            'data' : value,
+            'field' : field,
+            'index' : i,
+            'field_name': field?.field_name,
+            'editemode' : editemode,
+            'field_type': field.type.toLowerCase(),
+            'previewFile': previewFile,
+            'printFile' : printFile
+          }
+          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode,obj);
+        };
+        break;
+      default: return;
+    }
+  }
+  // go to new page 2nd method
+  async detailCardButton(column, data){
+    if(this.detailPage){
+      //const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
+      this.modaldetailCardButton(column,data);
+    }else{
+      const newobj = {
+        "childdata": data,
+        "selected_tab_index": this.selectedIndex
+      }
+      this.dataShareServiceService.setchildDataList(newobj);  
+      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);  
+      this.router.navigate(['card-detail-view']);
+    }    
+  }
+  // add new card or record in cardlist 
+  addNewForm(formName?:any,permissionName?:string,scannedData?:string){
+    if (this.permissionService.checkPermission(this.currentMenu.name, 'add') || this.permissionService.checkPermission(this.currentMenu.name, 'edit') || this.permissionService.checkPermission(this.currentMenu.name, permissionName)) {
+      if(formName){
+        this.formTypeName = formName;
+      }else{
+        this.formTypeName = "default";
+      }
+      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);
+      let card = this.card;
+      let form:any = {};
+      let id = '5f6d95da9feaa2409c3765cd';
+      if(card && card.card && card.card.form){
+        form = this.commonFunctionService.getForm(card.card.form,formName,this.gridButtons);
+        if(form && form._id && form._id != ''){
+          id = form._id;
+        }else if(card.card.form && card.card.form._id){
+          form = card.card.form;
+          id = card.card.form._id;
+        }
+      }    
+      this.commonAppDataShareService.setFormId(id);
+      // this.router.navigate(['crm/form']);
+      this.saveCallSubscribe();
+      const additionalData = {
+        'scannedData': scannedData,
+        'card': this.card?.card ? this.card?.card : this.card,
+        'enableScanner': this.enableScanner
+      }
+      this.openFormModal(form,additionalData);
+    } else {
+      this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
+    }
+  }  
+  // Pull from bottom for loading more cards
+  loadData(event:any) {
+    if(this.loadMoreData){
+      this.ionEvent = event;
+      setTimeout(() => {
+        event.target.complete();
+        // this.loadMoreData = true;
+        if(this.currentPageCount <= this.totalPageCount){
+          if (this.carddata.length === this.totalDataCount || this.totalDataCount === 1) {// App logic to determine if all data is loaded
+            this.ionEvent.target.disabled = true;    // and disable the infinite scroll
+            this.notificationService.presentToastOnBottom("You reached at the end.","success");
+          }else{
+            this.currentPageCount++;
+            this.getGridData(this.collectionname);  
+          }
+        }else{
+          this.notificationService.presentToastOnBottom("No more data.");
+        }        
+      }, 2000);
+
+    }else{
+      setTimeout(() => {
+        console.log("Load More Data feature disable.");
+          event.target.complete();
+      }, 2000);
+    }
+  }
+  // Pull from Top for Do refreshing or update card list 
+  doRefresh(event:any) {
+    if(this.refreshlist){
+      this.ionEvent = event;
+      console.log('Begin doRefresh async operation');
+      this.updateMode = false;  
+      setTimeout(() => {
+        event.target.complete();
+        let card:any;
+        let criteria:any = [];
+        // if (this.carddata.length === this.totalDataCount) { 
+          // App logic to determine if all data is loaded
+          // this.refreshEvent.target.disabled = true;    // Disable the infinite scroll if carddata.length === response.totaldata.length
+          // console.log('doRefresh async operation has ended');
+          // this.notificationService.presentToastOnBottom("No Updates Available","success");
+        // }else{
+          if(this.card && this.card.card){
+            card = this.card.card;
+          }
+          if(card && card.api_params_criteria && card.api_params_criteria.length > 0){
+            card.api_params_criteria.forEach(element => {
+              criteria.push(element);
+            });
+          }
+          if(card && card.parent_id){
+            if(card && card.collection_name == "travel_tracking_master" && card.parent_id && card.parent_id !=''){
+              const cr = "travelPlan._id;eq;" + card.parent_id + ";STATIC";
+              criteria.push(cr);
+            }      
+          }
+          // if(card && card.collection_name){
+          //   if(card.collection_name=='sample_collection'){
+          //     let user=this.storageService.GetUserInfo();
+          //     const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
+          //     const cr2 = "status;eq;" + "PENDING" + ";STATIC";
+          //     criteria.push(cr1);
+          //     criteria.push(cr2);
+          //   }      
+          // }
+          this.getGridData(this.collectionname, criteria, card);
+        // }
+      }, 2000);
+
+    }else{
+      console.log("Top refresh feature disable.");
+      event.target.complete();
+    }
+  }
   // Click Functions Handling End---------------------
 
   // Dependency Functions Handling Start -------------------
-
-  // Dependency Functions Handling End -------------------
   saveCallSubscribe(){
     this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
       this.setSaveResponce(responce);
     })
-  }  
+  }
   resetVariabls(){
     if(this.updateMode){
     }
@@ -751,21 +920,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.selectedgriddataId = "";
     this.addNewEnabled = false;
     this.form = "";
-  }  
-  // onContentScroll(event:any) {
-  //   let scrollEventVal:any = {};
-  //   if (event.detail.scrollTop >= 50) {
-  //     this.renderer.setStyle(this.cardViewContent['el'], 'top', '-69px');
-  //     scrollEventVal['scrollValue'] = event.detail.scrollTop;
-  //     scrollEventVal['setTopValue'] = "-69px";
-  //     this.primaryheaderNew.emit(scrollEventVal);
-  //   } else {
-  //     this.renderer.setStyle(this.cardViewContent['el'], 'top', '0px');
-  //     scrollEventVal['scrollValue'] = event.detail.scrollTop;
-  //     scrollEventVal['setTopValue'] = "0px";
-  //     this.primaryheaderNew.emit(scrollEventVal);
-  //   }
-  // }
+  }
   getCardDataByCollection(i: number,parentId?:string) {
     this.resetVariabls();
     const cardWithTab = this.menuOrModuleCommonService.getCard(i);
@@ -774,7 +929,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.card = cardWithTab;
     }
     this.setCardAndTab(cardWithTab);    
-  } 
+  }
   setCardAndTab(cardWithTab){
     if(cardWithTab && cardWithTab.card){
       if (this.permissionService.checkPermission(cardWithTab.card.collection_name, 'view')) {
@@ -944,43 +1099,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         await this.getCurrentPosition();
       }
     }
-  }
-  onChangeValue(myInput) {
-    this.inValue = myInput.length;
-    if (this.inValue <= 0) {
-      this.getGridData(this.collectionname);
-    }
-  }
-
-  // go to new page 2nd method
-  async detailCardButton(column, data){
-    if(this.detailPage){
-      //const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
-      this.modaldetailCardButton(column,data);
-    }else{
-      const newobj = {
-        "childdata": data,
-        "selected_tab_index": this.selectedIndex
-      }
-      this.dataShareServiceService.setchildDataList(newobj);  
-      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);  
-      this.router.navigate(['card-detail-view']);
-    }    
-  }
-  
-  comingSoon() {
-    this.notificationService.presentToastOnBottom('Comming Soon...');
-  }  
-
-  callInvoice(card:any,Index:number) {
-    let callingNumber:any;
-    if(card.billing_mobile !=''){
-      callingNumber = card.billing_mobile;
-    }
-    this.callNumber.callNumber(callingNumber, true)
-      .then(res => console.log('Launched dialer!' + res))
-      .catch(err => console.log('Error launching dialer ' + err));
-  }
+  } 
   setCriteria(listCiteria,criteria){
     if(criteria && criteria.length > 0){
       criteria.forEach(cr => {
@@ -1044,63 +1163,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     this.apiService.getDatabyCollectionName(payload);
   }
-
   getValueForGrid(field,object){
     return this.gridCommonFunctionService.getValueForGrid(field,object);
   } 
-
-  tabmenuClick(index:number){
-    this.selectedIndex = index;
-    this.carddata = [];
-    this.createFormgroup = true;
-    const tab = this.tabMenu[index];
-    const moduleList = this.commonAppDataShareService.getModuleList();
-    const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
-    const card = moduleList[tabIndex];
-    this.card['card'] = card;
-    this.card.selectedTabIndex = index;
-    this.setCardDetails(card);
-  } 
-  
-  showCardTemplate(card:any, index:number){
-    this.selectedIndex = index;
-    //this.router.navigate(['crm/quotation']);
-    this.dataShareServiceService.setcardData(card);
-  }
-  // add new card or record in cardlist 
-  addNewForm(formName?:any,permissionName?:string,scannedData?:string){
-    if (this.permissionService.checkPermission(this.currentMenu.name, 'add') || this.permissionService.checkPermission(this.currentMenu.name, 'edit') || this.permissionService.checkPermission(this.currentMenu.name, permissionName)) {
-      if(formName){
-        this.formTypeName = formName;
-      }else{
-        this.formTypeName = "default";
-      }
-      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);
-      let card = this.card;
-      let form:any = {};
-      let id = '5f6d95da9feaa2409c3765cd';
-      if(card && card.card && card.card.form){
-        form = this.commonFunctionService.getForm(card.card.form,formName,this.gridButtons);
-        if(form && form._id && form._id != ''){
-          id = form._id;
-        }else if(card.card.form && card.card.form._id){
-          form = card.card.form;
-          id = card.card.form._id;
-        }
-      }    
-      this.commonAppDataShareService.setFormId(id);
-      // this.router.navigate(['crm/form']);
-      this.saveCallSubscribe();
-      const additionalData = {
-        'scannedData': scannedData,
-        'card': this.card?.card ? this.card?.card : this.card,
-        'enableScanner': this.enableScanner
-      }
-      this.openFormModal(form,additionalData);
-    } else {
-      this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
-    }
-  }
   async openFormModal(form,additionalData){
     const modal = await this.modalController.create({
       component: FormComponent,
@@ -1148,82 +1213,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.getCardDataByCollection(this.selectedIndex);
     });
   }
-  // Pull from bottom for loading more cards
-  loadData(event:any) {
-    if(this.loadMoreData){
-      this.ionEvent = event;
-      setTimeout(() => {
-        event.target.complete();
-        // this.loadMoreData = true;
-        if(this.currentPageCount <= this.totalPageCount){
-          if (this.carddata.length === this.totalDataCount || this.totalDataCount === 1) {// App logic to determine if all data is loaded
-            this.ionEvent.target.disabled = true;    // and disable the infinite scroll
-            this.notificationService.presentToastOnBottom("You reached at the end.","success");
-          }else{
-            this.currentPageCount++;
-            this.getGridData(this.collectionname);  
-          }
-        }else{
-          this.notificationService.presentToastOnBottom("No more data.");
-        }        
-      }, 2000);
-
-    }else{
-      setTimeout(() => {
-        console.log("Load More Data feature disable.");
-          event.target.complete();
-      }, 2000);
-    }
-  }
-  // Pull from Top for Do refreshing or update card list 
-  doRefresh(event:any) {
-    if(this.refreshlist){
-      this.ionEvent = event;
-      console.log('Begin doRefresh async operation');
-      this.updateMode = false;  
-      setTimeout(() => {
-        event.target.complete();
-        let card:any;
-        let criteria:any = [];
-        // if (this.carddata.length === this.totalDataCount) { 
-          // App logic to determine if all data is loaded
-          // this.refreshEvent.target.disabled = true;    // Disable the infinite scroll if carddata.length === response.totaldata.length
-          // console.log('doRefresh async operation has ended');
-          // this.notificationService.presentToastOnBottom("No Updates Available","success");
-        // }else{
-          if(this.card && this.card.card){
-            card = this.card.card;
-          }
-          if(card && card.api_params_criteria && card.api_params_criteria.length > 0){
-            card.api_params_criteria.forEach(element => {
-              criteria.push(element);
-            });
-          }
-          if(card && card.parent_id){
-            if(card && card.collection_name == "travel_tracking_master" && card.parent_id && card.parent_id !=''){
-              const cr = "travelPlan._id;eq;" + card.parent_id + ";STATIC";
-              criteria.push(cr);
-            }      
-          }
-          // if(card && card.collection_name){
-          //   if(card.collection_name=='sample_collection'){
-          //     let user=this.storageService.GetUserInfo();
-          //     const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
-          //     const cr2 = "status;eq;" + "PENDING" + ";STATIC";
-          //     criteria.push(cr1);
-          //     criteria.push(cr2);
-          //   }      
-          // }
-          this.getGridData(this.collectionname, criteria, card);
-        // }
-      }, 2000);
-
-    }else{
-      console.log("Top refresh feature disable.");
-      event.target.complete();
-    }
-  }
-
   editedRowData(index,formName,customData?:any) {
     if (this.permissionService.checkPermission(this.currentMenu.name, 'edit')) {
       this.editedRowIndex = index;
@@ -1263,7 +1252,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
     }
   }
-
   async storeCardGridDetails(selectedgridcard:any,index:number){
     let updateMode =  this.updateMode;
     let cardLayoutDetails = {
@@ -1287,8 +1275,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.commonAppDataShareService.setMultipleCardCollection(this.multipleCardCollection);
     }
        
-  }
-  
+  }  
   async loadNextGrid(index:number,gridData:any,buttonName?:any){
     const status = await this.checkStatus(gridData); //only for travel approve status
     if(status){
@@ -1342,7 +1329,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.carddata=nextGridData.carddata;
     // this.setCardDetails(nextNextGridData.card);
   }
-
   checkUpdatePermission(rowdata){
     if(this.details && this.details.permission_key && this.details.permission_key != '' && this.details.permission_value && this.details.permission_value != ''){ 
       const value = this.commonFunctionService.getObjectValue(this.details.permission_key,rowdata) 
@@ -1373,24 +1359,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       const payload = this.apiCallService.getPaylodWithCriteria(params, '', criteria, {});
       this.apiService.GetChildGrid(payload);
   }
-  
-  async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
-    const fileExtension = extentionType;
-    const response: any = await this.appDownloadService.getBlobTypeFromExtn(extentionType);
-    const file_Type:string = response?.mimeType ? response?.mimeType : '';
-    const file_prefix:string = response?.filePrefix ? response?.filePrefix : '';
-    let fileName:any;
-    if(filename && filename !=undefined){      
-      fileName = filename;
-    }else{
-      fileName = file_prefix + '_' + new Date().getTime() + "." + fileExtension;
-    }
-    const blobData:Blob = new Blob([arrayBufferData],{type:file_Type});    
-    // this.downloadToMobile(blobData,fileName);
-    let downloadResponse:any =  await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
-    this.downloadResponseHandler(downloadResponse);
-  }
-
   checkionEvents(){
     if(this.refreshlist){
       if(this.ionEvent && this.ionEvent.type == 'ionRefresh'){
@@ -1459,7 +1427,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       await this.requestLocationPermission();
     }
   }
-
   async requestLocationPermission() {
     let isGpsEnable = false;
     if(isPlatform('hybrid')){
@@ -1654,69 +1621,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
   saveCurrentLocationDetails(data,index:number){
     const formData = ''
-  }
-  
-  async getUTCDate(date:any){
-    let Mdate = date.substring(0,11) + "00:00:00" + date.substring(19);
-    let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
-    return utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
-  }
-
-  mapOutPutData(index:number){
-    this.editedRowData(index,"UPDATE");
-  }
-
-  clickOnGridElement(field, object, i,e:Event) {
-    e.stopPropagation();
-    let value={};
-    value['data'] = this.commonFunctionService.getObjectValue(field.field_name, object);
-    if(value['data']!){
-      console.log('Data available in ' + field.field_label);
-    }else{
-      return console.log('No data available in ' + field.field_label);
-    }    
-    if(field.gridColumns && field.gridColumns.length > 0){
-      value['gridColumns'] = field.gridColumns;
-    }
-    let editemode = false;
-    if(field.editable){
-      editemode = true;
-    }
-    if(field.bulk_download){
-      value['bulk_download'] = true;
-    }else{
-      value['bulk_download'] = false;
-    }
-    if (!field.type) field.type = "Text";
-    switch (field.type.toLowerCase()) {
-      case "file":
-      case "file_with_preview":
-      case "file_with_print":
-        if (value['data'] && value['data'] != '') {
-          let previewFile:boolean = false;
-          let printFile:boolean = false;
-          if(field.type.toLowerCase() == "file_with_preview"){
-            previewFile = true;
-          }else if(field.type.toLowerCase() == "file_with_print"){
-            printFile = true;
-          }
-          const obj = {
-            'data' : value,
-            'field' : field,
-            'index' : i,
-            'field_name': field?.field_name,
-            'editemode' : editemode,
-            'field_type': field.type.toLowerCase(),
-            'previewFile': previewFile,
-            'printFile' : printFile
-          }
-          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode,obj);
-        };
-        break;
-      default: return;
-    }
-  }
-
+  }  
   async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
     let objectData:any = {
       'data' : value,
@@ -1742,6 +1647,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     });
     return await modal.present();
   }
+
+  // Dependency Functions Handling End -------------------
+
   /*----BarCode Functions Start------------------------------------------------------------------------- */
   async checkBarcodeScannerSupportedorNot(){
       await BarcodeScanner.isSupported().then(async (result) => {
@@ -1889,7 +1797,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.openSettings();
     }
   }
-
   async checkScannedData(barcodeDetails?:any){
     let resultValue='';
     let barCodeType=barcodeDetails?.format;
@@ -1917,7 +1824,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     // if(resultValue && resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
     if(resultValue && resultValue!='')this.addNewForm(formName,'',resultValue);
   }
-
   parseIfObject(variable:any) {
     try {
         return JSON.parse(variable);
@@ -1925,7 +1831,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         return variable;
     }
   }
-
   async startBarcodeScanner(){
     let options : CapacitorBarcodeScannerOptions = {
       hint: CapacitorBarcodeScannerTypeHint.ALL, 
@@ -2095,7 +2000,89 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   //   // this.popoverModalService.
   //   this.apiService.SaveFormData(saveFromData);
   // }
+
   /*-------BarCode Functions End--------------*/
+
+  /*-------Not in Use Functions Start--------------*/
+
+  // onContentScroll(event:any) {
+  //   let scrollEventVal:any = {};
+  //   if (event.detail.scrollTop >= 50) {
+  //     this.renderer.setStyle(this.cardViewContent['el'], 'top', '-69px');
+  //     scrollEventVal['scrollValue'] = event.detail.scrollTop;
+  //     scrollEventVal['setTopValue'] = "-69px";
+  //     this.primaryheaderNew.emit(scrollEventVal);
+  //   } else {
+  //     this.renderer.setStyle(this.cardViewContent['el'], 'top', '0px');
+  //     scrollEventVal['scrollValue'] = event.detail.scrollTop;
+  //     scrollEventVal['setTopValue'] = "0px";
+  //     this.primaryheaderNew.emit(scrollEventVal);
+  //   }
+  // }
+  onChangeValue(myInput) {
+    this.inValue = myInput.length;
+    if (this.inValue <= 0) {
+      this.getGridData(this.collectionname);
+    }
+  }  
+  comingSoon() {
+    this.notificationService.presentToastOnBottom('Comming Soon...');
+  }
+  callInvoice(card:any,Index:number) {
+    let callingNumber:any;
+    if(card.billing_mobile !=''){
+      callingNumber = card.billing_mobile;
+    }
+    this.callNumber.callNumber(callingNumber, true)
+      .then(res => console.log('Launched dialer!' + res))
+      .catch(err => console.log('Error launching dialer ' + err));
+  }
+  tabmenuClick(index:number){
+    this.selectedIndex = index;
+    this.carddata = [];
+    this.createFormgroup = true;
+    const tab = this.tabMenu[index];
+    const moduleList = this.commonAppDataShareService.getModuleList();
+    const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
+    const card = moduleList[tabIndex];
+    this.card['card'] = card;
+    this.card.selectedTabIndex = index;
+    this.setCardDetails(card);
+  }
+  showCardTemplate(card:any, index:number){
+    this.selectedIndex = index;
+    //this.router.navigate(['crm/quotation']);
+    this.dataShareServiceService.setcardData(card);
+  }
+
+  async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
+    const fileExtension = extentionType;
+    const response: any = await this.appDownloadService.getBlobTypeFromExtn(extentionType);
+    const file_Type:string = response?.mimeType ? response?.mimeType : '';
+    const file_prefix:string = response?.filePrefix ? response?.filePrefix : '';
+    let fileName:any;
+    if(filename && filename !=undefined){      
+      fileName = filename;
+    }else{
+      fileName = file_prefix + '_' + new Date().getTime() + "." + fileExtension;
+    }
+    const blobData:Blob = new Blob([arrayBufferData],{type:file_Type});    
+    // this.downloadToMobile(blobData,fileName);
+    let downloadResponse:any =  await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
+    this.downloadResponseHandler(downloadResponse);
+  }
+
+  async getUTCDate(date:any){
+    let Mdate = date.substring(0,11) + "00:00:00" + date.substring(19);
+    let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
+    return utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
+  }
+
+  mapOutPutData(index:number){
+    this.editedRowData(index,"UPDATE");
+  }
+
+  /*-------Not in Use Functions End--------------*/
   
   /* --------Let these below 2 functions at the end of this file--------------------------------- */
   async getGeocodeAddress(LatLng:any) {

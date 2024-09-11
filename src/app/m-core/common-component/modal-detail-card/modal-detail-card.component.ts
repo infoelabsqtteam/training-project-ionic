@@ -298,10 +298,10 @@ export class ModalDetailCardComponent implements OnInit {
           console.log("File Download Modal closed " , data.role);                
     });
     return await modal.present();
-  }  
-  // Dependency Functions Handling End------------
+  }
   getValueForGrid(field,object){
     return this.gridCommonFunctionService.getValueForGrid(field,object);
-  }
+  } 
+  // Dependency Functions Handling End------------
 
 }
