@@ -17,7 +17,7 @@ import { FileOpener } from '@capacitor-community/file-opener';
 import { GridSelectionDetailModalComponent } from '../../modal/grid-selection-detail-modal/grid-selection-detail-modal.component';
 // import { GoogleMap, MapType } from '@capacitor/google-maps';
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
-import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common, GridCommonFunctionService, FileHandlerService, ApiCallService, FormCreationService, CheckIfService, FormControlService, MultipleFormService, ApiCallResponceService, FormValueService } from '@core/web-core';
+import { ApiService, DataShareService, CustomvalidationService, CommonFunctionService, LimsCalculationsService, CommonAppDataShareService, PermissionService, EnvService, CoreFunctionService, StorageService, Common, GridCommonFunctionService, FileHandlerService, ApiCallService, FormCreationService, CheckIfService, FormControlService, MultipleFormService, ApiCallResponceService, FormValueService, DownloadService } from '@core/web-core';
 import { Capacitor } from '@capacitor/core';
 import { ModalComponent } from '../../modal/modal.component';
 import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
@@ -314,6 +314,7 @@ tinymceConfig = {}
   pageSize:any=100;
   buttonIfList=[];
   confirmationSubscription:any;
+  fileDrop: boolean = false;
 
   	/**
 	 * Convert Files list to normal array list
@@ -368,7 +369,8 @@ tinymceConfig = {}
     private multipleFormService: MultipleFormService,
     private apiCallResponceService: ApiCallResponceService,
     private formValueService: FormValueService,
-    private appModelService: AppModelService
+    private appModelService: AppModelService,
+    private downloadService: DownloadService
     ) {
 
       // this.mapsApiLoaded();
@@ -443,7 +445,7 @@ tinymceConfig = {}
             this.form = form;
             this.resetFlag();
             this.setForm();
-            // delete code as 1 sec delay is added in cardLayout for getting data from db 
+            // delete below code as 1 sec delay is added in cardLayout for getting data from db 
             // if(this.editedRowIndex >= 0 ){
             //   if(this.selectedRow && this.selectedRow?.['_id']){
             //     this.editedRowData(this.selectedRow);
@@ -524,97 +526,177 @@ tinymceConfig = {}
     this.getNextFormById(id);
     this.handleDisabeIf();
     this.formControlChanges();
-    // this.checkPermissionandRequest();
+    this.checkPermissionandRequest();
   }
   // Angular LifeCycle Function Handling End ---------------
 
-  // Subscriber Functions Handling Start -------------------
-
-  // Subscriber Functions Handling End ---------------
-
-  // Unsubscribe Functions Handling Start -------------------
-  resetFlag(){
-    this.createFormgroup = true;
-  }
-  unsubscribeVariabbles(){
-    if(this.staticDataSubscriber){
-      this.staticDataSubscriber.unsubscribe();
-    }
-    if(this.dinamicFormSubscription){
-      this.dinamicFormSubscription.unsubscribe();
-    }
-    if(this.nestedFormSubscription){
-      this.nestedFormSubscription.unsubscribe();
-    }
-    if(this.templateForm){
-      this.templateForm.reset(); 
-    }
-    if(this.saveResponceSubscription){
-      this.saveResponceSubscription.unsubscribe();
-    }
-    if(this.fileDataSubscription){
-      this.fileDataSubscription.unsubscribe();
-    }
-    if(this.typeaheadDataSubscription){
-      this.typeaheadDataSubscription.unsubscribe();
-    }
-    if(this.fileDownloadUrlSubscription){
-      this.fileDownloadUrlSubscription.unsubscribe();
-    }
-    if(this.gridSelectionOpenOrNotSubscription){
-      this.gridSelectionOpenOrNotSubscription.unsubscribe();
-    }
-    if(this.gridRealTimeDataSubscription){
-      this.gridRealTimeDataSubscription.unsubscribe();
-    }
-
-  }
-  // Unsubscribe Functions Handling End -------------------
-
-  onLoadVariable() {
-    this.dataSaveInProgress = true;
-  }
+  // Initial Function Handling Start ------------------
   private getNextFormById(id: string) {
     const params = "form";
     const criteria = ["_id;eq;" + id + ";STATIC"];
     const payload = this.apiCallService.getPaylodWithCriteria(params, '', criteria, {});
     this.apiService.GetNestedForm(payload);
   }
+  async handleDisabeIf(){
+    this.getFocusFieldAndFocus();
+    // delete below code part1
+    // if(this.checkFormFieldAutfocus && this.tableFields.length > 0){
+    //   if(this.previousFormFocusField && this.previousFormFocusField._id){
+    //     this.focusField("",this.previousFormFocusField)        
+    //   }else{
+    //     if(this.previousFormFocusField == undefined || this.previousFormFocusField._id == undefined){
+    //       for (const key of this.tableFields) {
+    //         if(key.type == "stepper"){
+    //           if(key.list_of_fields && key.list_of_fields != null && key.list_of_fields.length > 0){
+    //             for (const step of key.list_of_fields) {
+    //               if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
+    //                 for (const field of step.list_of_fields) {
+    //                   if (field.field_name) {
+    //                     this.focusField(step,field);  
+    //                     break;
+    //                   }
+    //                 }
+    //               }                
+    //             }
+    //           }
+    //         }else if (key.field_name) {
+    //           this.focusField("",key);  
+    //           break;
+    //         }              
+    //       }
+    //     }
+    //   }
+    // }
+    // const invalidControl = document.getElementById(id);
+    // if(invalidControl != null){
+    //   invalidControl.focus();
+    //   this.checkFormFieldAutfocus = false;
+    //   if(this.previousFormFocusField && this.previousFormFocusField.type == 'list_of_fields' && this.previousFormFocusField.datatype == 'list_of_object_with_popup'){
+    //     this.previousFormFocusField = {};
+    //   }
+    // }    
+    // ============= part1 end
 
-  //CD
-  updateRunningData(listData:any){
-    if (this.editedRowIndex >= 0) {
-      this.selectedRowIndex = this.editedRowIndex;
-      if(this.childData && this.childData._id){
-        if(listData && listData.length > 0){
-          if(this.childData._id == listData[0]._id){
-            this.editedRowData(listData[0]);
-          }
-        }else{
-          this.editedRowData(this.childData);
-        }
-      }
-    }else{
-      this.selectedRowIndex = -1;
-      if(this.editedRowIndex == -1) {
-        if(listData && listData._id == undefined) {
-          setTimeout(() => {
-            this.updateDataOnFormField(listData);
-          }, 100);
-        }
-      }
-    }
+    // delete below code part2
+    // if(this.disableIfFieldList.length > 0){
+    //   this.disableIfFieldList.forEach(element => {
+    //     if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+    //       this.isDisable(element.parent,element);
+    //     }else{
+    //       this.isDisable('',element)
+    //     }
+    //   });
+    // }
+    // if(this.mendetoryIfFieldList.length > 0){
+    //   this.mendetoryIfFieldList.forEach(element => {
+    //     if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+    //       this.isMendetory(element.parent,element);
+    //     }else{
+    //       this.isMendetory('',element)
+    //     }
+    //   });
+    // }
+    // if(this.showIfFieldList.length > 0){
+    //   this.showIfFieldList.forEach(element => {
+    //     let id = '';
+    //     let parentFieldName = '';
+    //     let parentIndex = -1;
+    //     let fieldIndex = -1;
+    //     if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+    //       id = element._id;
+    //       parentFieldName = element.parent;
+    //       parentIndex = element.parentIndex;
+    //       fieldIndex = element.currentIndex;
+    //       this.tableFields[parentIndex].list_of_fields[fieldIndex]['notDisplay'] = this.checkIfService.checkShowIfListOfFiedlds(parentFieldName,element,this.getFormValue(true));
+    //     }else{
+    //       id = element._id;
+    //     }
+    //     let elementDetails = document.getElementById(id);
+    //     if(!this.checkIfService.checkShowIf(element,this.selectedRow,this.templateForm.getRawValue())){          
+    //       if(elementDetails && elementDetails != null){
+    //         const classes = Array.from(elementDetails.classList)
+    //         if(!classes.includes('d-none')){
+    //           this.removeClass(elementDetails,' d-inline-block');
+    //           elementDetails.className += " d-none";
+    //           element['show'] = false;
+    //           const objectValue = this.templateForm.getRawValue();
+    //           if(element.type != "group_of_fields" && element.type != "list_of_fields" && objectValue[element.field_name] && objectValue[element.field_name] != ''){
+    //             let controlarName = element.field_name;
+    //             let count = 0;
+    //             for (let index = 0; index < this.showIfFieldList.length; index++) {
+    //               let showIfItem = this.showIfFieldList[index];
+    //               if(controlarName == showIfItem.field_name){
+    //                 count = count+1;
+    //               }
+    //               if(count == 2){
+    //                 break;
+    //               }
+    //             }
+    //             if(count != 2){
+    //               this.templateForm.get(element.field_name).setValue('');
+    //             }
+    //           } 
+    //           if(element.type == "group_of_fields" || element.type == "list_of_fields"){
+    //             this.templateForm.get(element.field_name).reset();
+    //             element.list_of_fields.forEach(field => {
+    //               if(field.type == 'list_of_string' || field.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
+    //                 const custmizedKey = this.commonFunctionService.custmizedKey(element);            
+    //                 if (this.custmizedFormValue[custmizedKey]){ 
+    //                   if (this.custmizedFormValue[custmizedKey][field.field_name]) this.custmizedFormValue[custmizedKey][field.field_name] = [];
+    //                 }
+    //               }
+    //             });
+    //           }  
+    //           if(element.type == 'list_of_string' || element.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
+    //             if (this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = [];
+    //           }         
+    //           if(element.is_mandatory){
+    //             if(this.templateFormControl[element.field_name].status == 'INVALID'){
+    //               this.templateForm.get(element.field_name).clearValidators();
+    //               this.templateForm.get(element.field_name).updateValueAndValidity();
+    //             }              
+    //           }
+    //         }            
+    //       }                
+    //     }else{          
+    //       if(elementDetails && elementDetails != null){
+    //         const classes = Array.from(elementDetails.classList)
+    //         if(!classes.includes('d-inline-block')){
+    //           this.removeClass(elementDetails,' d-none');
+    //           elementDetails.className += " d-inline-block"; 
+    //           element['show'] = true;
+    //           if(element.is_mandatory){
+    //             if(this.templateFormControl[element.field_name].status == 'VALID'){
+    //               this.templateForm.get(element.field_name).setValidators([Validators.required]);
+    //               this.templateForm.get(element.field_name).updateValueAndValidity();
+    //             }              
+    //           }
+    //         }            
+    //       }
+    //     }
+    //   });
+    //   return true;
+    // }      
+    // if(this.disableIfFieldList.length == 0 && this.showIfFieldList.length == 0){
+    //   return true;
+    // }
+    // =============part2 end
+
+    this.checkFormFieldIfCondition();
+  }  
+  formControlChanges(){
+    if(this.templateForm && this.templateForm.valueChanges && this.templateForm.valueChanges != null){
+      this.templateForm.valueChanges.subscribe(val => {
+        this.handleDisabeIf();
+      });
+    }    
   }
+  onLoadVariable() {
+    this.dataSaveInProgress = true;
+  }
+  // Initial Function Handling End -----------------
 
-  // delete code
-  // setTypeaheadData(typeAheadData){
-  //   if (typeAheadData && typeAheadData.length > 0) {
-  //     this.typeAheadData = typeAheadData;
-  //   } else {
-  //     this.typeAheadData = [];
-  //   }
-  // }
-
+  // Subscriber Functions Handling Start -------------------
   // CD
   setStaticData(staticDatas:any){
     if(staticDatas && Object.keys(staticDatas).length > 0) {
@@ -710,52 +792,6 @@ tinymceConfig = {}
       })
     }
   }
-
-  // setCheckboxFileListValue() {
-  //   this.checkBoxFieldListValue.forEach(element => {
-  //     let checkCreatControl: any;
-  //     if (element.parent) {
-  //       checkCreatControl = this.templateForm.get(element.parent).get(element.field_name);
-  //     } else {
-  //       checkCreatControl = this.templateForm.get(element.field_name);
-  //     }
-  //     if (this.staticData[element.ddn_field] && checkCreatControl.controls && checkCreatControl.controls.length == 0) {
-  //       let checkArray: UntypedFormArray;
-  //       if (element.parent) {
-  //         checkArray = this.templateForm.get(element.parent).get(element.field_name) as UntypedFormArray;
-  //       } else {
-  //         checkArray = this.templateForm.get(element.field_name) as UntypedFormArray;
-  //       }
-  //       this.staticData[element.ddn_field].forEach((data, i) => {
-  //         if (this.updateMode) {
-  //           let arrayData;
-  //           if (element.parent) {
-  //             arrayData = this.selectedRow[element.parent][element.field_name];
-  //           } else {
-  //             arrayData = this.selectedRow[element.field_name];
-  //           }
-  //           let selected = false;
-  //           if (arrayData != undefined && arrayData != null) {
-  //             for (let index = 0; index < arrayData.length; index++) {
-  //               if (this.checkObjecOrString(data) == this.checkObjecOrString(arrayData[index])) {
-  //                 selected = true;
-  //                 break;
-  //               }
-  //             }
-  //           }
-  //           if (selected) {
-  //             checkArray.push(new UntypedFormControl(true));
-  //           } else {
-  //             checkArray.push(new UntypedFormControl(false));
-  //           }
-  //         } else {
-  //           checkArray.push(new UntypedFormControl(false));
-  //         }
-  //       });
-  //     }
-  //   });
-  // }
-  
   // CD
   setDinamicForm(form:any){
     if(form && form.DINAMIC_FORM){
@@ -766,6 +802,769 @@ tinymceConfig = {}
         this.setForm();
       }        
     }
+  }
+  // CD
+  loadNextForm(form: any){    
+    this.form = form;
+    this.resetFlagsForNewForm();
+    this.setForm();
+    // used service function
+    let result = this.multipleFormService.updateNextFormData(this.multipleFormCollection,this.nextFormUpdateMode,this.form,this.custmizedFormValue,this.editedRowIndex,this.previousFormFocusField,this.tableFields);    
+    let nextFormData:any = result.nextFormData;
+    if(this.updateAddNew){
+      this.getNextFormData(nextFormData);
+    }
+    let fData:any = result.fData;
+    this.nextFormUpdateMode = result.nextFormUpdateMode;
+    this.custmizedFormValue = result.custmizedFormValue;
+    if(result.fieldName && result.fieldName != '') this.modifyCustmizedValue(result.fieldName);
+    if(result.editFunction) this.editedRowData(fData);
+    if(result.updateFormFunction) this.updateDataOnFormField(fData);
+    if(result.getStaticData) this.getStaticDataWithDependentData();
+    this.previousFormFocusField = result.previousFormFocusField;
+
+    // delete below code-----------------------
+    // if(this.multipleFormCollection.length > 0){
+    //   nextFormData = this.multipleFormCollection[this.multipleFormCollection.length -1];
+    // }
+    // if(this.updateAddNew){
+    //   this.getNextFormData(nextFormData);
+    // }
+    // let cdata = {};
+    // let fData = {};
+    // if(nextFormData && nextFormData['next_form_data'] && nextFormData['next_form_data']['custom']){
+    //    cdata = nextFormData['next_form_data']['custom'];
+    // }
+    // if(nextFormData && nextFormData['next_form_data'] && nextFormData['next_form_data']['form']){
+    //    fData = nextFormData['next_form_data']['form'];
+    // }  
+    // if(nextFormData['index'] != undefined && nextFormData['index'] >= 0){
+    //   this.nextFormUpdateMode = true;
+    // } 
+    
+    // if(nextFormData && nextFormData['current_field'] && nextFormData['current_field']['type'] && (nextFormData['index'] == undefined || nextFormData['index'] == -1)){
+    //   switch (nextFormData['current_field']['type']) {
+    //     case 'list_of_fields':
+    //     case 'grid_selection':
+    //       const fieldName = nextFormData['current_field']['field_name'];
+    //       if(this.commonFunctionService.isArray(cdata)){
+    //         if(this.form && this.form.buttons){
+    //           if(!this.checkAddNewButtonOnGridSelection(this.form.buttons)){
+    //             this.custmizedFormValue[fieldName] = cdata;
+    //             // this.modifyCustmizedValue(fieldName);
+    //           }
+    //         }
+    //       }
+    //       break;      
+    //     default:
+    //       break;
+    //   }
+    // }
+    // if(nextFormData && nextFormData['next_form_data'] && nextFormData['next_form_data']['updataModeInPopupType']){
+    //   this.editedRowData(fData);
+    // }else{
+    //   this.updateDataOnFormField(fData);
+    //   if(this.editedRowIndex >= 0 || Object.keys(fData).length > 0){
+    //     this.getStaticDataWithDependentData();
+    //   }   
+    // }
+    // let nextFormFocusedFieldname = '';
+    // for (let key in fData) {
+    //   nextFormFocusedFieldname = key;
+    //   break;
+    // }
+    // if (this.tableFields && this.tableFields.length > 0) {
+    //   for (let i = 0; i < this.tableFields.length; i++) {
+    //     const element = this.tableFields[i];
+    //     if(nextFormFocusedFieldname == element.field_name){
+    //       this.previousFormFocusField = element;
+    //       break;
+    //     }        
+    //   }
+    // }
+  }
+  // CD
+  setForm(){
+    if(this.form){
+      this.formDetails.emit(this.form);
+    }
+    let getFields = this.formCreationService.checkFormDetails(this.form,'',this.currentMenu);
+    this.currentMenu = getFields['currentMenu'];
+    this.bulkupdates = getFields['bulkupdates'];
+    this.getLocation = getFields['getLocation'];
+    // this.headerFiledsData = getFields['headerFiledsData'];
+    this.tableFields = getFields['tableFields'];
+    this.getTableField = getFields['getTableField'];
+    this.formFieldButtons = getFields['formFieldButtons'];
+    // below code is for App
+    if(!this.currentMenu || this.currentMenu?.name == undefined){
+      const collectionName = this.dataShareServiceService.getCollectionName();
+      this.currentMenu['name'] = collectionName;
+    }
+    // =====================
+
+    // delete below code part1
+    // if(this.form && this.form.details && this.form.details.collection_name && this.form.details.collection_name != '' && (this.currentMenu != undefined || this.envService.getRequestType() == 'PUBLIC')){
+    //   if(this.currentMenu == undefined){
+    //     this.currentMenu = {};
+    //   }
+    //   this.currentMenu['name'] = this.form.details.collection_name;
+    // }else{
+    //   const collectionName = this.dataShareServiceService.getCollectionName();
+    //   if(collectionName !=''){
+    //     if(this.currentMenu == undefined){
+    //       this.currentMenu = {};
+    //     }
+    //     this.currentMenu['name'] = collectionName;
+    //   }      
+    // }
+    
+    // if(this.form){
+    //   if(this.form.details && this.form.details.bulk_update){
+    //     this.bulkupdates = true;
+    //   }
+    //   else{
+    //     this.bulkupdates = false;
+    //   }
+    //   this.formDetails.emit(this.form);
+    // }
+    // if(this.form && this.form.getLocation){
+    //   this.getLocation = this.form.getLocation;
+    //   this.checkPermissionandRequest();
+    //   // this.requestLocationPermission();
+    // }else{
+    //   this.getLocation = false;
+    // }
+    // if(this.form['tableFields'] && this.form['tableFields'] != undefined && this.form['tableFields'] != null){
+    //   this.tableFields = JSON.parse(JSON.stringify(this.form['tableFields']));
+    //   this.getTableField = false;
+    // }else{
+    //   this.tableFields = [];
+    // }  
+    // if(this.form.tab_list_buttons && this.form.tab_list_buttons != undefined && this.form.tab_list_buttons.length > 0){
+    //   this.formFieldButtons = this.form.tab_list_buttons; 
+    // } 
+
+    //=========================================End part1
+
+    // CH
+    if (this.tableFields.length > 0 && this.createFormgroup) {
+      this.createFormgroup = false;
+      let formControl:any = this.formCreationService.setNewForm(this.tableFields,this.formFieldButtons,this.form,this.elements,this.selectedRowIndex);
+      let blankField = formControl['blankField'];      
+      if(blankField && (blankField.fieldName != '' || blankField.index != -1)){
+        this.notifyFieldValueIsNull(blankField.fieldName,blankField.index);
+      }
+      this.calculationFieldList=formControl['calculationFieldList'];
+      this.showIfFieldList=formControl['showIfFieldList'];
+      this.buttonIfList=formControl['buttonIfList'];
+      this.disableIfFieldList=formControl['disableIfFieldList'];
+      this.mendetoryIfFieldList = formControl['mendetoryIfFieldList'];
+      this.gridSelectionMendetoryList=formControl['gridSelectionMendetoryList'];
+      this.customValidationFiels = formControl['customValidationFiels'];
+      // this.editorTypeFieldList = formControl['editorTypeFieldList'];
+      const forControl = formControl['forControl'];
+      this.checkBoxFieldListValue = formControl['checkBoxFieldListValue'];
+      let staticModal:any = formControl['staticModal'];
+      this.filePreviewFields=formControl['filePreviewFields'];
+      this.isStepper=formControl['isStepper'];
+      // this.showGridData = formControl['showGridData'];
+      // below code is for App
+      if(this.getLocation || formControl['requestLocationPermission']){
+        this.checkPermissionandRequest();
+      }
+      // ====================
+
+      // delete below code part2
+      // let formControl:any;
+      // const forControl:any = {};
+      // this.calculationFieldList=[];
+      // this.showIfFieldList=[];
+      // this.disableIfFieldList=[];
+      // this.mendetoryIfFieldList = [];
+      // this.gridSelectionMendetoryList=[];
+      // this.customValidationFiels = [];
+      // this.checkBoxFieldListValue = [];
+      // let staticModalGroup = [];
+      // let staticModal=[];
+      // // this.filePreviewFields=[];
+
+      // for (let index = 0; index < this.tableFields.length; index++) {
+      //   const element = this.tableFields[index];
+      //   if(element == null){
+      //     this.notifyFieldValueIsNull(this.form.name,index+1);
+      //     break;
+      //   }
+      //   if(!element.hideOnMobile){
+      //     if(element.type == 'pdf_view'){
+      //       const object = this.elements[this.selectedRowIndex];
+      //       staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,object))
+      //     } 
+      //     if(element.field_name && element.field_name != ''){             
+      //       switch (element.type) {
+      //         case "list_of_checkbox":
+      //           this.formCreationService.createFormControl(forControl, element, [], "list")
+      //           this.checkBoxFieldListValue.push(element);
+      //           break;
+      //         case "checkbox":
+      //           this.formCreationService.createFormControl(forControl, element, false, "checkbox")
+      //           break;
+      //         case "date":
+      //           let currentYear = new Date().getFullYear();
+      //           if(element.datatype == 'object'){
+      //             this.minDate = new Date();
+      //             if(element.etc_fields && element.etc_fields != null){
+      //               if(element.etc_fields.minDate){
+      //                 if(element.etc_fields.minDate == '-1'){
+      //                   this.minDate = new Date(currentYear - 100, 0, 1);
+      //                 }else{
+      //                   this.minDate.setDate(new Date().getDate() - Number(element.etc_fields.minDate));
+      //                 }
+      //               }
+      //             }
+      //             this.maxDate = new Date();
+      //             if(element.etc_fields && element.etc_fields != null){
+      //               if(element.etc_fields.maxDate){
+      //                 if(element.etc_fields.maxDate == '-1'){
+      //                   this.maxDate = new Date(currentYear + 1, 11, 31);
+      //                 }else{
+      //                   this.maxDate.setDate(new Date().getDate() + Number(element.etc_fields.maxDate));
+      //                 }
+      //               }
+      //             }
+      //           }else{
+      //             this.minDate = new Date(currentYear - 100, 0, 1);
+      //             this.maxDate = new Date(currentYear + 1, 11, 31);
+      //           }
+      //           let minDateToday:any;
+      //           let maxDateFromToday:any;                
+      //           minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
+      //           maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd") + "T23:59:59";
+      //           if(this.plt.is('hybrid')){
+      //             let getToday: any  = (new Date()).toISOString();
+      //             getToday = utcToZonedTime(getToday, this.userTimeZone);
+      //             getToday = this.datePipe.transform(getToday, "yyyy-MM-ddThh:mm:ss");
+      //             // if(this.formTypeName == "default"){
+      //             //     element['minDate'] = getToday;
+      //             // }else{
+      //             //   minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
+      //             //   element['minDate'] = minDateToday;
+      //             // }
+      //             element['minDate'] = minDateToday;
+      //             element['maxDate'] = maxDateFromToday;
+      //           }else{
+      //             element['minDate'] = this.minDate;
+      //             element['maxDate'] = this.maxDate;
+      //           }
+      //           this.formCreationService.createFormControl(forControl, element, '', "text")
+      //           break; 
+      //         case "daterange":
+      //           const date_range = {};
+      //           let list_of_dates = [
+      //             {field_name : 'start'},
+      //             {field_name : 'end'}
+      //           ]
+      //           if (element.list_of_dates.length > 0) {
+      //             list_of_dates.forEach((data) => {
+                    
+      //               this.formCreationService.createFormControl(date_range, data, '', "text")
+      //             });
+      //           }
+      //           this.formCreationService.createFormControl(forControl, element, date_range, "group")                                    
+      //           break;            
+      //         case "list_of_fields":
+      //         case "group_of_fields":
+      //           const list_of_fields = {};
+      //           if(element){
+      //             if (element.list_of_fields && element.list_of_fields.length > 0) {
+      //               for (let j = 0; j < element.list_of_fields.length; j++) {
+      //                 const data = element.list_of_fields[j];
+      //                 if(data == null){
+      //                   this.notifyFieldValueIsNull(element.name,j+1);
+      //                   break;
+      //                 }
+      //                 let modifyData = JSON.parse(JSON.stringify(data));
+      //                 modifyData.parent = element.field_name;
+      //                 //is disable handling
+      //                 //if parent is disabled then it's non disabled list_of_field will be disabled
+      //                 if(element.is_disabled){
+      //                   if(!modifyData.is_disabled){
+      //                     modifyData.is_disabled = element.is_disabled;
+      //                   }
+      //                 }                    
+      //                 //show if handling
+      //                 if(data.show_if && data.show_if != ''){
+      //                   modifyData['parentIndex'] = index;
+      //                   modifyData['currentIndex'] = j;
+      //                   this.showIfFieldList.push(modifyData);
+      //                 }
+      //                 //Mendetory If handling
+      //                 if(data.mandatory_if && data.mandatory_if != ''){
+      //                   this.mendetoryIfFieldList.push(modifyData);
+      //                 }
+      //                 //disable if handling
+      //                 if((data.disable_if && data.disable_if != '') || (data.disable_on_update && data.disable_on_update != '' && data.disable_on_update != undefined && data.disable_on_update != null) || (data.disable_on_add && data.disable_on_add != '' && data.disable_on_add != undefined && data.disable_on_add != null)){                          
+      //                   this.disableIfFieldList.push(modifyData);
+      //                 }                      
+      //                 if(element.type == 'list_of_fields' && data.is_mandatory){
+      //                   modifyData.is_mandatory=false;
+      //                 }
+      //                 if(data.field_name && data.field_name != '' && element.datatype != "list_of_object_with_popup"){
+      //                   // Calculation onChange handling
+      //                   if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != ""){
+      //                     this.calculationFieldList.push(element);
+      //                   }
+      //                   switch (data.type) {
+      //                     case "list_of_checkbox":
+      //                       this.formCreationService.createFormControl(list_of_fields, modifyData, [], "list")
+      //                       this.checkBoxFieldListValue.push(modifyData);
+      //                       break;
+      //                     case "checkbox":
+      //                         this.formCreationService.createFormControl(list_of_fields, modifyData, false, "checkbox")
+      //                         break;
+      //                     case "date":
+      //                       let currentYear = new Date().getFullYear();
+      //                       if(data.datatype == 'object'){
+      //                         this.minDate = new Date();
+      //                         if(data.etc_fields && data.etc_fields != null){
+      //                           if(data.etc_fields.minDate){
+      //                             if(data.etc_fields.minDate == '-1'){
+      //                               this.minDate = new Date(currentYear - 100, 0, 1);
+      //                             }else{
+      //                               this.minDate.setDate(new Date().getDate() - Number(data.etc_fields.minDate));
+      //                             }
+      //                           }
+      //                         }
+      //                         this.maxDate = new Date();
+      //                         if(data.etc_fields && data.etc_fields != null){
+      //                           if(data.etc_fields.maxDate){
+      //                             if(data.etc_fields.maxDate == '-1'){
+      //                               this.maxDate = new Date(currentYear + 1, 11, 31);
+      //                             }else{
+      //                               this.maxDate.setDate(new Date().getDate() + Number(data.etc_fields.maxDate));
+      //                             }
+      //                           }
+      //                         }
+      //                       }else{
+      //                         this.minDate = new Date(currentYear - 100, 0, 1);
+      //                         this.maxDate = new Date(currentYear + 1, 11, 31);
+      //                       }
+      //                       let minDateToday:any;
+      //                       let maxDateFromToday:any;                
+      //                       minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd");
+      //                       maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd");
+      //                       if(this.plt.is('hybrid')){
+      //                         data['minDate'] = minDateToday
+      //                         data['maxDate'] = maxDateFromToday;
+      //                       }else{
+      //                         data['minDate'] = minDateToday;
+      //                         data['maxDate'] = maxDateFromToday;
+      //                       }                        
+      //                       this.formCreationService.createFormControl(list_of_fields, modifyData, '', "text")
+      //                       break;                         
+      //                     default:
+      //                       this.formCreationService.createFormControl(list_of_fields, modifyData, '', "text")
+      //                       break;
+      //                   } 
+      //                 }                 
+      //               }
+      //             }
+      //           }
+      //           this.formCreationService.createFormControl(forControl, element, list_of_fields, "group"); 
+      //           if(element.type == 'list_of_fields'){
+      //             this.list_of_fields.push(element);
+      //           }               
+      //           break;
+      //         case "stepper":                  
+      //           if(element.list_of_fields.length > 0) {
+      //             element.list_of_fields.forEach((step) => {                      
+      //               if(step.list_of_fields != undefined){
+      //                 const stepper_of_fields = {};
+      //                 step.list_of_fields.forEach((data) =>{
+      //                   let modifyData = JSON.parse(JSON.stringify(data));
+      //                   modifyData.parent = step.field_name;
+      //                   //show if handling
+      //                   if(data.show_if && data.show_if != ''){
+      //                     this.showIfFieldList.push(modifyData);
+      //                   }
+      //                   //mendetory if handling
+      //                   if(data.mandatory_if && data.mandatory_if != ''){
+      //                     this.mendetoryIfFieldList.push(modifyData);
+      //                   }
+      //                   //disable if handling
+      //                   if((data.disable_if && data.disable_if != '') || (data.disable_on_update && data.disable_on_update != '' && data.disable_on_update != undefined && data.disable_on_update != null)){                          
+      //                     this.disableIfFieldList.push(modifyData);
+      //                   }                     
+      //                   // Calculation onChange handling
+      //                   if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != ""){
+      //                     this.calculationFieldList.push(element);
+      //                   }
+      //                   this.formCreationService.createFormControl(stepper_of_fields, modifyData, '', "text")
+      //                   if(data.tree_view_object && data.tree_view_object.field_name != ""){
+      //                     let treeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));                
+      //                     treeModifyData.is_mandatory=false;
+      //                     this.formCreationService.createFormControl(stepper_of_fields, treeModifyData , '', "text")
+      //                   }
+      //                 });
+      //                 this.formCreationService.createFormControl(forControl, step, stepper_of_fields, "group")
+      //               } 
+      //             }); 
+      //             this.isStepper = true;
+      //           }                    
+      //           break;
+      //         case "pdf_view" : 
+      //           const object = this.elements[this.selectedRowIndex];
+      //           staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,object))
+      //         break;
+      //         case "input_with_uploadfile":
+      //           element.is_disabled = true;
+      //           this.formCreationService.createFormControl(forControl, element, '', "text")
+      //           break;
+      //         case "grid_selection":
+      //             if(element && element.gridColumns && element.gridColumns.length > 0){
+      //               let colParField = JSON.parse(JSON.stringify(element));
+      //               colParField['mendetory_fields'] = [];
+      //               element.gridColumns.forEach(colField => {
+      //                 if(colField && colField.is_mandatory){
+      //                   colParField['mendetory_fields'].push(colField);
+      //                 }
+      //               });
+      //               if(colParField && colParField['mendetory_fields'] && colParField['mendetory_fields'].length > 0){
+      //                 this.gridSelectionMendetoryList.push(colParField);
+      //                 element['mendetory_fields'] = colParField['mendetory_fields'];
+      //               }
+      //             }
+      //             if(element && element.addNewButtonIf && element.addNewButtonIf != ''){
+      //               this.buttonIfList.push(element);                
+      //               element['fieldIndex'] = index;
+      //             }
+      //             element['showButton'] = this.checkGridSelectionButtonCondition(element,'add');
+      //             this.formCreationService.createFormControl(forControl, element, '', "text");
+      //           break;
+      //         case "gmap":
+      //         case "gmapview": 
+      //           this.requestLocationPermission();
+      //           this.formCreationService.createFormControl(forControl, element, '', "text");
+      //           break;
+      //         default:
+      //           this.formCreationService.createFormControl(forControl, element, '', "text");
+      //           break;
+      //       }
+            
+
+      //       if(element.tree_view_object && element.tree_view_object.field_name != ""){
+      //         let treeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));                
+      //         treeModifyData.is_mandatory=false;
+      //         this.formCreationService.createFormControl(forControl, treeModifyData , '', "text")
+      //       }
+      //     }
+      //     //show if handling
+      //     if(element.show_if && element.show_if != ''){
+      //       this.showIfFieldList.push(element);
+      //     }
+      //     //mandatory if handling
+      //     if(element.mandatory_if && element.mandatory_if != ''){
+      //       this.mendetoryIfFieldList.push(element);
+      //     }
+      //     //Customvalidation handling
+      //     if(element.compareFieldName && element.compareFieldName != ''){
+      //       this.customValidationFiels.push(element);
+      //     }
+      //     //disable if handling
+      //     if((element.disable_if && element.disable_if != '') || (element.disable_on_update && element.disable_on_update != '' && element.disable_on_update != undefined && element.disable_on_update != null) || (element.disable_on_add && element.disable_on_add != '' && element.disable_on_add != undefined && element.disable_on_add != null)){                  
+      //       this.disableIfFieldList.push(element);
+      //     }
+      //     // Calculation onChange handling
+      //     if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != ""){
+      //       this.calculationFieldList.push(element);
+      //     }
+      //     // if(element.type && element.type == 'pdf_view'){
+      //     //   this.filePreviewFields.push(element)
+      //     // }
+      //     if(element.type && element.type == 'info_html'){
+      //       this.filePreviewFields.push(element)
+      //     }
+      //   }
+      // }
+      // if(this.formFieldButtons && this.formFieldButtons.length > 0){
+      //   this.formFieldButtons.forEach(element => {
+      //     if(element.field_name && element.field_name != ''){              
+      //       switch (element.type) {
+      //         case "dropdown":
+      //           this.formCreationService.createFormControl(formControl, element, '', "text")
+      //           break;
+      //         default:
+      //           break;
+      //       }
+      //     }
+      //     if(element.show_if && element.show_if != ''){
+      //       this.showIfFieldList.push(element);
+      //     }
+      //     if(element.mandatory_if && element.mandatory_if != ''){
+      //       this.mendetoryIfFieldList.push(element);
+      //     }
+      //     if((element.disable_if && element.disable_if != '') || (element.disable_on_update && element.disable_on_update != '' && element.disable_on_update != undefined && element.disable_on_update != null) || (element.disable_on_add && element.disable_on_add != '' && element.disable_on_add != undefined && element.disable_on_add != null) ){                  
+      //       this.disableIfFieldList.push(element);
+      //     }
+      //   });
+      // }
+      //=========================================End part2
+
+      // CH
+      if (forControl && Object.keys(forControl).length > 0 && this.tableFields.length > 0) {
+        let validators = {};
+        validators['validator'] = [];
+        if(this.customValidationFiels && this.customValidationFiels.length > 0){
+          this.customValidationFiels.forEach(field => {
+            switch (field.type) {
+              case 'date':
+                validators['validator'].push(this.customValidationService.checkDates(field.field_name,field.compareFieldName));
+                break;
+              default:
+                break;
+            }
+
+          });
+        }
+        // Extra code for scanner
+        if(this.additionalData?.scannedData && formControl["name"] ){
+          formControl.name.value=this.additionalData?.scannedData;
+        }
+        this.templateForm = this.formBuilder.group(forControl,validators);
+        if(this.nextIndex){
+          this.nextIndex = false;
+          this.next();
+        }
+      }
+
+      let formValueWithCustomData = this.getFormValue(true);
+      let fromValue = this.getFormValue(false);
+      staticModal = this.formCreationService.updateSelectContact(this.selectContact,[],this.tableFields,this.templateForm,formValueWithCustomData,staticModal);
+      if(this.tableFields.length > 0 && this.editedRowIndex == -1){
+        this.getStaticData(staticModal,formValueWithCustomData,fromValue);               
+      }
+      
+      // delete below code part3
+      // let staticModal=[];
+      // if(this.selectContact != '' && this.selectContact != undefined){
+      //   let selectContactObject = this.selectContact;
+      //   let account={};
+      //   let contact={};            
+      //   let payload = {};
+      //   // this.tabFilterData.forEach(element => {
+      //   //   if(element && element._id){
+      //   //     if(element._id == this.selectContact){
+      //   //       selectContactObject = element;
+      //   //     }
+      //   //   }          
+      //   // });
+      //   if(selectContactObject && selectContactObject['_id']){
+      //     contact = {
+      //       "_id":selectContactObject['_id'],
+      //       "name":selectContactObject['name'],
+      //       "code":selectContactObject['serialId']
+      //     }
+      //     if(selectContactObject['lead']){
+      //       account = selectContactObject['lead'];
+      //     }
+      //   }
+      //   this.tableFields.forEach(element => {
+          
+      //     if(element.field_name == 'account'){
+      //       this.templateForm.get('account').setValue(account);
+      //       if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
+      //         payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.getFormValue(true)) 
+      //         if(element.onchange_api_params.indexOf("FORM_GROUP") >= 0 || element.onchange_api_params.indexOf("QTMP") >= 0){
+      //           payload["data"]=this.getFormValue(true);
+      //         } 
+      //         staticModal.push(payload);
+      //       }
+      //     }
+      //     if(element.field_name == 'contact'){
+      //       this.templateForm.get('contact').setValue(contact);
+      //       if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) { 
+      //         payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.getFormValue(true)) 
+      //         if(element.onchange_api_params.indexOf("FORM_GROUP") >= 0 || element.onchange_api_params.indexOf("QTMP") >= 0){
+      //           payload["data"]=this.getFormValue(true);
+      //         }                  
+      //         staticModal.push(payload);
+      //       }
+      //     } 
+      //     if(element.type == 'stepper'){
+      //       element.list_of_fields.forEach(stepData => {
+      //         stepData.list_of_fields.forEach(data => {
+      //           if(data.field_name == 'account'){
+      //             this.templateForm.get(stepData.field_name).get('account').setValue(account);
+      //             if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) { 
+      //               payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.getFormValue(true)) 
+      //               if(data.onchange_api_params.indexOf("FORM_GROUP") >= 0 || data.onchange_api_params.indexOf("QTMP") >= 0){
+      //                 payload["data"]=this.getFormValue(true);
+      //               }  
+      //               staticModal.push(payload);
+      //             }
+      //           }
+      //           if(data.field_name == 'contact'){
+      //             if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) { 
+      //               payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.getFormValue(true)) 
+      //               if(data.onchange_api_params.indexOf("FORM_GROUP") >= 0 || data.onchange_api_params.indexOf("QTMP") >= 0){
+      //                 payload["data"]=this.getFormValue(true);
+      //               }  
+      //               staticModal.push(payload);
+      //             }
+      //           } 
+      //         });
+      //       });
+      //     }             
+      //   });
+            
+      // }
+
+      // if(this.tableFields.length > 0 && this.editedRowIndex == -1){ 
+      //   let object =this.templateForm.getRawValue();
+      //   let formValue = object;
+      //   if(this.multipleFormCollection && this.multipleFormCollection.length > 0){
+      //     let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+      //     formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
+      //   }
+      //   let staticModalG = this.apiCallService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
+      //   if(staticModalG && staticModalG.length > 0){
+      //     staticModalG.forEach(element => {
+      //       staticModalGroup.push(element);
+      //     });
+      //   }
+      //   if(staticModalGroup != undefined && staticModalGroup != null){
+      //     if(staticModalGroup.length > 0){
+      //       staticModalGroup.forEach(data =>{
+      //         staticModal.push(data);
+      //       })
+      //     }
+      //   }
+      //   // if(this.tab && this.tab.api_params && this.tab.api_params != null && this.tab.api_params != "" && this.tab.api_params != undefined && this.selectedRowIndex == -1){      
+      //   //   let criteria = [];
+      //   //   if(this.tab.api_params_criteria && this.tab.api_params_criteria != null){
+      //   //     criteria=this.tab.api_params_criteria
+      //   //   }
+      //   //   staticModal.push(this.coreUtilityService.getPaylodWithCriteria(this.tab.api_params,this.tab.call_back_field,criteria,{}))
+          
+      //   // }
+      //   if(this.form && this.form.api_params && this.form.api_params != null && this.form.api_params != "" && this.form.api_params != undefined && this.selectedRowIndex == -1){
+
+      //     if(this.form.api_params == 'QTMP:EMAIL_WITH_TEMP:QUOTATION_LETTER'){
+      //       object = this.saveResponceData;
+      //     } 
+      //     let criteria = [];
+      //     if(this.form.api_params_criteria && this.form.api_params_criteria != null){
+      //       criteria=this.form.api_params_criteria
+      //     }
+      //     staticModal.push(this.apiCallService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,this.getFormValue(false)))
+          
+      //   }
+      //   if(staticModal.length > 0){
+      //     this.apiService.getStatiData(staticModal);        
+      //   }
+
+      // }      
+
+    }
+
+    // CH
+    if (this.tableFields.length > 0 && this.pageLoading) {
+      this.pageLoading = false;
+      let buttonsCondition = this.formCreationService.checkFieldButtonCondition(this.tableFields);
+      this.tempVal = buttonsCondition['tempVal'];
+
+      // delete below code part4
+      // this.tableFields.forEach(element => {
+      //   switch (element.type) {
+      //     case "typeahead":
+      //       if (element.datatype == 'list_of_object') {
+      //         this.tempVal[element.field_name + "_add_button"] = true;
+      //       }
+      //       break;
+      //     case "list_of_string":
+      //       this.tempVal[element.field_name + "_add_button"] = true;
+      //       break;
+      //     case "list_of_fields":
+      //     case "group_of_fields":
+      //       if(element.list_of_fields != undefined && element.list_of_fields != null){
+      //         element.list_of_fields.forEach(child => {
+      //           if(child && child != null){
+      //             switch (child.type) {
+      //               case "typeahead":
+      //                 if (child.datatype == 'list_of_object') {
+      //                   this.tempVal[element.field_name + '_' + child.field_name + "_add_button"] = true;
+      //                 }
+      //                 break;
+      //               case "list_of_string":
+      //                 this.tempVal[element.field_name + '_' + child.field_name + "_add_button"] = true;
+      //                 break;                  
+      //               default:
+      //                 break;
+      //             }
+      //           }
+      //         });
+      //       }
+      //       break;
+      //     case "stepper":
+      //           if(element.list_of_fields != undefined && element.list_of_fields != null){
+      //             element.list_of_fields.forEach(step => {
+      //               if(step.list_of_fields != undefined && step.list_of_fields != null){
+      //                 step.list_of_fields.forEach(child => {
+      //                   switch (child.type) {
+      //                     case "typeahead":
+      //                       if (child.datatype == 'list_of_object') {
+      //                         this.tempVal[step.field_name + '_' + child.field_name + "_add_button"] = true;
+      //                       }
+      //                       break;
+      //                     case "list_of_string":
+      //                       this.tempVal[step.field_name + '_' + child.field_name + "_add_button"] = true;
+      //                       break;                  
+      //                     default:
+      //                       break;
+      //                   }
+      //                 });
+      //               }                  
+      //             });
+      //           }
+      //           break;
+      //     default:
+      //       break;
+      //   }
+      // });
+      //=========================================End part4
+    }
+    this.loaderService.checkAndHideLoader();
+  }
+  // CD
+  async setFileData(getfileData){
+    if (getfileData != '' && getfileData != null && this.checkForDownloadReport) {
+      const blobData = new Blob([getfileData.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blobData);
+      let fileExt:any = '';
+      let fileName:any = '';
+      if(getfileData && getfileData.filename){
+        fileExt = getfileData.filename.split('.').pop();
+        if(fileExt == "pdf"){
+          fileName = getfileData.filename;
+        }else{
+          fileName = getfileData.filename + ".pdf";
+        }
+      }
+      if(this.plt.is("hybrid")){
+        let downloadResponse = await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
+        this.downloadResponseHandler(downloadResponse);
+      }else{
+        this.downloadService.download(url,fileName,this.currentActionButton);
+      }
+      this.dataSaveInProgress = true;
+      this.checkForDownloadReport = false;
+      this.apiService.ResetFileData();
+    }
+  }
+  saveCallSubscribe(){
+    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
+      this.setSaveResponce(responce);
+    })
   }
   // CD
   setSaveResponce(saveFromDataRsponce){
@@ -803,7 +1602,7 @@ tinymceConfig = {}
       //   this.saveResponceSubscription.unsubscribe();
       // }
 
-      // delete code
+      // delete below code
       // if (saveFromDataRsponce.success && saveFromDataRsponce.success != '' && this.showNotify) {
       //   if(saveFromDataRsponce.success == 'success' && !this.updateMode && !this.additionalData?.enableScanner){
       //     if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick.success_msg && this.currentActionButton.onclick.success_msg != ''){
@@ -899,635 +1698,152 @@ tinymceConfig = {}
       // }
     }
   }
-  //CD
-  checkBeforeResetForm(){
-    if(this.close_form_on_success){
-      this.close_form_on_success=false;
-      this.close();
-    }else if(this.multipleFormCollection.length > 0){
-      this.close();
-    }else{
-      this.resetForm()
-    }
-  }
-  
-  setForm(){
-    if(this.form && this.form.details && this.form.details.collection_name && this.form.details.collection_name != '' && (this.currentMenu != undefined || this.envService.getRequestType() == 'PUBLIC')){
-      if(this.currentMenu == undefined){
-        this.currentMenu = {};
-      }
-      this.currentMenu['name'] = this.form.details.collection_name;
-    }else{
-      const collectionName = this.dataShareServiceService.getCollectionName();
-      if(collectionName !=''){
-        if(this.currentMenu == undefined){
-          this.currentMenu = {};
-        }
-        this.currentMenu['name'] = collectionName;
-      }      
-    }
-    if(this.form){
-      if(this.form.details && this.form.details.bulk_update){
-        this.bulkupdates = true;
-      }
-      else{
-        this.bulkupdates = false;
-      }
-      this.formDetails.emit(this.form);
-    }
-    if(this.form && this.form.getLocation){
-      this.getLocation = this.form.getLocation;
-      this.checkPermissionandRequest();
-      // this.requestLocationPermission();
-    }else{
-      this.getLocation = false;
-    }
-    if(this.form['tableFields'] && this.form['tableFields'] != undefined && this.form['tableFields'] != null){
-      this.tableFields = JSON.parse(JSON.stringify(this.form['tableFields']));
-      this.getTableField = false;
-    }else{
-      this.tableFields = [];
-    }  
-    if(this.form.tab_list_buttons && this.form.tab_list_buttons != undefined && this.form.tab_list_buttons.length > 0){
-      this.formFieldButtons = this.form.tab_list_buttons; 
-    } 
-    this.calculationFieldList=[];
-    this.showIfFieldList=[];
-    this.disableIfFieldList=[];
-    this.mendetoryIfFieldList = [];
-    this.gridSelectionMendetoryList=[];
-    this.customValidationFiels = [];
-    if (this.tableFields.length > 0 && this.createFormgroup) {
-      this.createFormgroup = false;
-      const forControl:any = {};
-      this.checkBoxFieldListValue = [];
-      let staticModalGroup = [];
-      // this.filePreviewFields=[];
-      for (let index = 0; index < this.tableFields.length; index++) {
-        const element = this.tableFields[index];
-        if(element == null){
-          this.notifyFieldValueIsNull(this.form.name,index+1);
-          break;
-        }
-        if(!element.hideOnMobile){
-          if(element.type == 'pdf_view'){
-            const object = this.elements[this.selectedRowIndex];
-            staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,object))
-          } 
-          if(element.field_name && element.field_name != ''){             
-            switch (element.type) {
-              case "list_of_checkbox":
-                this.formCreationService.createFormControl(forControl, element, [], "list")
-                this.checkBoxFieldListValue.push(element);
-                break;
-              case "checkbox":
-                this.formCreationService.createFormControl(forControl, element, false, "checkbox")
-                break;
-              case "date":
-                let currentYear = new Date().getFullYear();
-                if(element.datatype == 'object'){
-                  this.minDate = new Date();
-                  if(element.etc_fields && element.etc_fields != null){
-                    if(element.etc_fields.minDate){
-                      if(element.etc_fields.minDate == '-1'){
-                        this.minDate = new Date(currentYear - 100, 0, 1);
-                      }else{
-                        this.minDate.setDate(new Date().getDate() - Number(element.etc_fields.minDate));
-                      }
-                    }
-                  }
-                  this.maxDate = new Date();
-                  if(element.etc_fields && element.etc_fields != null){
-                    if(element.etc_fields.maxDate){
-                      if(element.etc_fields.maxDate == '-1'){
-                        this.maxDate = new Date(currentYear + 1, 11, 31);
-                      }else{
-                        this.maxDate.setDate(new Date().getDate() + Number(element.etc_fields.maxDate));
-                      }
-                    }
-                  }
-                }else{
-                  this.minDate = new Date(currentYear - 100, 0, 1);
-                  this.maxDate = new Date(currentYear + 1, 11, 31);
-                }
-                let minDateToday:any;
-                let maxDateFromToday:any;                
-                minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
-                maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd") + "T23:59:59";
-                if(this.plt.is('hybrid')){
-                  let getToday: any  = (new Date()).toISOString();
-                  getToday = utcToZonedTime(getToday, this.userTimeZone);
-                  getToday = this.datePipe.transform(getToday, "yyyy-MM-ddThh:mm:ss");
-                  // if(this.formTypeName == "default"){
-                  //     element['minDate'] = getToday;
-                  // }else{
-                  //   minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
-                  //   element['minDate'] = minDateToday;
-                  // }
-                  element['minDate'] = minDateToday;
-                  element['maxDate'] = maxDateFromToday;
-                }else{
-                  element['minDate'] = minDateToday;
-                  element['maxDate'] = maxDateFromToday;
-                }
-                this.formCreationService.createFormControl(forControl, element, '', "text")
-                break; 
-              case "daterange":
-                const date_range = {};
-                let list_of_dates = [
-                  {field_name : 'start'},
-                  {field_name : 'end'}
-                ]
-                if (element.list_of_dates.length > 0) {
-                  list_of_dates.forEach((data) => {
-                    
-                    this.formCreationService.createFormControl(date_range, data, '', "text")
-                  });
-                }
-                this.formCreationService.createFormControl(forControl, element, date_range, "group")                                    
-                break;            
-              case "list_of_fields":
-              case "group_of_fields":
-                const list_of_fields = {};
-                if(element){
-                  if (element.list_of_fields && element.list_of_fields.length > 0) {
-                    for (let j = 0; j < element.list_of_fields.length; j++) {
-                      const data = element.list_of_fields[j];
-                      if(data == null){
-                        this.notifyFieldValueIsNull(element.name,j+1);
-                        break;
-                      }
-                      let modifyData = JSON.parse(JSON.stringify(data));
-                      modifyData.parent = element.field_name;
-                      //is disable handling
-                      //if parent is disabled then it's non disabled list_of_field will be disabled
-                      if(element.is_disabled){
-                        if(!modifyData.is_disabled){
-                          modifyData.is_disabled = element.is_disabled;
-                        }
-                      }                    
-                      //show if handling
-                      if(data.show_if && data.show_if != ''){
-                        modifyData['parentIndex'] = index;
-                        modifyData['currentIndex'] = j;
-                        this.showIfFieldList.push(modifyData);
-                      }
-                      //Mendetory If handling
-                      if(data.mandatory_if && data.mandatory_if != ''){
-                        this.mendetoryIfFieldList.push(modifyData);
-                      }
-                      //disable if handling
-                      if((data.disable_if && data.disable_if != '') || (data.disable_on_update && data.disable_on_update != '' && data.disable_on_update != undefined && data.disable_on_update != null) || (data.disable_on_add && data.disable_on_add != '' && data.disable_on_add != undefined && data.disable_on_add != null)){                          
-                        this.disableIfFieldList.push(modifyData);
-                      }                      
-                      if(element.type == 'list_of_fields' && data.is_mandatory){
-                        modifyData.is_mandatory=false;
-                      }
-                      if(data.field_name && data.field_name != '' && element.datatype != "list_of_object_with_popup"){
-                        // Calculation onChange handling
-                        if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != ""){
-                          this.calculationFieldList.push(element);
-                        }
-                        switch (data.type) {
-                          case "list_of_checkbox":
-                            this.formCreationService.createFormControl(list_of_fields, modifyData, [], "list")
-                            this.checkBoxFieldListValue.push(modifyData);
-                            break;
-                          case "checkbox":
-                              this.formCreationService.createFormControl(list_of_fields, modifyData, false, "checkbox")
-                              break;
-                          case "date":
-                            let currentYear = new Date().getFullYear();
-                            if(data.datatype == 'object'){
-                              this.minDate = new Date();
-                              if(data.etc_fields && data.etc_fields != null){
-                                if(data.etc_fields.minDate){
-                                  if(data.etc_fields.minDate == '-1'){
-                                    this.minDate = new Date(currentYear - 100, 0, 1);
-                                  }else{
-                                    this.minDate.setDate(new Date().getDate() - Number(data.etc_fields.minDate));
-                                  }
-                                }
-                              }
-                              this.maxDate = new Date();
-                              if(data.etc_fields && data.etc_fields != null){
-                                if(data.etc_fields.maxDate){
-                                  if(data.etc_fields.maxDate == '-1'){
-                                    this.maxDate = new Date(currentYear + 1, 11, 31);
-                                  }else{
-                                    this.maxDate.setDate(new Date().getDate() + Number(data.etc_fields.maxDate));
-                                  }
-                                }
-                              }
-                            }else{
-                              this.minDate = new Date(currentYear - 100, 0, 1);
-                              this.maxDate = new Date(currentYear + 1, 11, 31);
-                            }
-                            let minDateToday:any;
-                            let maxDateFromToday:any;                
-                            minDateToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd");
-                            maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd");
-                            if(this.plt.is('hybrid')){
-                              data['minDate'] = minDateToday
-                              data['maxDate'] = maxDateFromToday;
-                            }else{
-                              data['minDate'] = minDateToday;
-                              data['maxDate'] = maxDateFromToday;
-                            }                        
-                            this.formCreationService.createFormControl(list_of_fields, modifyData, '', "text")
-                            break;                         
-                          default:
-                            this.formCreationService.createFormControl(list_of_fields, modifyData, '', "text")
-                            break;
-                        } 
-                      }                 
-                    }
-                  }
-                }
-                this.formCreationService.createFormControl(forControl, element, list_of_fields, "group"); 
-                if(element.type == 'list_of_fields'){
-                  this.list_of_fields.push(element);
-                }               
-                break;
-              case "stepper":                  
-                if(element.list_of_fields.length > 0) {
-                  element.list_of_fields.forEach((step) => {                      
-                    if(step.list_of_fields != undefined){
-                      const stepper_of_fields = {};
-                      step.list_of_fields.forEach((data) =>{
-                        let modifyData = JSON.parse(JSON.stringify(data));
-                        modifyData.parent = step.field_name;
-                        //show if handling
-                        if(data.show_if && data.show_if != ''){
-                          this.showIfFieldList.push(modifyData);
-                        }
-                        //mendetory if handling
-                        if(data.mandatory_if && data.mandatory_if != ''){
-                          this.mendetoryIfFieldList.push(modifyData);
-                        }
-                        //disable if handling
-                        if((data.disable_if && data.disable_if != '') || (data.disable_on_update && data.disable_on_update != '' && data.disable_on_update != undefined && data.disable_on_update != null)){                          
-                          this.disableIfFieldList.push(modifyData);
-                        }                     
-                        // Calculation onChange handling
-                        if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != ""){
-                          this.calculationFieldList.push(element);
-                        }
-                        this.formCreationService.createFormControl(stepper_of_fields, modifyData, '', "text")
-                        if(data.tree_view_object && data.tree_view_object.field_name != ""){
-                          let treeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));                
-                          treeModifyData.is_mandatory=false;
-                          this.formCreationService.createFormControl(stepper_of_fields, treeModifyData , '', "text")
-                        }
-                      });
-                      this.formCreationService.createFormControl(forControl, step, stepper_of_fields, "group")
-                    } 
-                  }); 
-                  this.isStepper = true;
-                }                    
-                break;
-              case "pdf_view" : 
-                const object = this.elements[this.selectedRowIndex];
-                staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,object))
-              break;
-              case "input_with_uploadfile":
-                element.is_disabled = true;
-                this.formCreationService.createFormControl(forControl, element, '', "text")
-                break;
-              case "grid_selection":
-                  if(element && element.gridColumns && element.gridColumns.length > 0){
-                    let colParField = JSON.parse(JSON.stringify(element));
-                    colParField['mendetory_fields'] = [];
-                    element.gridColumns.forEach(colField => {
-                      if(colField && colField.is_mandatory){
-                        colParField['mendetory_fields'].push(colField);
-                      }
-                    });
-                    if(colParField && colParField['mendetory_fields'] && colParField['mendetory_fields'].length > 0){
-                      this.gridSelectionMendetoryList.push(colParField);
-                      element['mendetory_fields'] = colParField['mendetory_fields'];
-                    }
-                  }
-                  if(element && element.addNewButtonIf && element.addNewButtonIf != ''){
-                    this.buttonIfList.push(element);                
-                    element['fieldIndex'] = index;
-                  }
-                  element['showButton'] = this.checkGridSelectionButtonCondition(element,'add');
-                  this.formCreationService.createFormControl(forControl, element, '', "text");
-                break;
-              case "gmap":
-              case "gmapview": 
-                this.requestLocationPermission();
-                this.formCreationService.createFormControl(forControl, element, '', "text");
-                break;
-              default:
-                this.formCreationService.createFormControl(forControl, element, '', "text");
-                break;
-            }
-            
-
-            if(element.tree_view_object && element.tree_view_object.field_name != ""){
-              let treeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));                
-              treeModifyData.is_mandatory=false;
-              this.formCreationService.createFormControl(forControl, treeModifyData , '', "text")
-            }
-          }
-          //show if handling
-          if(element.show_if && element.show_if != ''){
-            this.showIfFieldList.push(element);
-          }
-          //mandatory if handling
-          if(element.mandatory_if && element.mandatory_if != ''){
-            this.mendetoryIfFieldList.push(element);
-          }
-          //Customvalidation handling
-          if(element.compareFieldName && element.compareFieldName != ''){
-            this.customValidationFiels.push(element);
-          }
-          //disable if handling
-          if((element.disable_if && element.disable_if != '') || (element.disable_on_update && element.disable_on_update != '' && element.disable_on_update != undefined && element.disable_on_update != null) || (element.disable_on_add && element.disable_on_add != '' && element.disable_on_add != undefined && element.disable_on_add != null)){                  
-            this.disableIfFieldList.push(element);
-          }
-          // Calculation onChange handling
-          if (element.onchange_function && element.onchange_function_param && element.onchange_function_param != ""){
-            this.calculationFieldList.push(element);
-          }
-          // if(element.type && element.type == 'pdf_view'){
-          //   this.filePreviewFields.push(element)
-          // }
-          if(element.type && element.type == 'info_html'){
-            this.filePreviewFields.push(element)
-          }
-        }
-      }
-      if(this.formFieldButtons && this.formFieldButtons.length > 0){
-        this.formFieldButtons.forEach(element => {
-          if(element.field_name && element.field_name != ''){              
-            switch (element.type) {
-              case "dropdown":
-                this.formCreationService.createFormControl(forControl, element, '', "text")
-                break;
-              default:
-                break;
-            }
-          }
-          if(element.show_if && element.show_if != ''){
-            this.showIfFieldList.push(element);
-          }
-          if(element.mandatory_if && element.mandatory_if != ''){
-            this.mendetoryIfFieldList.push(element);
-          }
-          if((element.disable_if && element.disable_if != '') || (element.disable_on_update && element.disable_on_update != '' && element.disable_on_update != undefined && element.disable_on_update != null) || (element.disable_on_add && element.disable_on_add != '' && element.disable_on_add != undefined && element.disable_on_add != null) ){                  
-            this.disableIfFieldList.push(element);
-          }
-        });
-      }
-      if (forControl && this.tableFields.length > 0) {
-        let validators = {};
-        validators['validator'] = [];
-        if(this.customValidationFiels && this.customValidationFiels.length > 0){
-          this.customValidationFiels.forEach(field => {
-            switch (field.type) {
-              case 'date':
-                validators['validator'].push(this.customValidationService.checkDates(field.field_name,field.compareFieldName));
-                break;
-              default:
-                break;
-            }
-
-          });
-        }
-        if(this.additionalData?.scannedData && forControl["name"] ){
-          forControl.name.value=this.additionalData?.scannedData;
-        }
-        this.templateForm = this.formBuilder.group(forControl,validators);
-        if(this.nextIndex){
-          this.nextIndex = false;
-          this.next();
-        }
-      }
-      
-      let staticModal=[];
-      if(this.selectContact != '' && this.selectContact != undefined){
-        let selectContactObject = this.selectContact;
-        let account={};
-        let contact={};            
-        let payload = {};
-        // this.tabFilterData.forEach(element => {
-        //   if(element && element._id){
-        //     if(element._id == this.selectContact){
-        //       selectContactObject = element;
-        //     }
-        //   }          
-        // });
-        if(selectContactObject && selectContactObject['_id']){
-          contact = {
-            "_id":selectContactObject['_id'],
-            "name":selectContactObject['name'],
-            "code":selectContactObject['serialId']
-          }
-          if(selectContactObject['lead']){
-            account = selectContactObject['lead'];
-          }
-        }
-        this.tableFields.forEach(element => {
-          
-          if(element.field_name == 'account'){
-            this.templateForm.get('account').setValue(account);
-            if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
-              payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.getFormValue(true)) 
-              if(element.onchange_api_params.indexOf("FORM_GROUP") >= 0 || element.onchange_api_params.indexOf("QTMP") >= 0){
-                payload["data"]=this.getFormValue(true);
-              } 
-              staticModal.push(payload);
-            }
-          }
-          if(element.field_name == 'contact'){
-            this.templateForm.get('contact').setValue(contact);
-            if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) { 
-              payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, this.getFormValue(true)) 
-              if(element.onchange_api_params.indexOf("FORM_GROUP") >= 0 || element.onchange_api_params.indexOf("QTMP") >= 0){
-                payload["data"]=this.getFormValue(true);
-              }                  
-              staticModal.push(payload);
-            }
-          } 
-          if(element.type == 'stepper'){
-            element.list_of_fields.forEach(stepData => {
-              stepData.list_of_fields.forEach(data => {
-                if(data.field_name == 'account'){
-                  this.templateForm.get(stepData.field_name).get('account').setValue(account);
-                  if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) { 
-                    payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.getFormValue(true)) 
-                    if(data.onchange_api_params.indexOf("FORM_GROUP") >= 0 || data.onchange_api_params.indexOf("QTMP") >= 0){
-                      payload["data"]=this.getFormValue(true);
-                    }  
-                    staticModal.push(payload);
-                  }
-                }
-                if(data.field_name == 'contact'){
-                  if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) { 
-                    payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, this.getFormValue(true)) 
-                    if(data.onchange_api_params.indexOf("FORM_GROUP") >= 0 || data.onchange_api_params.indexOf("QTMP") >= 0){
-                      payload["data"]=this.getFormValue(true);
-                    }  
-                    staticModal.push(payload);
-                  }
-                } 
-              });
-            });
-          }             
-        });
-            
-      }
-      if(this.tableFields.length > 0 && this.editedRowIndex == -1){ 
-        let object =this.templateForm.getRawValue();
-        let formValue = object;
-        if(this.multipleFormCollection && this.multipleFormCollection.length > 0){
-          let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
-          formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
-        }
-        let staticModalG = this.apiCallService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
-        if(staticModalG && staticModalG.length > 0){
-          staticModalG.forEach(element => {
-            staticModalGroup.push(element);
-          });
-        }
-        if(staticModalGroup != undefined && staticModalGroup != null){
-          if(staticModalGroup.length > 0){
-            staticModalGroup.forEach(data =>{
-              staticModal.push(data);
+  async downloadFileFromUrl(imageUrl: string, fileName?: string,file?:any) {
+    await this.loaderService.showLoader("blank");
+    let splitUrl = imageUrl.split('?')[0];
+    fileName = splitUrl.split('/').pop();
+    if(imageUrl){
+      // const mediaPermissions = await this.appDownloadService.checkFileSystemPermission();
+      // const newPermission = await this.appPermissionService.requestMediaPermission();
+      let response:any;        
+      let directoryName = 'DOCUMENTS';
+      response = await this.appDownloadService.saveAndGetFileUriFromUrl(imageUrl,fileName,directoryName);
+      if(response?.haspermission){
+        await this.loaderService.hideLoader();
+        if(response?.path){
+          const confirm = await this.notificationService.confirmAlert(fileName, "Downloaded into " + directoryName + ". Do you want to open it ?", "Open");
+          if(confirm == "confirm"){
+            FileOpener.open({filePath:response?.path, openWithDefault:true,}).then( res => {
+              console.log("File Opened");
+            }).catch((e)=>{
+              console.error("File Opening error ", JSON.stringify(e));
             })
           }
+        }else{
+          this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
         }
-        // if(this.tab && this.tab.api_params && this.tab.api_params != null && this.tab.api_params != "" && this.tab.api_params != undefined && this.selectedRowIndex == -1){      
-        //   let criteria = [];
-        //   if(this.tab.api_params_criteria && this.tab.api_params_criteria != null){
-        //     criteria=this.tab.api_params_criteria
-        //   }
-        //   staticModal.push(this.coreUtilityService.getPaylodWithCriteria(this.tab.api_params,this.tab.call_back_field,criteria,{}))
-          
-        // }
-        if(this.form && this.form.api_params && this.form.api_params != null && this.form.api_params != "" && this.form.api_params != undefined && this.selectedRowIndex == -1){
-
-          if(this.form.api_params == 'QTMP:EMAIL_WITH_TEMP:QUOTATION_LETTER'){
-            object = this.saveResponceData;
-          } 
-          let criteria = [];
-          if(this.form.api_params_criteria && this.form.api_params_criteria != null){
-            criteria=this.form.api_params_criteria
+      }else{
+        await this.loaderService.hideLoader();
+        this.notificationService.presentToastOnBottom("Please allow media access permission to download !");
+      }
+    }else{      
+      this.commonFunctionService.downloadFile(file);
+    }
+    await this.loaderService.hideLoader();
+  }
+  // CD
+  setFileDownloadUrl(fileDownloadUrl){
+    if (fileDownloadUrl != '' && fileDownloadUrl != null && this.downloadClick != '') {
+      this.downloadService.download(fileDownloadUrl,this.downloadClick,this.currentActionButton);
+      // delete below code
+      // let link = document.createElement('a');
+      // link.setAttribute('type', 'hidden');
+      // // const file = new Blob([exportExcelLink], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      // // const url = window.URL.createObjectURL(file);
+      // link.href = fileDownloadUrl;
+      // link.download = this.downloadClick;
+      // document.body.appendChild(link);
+      // link.click();
+      // link.remove();
+      // ======================
+      this.downloadClick = '';
+      this.dataSaveInProgress = true;
+      this.apiService.ResetDownloadUrl();
+    }
+  }
+  // CD
+  openNextForm(next) {
+    // delete below code  
+    // const form = this.nextFormData.formName;
+    // const field_name = this.nextFormData.field_name;
+    // const form_field_name = this.nextFormData.form_field_name;
+    // const field = {
+    //   'add_new_form': form,
+    //   'add_next_form_button': next,
+    //   'field_name': field_name,
+    //   'type': 'hidden',
+    //   'form_field_name': form_field_name,
+    //   'form_value_index' : 0,
+    //   'moveFieldsToNewForm' : ['employee_name#add_assignments.resource_name']
+    // };
+    // ===========================
+    const field = this.multipleFormService.getNextFormObject(this.nextFormData,next);
+    this.storeFormDetails('', field);
+  }
+  // CD
+  updateRunningData(listData:any){
+    if (this.editedRowIndex >= 0) {
+      this.selectedRowIndex = this.editedRowIndex;
+      if(this.childData && this.childData._id){
+        if(listData && listData.length > 0){
+          if(this.childData._id == listData[0]._id){
+            this.editedRowData(listData[0]);
           }
-          staticModal.push(this.apiCallService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,this.getFormValue(false)))
-          
+        }else{
+          this.editedRowData(this.childData);
         }
-        if(staticModal.length > 0){
-          this.apiService.getStatiData(staticModal);        
+      }
+    }else{
+      this.selectedRowIndex = -1;
+      if(this.editedRowIndex == -1) {
+        if(listData && listData._id == undefined) {
+          setTimeout(() => {
+            this.updateDataOnFormField(listData);
+          }, 100);
         }
+      }
+    }
+  }  
+  imageDownload(img:any) {
+    this.downloadClick = img.rollName;
+    const payload = {
+      path: 'download',
+      data: img
+    }
+    this.apiService.DownloadFile(payload);
+  }
+  // Subscriber Functions Handling End ---------------
 
-      }      
-
+  // Unsubscribe Functions Handling Start -------------------
+  resetFlag(){
+    this.createFormgroup = true;
+  }
+  unsubscribeVariabbles(){
+    if(this.staticDataSubscriber){
+      this.staticDataSubscriber.unsubscribe();
+    }
+    if(this.dinamicFormSubscription){
+      this.dinamicFormSubscription.unsubscribe();
+    }
+    if(this.nestedFormSubscription){
+      this.nestedFormSubscription.unsubscribe();
+    }
+    if(this.templateForm){
+      this.templateForm.reset(); 
+    }
+    if(this.saveResponceSubscription){
+      this.saveResponceSubscription.unsubscribe();
+    }
+    if(this.fileDataSubscription){
+      this.fileDataSubscription.unsubscribe();
+    }
+    if(this.typeaheadDataSubscription){
+      this.typeaheadDataSubscription.unsubscribe();
+    }
+    if(this.fileDownloadUrlSubscription){
+      this.fileDownloadUrlSubscription.unsubscribe();
+    }
+    if(this.gridSelectionOpenOrNotSubscription){
+      this.gridSelectionOpenOrNotSubscription.unsubscribe();
+    }
+    if(this.gridRealTimeDataSubscription){
+      this.gridRealTimeDataSubscription.unsubscribe();
     }
 
-    if (this.tableFields.length > 0 && this.pageLoading) {
-      this.tableFields.forEach(element => {
-        switch (element.type) {
-          case "typeahead":
-            if (element.datatype == 'list_of_object') {
-              this.tempVal[element.field_name + "_add_button"] = true;
-            }
-            break;
-          case "list_of_string":
-            this.tempVal[element.field_name + "_add_button"] = true;
-            break;
-          case "list_of_fields":
-          case "group_of_fields":
-            if(element.list_of_fields != undefined && element.list_of_fields != null){
-              element.list_of_fields.forEach(child => {
-                if(child && child != null){
-                  switch (child.type) {
-                    case "typeahead":
-                      if (child.datatype == 'list_of_object') {
-                        this.tempVal[element.field_name + '_' + child.field_name + "_add_button"] = true;
-                      }
-                      break;
-                    case "list_of_string":
-                      this.tempVal[element.field_name + '_' + child.field_name + "_add_button"] = true;
-                      break;                  
-                    default:
-                      break;
-                  }
-                }
-              });
-            }
-            break;
-          case "stepper":
-                if(element.list_of_fields != undefined && element.list_of_fields != null){
-                  element.list_of_fields.forEach(step => {
-                    if(step.list_of_fields != undefined && step.list_of_fields != null){
-                      step.list_of_fields.forEach(child => {
-                        switch (child.type) {
-                          case "typeahead":
-                            if (child.datatype == 'list_of_object') {
-                              this.tempVal[step.field_name + '_' + child.field_name + "_add_button"] = true;
-                            }
-                            break;
-                          case "list_of_string":
-                            this.tempVal[step.field_name + '_' + child.field_name + "_add_button"] = true;
-                            break;                  
-                          default:
-                            break;
-                        }
-                      });
-                    }                  
-                  });
-                }
-                break;
-          default:
-            break;
-        }
-      });
-      this.pageLoading = false;
-    }
-    this.loaderService.checkAndHideLoader();
   }
-  
-  notifyFieldValueIsNull(formName,fieldNo){
-    let msg = "Field No. "+ fieldNo + " value is null";
-    this.notificationService.presentToastOnBottom(msg,"danger");
-    this.tableFields = [];
-    this.dismissModal();
-  }
+  // Unsubscribe Functions Handling End -------------------
 
-  getDate(e) {
-    let date = new Date(e.target.value).toISOString().substring(0, 10);
-    this.ionicForm.get('dob').setValue(date, {
-      onlyself: true
-    })
-  }
-  get errorControl() {
-    return this.ionicForm.controls;
-  }
-  // submitForm() {
-  //   this.isSubmitted = true;
-  //   if (!this.ionicForm.valid) {
-  //     console.log('Please provide all the required values!')
-  //     return false;
-  //   } else {
-  //     console.log(this.ionicForm.value)
-  //     this.router.navigate(['home']);
-  //   }
-  // }
-
-  compareFn(o1: any, o2: any):boolean {
-    return o1 && o2 ? o1._id === o2._id : o1 === o2;
-  }
-  // compareFn(e1: User, e2: User): boolean {
-  //   return e1 && e2 ? e1.id === e2.id : e1 === e2;
-  // }
-  // getddnDisplayVal(val) {
-  //   return this.commonFunctionService.getddnDisplayVal(val);    
-  // }
-
+  // Click Function Handling Start ---------------------------
   // CD
   take_action_on_click(action_button){
     let api='';
@@ -1594,1500 +1910,216 @@ tinymceConfig = {}
             break;
       } 
     } 
+  }  
+  compareFn(o1: any, o2: any):boolean {
+    return o1 && o2 ? o1._id === o2._id : o1 === o2;
   }
   // CD
-  downloadReport(){
-    const downloadReportFromData = this.getSavePayloadData();
-    if(downloadReportFromData != null){
-      downloadReportFromData['_id'] = this.childData._id;
-    }
-    this.checkForDownloadReport = true;
-    this.apiService.GetFileData(downloadReportFromData);
-  }
-  // CD
-  deleteGridData(){
-    let dataWithCustValue = this.getFormValue(true);
-    let checkValidatiaon = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(false),true,dataWithCustValue);
-    if(typeof checkValidatiaon != 'object'){
-      this.deleteGridRowData = true;
-      const saveFromData = this.getSavePayloadData(dataWithCustValue);
-      if(this.getSavePayload){
-          this.apiService.deleteGridRow(saveFromData);
-      }
-    }else{
-      this.notificationService.showAlert(checkValidatiaon.msg,'',['Dismiss']);
-    } 
-  }
-
-  publicDownloadReport(){
-    this.checkForDownloadReport = true;
-    let publicDownloadReportFromData = {};
-    let payload = {};
-    if(this.coreFunctionService.isNotBlank(this.selectedRow["_id"]) && this.coreFunctionService.isNotBlank(this.selectedRow["value"])){
-      publicDownloadReportFromData["_id"] = this.selectedRow["_id"];
-      publicDownloadReportFromData["value"] = this.selectedRow["value"];
-      payload["_id"] = this.selectedRow["_id"];
-      payload["data"] = publicDownloadReportFromData;
-      this.apiService.GetFileData(payload);
-    }
-
-  }
-
-
-  partialDataSave(feilds,tableField){       
-    const payload = {
-      data:{}
-    };
-    //for gsd call*************************
-    if(feilds.action_name == 'GSD_CALL'){
-      this.envService.setRequestType("PUBLIC");
-      if(feilds.api != undefined && feilds.api != null && feilds.api != ''){
-        payload['path'] = feilds.api;
-      }
-
-      let list = [];
-      list.push(this.apiCallService.getPaylodWithCriteria(tableField.api_params,tableField.call_back_field,tableField.api_params_criteria,this.getFormValue(false)));
-       payload['data'] = list;
-      this.apiService.DynamicApiCall(payload);
-      this.saveCallSubscribe();
-      //console.log();
-      
-    }
-
-    //for deafult call (like save)*******************
-    else{
-      if(feilds.api != undefined && feilds.api != null && feilds.api != ''){
-        payload['path'] = feilds.api+'/'+this.currentMenu.name
-      }    
-      if(this.updateMode){
-        const _id = this.selectedRow._id;    
-        payload.data['_id'] = _id;
-      }  
-      if(Array.isArray(feilds.payloads_fields) && feilds.payloads_fields.length > 0){
-          if(feilds.payloads_fields[0].toUpperCase() == 'FORM_OBJECT'){
-            const saveFromData = this.getSavePayloadData();
-            if(this.getSavePayload){
-              payload.data = saveFromData.data;
-              if(payload['path'] && payload['path'] != undefined && payload['path'] != null && payload['path'] != ''){
-                this.apiService.DynamicApiCall(payload);
-                this.saveCallSubscribe();
-              } 
-            }
-          }else{
-            feilds.payloads_fields.forEach(feild => {
-              if(feild in this.custmizedFormValue){
-                  payload.data[feild] = this.custmizedFormValue[feild];
-                }
-                else if(feild in this.templateForm.value){
-                  payload.data[feild] = this.templateForm.value[feild]
-                }
-            });
-            if(payload['path'] && payload['path'] != undefined && payload['path'] != null && payload['path'] != ''){
-              this.apiService.DynamicApiCall(payload);
-              this.saveCallSubscribe();
-            }
-          }
-      } 
-    }
-     
-      
-  }
-
-
-  saveCallSubscribe(){
-    this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
-      this.setSaveResponce(responce);
-    })
-  }
-
-   getFormValue(check){
-    let formValue = this.templateForm.getRawValue();
-    let selectedRow = { ...this.selectedRow };     
-    let modifyFormValue = {};   
-    let valueOfForm = {};
-    if (this.updateMode || this.complete_object_payload_mode){      
-      this.tableFields.forEach(element => {
-        switch (element.type) {
-          case 'stepper':
-            element.list_of_fields.forEach(step => {
-              if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
-                step.list_of_fields.forEach(data => {
-                  selectedRow[data.field_name] = formValue[step.field_name][data.field_name]
-                  if(data.tree_view_object && data.tree_view_object.field_name != ""){                  
-                    const treeViewField = data.tree_view_object.field_name;
-                    selectedRow[treeViewField] = formValue[step.field_name][treeViewField]
-                  }
-                });
-              }
-            });
-            break;
-          case 'group_of_fields':
-            element.list_of_fields.forEach(data => {
-              switch (data.type) {
-                case 'date':
-                  if(data && data.date_format && data.date_format != ''){
-                    if(typeof formValue[element.field_name][data.field_name] != 'string'){
-                      selectedRow[element.field_name][data.field_name] = this.datePipe.transform(formValue[element.field_name][data.field_name],'dd/MM/yyyy');
-                    }else{
-                      selectedRow[element.field_name] = formValue[element.field_name];
-                    }
-                  }else{
-                    selectedRow[element.field_name] = formValue[element.field_name];
-                  }            
-                  break;
-              
-                default:
-                  selectedRow[element.field_name] = formValue[element.field_name];
-                  break;
-              }
-            });
-            break;
-          case 'gmap':
-          case "gmapview":
-            if(element && element.datatype == "object"){
-              let locationData = {};
-              locationData['latitude'] = this.latitude;
-              locationData['longitude'] = this.longitude;
-              locationData['address'] = this.address;
-              locationData['date'] = JSON.parse(JSON.stringify(new Date()));
-              locationData['time'] = this.datePipe.transform(new Date(),'shortTime');
-              selectedRow[element.field_name] = locationData;
-            }else{
-              selectedRow['latitude'] = this.latitude;
-              selectedRow['longitude'] = this.longitude;
-              selectedRow[element.field_name] = this.address;
-            }
-            break;
-          case 'date':
-            if(element && element.date_format && element.date_format != ''){
-              selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
-            }else{
-              // required format 2022-06-30T00:00:00+05:30 (client) and 2022-06-29T18:30:00.000Z (server)
-              let Mdate = formValue[element.field_name];
-              if(Mdate && Mdate.length > 10){
-                Mdate = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
-                let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
-                // const formattedString = format(parseISO(utcDate), 'yyyy-MM-ddHH:mm:ss.SSS');
-                // const pattern = 'yyyy-MM-dd HH:mm:ss.SSS \'GMT\' XXX (z)';
-                // const output = format(utcDate, pattern, { timeZone: this.userTimeZone });
-                utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
-                selectedRow[element.field_name] = utcDate;
-              }
-            }
-            break;
-          case 'time':
-              if(element && element.date_format && element.date_format != ''){
-                selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
-              }else{
-                // required format 01:30 PM (client) and 01:30 PM as String (server)
-                let MTime:any = formValue[element.field_name];
-                if(MTime !="" && MTime != null && MTime !=undefined){
-                  let splitHrMin:any = MTime.split(":");                  
-                  // const selectedHr:any = (getHrFormat < 10) ? "0" + getHrFormat : getHrFormat;  
-                  let formattedTime = new Date(`2023-01-01T${splitHrMin[0]}:${splitHrMin[1]}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
-                  // console.log("formattedTime ", formattedTime);
-                  selectedRow[element.field_name] = formattedTime;
-                  
-                  // below code with ion-datetime input work, need to do changes
-                  // // if(MTime && MTime.length > 10){
-                  //   // const isotime = new Date(isoValue);
-                  //   // const time = new Date(value);
-                  //   const hours = time.getHours();
-                  //   const minutes = time.getMinutes();
-                  //   const formattedTime = new Date(`2022-01-01T${hours}:${minutes}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
-                  //   console.log(formattedTime);
-                  //   const now = new Date();
-                  //   const newTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
-                  //   const resultIonTime = newTime.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
-                  //   console.log(resultIonTime);
-                  //   MTime = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
-                  //   let utcDate:any = zonedTimeToUtc(MTime, this.userTimeZone);
-                  //   selectedRow[element.field_name] = utcDate;
-                  // // }
-
-                }
-              }
-              break;
-          default:
-            selectedRow[element.field_name] = formValue[element.field_name];
-            break;
-        }
-      });
-    }else{
-      this.tableFields.forEach(element => {
-        switch (element.type) {
-          case 'stepper':
-            element.list_of_fields.forEach(step => {
-              if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
-                step.list_of_fields.forEach(data => {
-                  modifyFormValue[data.field_name] = formValue[step.field_name][data.field_name]
-                  if(data.tree_view_object && data.tree_view_object.field_name != ""){                  
-                    const treeViewField = data.tree_view_object.field_name;
-                    modifyFormValue[treeViewField] = formValue[step.field_name][treeViewField]
-                  }
-                });
-              }
-            });
-            break;
-          case 'group_of_fields':
-            modifyFormValue[element.field_name] = formValue[element.field_name];
-            element.list_of_fields.forEach(data => {
-              switch (data.type) {
-                case 'date':
-                  if(data && data.date_format && data.date_format != ''){
-                    modifyFormValue[element.field_name][data.field_name] = this.datePipe.transform(formValue[element.field_name][data.field_name],'dd/MM/yyyy');
-                  }else {
-                    modifyFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name];
-                  }
-                  break;
-              
-                default:
-                  modifyFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name];
-                  break;
-              }
-            });
-            break;
-          case 'gmap':
-          case "gmapview":
-            if(element && element.datatype == "object"){
-              let locationData = {};
-              locationData['latitude'] = this.latitude;
-              locationData['longitude'] = this.longitude;
-              locationData['address'] = this.address;
-              locationData['date'] = JSON.parse(JSON.stringify(new Date()));
-              locationData['time'] = this.datePipe.transform(new Date(),'shortTime');
-              modifyFormValue[element.field_name] = locationData;
-            }else{
-              modifyFormValue['latitude'] = this.latitude;
-              modifyFormValue['longitude'] = this.longitude;
-              modifyFormValue[element.field_name] = this.address;
-            }
-            break;
-          case 'date':
-            if(element && element.date_format && element.date_format != ''){
-              modifyFormValue[element.field_name] = this.datePipe.transform(formValue[element.field_name],element.date_format);
-            }  else{
-              // modifyFormValue[element.field_name] = formValue[element.field_name];
-
-              //required format 2022-06-30T00:00:00+05:30 (client) and 2022-06-29T18:30:00.000Z (server)
-              // let Mdate = new Date(formValue[element.field_name]).toISOString();
-              if(formValue[element.field_name]){
-                let  Mdate = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
-
-                // date-fns
-                let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
-                utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
-
-                // const pattern = "yyyy-MM-dd'T'hh:mm:ss.SSS'Z"
-                // const output = format(utcDate, pattern, { timeZone: this.userTimeZone })
-                // console.log("Output : ", output)
-                modifyFormValue[element.field_name] = utcDate;
-              }else{
-                modifyFormValue[element.field_name] = formValue[element.field_name];
-              }
-
-            }          
-            break;
-            case 'time':
-              if(element && element.date_format && element.date_format != ''){
-                modifyFormValue[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
-              }else{
-                // required format 01:30 PM (client) and 01:30 PM as String (server)
-                let MTime:any = formValue[element.field_name];
-                if(MTime !="" && MTime != null && MTime !=undefined){
-                  let splitHrMin:any = MTime.split(":");
-                  const getHr:any = splitHrMin[0];
-                  const getMin:any = splitHrMin[1];
-                  
-                  // const selectedHr:any = (getHrFormat < 10) ? "0" + getHrFormat : getHrFormat;
-  
-                  let formattedTime = new Date(`2023-01-01T${splitHrMin[0]}:${splitHrMin[1]}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
-                  // console.log("formattedTime ", formattedTime);
-                  modifyFormValue[element.field_name] = formattedTime;
-
-                }
-              }
-              break;
-          default:
-            modifyFormValue[element.field_name] = formValue[element.field_name];
-            // modifyFormValue = formValue;
-            break;
-        }
-      });
-    }
-    if(check){
-      Object.keys(this.custmizedFormValue).forEach(key => {
-        if (this.updateMode || this.complete_object_payload_mode) {
-          if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
-            this.tableFields.forEach(element => {            
-              if(element.field_name == key){
-                if(element.datatype && element.datatype != null && element.datatype == 'key_value'){
-                  selectedRow[key] = this.custmizedFormValue[key];
-                }else{
-                  Object.keys(this.custmizedFormValue[key]).forEach(child =>{
-                    selectedRow[key][child] = this.custmizedFormValue[key][child];
-                  })
-                }
-              }
-            });          
-          }else{
-              selectedRow[key] = this.custmizedFormValue[key];
-          }
-        } else {
-          if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
-            this.tableFields.forEach(element => {
-              if(element.field_name == key){
-                if(element.datatype && element.datatype != null && element.datatype == 'key_value'){
-                  modifyFormValue[key] = this.custmizedFormValue[key];
-                }else{
-                  Object.keys(this.custmizedFormValue[key]).forEach(child =>{
-                    modifyFormValue[key][child] = this.custmizedFormValue[key][child];
-                  })
-                }
-              }
-            });          
-          }else{
-            modifyFormValue[key] = this.custmizedFormValue[key];
-          }       
-          
-        }
-      })
-      if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
-        this.checkBoxFieldListValue.forEach(element => {
-          if (this.staticData[element.ddn_field]) {
-            const listOfCheckboxData = [];
-            let data = [];
-            if(this.updateMode || this.complete_object_payload_mode){
-              if(element.parent){
-                data = selectedRow[element.parent][element.field_name];
-              }else{
-                data = selectedRow[element.field_name];
-              }
-            }else{
-              if(element.parent){
-                data = modifyFormValue[element.parent][element.field_name];
-              }else{
-                data = modifyFormValue[element.field_name];
-              }
-            }
-            let currentData = this.staticData[element.ddn_field];
-            if(data && data.length > 0){
-              data.forEach((data, i) => {
-                if (data) {
-                  listOfCheckboxData.push(currentData[i]);
-                }
-              });
-            }
-            if (this.updateMode || this.complete_object_payload_mode) {
-              if(element.parent){
-                selectedRow[element.parent][element.field_name] = listOfCheckboxData;
-              }else{
-                selectedRow[element.field_name] = listOfCheckboxData;
-              }
-            } else {
-              if(element.parent){
-                modifyFormValue[element.parent][element.field_name] = listOfCheckboxData;
-              }else{
-                modifyFormValue[element.field_name] = listOfCheckboxData
-              }
-            }
-          }
-        });
-      }
-      Object.keys(this.dataListForUpload).forEach(key => {
-        if (this.updateMode || this.complete_object_payload_mode) {
-          if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
-            this.tableFields.forEach(element => {            
-              if(element.field_name == key){                
-                Object.keys(this.dataListForUpload[key]).forEach(child =>{
-                  selectedRow[key][child] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key][child]);
-                })
-              }
-            });          
-          }else{
-              selectedRow[key] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key]);
-          }
-        } else {
-          if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
-            this.tableFields.forEach(element => {
-              if(element.field_name == key){                
-                Object.keys(this.dataListForUpload[key]).forEach(child =>{
-                  modifyFormValue[key][child] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key][child]);
-                })
-              }
-            });          
-          }else{
-            modifyFormValue[key] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key]);
-          }       
-          
-        }
-      })
-    } 
-
-    if(this.selectContact != '' && this.selectContact != undefined){
-      let selectContactObject = {}
-      let account={};
-      let contact={};
-      // this.tabFilterData.forEach(element => {
-      //   if(element._id == this.selectContact){
-      //     selectContactObject = element;
-      //   }
-      // });
-      if(selectContactObject['_id']){
-        contact = {
-          "_id":selectContactObject['_id'],
-          "name":selectContactObject['name'],
-          "code":selectContactObject['serialId']
-        }
-        if(selectContactObject['lead']){
-          account = selectContactObject['lead'];
-        }
-      }
-      if(this.updateMode || this.complete_object_payload_mode){
-        selectedRow['account'] = account;
-        selectedRow['contact'] = contact;
-      }else{
-        modifyFormValue['account'] = account;
-        modifyFormValue['contact'] = contact;
-      }
-    }
-    valueOfForm = this.updateMode || this.complete_object_payload_mode ? selectedRow : modifyFormValue;
-    
-    if(this.getLocation){
-      if(this.center !=null && this.center.lat !=null){
-        valueOfForm['locationDetail'] = {
-          'latitude' : this.center.lat ? this.center.lat : this.latitude,
-          'longitude' : this.center.lng ? this.center.lng : this.longitude,
-          'address' : this.address
-        }
-      }else{
-        this.requestLocationPermission();
-      }
-    }      
-       
-    return valueOfForm;
-  }
-  getSavePayloadData(dataWithCustValue?:any) {
-    let formValue = this.templateForm.getRawValue();
-    let formValueWithCustomData = dataWithCustValue;
-    if(dataWithCustValue == undefined){
-      formValueWithCustomData = this.getFormValue(true);
-    }    
-    let formDataResponce = this.formValueService.getSavePayloadData(this.currentMenu,this.updateMode,this.deleteGridRowData,this.tableFields,formValue,formValueWithCustomData,this.gridSelectionMendetoryList,this.selectedRow,this.custmizedFormValue,this.dataSaveInProgress,this.showNotify,this.formName,this.templateForm.valid);   
-    this.deleteGridRowData = formDataResponce.deleteGridRowData;     
-    if(this.dataSaveInProgress){
-      this.getSavePayload = formDataResponce.getSavePayload;
-      this.showNotify = formDataResponce.showNotify;
-      this.dataSaveInProgress = formDataResponce.dataSaveInProgress;
-      formDataResponce.data.data['platForm'] = Capacitor.getPlatform().toUpperCase();
-      return formDataResponce.data;
-    }else{
-      let message = formDataResponce.message;
-      if(message && message.msg && message.msg != ""){
-        // this.notificationService.notify(message.class, message.msg);
-        this.notificationService.showAlert(message.class,'',['Dismiss']);
-      }
-    }
-
-    // delete code
-    // this.getSavePayload = false;
-    // this.submitted = true;
-    // let hasPermission; 
-    // if(this.currentMenu && this.currentMenu.name){
-    //   hasPermission = this.permissionService.checkPermission(this.currentMenu.name.toLowerCase( ),'add');
-    // }
-    // if(this.updateMode){
-    //   hasPermission = this.permissionService.checkPermission(this.currentMenu.name.toLowerCase( ),'edit')
-    // }
-    // // if(this.envService.getRequestType() == 'PUBLIC'){
-    // //   hasPermission = true;
-    // // }
-    // let formValue;
-    // if(this.deleteGridRowData){
-    //   formValue = this.templateForm.getRawValue();
-    // }else{
-    //   formValue = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(true),false);
-    // }
-    // this.deleteGridRowData = false;
-       
-    // if(hasPermission){
-    //   let gridSelectionValidation:any = this.checkGridSelectionMendetory(); 
-    //   if(this.isFormValid() && gridSelectionValidation.status){
-    //     let checkCustmizedValuValidation = this.checkIfService.checkCustmizedValuValidation(this.tableFields,formValue);
-    //     if(checkCustmizedValuValidation.status){
-    //       if (this.dataSaveInProgress) {
-    //         this.showNotify = true;
-    //         this.dataSaveInProgress = false;
-    //         formValue['log'] = this.storageService.getUserLog();
-    //         if(!formValue['refCode'] || formValue['refCode'] == '' || formValue['refCode'] == null){
-    //           formValue['refCode'] = this.storageService.getRefCode();
-    //         }
-    //         if(!formValue['appId'] || formValue['appId'] == '' || formValue['appId'] == null){
-    //           formValue['appId'] = this.storageService.getAppId();              
-    //         }
-    //         if(!this.coreFunctionService.isNotBlank(formValue['platForm'])){
-    //           formValue['platForm'] = Capacitor.getPlatform().toUpperCase();              
-    //         }
-    //         if (this.updateMode) {
-    //           if(this.formName == 'cancel'){
-    //             formValue['status'] = 'CANCELLED';
-    //           }                                          
-    //         }              
-
-    //         const saveFromData = {
-    //           curTemp: this.currentMenu.name,
-    //           data: formValue
-    //         }
-    //         this.getSavePayload = true;
-    //         return saveFromData;
-            
-    //       }
-    //     }else{
-    //       this.getSavePayload = false;
-    //       if(checkCustmizedValuValidation.msg && checkCustmizedValuValidation.msg != ''){
-    //         this.notificationService.presentToastOnBottom(checkCustmizedValuValidation.msg,'danger');
-    //       }
-    //     }
-    //   }else{
-    //     this.getSavePayload = false;
-    //     if(gridSelectionValidation.msg && gridSelectionValidation.msg != ''){
-    //       this.notificationService.showAlert(gridSelectionValidation.msg,'Mandatory Fields *',['Dismiss']);
-    //     }else{
-    //       this.notificationService.showAlert("Some fields are mendatory",'Mandatory Field *',['Dismiss']);
-    //     }
-    //   }
-    // }else{
-    //   this.getSavePayload = false;
-    //   this.notificationService.showAlert("Permission denied !!!",'',['Dismiss']);
-    // }
-  }
-  isFormValid() : boolean { 
-    return this.templateForm.disabled ? true : this.templateForm.valid
-  }
-  saveFormData(confirmation?:any){
-    let checkValidatiaon = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(false),true,this.getFormValue(true));
-    if(typeof checkValidatiaon != 'object'){
-      const saveFromData = this.getSavePayloadData();
-      // if(this.bulkupdates){
-      //   saveFromData.data['data'] = this.bulkDataList;
-      //   saveFromData.data['bulk_update'] = true;
-      // }
-      if(confirmation && confirmation.confirm){
-        let formField = confirmation.griddata.field_name;
-        saveFromData[formField] = {
-          'latitude' : this.latitude,
-          'longitude' : this.longitude,
-          'address' : this.address,
-        }
-      }
-      if(this.getSavePayload){
-        if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.api && this.currentActionButton.onclick.api != null && this.currentActionButton.onclick.api.toLowerCase() == 'send_email'){
-          this.apiService.SendEmail(saveFromData)
-        }else{
-          this.apiService.SaveFormData(saveFromData);
-        }        
-      }
-    }else{
-      this.notificationService.showAlert(checkValidatiaon.msg,'',['Dismiss']);
-    }     
-  }
-  
-  // CD
-  resetForm(){
-    if(this.multipleFormCollection.length > 0){
-      this.multipleFormCollection = this.multipleFormService.setPreviousFormTargetFieldData(this.multipleFormCollection,this.getFormValue(true));
-    }
-    this.donotResetField();
-    if(this.templateForm && this.templateForm.controls){
-      this.templateForm.reset(); 
-    }
-    if(Object.keys(this.donotResetFieldLists).length > 0){
-      this.custmizedFormValue = {};
-      this.modifyCustmizedFormValue = {};
-      this.dataListForUpload = {};
-      this.updateDataOnFormField(this.donotResetFieldLists);
-      this.donotResetFieldLists = {};
-    }else{
-      this.custmizedFormValue = {};
-      this.custmizedFormValue = {};
-      this.modifyCustmizedFormValue = {};
-    }
-    if(this.tableFields.length > 0){
-      this.tableFields.forEach(element => {
-        switch (element.type) {
-          case 'checkbox':
-            this.templateForm.controls[element.field_name].setValue(false)
-            break; 
-          case 'list_of_checkbox':
-            const controls:any = this.templateForm.get(element.field_name)['controls'];
-            if(controls && controls.length > 0){
-              controls.forEach((child,i) => {
-                controls.at(i).patchValue(false);
-              });
-            }
-            break;     
-          default:
-            break;
-        }
-      });
-    }
-  }
-  close(){
-    this.apiService.resetStaticAllData();
-    this.staticData = {};
-    this.typeAheadData = [];
-    this.latitude = 0;
-    this.longitude = 0;
-    this.address = "";
-    //this.commonFunctionService.resetStaticAllData();
-    this.selectedRow = {};
-    this.checkFormAfterCloseModel();
-  }
-  checkFormAfterCloseModel(){
-    if(this.multipleFormCollection.length > 0){
-      this.loadPreviousForm();
-    }else{
-      // this.dismissModal();
-      this.addAndUpdateResponce.emit('close');
-      if(this.templateForm && this.templateForm.controls){
-        this.templateForm.reset();
-      }
-      this.closeModal()
-    }
-  }
-  async closeModal(){
-    if(this.modal && this.modal?.offsetParent['hasController']){
-      this.modal?.offsetParent?.dismiss(undefined,"confirmed");
-    }else{
-      this.modalController.dismiss(undefined,"confirmed",);
-    }
-  }
-  checkOnSuccessAction(){
-    let actionValue = ''
-    let index = -1;
-    if(this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.action_name && this.currentActionButton.onclick.action_name != null){
-      if(this.currentActionButton.onclick.action_name != ''){
-        actionValue = this.currentActionButton.onclick.action_name;
-        if(actionValue != ''){
-          Object.keys(this.forms).forEach((key,i) => {
-            if(key == actionValue){
-              index = i;
+  refreshListofField(field,updatemode){    
+    if(field.do_not_refresh_on_add && updatemode){
+      this.tableFields.forEach(tablefield => {
+        if(tablefield.field_name == field.field_name){
+          tablefield.list_of_fields.forEach(fld => {
+            if(!fld.do_not_refresh_on_add){
+              this.templateForm.get(tablefield.field_name).get(fld.field_name).setValue('');
             }
           });
-          if(index != -1) {
-            //this.changeNewForm(actionValue,index)
-          }    
         }
-      }
-    }
-  };
-  editedRowData(object) {
-      this.selectedRow = JSON.parse(JSON.stringify(object)); 
-      this.updateMode = true;
-      this.updateDataOnFormField(this.selectedRow); 
-      this.getStaticDataWithDependentData();     
-      if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
-        this.templateForm = this.formControlService.setCheckboxFileListValue(this.checkBoxFieldListValue,this.templateForm, this.staticData,this.selectedRow,this.updateMode);
-    }
+      });
+    }else{
+      this.templateForm.get(field.field_name).reset(); 
+    } 
+    this.listOfFieldsUpdateIndex = -1
+    this.listOfFieldUpdateMode = false;
+    // below code added for reset list_of_string in the list_of_fields
+    let keyName = this.commonFunctionService.custmizedKey(field);
+    if(this.custmizedFormValue[keyName]) this.custmizedFormValue[keyName] = {};
   }
   // CD
-  getStaticDataWithDependentData(){
-    let formValueWithCustomData = this.getFormValue(true)
-    let formValue = this.getFormValue(false)
-    // delete code
-    // const staticModal = []
+  updateListofFields(field,object,index){ 
+    let searchValue = this.term[field.field_name];
+    let correctIndex = index;
+    let data = this.custmizedFormValue[field.field_name];    
+    if(searchValue != '' || data && data.length > this.pageSize){
+      if(searchValue == undefined || searchValue == ''){
+        searchValue = 'this.pageNo';
+      }
+      correctIndex = this.commonFunctionService.getCorrectIndex(object,index,field,data,searchValue);
+    }    
+    this.storeFormDetails("",field,index); 
+  }
+  // CD
+  editListOfFiedls(field:any,index:number){
+    let responce = this.formControlService.editeListFieldData(this.templateForm,this.custmizedFormValue,this.tableFields,field,index,this.listOfFieldsUpdateIndex,this.staticData,this.dataListForUpload);
+    this.listOfFieldUpdateMode = responce['listOfFieldUpdateMode'];
+    this.listOfFieldsUpdateIndex = responce['listOfFieldsUpdateIndex'];
+    this.custmizedFormValue = responce['custmizedFormValue'];
+    this.dataListForUpload = responce['dataListForUpload'];
+    this.templateForm = responce['templateForm'];
+
+    // delete below code
+    // let parentList = this.custmizedFormValue[field.field_name];
+    // let object = parentList[index];
+    // this.listOfFieldUpdateMode = true;
+    // this.listOfFieldsUpdateIndex = index;
     // if(this.tableFields && this.tableFields.length > 0){
     //   this.tableFields.forEach(element => {
-    //     if(element.field_name && element.field_name != ''){
-    //       if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
-    //         const checkFormGroup = element.onchange_call_back_field.indexOf("FORM_GROUP");
-    //         const checkCLTFN = element.onchange_api_params.indexOf('CLTFN')
-    //         if(checkFormGroup == -1 && checkCLTFN == -1){
-
-    //           const payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, formValueWithCustomData)
-    //           if(element.onchange_api_params.indexOf('QTMP') >= 0){
-    //             if(element && element.formValueAsObjectForQtmp){
-    //               payload["data"]=formValue;
-    //             }else{
-    //               payload["data"]=formValueWithCustomData;
-    //             }
-    //           } 
-    //           staticModal.push(payload);
-    //         }
-    //       }
-    //       switch (element.type) {
-    //         case "stepper":
+    //     switch (element.type) {
+    //       case "list_of_fields":
+    //         if(element.field_name == field.field_name){
+    //           this.templateForm.get(element.field_name).reset();
     //           if (element.list_of_fields.length > 0) {
-    //             element.list_of_fields.forEach((step) => {                
-    //               if (step.list_of_fields.length > 0) {
-    //                 step.list_of_fields.forEach((data) => {
-    //                   if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) {
-    //                     const checkFormGroup = data.onchange_call_back_field.indexOf("FORM_GROUP");
-    //                     if(checkFormGroup == -1){
-              
-    //                       const payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, formValueWithCustomData)
-    //                       if(data.onchange_api_params.indexOf('QTMP') >= 0){
-    //                         if(element && element.formValueAsObjectForQtmp){
-    //                            payload["data"]=formValue;
-    //                         }else{
-    //                           payload["data"]=formValueWithCustomData;
+    //             element.list_of_fields.forEach((data) => {
+    //               switch (data.type) {
+    //                 case "list_of_string":
+    //                   const custmisedKey = this.commonFunctionService.custmizedKey(element);
+    //                   if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
+    //                   this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];
+    //                   break;
+    //                 case "typeahead":
+    //                   if (data.datatype == 'list_of_object') {
+    //                     const custmisedKey = this.commonFunctionService.custmizedKey(element);
+    //                     if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
+    //                     this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];    
+    //                   } else {
+    //                     this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
+    //                   }
+    //                   break;
+    //                 case "list_of_checkbox":
+    //                   let checkboxListValue = [];
+    //                   if(this.staticData && this.staticData[data.ddn_field] && this.staticData[data.ddn_field].length > 0){
+    //                     this.staticData[data.ddn_field].forEach((value, i) => {                      
+    //                       let arrayData = object[data.field_name];                        
+    //                       let selected = false;
+    //                       if (arrayData != undefined && arrayData != null) {
+    //                         for (let index = 0; index < arrayData.length; index++) {
+    //                           if (this.checkObjecOrString(value) == this.checkObjecOrString(arrayData[index])) {
+    //                             selected = true;
+    //                             break;
+    //                           }
     //                         }
-    //                       } 
-    //                       staticModal.push(payload);
-    //                     }
+    //                       }
+    //                       if (selected) {
+    //                         checkboxListValue.push(true);
+    //                       } else {
+    //                         checkboxListValue.push(false);
+    //                       }               
+    //                     });
     //                   }
-    //                   if(data.tree_view_object && data.tree_view_object.field_name != ""){
-    //                     let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
-    //                     if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
-    //                       staticModal.push(this.apiCallService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
-    //                     }
+    //                   this.templateForm.get(element.field_name).get(data.field_name).setValue(checkboxListValue);
+    //                   break; 
+    //                 case "file":
+    //                 case "input_with_uploadfile":
+    //                   if(object[data.field_name] != null && object[data.field_name] != undefined){
+    //                     let custmizedKey = this.commonFunctionService.custmizedKey(element);
+    //                     if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
+    //                     if (!this.dataListForUpload[custmizedKey][data.field_name]) this.dataListForUpload[custmizedKey][data.field_name] = [];
+    //                     this.dataListForUpload[custmizedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
+    //                     const value = this.fileHandlerService.modifyFileSetValue(object[data.field_name]);
+    //                     this.templateForm.get(element.field_name).get(data.field_name).setValue(value);
     //                   }
-    //                 });
-    //               }
-    //             });
+    //                   break;
+    //                 // case "date":
+    //                 //   let transformzonedTime:any = '';
+    //                 //   let zonedTime:any = ''
+    //                 //   if(object[data.field_name] != null && object[data.field_name] != undefined){
+    //                 //     zonedTime = utcToZonedTime(object[data.field_name], this.userTimeZone);
+    //                 //     transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'", this.userTimeZone);  
+    //                 //   }else{
+    //                 //     transformzonedTime='';
+    //                 //   }
+    //                 //   this.templateForm.get(element.field_name).get(data.field_name).setValue(transformzonedTime);
+    //                 //   break;
+    //                 default:
+    //                   this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
+    //                   break;
+    //               }              
+    //             })
     //           }
-    //           break;
-    //       }
-    //       if(element.tree_view_object && element.tree_view_object.field_name != ""){
-    //         let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
-    //         if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
-    //           staticModal.push(this.apiCallService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
     //         }
-    //       }
-    //     }
-    //     if(element.type && element.type == 'pdf_view'){
-    //       staticModal.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,formValueWithCustomData))
+    //         break;
+    //       default:          
+    //         break;
     //     }
     //   });
     // }
-    const staticModal:[] = this.apiCallService.getOnchangePayload(this.tableFields,formValue,formValueWithCustomData);
-    this.getStaticData(staticModal,formValueWithCustomData,formValue);    
-  }
-  getStaticData(staticModal,object,formDataObject){
-    let formValue = object;
-    if(this.multipleFormCollection && this.multipleFormCollection.length > 0){
-      let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
-      formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
-    }
-    let staticModalG = this.apiCallService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
-    if(staticModalG && staticModalG.length > 0){
-      staticModalG.forEach(element => {
-        staticModal.push(element);
-      });
-    }
-    // if(this.tab && this.tab.api_params && this.tab.api_params != null && this.tab.api_params != "" && this.tab.api_params != undefined){      
-    //   let criteria = [];
-    //   if(this.tab.api_params_criteria && this.tab.api_params_criteria != null){
-    //     criteria=this.tab.api_params_criteria
-    //   }
-    //   staticModal.push(this.apiCallService.getPaylodWithCriteria(this.tab.api_params,this.tab.call_back_field,criteria,{}))
-      
-    // }
-    if(this.form && this.form.api_params && this.form.api_params != null && this.form.api_params != "" && this.form.api_params != undefined){         
-      if(this.form.api_params == 'QTMP:EMAIL_WITH_TEMP:QUOTATION_LETTER'){
-        object = this.saveResponceData;
-      }          
-      let criteria = [];
-      if(this.form.api_params_criteria && this.form.api_params_criteria != null){
-        criteria=this.form.api_params_criteria
-      }
-      if(this.editedRowIndex > -1){
-        formDataObject = formValue;
-      }
-      staticModal.push(this.apiCallService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,formDataObject))      
-    }
-    this.callStaticData(staticModal);
-  }
-  callStaticData(payloads){
-    if(payloads.length > 0){
-      this.apiService.getStatiData(payloads);        
-    }else{      
-      this.checkFormFieldIfCondition();      
-    }
   }
   // CD
-  checkFormFieldIfCondition(){
-    if(this.buttonIfList.length > 0){
-      this.buttonIfList.forEach(element => {
-        let fieldIndex = element['fieldIndex'];
-        this.tableFields[fieldIndex]['showButton'] = this.formCreationService.checkGridSelectionButtonCondition(element,'add',this.selectedRow,this.templateForm.getRawValue());
-      });
-    }
-    if(this.disableIfFieldList.length > 0){
-      this.disableIfFieldList.forEach(element => {
-        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
-          this.isDisable(element.parent,element);
-        }else{
-          this.isDisable('',element)
-        }
-      });
-    }
-    if(this.mendetoryIfFieldList.length > 0){
-      this.mendetoryIfFieldList.forEach(element => {
-        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
-          this.isMendetory(element.parent,element);
-        }else{
-          this.isMendetory('',element)
-        }
-      });
-    }
-    if(this.showIfFieldList.length > 0){
-      this.showIfFieldList.forEach(element => {
-        let id = '';
-        let parentFieldName = '';
-        let parentIndex = -1;
-        let fieldIndex = -1;
-        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
-          id = element._id;
-          parentFieldName = element.parent;
-          parentIndex = element.parentIndex;
-          fieldIndex = element.currentIndex;
-          this.tableFields[parentIndex].list_of_fields[fieldIndex]['notDisplay'] = this.checkIfService.checkShowIfListOfFiedlds(parentFieldName,element,this.getFormValue(true));
-        }else{
-          id = element._id;
-        }
-        let elementDetails = document.getElementById(id);
-        if(!this.checkIfService.checkShowIf(element,this.selectedRow,this.templateForm.getRawValue())){          
-          if(elementDetails && elementDetails != null){
-            const classes = Array.from(elementDetails.classList)
-            if(!classes.includes('d-none')){
-              this.removeClass(elementDetails,' d-inline-block');
-              elementDetails.className += " d-none";
-              element['show'] = false;
-              const objectValue = this.templateForm.getRawValue();
-              if(element.type != "group_of_fields" && element.type != "list_of_fields" && objectValue[element.field_name] && objectValue[element.field_name] != ''){
-                let controlarName = element.field_name;
-                let count = 0;
-                for (let index = 0; index < this.showIfFieldList.length; index++) {
-                  let showIfItem = this.showIfFieldList[index];
-                  if(controlarName == showIfItem.field_name){
-                    count = count+1;
-                  }
-                  if(count == 2){
-                    break;
-                  }
-                }
-                if(count != 2){
-                  this.templateForm.get(element.field_name).setValue('');
-                }
-              } 
-              if(element.type == "group_of_fields" || element.type == "list_of_fields"){
-                this.templateForm.get(element.field_name).reset();
-                element.list_of_fields.forEach(field => {
-                  if(field.type == 'list_of_string' || field.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
-                    const custmizedKey = this.commonFunctionService.custmizedKey(element);            
-                    if (this.custmizedFormValue[custmizedKey]){ 
-                      if (this.custmizedFormValue[custmizedKey][field.field_name]) this.custmizedFormValue[custmizedKey][field.field_name] = [];
-                    }
-                  }
-                });
-              }  
-              if(element.type == 'list_of_string' || element.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
-                if (this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = [];
-              }         
-              if(element.is_mandatory){
-                if(this.templateFormControl[element.field_name].status == 'INVALID'){
-                  this.templateForm.get(element.field_name).clearValidators();
-                  this.templateForm.get(element.field_name).updateValueAndValidity();
-                }              
-              }
-            }            
-          }                
-        }else{          
-          if(elementDetails && elementDetails != null){
-            const classes = Array.from(elementDetails.classList)
-            if(!classes.includes('d-inline-block')){
-              this.removeClass(elementDetails,' d-none');
-              elementDetails.className += " d-inline-block"; 
-              element['show'] = true;
-              if(element.is_mandatory){
-                if(this.templateFormControl[element.field_name].status == 'VALID'){
-                  this.templateForm.get(element.field_name).setValidators([Validators.required]);
-                  this.templateForm.get(element.field_name).updateValueAndValidity();
-                }              
-              }
-            }            
-          }
-        }
-      });
-      return true;
-    }      
-    if(this.disableIfFieldList.length == 0 && this.showIfFieldList.length == 0){
-      return true;
-    } 
-  }
-  
-  updateDataOnFormField(formValue){
-    const checkDataType = typeof formValue;
-    if(checkDataType == 'object' && !this.commonFunctionService.isArray(formValue) && this.tableFields && this.tableFields.length > 0){
-      this.tableFields.forEach(element => {
-        if(!element.hideOnMobile){
-          // if(element && element.field_name && element.field_name != ''){
-          //   let fieldName = element.field_name;
-          //   let object = formValue[fieldName];
-          //   if(object != null && object != undefined){
-          //     this.updateFormValue(element,formValue);
-          //   }
-          // }
-          let fieldName = element.field_name;
-          let object = formValue[fieldName];
-          if(object != null && object != undefined){
-            if(element && element.field_name && element.field_name != ''){
-              switch (element.type) {
-                case "grid_selection":
-                case 'grid_selection_vertical':
-                case "list_of_string":
-                case "drag_drop":
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    if(this.commonFunctionService.isArray(formValue[element.field_name])){
-                      this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
-                    }
-                    this.templateForm.controls[element.field_name].setValue('')
-                  }
-                  break;
-                case "file":
-                case "input_with_uploadfile":
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    this.dataListForUpload[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
-                    const value = this.fileHandlerService.modifyFileSetValue(formValue[element.field_name]);
-                    this.templateForm.controls[element.field_name].setValue(value);
-                  }
-                  break;
-                case "list_of_fields":
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    if(this.commonFunctionService.isArray(formValue[element.field_name])){
-                      this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
-                    }else if(typeof formValue[element.field_name] == "object" && element.datatype == 'key_value'){
-                      this.custmizedFormValue[element.field_name] = formValue[element.field_name]
-                    }else{
-                      if(element.list_of_fields && element.list_of_fields != null){
-                        element.list_of_fields.forEach(data => {
-                          switch (data.type) {
-                            case "list_of_string":
-                            case "grid_selection":
-                            case 'grid_selection_vertical':
-                            case "drag_drop":                    
-                              if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
-                                this.custmizedFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name]
-                                this.templateForm.get(element.field_name).get(data.field_name).setValue('')
-                                //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
-                              }
-                              break;
-                            case "typeahead":
-                              if(data.datatype == "list_of_object" || element.datatype == 'chips'){
-                                if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
-                                  this.custmizedFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name]
-                                  this.templateForm.get(element.field_name).get(data.field_name).setValue('')
-                                  //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
-                                }
-                              }else{
-                                if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
-                                  const value = formValue[element.field_name][data.field_name];
-                                  this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                                  //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
-                                }
-                              }
-                              break;
-                            default:
-                              if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
-                                const value = formValue[element.field_name][data.field_name];
-                                this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                                //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
-                              }
-                              break;
-                          }
-                        });
-                      }
-                    }
-                  }
-                  break; 
-                case "typeahead":
-                  if(element.datatype == "list_of_object" || element.datatype == 'chips'){
-                    if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                      this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
-                      this.templateForm.controls[element.field_name].setValue('')
-                    }
-                  }else{
-                    if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){                  
-                      const value = formValue[element.field_name];
-                      this.typeAheadData = [value];
-                      this.templateForm.controls[element.field_name].setValue(value)
-                    }
-                  }  
-                  break;
-                case "group_of_fields":
-                  if(element.list_of_fields && element.list_of_fields.length > 0){
-                    element.list_of_fields.forEach(data => {
-                      let ChildFieldData = formValue[element.field_name];
-                      if(data && data.field_name && data.field_name != '' && ChildFieldData && ChildFieldData != null){
-                        switch (data.type) {
-                          case "list_of_string":
-                          case "grid_selection":
-                          case 'grid_selection_vertical':
-                          case "drag_drop": 
-                            if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                              if (!this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = {};
-                              const value = JSON.parse(JSON.stringify(ChildFieldData[data.field_name]));
-                              this.custmizedFormValue[element.field_name][data.field_name] = value;
-                              this.templateForm.get(element.field_name).get(data.field_name).setValue('')
-                              //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
-                            }
-                            break;   
-                          case "typeahead":
-                            if(data.datatype == "list_of_object" || data.datatype == 'chips'){
-                              if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                                if (!this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = {};
-                                const value = JSON.parse(JSON.stringify(ChildFieldData[data.field_name]));
-                                this.custmizedFormValue[element.field_name][data.field_name] = value;
-                                this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                                //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
-                              }
-                            }else{
-                              if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                                const value = ChildFieldData[data.field_name];
-                                this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                                //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
-                              }
-                            }  
-                            break;               
-                          case "number":
-                            if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                              let gvalue;
-                              const value = ChildFieldData[data.field_name];
-                              if(value != null && value != ''){
-                                gvalue = value;
-                              }else{
-                                gvalue = 0;
-                              }
-                              this.templateForm.get(element.field_name).get(data.field_name).setValue(gvalue)
-                              //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(gvalue);
-                            }else if(ChildFieldData && ChildFieldData.hasOwnProperty(data.field_name)){
-                              let gvalue = 0;
-                              this.templateForm.get(element.field_name).get(data.field_name).setValue(gvalue)
-                            }
-                            break;
-                          case "list_of_checkbox":
-                            this.templateForm.get(element.field_name).get(data.field_name).patchValue([])
-                            if(element.parent){
-                              this.selectedRow[element.parent] = {}
-                              this.selectedRow[element.parent][element.field_name] = ChildFieldData;
-                            }else{
-                              this.selectedRow[element.field_name] = ChildFieldData;
-                            }
-                            //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue([]);
-                            break;
-                          case "date":
-                            if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                              if(data.date_format && data.date_format !="" && typeof ChildFieldData[data.field_name] === 'string'){
-                                const date = ChildFieldData[data.field_name];
-                                const dateMonthYear = date.split('/');
-                                const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
-                                const value = new Date(formatedDate);
-                                this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                              }else{                  
-                                const value = formValue[element.field_name][data.field_name] == null ? null : formValue[element.field_name][data.field_name];
-                                this.templateForm.get(element.field_name).get(data.field_name).setValue(value);              
-                              }
-                            }
-                            break;
-                          default:
-                            if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
-                              const value = ChildFieldData[data.field_name];
-                              this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
-                              //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
-                            }
-                            break;
-                        }
-                      }
-                    });
-                  }
-                  break;
-                case "tree_view_selection":
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    this.treeViewData[fieldName] = [];            
-                    let treeDropdownValue = object == null ? null : object;
-                    if(treeDropdownValue != ""){
-                      this.treeViewData[fieldName].push(JSON.parse(JSON.stringify(treeDropdownValue)));
-                    }
-                    this.templateForm.controls[fieldName].setValue(treeDropdownValue)
-                  }
-                  break;
-                case "stepper":
-                  if(element.list_of_fields && element.list_of_fields.length > 0){
-                    element.list_of_fields.forEach(step => {
-                      if(step.list_of_fields && step.list_of_fields.length > 0){
-                        step.list_of_fields.forEach(data => {
-                          switch (data.type) {
-                            case "list_of_string":
-                            case "grid_selection":
-                            case 'grid_selection_vertical':
-                              if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){                                             
-                                this.custmizedFormValue[data.field_name] = formValue[data.field_name]                    
-                              }
-                              this.templateForm.get(step.field_name).get(data.field_name).setValue('')
-                              //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue('');
-                              break;
-                            case "typeahead":
-                              if(data.datatype == "list_of_object" || data.datatype == 'chips'){
-                                if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){                      
-                                  this.custmizedFormValue[data.field_name] = formValue[data.field_name]
-                                  this.templateForm.get(step.field_name).get(data.field_name).setValue('')
-                                  //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue('');
-                                }
-                              }else{
-                                if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){
-                                  const value = formValue[data.field_name];
-                                  this.templateForm.get(step.field_name).get(data.field_name).setValue(value)
-                                  //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(value);
-                                }
-                              }
-                              break;
-                            case "number":
-                                let gvalue;
-                                const value = formValue[data.field_name];
-                                if(value != null && value != ''){
-                                  gvalue = value;
-                                }else{
-                                  gvalue = 0;
-                                }
-                                this.templateForm.get(step.field_name).get(data.field_name).setValue(gvalue)
-                                //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(gvalue);
-                              break;
-                            case "list_of_checkbox":
-                              this.templateForm.get(step.field_name).get(data.field_name).patchValue([])
-                              //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue([]);
-                              break;
-                            default:
-                              if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){
-                                const value = formValue[data.field_name];
-                                this.templateForm.get(step.field_name).get(data.field_name).setValue(value)
-                                //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(value);
-                              }
-                              break;
-                          }
-                          if(data.tree_view_object && data.tree_view_object.field_name != ""){
-                            let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
-                            const treeObject = this.selectedRow[editeTreeModifyData.field_name];
-                            this.templateForm.get(step.field_name).get(editeTreeModifyData.field_name).setValue(treeObject)
-                            //(<FormGroup>this.templateForm.controls[step.field_name]).controls[editeTreeModifyData.field_name].patchValue(treeObject);
-                          } 
-                        });
-                      }
-                    });
-                  }
-                  break;            
-                case "number":
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    let value;
-                    if(object != null && object != ''){
-                      value = object;
-                      this.templateForm.controls[element.field_name].setValue(value)
-                    }else if(object == 0){
-                      value = object;
-                      this.templateForm.controls[element.field_name].setValue(value)
-                    }
-                  }
-                break; 
-                case "gmap":
-                case "gmapview":
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    if(formValue['longitude']){
-                      this.longitude = formValue['longitude'];
-                    }
-                    if(formValue['latitude']){
-                      this.latitude = formValue['latitude'];
-                    }
-                    if(formValue['zoom']){
-                      this.zoom = formValue['zoom'];
-                    }    
-                    if(this.longitude != 0 && this.latitude != 0){
-                      this.getAddressfromLatLng(this.latitude,this.longitude)
-                    }
-                    this.templateForm.controls[element.field_name].setValue(object)
-                  }
-                  break;
-                case "daterange":
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    let list_of_dates = [
-                      {field_name : 'start'},
-                      {field_name : 'end'}
-                    ]
-                    if (list_of_dates.length > 0) {
-                      list_of_dates.forEach((data) => { 
-                        this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
-                        //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(object[data.field_name]);
-                      });
-                    }
-                  }                                   
-                  break;
-                case "date":
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    if(element.date_format && element.date_format != '' && typeof object === 'string'){
-                      const date = object[element.field_name];
-                      const dateMonthYear = date.split('/');
-                      const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
-                      const value = new Date(formatedDate);
-                      this.templateForm.controls[element.field_name].setValue(value)
-                    }else{        
-                      const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
-                      //need in this format 2022-06-30T00:00:00+05:30
-                      // let isoString = new Date(value).toISOString()
-                      let transformzonedTime :any;
-                      let zonedTime:any;
-                      if(value !=''){
-                        zonedTime = utcToZonedTime(value, this.userTimeZone);
-                        // let transformzonedTime = (parseISO(zonedTime), "yyyy-MM-dd'T'HH:mm:ssZ");
-                        transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'T'HH:mm:ssZZZZZ", this.userTimeZone);
-                        // let pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'";
-                        // let output = format(zonedTime, pattern, { timeZone: userTimeZone })
-  
-                      }else{
-                        transformzonedTime='';
-                      }
-                      this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
-                    }
-                  }
-                  break;
-                case "time":
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    if(element.time_format && element.time_format != '' && typeof object === 'string'){
-                      const time = object[element.field_name];
-                      this.templateForm.controls[element.field_name].setValue(time)
-                    }else{
-                      const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
-                      let transformzonedTime :any;
-                      if(value !='' && value !=null && value !=undefined){
-                        //new way required foramt for Ionic TimeFormat to convert into 24hr is "07:05:45 PM"
-                        let splitServerValue = value.split(" ");
-                        let addsec = splitServerValue[0] +":"+'00'+" "+splitServerValue[1];
-                        let date = new Date("2023-01-01 " + addsec);
-                        // Format the date object into a 24 hour time string
-                        transformzonedTime = date.toLocaleTimeString([], { hour12: false });
-                        console.log("format :",transformzonedTime);
-  
-                        // below code with ion-datetime input work, need to do changes
-                        // const isoValue = new Date(value).toISOString();
-                        // const isotime = new Date(isoValue);
-                        // let splitHrMin:any = value.split(":");
-                        // const getHr:any = splitHrMin[0];
-                        // const splitMinFormat:any = splitHrMin[1];
-                        // const getMin:any = splitMinFormat.split(" ");
-                        // const time = new Date(value);
-                        // const hours = time.getHours();
-                        // const minutes = time.getMinutes();
-                        // const formattedTime = new Date(`2022-01-01T${splitHrMin[0]}:${getMin}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
-                        // console.log(formattedTime);
-                        // const now = new Date();
-                        // const newTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
-                        // const resultIonTime = newTime.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
-                        // console.log(resultIonTime);
-  
-                      }else{
-                        transformzonedTime='';
-                      }
-                      this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
-                    }
-                  }
-                  break;
-                case "tabular_data_selector":   
-                  if(object != undefined && object != null){
-                    this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(object));     
-                  } 
-                  if(Array.isArray(this.staticData[element.ddn_field]) && Array.isArray(this.custmizedFormValue[fieldName])){
-                    this.custmizedFormValue[fieldName].forEach(staData => {
-                      if(this.staticData[element.ddn_field][staData._id]){
-                        this.staticData[element.ddn_field][staData._id].selected = true;
-                      }
-                    });
-                  }          
-                  break;
-                case "list_of_checkbox":
-                  this.templateForm.controls[element.field_name].setValue([]);
-                  break;
-                default:
-                  if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
-                    const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
-                    this.templateForm.controls[element.field_name].setValue(value)
-                  }
-                  break;
-              } 
-            }  
-            if(element.tree_view_object && element.tree_view_object.field_name != ""){
-              let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
-              const object = this.selectedRow[editeTreeModifyData.field_name];
-              this.templateForm.controls[editeTreeModifyData.field_name].setValue(object)
-            } 
-
-          }
-        }  
-      });
-      // if(this.formFieldButtons.length > 0){
-        //   this.formFieldButtons.forEach(element => {
-          //     let fieldName = element.field_name;
-          //     let object = this.selectedRow[fieldName];
-          //     if(formValue[fieldName] != null && formValue[fieldName] != undefined){
-            //       if(element.field_name && element.field_name != ''){              
-              //         switch (element.type) {
-                //           case "dropdown":
-                  //             let dropdownValue = object == null ? null : object;
-                  //             this.templateForm.controls[element.field_name].setValue(dropdownValue);
-                  //             break;
-      //           default:
-      //             break;
-      //         }
-      //       }
-      //     }
-      //   });
-      // }
-    }
-  }
-  
-  checkValidator(action_button){
-    if(action_button.field_name){
-      const field_name = action_button.field_name.toLowerCase();
-      switch (field_name) {
-        case "save":
-        case "update":
-        case "updateandnext":
-        case "send_email":
-          const valid:boolean =  this.isFormValid();
-          return !valid;
-        default:
-          return;
-      }
-    }     
-  }
-
-
-  responceData(data) {
-    if(this.clickFieldName.type){
-      switch (this.clickFieldName.type) {
-        case "grid_selection":
-        case 'grid_selection_vertical':
-          if(this.clickFieldName.datatype == 'grid_review'){
-            this.custmizedFormValue[this.clickFieldName.field_name] = data;
-          }          
-          break;      
-        default:
-          break;
-      }
-    }
-    this.clickFieldName = {};
-  }
-
-  resetFlagsForNewForm(){    
-    //this.tableFields = [];
-    this.calculationFieldList=[];
-    this.buttonIfList=[];
-    this.showIfFieldList=[];
-    this.disableIfFieldList=[];
-    this.mendetoryIfFieldList = [];
-    this.gridSelectionMendetoryList=[];
-    this.customValidationFiels = [];
-    this.canUpdateIfFieldList=[];
-    this.custmizedFormValue = {};
-    this.dataListForUpload = {};
-    this.checkBoxFieldListValue = [];
-    this.selectedRow = {}
-    this.formFieldButtons=[];
-    this.list_of_fields = [];
-    this.typeAheadData = [];
-    this.createFormgroup = true;    
-    this.getTableField = true;
-    this.pageLoading = true;
-    this.dataSaveInProgress = true; 
-    this.isLinear=true;
-    this.isStepper = false;
-    this.listOfFieldUpdateMode=false; 
-    this.listOfFieldsUpdateIndex = -1; 
-    this.checkFormFieldAutfocus = true;
-    this.filePreviewFields = [];
-    this.nextFormUpdateMode=false;
-    this.focusFieldParent={};
-    this.term={};
-  }
-  resetFlagForOnchange(){
-    this.listOfFieldUpdateMode=false; 
-    this.listOfFieldsUpdateIndex = -1; 
-    // this.serverReq = false;
-    this.updateAddNew = false;
-    this.addOrUpdateIconShowHideList = {};
-  }
-
-  getGridSelectedData(data,field){
-    let gridSelectedData = [];
-    if (!this.customEntryData[field.field_name]) this.customEntryData[field.field_name] = [];
-    this.customEntryData[field.field_name] = []
-    if(data && data.length > 0){
-      data.forEach(grid => {
-        if(grid && grid.customEntry && field.add_new_enabled){
-          this.customEntryData[field.field_name].push(grid);
-        }else{
-          gridSelectedData.push(grid);
-        }
-      });
-    }
-    return gridSelectedData;
-  }
-
-  updateData(event, parentfield, field) {
-    // if(event.keyCode == 38 || event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 27 || event.keyCode == 9){
-    //   return false;
-    // } 
-    const value = event.target.value;
-    // this.templateForm.get(field.field_name).setValue(value);
-    let objectValue = this.getFormValue(false);
-    if(objectValue[field.field_name] == null || objectValue[field.field_name] == "" || typeof  objectValue[field.field_name] == "object"){
-      objectValue[field.field_name] = value;
-    }
-    const fieldValue = this.commonFunctionService.getObjectValue(field.field_name,objectValue);
-    this.lastTypeaheadTypeValue = fieldValue;
-    if(fieldValue != '' && fieldValue != undefined){
-      this.addNewRecord = true;
-    }else{
-      this.addNewRecord = false;
-    }
-    if(field.datatype == 'text'){
-      let typeaheadTextControl:any = {}
-      if(parentfield != ''){
-        typeaheadTextControl = this.templateForm.get(parentfield.field_name).get(field.field_name);    
-      }else{
-        typeaheadTextControl = this.templateForm.controls[field.field_name];
-      }  
-      if(objectValue[field.field_name] == null || objectValue[field.field_name] == '' || objectValue[field.field_name] == undefined){
-        if(field.is_mandatory){
-          typeaheadTextControl.setErrors({ required: true });
-        }else{
-          typeaheadTextControl.setErrors(null);
-        }        
-      }else{        
-        typeaheadTextControl.setErrors({ validDataText: true });
-      }      
-    }
-    this.callTypeaheadData(field,objectValue);
+  editListOfString(parentfield,field,index){
+    let response = this.formControlService.editListOfString(parentfield,field,index,this.custmizedFormValue,this.templateForm);
+    this.templateForm = response.templateForm;
     if(parentfield != ''){
-      this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = true;      
+      this.addOrUpdateIconShowHideList[parentfield.field_name+'_'+field.field_name+'_index'] = index;
+      this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = false;
     }else{
-      this.tempVal[field.field_name + "_add_button"] = true;
-    }       
+      this.addOrUpdateIconShowHideList[field.field_name+'_index'] = index;
+      this.tempVal[field.field_name + "_add_button"] = false;
+    }
+  }  
+  async removeAttachedDataFromList(index:number,fieldName:any){
+    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
+    if(confirmDelete == "confirm"){
+      this.dataListForUpload[fieldName].splice(index,1)
+    }else{
+      this.cancel();
+    }
+  }
+  async openModal(id, index, parent,child, data, alertType) {
+    this.deleteIndex = index;
+    if(parent != ''){
+      this.deletefieldName['parent'] = parent;
+      this.deletefieldName['child'] = child;
+    }else{
+      this.deletefieldName['child'] = child;
+    }
+    // delete below code
+    // console.log(this.deletefieldName);
+    // console.log(this.deleteIndex);
+    // this.alertData = {
+    //   "event": true,
+    //   "type": alertType,
+    //   "data": data
+    // }
+    // this.modalService.open(id, this.alertData);
+    //this.commonFunctionService.openAlertModal(id,alertType,'Are You Sure ?','Delete This record.');
+    // ============================
 
+    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');    
+    this.alertResponce(confirmDelete);
   }
-  get templateFormControl() {
-    return this.templateForm.controls;
+  async dismissModal(){
+    if(this.updateMode){      
+      Object.keys(this.custmizedFormValue).forEach(key => {
+        if(this.custmizedFormValue[key] != null && Array.isArray(this.custmizedFormValue[key])){
+          this.custmizedFormValue[key].forEach((element: any) => {
+            if(element.status == 'I'){
+              element.status = 'A';
+            }
+          });
+        }
+      });
+    }else{
+      this.custmizedFormValue = {};
+    }
+    this.resetForm();
+    //this.templateForm.reset();
+    //this.formGroupDirective.resetForm()
+    this.updateMode=false;
+    this.dataListForUpload = []
+    this.filePreviewFields = [];
+    this.staticData = {};
+    this.apiService.resetStaticAllData();
+    // this.modal.dismiss();
+    // this.modal.dismiss(null, null, this.form._id);
+    // this.modal.dismiss{
+    //   "dissmised": true
+    // });
+    this.resetFlagForOnchange()
+    this.checkFormAfterCloseModel();
+    //this.commonFunctionService.resetStaticAllData();
+    
   }
-
-  callTypeaheadData(field,objectValue){
-    this.clearTypeaheadData();   
-    const payload = [];
-    const params = field.api_params;
-    const criteria = field.api_params_criteria;
-    payload.push(this.apiCallService.getPaylodWithCriteria(params, '', criteria, objectValue, field.data_template));
-    this.apiService.GetTypeaheadData(payload);    
-  }
-  clearTypeaheadData() {
-    this.apiService.clearTypeaheadData();
-  }
-
+  // CD
   updateAddNewField(parent,child){
     if(child && child.onchange_get_next_form){
       let fieldValue:any = '';
@@ -3100,7 +2132,7 @@ tinymceConfig = {}
         this.onchangeNextForm = true;
         const reqCriteria = ["_id;eq;" + fieldValue._id + ";STATIC"];
         const reqParams = child.api_params;
-        this.getDataForNextForm(reqParams,reqCriteria);
+        this.multipleFormService.getDataForNextForm(reqParams,reqCriteria);
         this.tempVal[child.field_name + "_add_button"] = false;
       }
     }else{
@@ -3108,116 +2140,92 @@ tinymceConfig = {}
       this.updateAddNew = true;
     }    
   }
-
-  isEnable(parent,field, elementType) {
-    //this.tempVal[field+"_"+elementType] = true;
-    if(parent != ''){
-      return this.tempVal[parent + '_' + field + "_" + elementType];
-    }else{
-      return this.tempVal[field + "_" + elementType];
+  // CD
+  addListOfFields(field){
+    this.storeFormDetails("",field);
+    if(this.samePageGridSelection){
+      this.samePageGridSelection = false;
     }
-    
   }
-
-  // checkDataAlreadyAddedInListOrNot(field,incomingData,alreadyDataAddedlist,i?){
-  //   if(field && field.type == "date"){
-  //     incomingData = ""+incomingData;
-  //   }
-  //   let checkStatus = {
-  //     status : false,
-  //     msg : ""
-  //   };
-  //   if(field && field.allowDuplicacy){
-  //     checkStatus.status = false;
-  //     return checkStatus;
-  //   }else{
-  //     let primary_key = field.field_name
-  //     let criteria = primary_key+"#eq#"+incomingData;
-  //     let primaryCriteriaList=[];
-  //     primaryCriteriaList.push(criteria);
-  //     if(field && field.primaryKeyCriteria && this.commonFunctionService.isArray(field.primaryKeyCriteria) && field.primaryKeyCriteria.length > 0){
-  //       field.primaryKeyCriteria.forEach(criteria => {          
-  //         const crList = criteria.split("#");
-  //         const cr = crList[0]+"#"+crList[1]+"#"+incomingData;
-  //         primaryCriteriaList.push(cr);
-  //       });
-  //     }
-  //     if(alreadyDataAddedlist == undefined){
-  //       alreadyDataAddedlist = [];
-  //     }
-  //     let alreadyExist = false;
-  //     if(typeof incomingData == 'object'){
-  //       alreadyDataAddedlist.forEach(element => {
-  //         if(element._id == incomingData._id){
-  //           alreadyExist =  true;
-  //         }
-  //       });
-  //     }
-  //     else if(typeof incomingData == 'string'){
-  //       for (let index = 0; index < alreadyDataAddedlist.length; index++) {
-  //         const element = alreadyDataAddedlist[index];
-  //         if(i == undefined || i == -1){
-  //           if(typeof element == 'string'){
-  //             if(element == incomingData){
-  //               alreadyExist =  true;
-  //             }
-  //           }else{
-  //             if(primaryCriteriaList && primaryCriteriaList.length > 0){
-  //               for (let index = 0; index < primaryCriteriaList.length; index++) {
-  //                 const cri = primaryCriteriaList[index];
-  //                 alreadyExist = this.checkIfService.checkIfCondition(cri,element,field.type);
-  //                 if(alreadyExist){
-  //                   const crList = cri.split("#");
-  //                   switch (crList[1]) {
-  //                     case "lte":
-  //                       checkStatus.msg = "Entered value for "+field.label+" is gretter then to "+crList[0]+". !!!";
-  //                       break;
-  //                     case "gte":
-  //                       checkStatus.msg = "Entered value for "+field.label+" is less then to "+crList[0]+". !!!";
-  //                       break;                  
-  //                     default:
-  //                       checkStatus.msg = "Entered value for "+field.label+" is already added. !!!";
-  //                       break;
-  //                   }
-  //                   break;
-  //                 }                
-  //               }
-  //             }
-  //           }
-  //           if(alreadyExist){
-  //             break;
-  //           } 
-  //         }else{
-  //           break;
-  //         }       
-  //       };
-  //     }else{
-  //       alreadyExist =  false;
-  //     }
-  //     if(alreadyExist){
-  //       checkStatus.status = true;
-  //       return checkStatus;
-  //     }else{
-  //       checkStatus.status = false;
-  //       return checkStatus;
-  //     }
-  //   }
-  // }
-  checkFieldShowOrHide(field){    
-    for (let index = 0; index < this.showIfFieldList.length; index++) {
-      const element = this.showIfFieldList[index];
-      if(element.field_name == field.field_name){
-        if(element.show){
-          return true;
-        }else{
-          return false;
+  // CD
+  showListOfFieldData(field,index,item){
+    let value={};
+    let parentObject = this.custmizedFormValue[field.field_name];
+    let listOfField = parentObject[index];
+    value['data'] = listOfField[item.field_name];
+    let editemode = false;   
+    switch (item.type) {
+      case "typeahead":
+          if(item.datatype == "list_of_object"){    
+            // this.viewModal('form_basic-modal', value, item,editemode);
+          }          
+          break;
+      case "list_of_string":
+      case "list_of_checkbox":
+      case "grid_selection":
+      case "list_of_fields":
+      case "info":
+        if(item["gridColumns"] && item["gridColumns"].length > 0){
+          value['gridColumns']=item.gridColumns;
+        }else if(item["fields"] && item["fields"].length > 0){
+          value['gridColumns']=item.fields;
         }
-      }
+        // this.viewModal('form_basic-modal', value, item,editemode);
+        this.viewModal(value, item, index,editemode);
+        break;
+      case "file":
+        if (value['data'] && value['data'] != '') {
+          let fileData = {};
+          fileData['data'] = this.fileHandlerService.modifyUploadFiles(value['data']);
+          // this.viewModal('fileview-grid-modal', fileData, item, editemode);
+          // Extra code for App Changes
+          let previewFile:boolean = false;
+          let printFile:boolean = false;
+          if(field.type.toLowerCase() == "file_with_preview"){
+            previewFile = true;
+          }else if(field.type.toLowerCase() == "file_with_print"){
+            printFile = true;
+          }
+          const obj = {
+            'field_type': field.type.toLowerCase(),
+            'previewFile': previewFile,
+            'printFile' : printFile
+          }
+          this.viewFileModal(FileViewsModalComponent, value, field, index, field.field_name,editemode,obj);
+        };
+        break;      
+      default:
+        break;
+    } 
+  }
+  // CD
+  reviewParameters(fields,data){
+    this.clickFieldName=fields;
+    let value={};
+    value['data'] = JSON.parse(JSON.stringify(data));
+    value['gridColumns']=fields.gridColumns;
+    const editemode = true;    
+    // this.viewModal('form_basic-modal', value, fields,editemode); 
+    // Extra code for APP
+    if (!this.custmizedFormValue[fields.field_name]) this.custmizedFormValue[fields.field_name] = [];
+    let selectedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[fields.field_name]))
+    const gridModalData = {
+      "field": fields,
+      "selectedData":selectedValue,
+      "object": this.getFormValue(true),
+      "formTypeName" : this.formTypeName,
       
     }
+    this.samePageGridSelection = this.appDataShareService.getgridselectioncheckvalue();
+    if(this.samePageGridSelection){
+      this.curTreeViewField = fields;      
+      this.samePageGridSelectionData = gridModalData;
+    }
   }
-  
+  // Click Function Handling End --------------------
 
+  // Change Event & KeyUp Event Function Handling Start ---------------------
+  // CD
   setValue(parentfield:any,field:any,add?:any,event?:any) {
     let formValue = this.templateForm.getRawValue();
     let formValueWithoutCustomData = this.getFormValue(false);
@@ -3586,7 +2594,10 @@ tinymceConfig = {}
         this.curTreeViewField = field;
         this.currentTreeViewFieldParent = parentfield;
         if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
-        let selectedData = this.getGridSelectedData(this.custmizedFormValue[field.field_name],field);
+        // let selectedData = this.getGridSelectedData(this.custmizedFormValue[field.field_name],field);
+        let gridSelectedData = this.gridCommonFunctionService.getGridSelectedData(this.custmizedFormValue[field.field_name],field);
+        let selectedData = gridSelectedData.gridSelectedData;
+        this.customEntryData = gridSelectedData.customEntryData;
         let alreadyAdded = false;
         if(selectedData && selectedData.length>0){
           selectedData.forEach(element => {
@@ -3673,447 +2684,51 @@ tinymceConfig = {}
     this.term = {};
     // this.checkFormFieldIfCondition();
   }
-  editListOfString(parentfield,field,index){
-    let response = this.formControlService.editListOfString(parentfield,field,index,this.custmizedFormValue,this.templateForm);
-    this.templateForm = response.templateForm;
-    if(parentfield != ''){
-      this.addOrUpdateIconShowHideList[parentfield.field_name+'_'+field.field_name+'_index'] = index;
-      this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = false;
-    }else{
-      this.addOrUpdateIconShowHideList[field.field_name+'_index'] = index;
-      this.tempVal[field.field_name + "_add_button"] = false;
-    }
-  }
-
-  async openGridSelectionDetailModal(data:any, cardtype?:string) {
-    if(cardtype! || cardtype =="" || cardtype ==undefined){
-      cardtype = "demo1"
-    }
-    // if(cpmonentName){
-      const modal = await this.modalController.create({
-        component: GridSelectionDetailModalComponent,
-        cssClass: "gridSelectionDetailModal",
-        componentProps: {
-          'Data': data,
-          "childCardType":cardtype
-        },
-        id: data.id,
-        animated: true,
-      });
-      modal.present();
-      modal.onDidDismiss()
-        .then((data) => {
-          const object = data['data'];
-          if(object['data'] && object['data'].length > 0){
-            let obj =this.getSendData(object['data']);
-            this.gridSelectionResponce(obj);
-          }        
-      });
-    // }
-  }
-
   // CD
-  refreshListofField(field,updatemode){    
-    if(field.do_not_refresh_on_add && updatemode){
-      this.tableFields.forEach(tablefield => {
-        if(tablefield.field_name == field.field_name){
-          tablefield.list_of_fields.forEach(fld => {
-            if(!fld.do_not_refresh_on_add){
-              this.templateForm.get(tablefield.field_name).get(fld.field_name).setValue('');
-            }
-          });
-        }
-      });
+  updateData(event, parentfield, field) {
+    // if(event.keyCode == 38 || event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 27 || event.keyCode == 9){
+    //   return false;
+    // } 
+    const value = event.target.value;
+    // this.templateForm.get(field.field_name).setValue(value);
+    let objectValue = this.getFormValue(false);
+    // Extra code for App
+    if(objectValue[field.field_name] == null || objectValue[field.field_name] == "" || typeof  objectValue[field.field_name] == "object"){
+      objectValue[field.field_name] = value;
+    }
+    // =============
+    const fieldValue = this.commonFunctionService.getObjectValue(field.field_name,objectValue);
+    this.lastTypeaheadTypeValue = fieldValue;
+    if(fieldValue != '' && fieldValue != undefined){
+      this.addNewRecord = true;
     }else{
-      this.templateForm.get(field.field_name).reset(); 
-    } 
-    this.listOfFieldsUpdateIndex = -1
-    this.listOfFieldUpdateMode = false;
-    // below code added for reset list_of_string in the list_of_fields
-    let keyName = this.commonFunctionService.custmizedKey(field);
-    if(this.custmizedFormValue[keyName]) this.custmizedFormValue[keyName] = {};
-  }
-
-  modifiedGridColumns(gridColumns){
-    if(gridColumns.length > 0){     
-      gridColumns.forEach(field => {
-        if(this.coreFunctionService.isNotBlank(field.show_if)){
-          if(!this.showIf(field)){
-            field['display'] = false;
-          }else{
-            field['display'] = true;
-          }                
+      this.addNewRecord = false;
+    }
+    if(field.datatype == 'text'){
+      let typeaheadTextControl:any = {}
+      if(parentfield != ''){
+        typeaheadTextControl = this.templateForm.get(parentfield.field_name).get(field.field_name);    
+      }else{
+        typeaheadTextControl = this.templateForm.controls[field.field_name];
+      }  
+      if(objectValue[field.field_name] == null || objectValue[field.field_name] == '' || objectValue[field.field_name] == undefined){
+        if(field.is_mandatory){
+          typeaheadTextControl.setErrors({ required: true });
         }else{
-          field['display'] = true;
-        }
-      });
+          typeaheadTextControl.setErrors(null);
+        }        
+      }else{        
+        typeaheadTextControl.setErrors({ validDataText: true });
+      }      
     }
-    return gridColumns;
-  }
-  
-  storeFormDetails(parent_field:any,field:any,index?:number){
-    let result = this.multipleFormService.storeFormDetails(parent_field,field,this.getFormValue(false),this.getFormValue(true),this.updateMode,this.nextFormData,this.lastTypeaheadTypeValue,this.multipleFormCollection,this.currentMenu,this.form,this.listOfFieldUpdateMode,this.listOfFieldsUpdateIndex,this.addNewRecord,this.enableNextButton,index);
-    this.multipleFormCollection = result.multipleFormCollection;
-    if(result.form && Object.keys(result.form).length > 0) this.loadNextForm(result.form);
-    if(result.id && result.id != '') this.multipleFormService.getNextFormById(result.id);
-    this.addNewRecord = result.addNewRecord;
-    if(result.params && result.params != '')  this.multipleFormService.getDataForNextForm(result.params,result.criteria);
-
-  // Delete code
-    // let targetFieldName ={}
-    // targetFieldName['form'] = {}
-    // targetFieldName['custom'] = [];
-
-    // let updateMode =  this.updateMode;
-    // let formData = JSON.parse(JSON.stringify(this.getFormValue(true)));
-    // if(field && field.form_field_name){
-    //   const nextFormReference = {
-    //     '_id':this.nextFormData._id,
-    //     'name':this.nextFormData.name
-    //   }
-    //   formData[field.form_field_name] = nextFormReference;
-    //   //targetFieldName = formData[field.field_name]
-    //   updateMode = true;
-    // }
-    // if(this.coreFunctionService.isNotBlank(field.add_new_target_field)){
-    //   targetFieldName['form'][field.add_new_target_field] = this.lastTypeaheadTypeValue
-    // }else if(field){
-    //   switch (field.type) {
-    //     case "list_of_fields":
-    //     case "grid_selection":
-    //       let currentFieldData = formData[field.field_name];
-    //       if(currentFieldData && this.commonFunctionService.isArray(currentFieldData)){
-    //           if(index != undefined && index >= 0){        
-    //             targetFieldName['form'] = currentFieldData[index];
-    //             targetFieldName['updataModeInPopupType'] = true;
-    //           }else {
-    //             targetFieldName['custom'] = currentFieldData;
-    //           }
-    //       }
-    //       break;      
-    //     default:
-    //       break;
-    //   }
-      
-     
-        
-    //   // const listOfFields = field.list_of_fields;
-    //   // let element:any = {}
-    //   // if(listOfFields && listOfFields.length > 0){
-    //   //   element = listOfFields[0]
-    //   // }
-    //   // if(element && element.field_name){
-    //   //   targetFieldName[element.field_name] = "";
-    //   // }      
-    // } 
-    // if(this.coreFunctionService.isNotBlank(field.moveFieldsToNewForm)){
-    //   if(field.moveFieldsToNewForm && field.moveFieldsToNewForm.length > 0){
-    //     field.moveFieldsToNewForm.forEach(keyValue => {
-    //       const sourceTarget = keyValue.split("#");
-    //       let key = sourceTarget[0];
-    //       let valueField = sourceTarget[1];
-    //       let formValue = {};
-    //       if(field && field.form_value_index >= 0 && this.multipleFormCollection.length >= 1){
-    //         const storeFormData = this.multipleFormCollection[field.form_value_index];
-    //         const formData = storeFormData['form_value'];            
-    //         formValue = formData;            
-    //       }else{
-    //         formValue = this.getFormValue(false)
-    //       }
-    //       let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
-    //       formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(false));
-    //       let value = this.commonFunctionService.getObjectValue(valueField,formValue);
-    //       targetFieldName['form'][key] = value;
-    //     });
-    //   }
-    // }   
-    // let form = {
-    //   "collection_name":this.currentMenu.name,
-    //   "data":formData,
-    //   "form":this.form,
-    //   "parent_field":parent_field,
-    //   "current_field":field,
-    //   "next_form_data":targetFieldName,
-    //   "updateMode" : updateMode,
-    //   "form_value" : JSON.parse(JSON.stringify(this.getFormValue(false))),
-    //   "index": -1
-    // }
-    // if(field){
-    //   const type = field.type;
-    //   switch (type) {
-    //     case "list_of_fields":
-    //     case "grid_selection":
-    //       if(index != undefined){
-    //           form['index'] = index;
-    //       }
-    //       break;      
-    //     default:
-    //       break;
-    //   }
-      
-    // }
-    // this.multipleFormCollection.push(form);
-    // let id = '';
-    // if(field && field.type == "list_of_fields"){
-    //   let buttonLabel = "";
-    //   if(index != undefined && index >= 0){
-    //     buttonLabel = 'Update';
-    //   }else{
-    //     buttonLabel = 'Add';
-    //   }
-    //   if(field.list_of_fields && field.list_of_fields.length > 0){
-    //     let fieldList:any = JSON.parse(JSON.stringify(field.list_of_fields));
-    //     if(fieldList && fieldList.length > 0 && index == undefined){
-    //       let curField = JSON.parse(JSON.stringify(field));
-    //       curField['add_list_field'] = 'add';
-    //       fieldList.push(curField);
-    //     }
-    //     let form = {
-    //       "details": {
-    //           "class": "",
-    //           "collection_name":"",
-    //           "bulk_update":false
-    //           },
-    //       "tab_list_buttons": [
-    //           {
-    //               "label": buttonLabel,
-    //               "onclick": {
-    //                       "api": "add", 
-    //                       "action_name": "", 
-    //                       "close_form_on_succes": false
-    //                   },
-    //               "type": "button",
-    //               "field_name": "save",
-    //               "api_params": "",
-    //               "show_if":"",
-    //               "disable_if":""
-    //           },
-    //           {
-    //             "label": "Ok",
-    //             "onclick": {
-    //                     "api": "close", 
-    //                     "action_name": "", 
-    //                     "close_form_on_succes": false
-    //                 },
-    //             "type": "button",
-    //             "field_name": "",
-    //             "api_params": "",
-    //             "show_if":"",
-    //             "disable_if":""
-    //         }
-    //       ],
-    //       "tableFields": fieldList,
-    //       "api_params": null,
-    //       "label": field.label
-    //       }
-    //     this.loadNextForm(form);
-    //   }else{
-    //     if(field.form && field.form._id){
-    //       id = field.form._id;
-    //     }
-    //     this.getNextFormById(id);
-    //   }
-    // }else{
-    //   if(field.add_new_form && field.add_new_form._id){
-    //     id = field.add_new_form._id;
-    //   }
-    //   this.getNextFormById(id);
-    //   this.addNewRecord = false;
-    //   if(!this.enableNextButton && field && field.find_child_form){
-    //     const reqCriteria = ["collection.name;eq;" + this.currentMenu.name + ";STATIC"];
-    //     const reqParams = 'scheduled_task_form';
-    //     this.getDataForNextForm(reqParams,reqCriteria);
-    //   }      
-    // }    
-  }
-
-  private getDataForNextForm(reqParams,reqCriteria) {    
-    const request = this.apiCallService.getDataForGrid(1, {}, { 'name': reqParams }, [], {}, '');
-    const crList = this.apiCallService.getCriteriaList(reqCriteria, {});
-    request.data.crList = crList;
-    this.apiService.getNextFormData(request);
-  }
-
-  loadNextForm(form: any){    
-    this.form = form;
-    this.resetFlagsForNewForm();
-    this.setForm();
-    // used service function
-    let result = this.multipleFormService.updateNextFormData(this.multipleFormCollection,this.nextFormUpdateMode,this.form,this.custmizedFormValue,this.editedRowIndex,this.previousFormFocusField,this.tableFields);    
-    let nextFormData:any = result.nextFormData;
-    if(this.updateAddNew){
-      this.getNextFormData(nextFormData);
-    }
-    let fData:any = result.fData;
-    this.nextFormUpdateMode = result.nextFormUpdateMode;
-    this.custmizedFormValue = result.custmizedFormValue;
-    if(result.fieldName && result.fieldName != '') this.modifyCustmizedValue(result.fieldName);
-    if(result.editFunction) this.editedRowData(fData);
-    if(result.updateFormFunction) this.updateDataOnFormField(fData);
-    if(result.getStaticData) this.getStaticDataWithDependentData();
-    this.previousFormFocusField = result.previousFormFocusField;
-
-    // delete code-----------------------
-    // if(this.multipleFormCollection.length > 0){
-    //   nextFormData = this.multipleFormCollection[this.multipleFormCollection.length -1];
-    // }
-    // if(this.updateAddNew){
-    //   this.getNextFormData(nextFormData);
-    // }
-    // let cdata = {};
-    // let fData = {};
-    // if(nextFormData && nextFormData['next_form_data'] && nextFormData['next_form_data']['custom']){
-    //    cdata = nextFormData['next_form_data']['custom'];
-    // }
-    // if(nextFormData && nextFormData['next_form_data'] && nextFormData['next_form_data']['form']){
-    //    fData = nextFormData['next_form_data']['form'];
-    // }  
-    // if(nextFormData['index'] != undefined && nextFormData['index'] >= 0){
-    //   this.nextFormUpdateMode = true;
-    // } 
-    
-    // if(nextFormData && nextFormData['current_field'] && nextFormData['current_field']['type'] && (nextFormData['index'] == undefined || nextFormData['index'] == -1)){
-    //   switch (nextFormData['current_field']['type']) {
-    //     case 'list_of_fields':
-    //     case 'grid_selection':
-    //       const fieldName = nextFormData['current_field']['field_name'];
-    //       if(this.commonFunctionService.isArray(cdata)){
-    //         if(this.form && this.form.buttons){
-    //           if(!this.checkAddNewButtonOnGridSelection(this.form.buttons)){
-    //             this.custmizedFormValue[fieldName] = cdata;
-    //             // this.modifyCustmizedValue(fieldName);
-    //           }
-    //         }
-    //       }
-    //       break;      
-    //     default:
-    //       break;
-    //   }
-    // }
-    // if(nextFormData && nextFormData['next_form_data'] && nextFormData['next_form_data']['updataModeInPopupType']){
-    //   this.editedRowData(fData);
-    // }else{
-    //   this.updateDataOnFormField(fData);
-    //   if(this.editedRowIndex >= 0 || Object.keys(fData).length > 0){
-    //     this.getStaticDataWithDependentData();
-    //   }   
-    // }
-    // let nextFormFocusedFieldname = '';
-    // for (let key in fData) {
-    //   nextFormFocusedFieldname = key;
-    //   break;
-    // }
-    // if (this.tableFields && this.tableFields.length > 0) {
-    //   for (let i = 0; i < this.tableFields.length; i++) {
-    //     const element = this.tableFields[i];
-    //     if(nextFormFocusedFieldname == element.field_name){
-    //       this.previousFormFocusField = element;
-    //       break;
-    //     }        
-    //   }
-    // }
-  }
-
-  getNextFormData(formData){
-    let result = this.multipleFormService.getNextFormData(formData,this.listOfFieldsUpdateIndex);
-    if(result.updateAddNew){
-      this.apiService.getGridData(result.payload);
-    }
-
-    // delete code
-    // if(formData){
-    //   let parent:any = '';
-    //   let child:any = '';
-    //   if(formData['parent_field']){
-    //     parent = formData['parent_field'];
-    //   }
-    //   if(formData['current_field']){
-    //     child = formData['current_field'];
-    //   }
-    //   let formValue = formData['data'];
-    //   let fieldValue:any = '';
-    //   if(parent != ''){
-    //     fieldValue = formValue[parent.field_name][child.field_name];
-    //   }else{
-    //     fieldValue = formValue[child.field_name];
-    //   }    
-    //   if(fieldValue && fieldValue._id && fieldValue._id != ''){
-    //     //console.log(fieldValue._id);
-    //     const params = child.api_params;
-    //     if(params && params != ''){
-    //       const criteria = ["_id;eq;"+fieldValue._id+";STATIC"]
-    //       const crList = this.apiCallService.getCriteriaList(criteria,{});
-    //       const payload = this.apiCallService.getDataForGrid(1,{},{'name':params},[],{},'');
-    //       payload.data.crList = crList;
-    //       this.apiService.getGridData(payload);
-    //       this.updateAddNew = true;
-    //     }else{
-    //       this.updateAddNew = false;
-    //     }     
-    //   }else{
-    //     this.updateAddNew = false;
-    //   }
-    // }else{
-    //   this.updateAddNew = false;
-    // }
-  }
-
-  // delete code
-  // setPreviousFormTargetFieldData(){
-  //   if(this.multipleFormCollection.length > 0){
-  //     const previousFormIndex = this.multipleFormCollection.length - 1;
-  //     const previousFormData = this.multipleFormCollection[previousFormIndex];
-  //     const previousFormField = previousFormData.current_field;
-  //     const formData = previousFormData.next_form_data;
-  //     if(previousFormField && previousFormField.add_new_target_field){
-  //       const targateFieldName = previousFormField.add_new_target_field;          
-  //       const currentFormValue = this.getFormValue(true)
-  //       const currentTargetFieldValue = currentFormValue[targateFieldName]
-  //       formData[targateFieldName] = currentTargetFieldValue;
-  //     }      
-  //     this.multipleFormCollection[previousFormIndex]['next_form_data'] = formData;
-  //   }
-  // }
-
-  changeDropdown(field, object,data_template) {
-    let params = field.onchange_api_params;
-    let callback = field.onchange_call_back_field;
-    let criteria = field.onchange_api_params_criteria;
-    const paramlist = params.split(";");
-    let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
-    let completeObject = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
-    if(paramlist.length>1){
-      
+    this.callTypeaheadData(field,objectValue);
+    if(parentfield != ''){
+      this.tempVal[parentfield.field_name + '_' + field.field_name + "_add_button"] = true;      
     }else{
-      // if(callback != ''){        
-      //   const fieldName = {
-      //     "field" : callback
-      //   }
-      //   this.commonFunctionService.resetStaticDataByKey(fieldName);
-      // }
-      const staticModal = []
-      
-      if( params.indexOf("CLTFN") >= 0){
-        const calculatedCost =  this.limsCalculationsService.calculateAdditionalCost(this.getFormValue(true));
-        this.updateDataOnFormField(calculatedCost);
-      }
-      else{
-        staticModal.push(this.checkQtmpApi(params,field,this.apiCallService.getPaylodWithCriteria(params, callback, criteria, completeObject, data_template))); 
-        // staticModal.push(this.coreUtilityService.getPaylodWithCriteria(params, callback, criteria, object))      
-        // if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
-        //   if(field && field.formValueAsObjectForQtmp){
-        //     staticModal[0]["data"]=this.getFormValue(false);
-        //   }else{
-        //     staticModal[0]["data"]=this.getFormValue(true);
-        //   }
-        // }
-        // // this.store.dispatch(
-        // //   new CusTemGenAction.GetStaticData(staticModal)
-        // // )
-        this.apiService.getStatiData(staticModal);
-      }
-   }
+      this.tempVal[field.field_name + "_add_button"] = true;
+    }
   }
+  // CD
   inputOnChangeFunc(parent,field) {
     if(parent && parent != '' && parent.field_name && parent.field_name != ""){
       field['parent'] = parent.field_name;
@@ -4130,11 +2745,21 @@ tinymceConfig = {}
       let tamplateFormValue = this.getFormValue(true);
       let tamplateFormValue1 = this.getFormValue(false);
       let tamplateFormValue3 = this.custmizedFormValue;
+      let multipleCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+      let multiFormValue = this.commonFunctionService.getFormDataInMultiformCollection(multipleCollection,tamplateFormValue)
       let calFormValue = {};
       let list_of_populated_fields = [];
       switch (field.onchange_function_param) {
         case 'calculate_quote_amount':          
           calFormValue = this.limsCalculationsService.calculate_quotation(tamplateFormValue,"standard", field);
+          this.updateDataOnFormField(calFormValue);
+          break;
+        case 'calculate_quote_amount_for_lims':          
+          calFormValue = this.limsCalculationsService.calculate_quotation_for_lims(tamplateFormValue,"standard", field);
+          this.updateDataOnFormField(calFormValue);
+          break;
+        case 'calculate_quotation_with_subsequent':          
+          calFormValue = this.limsCalculationsService.calculate_quotation_with_subsequent(tamplateFormValue,"standard", field);
           this.updateDataOnFormField(calFormValue);
           break;
         case 'calculate_automotive_quotation':          
@@ -4145,17 +2770,33 @@ tinymceConfig = {}
           calFormValue = this.limsCalculationsService.calculate_po_row_item(tamplateFormValue1,"automotive" ,field);
           this.updateDataOnFormField(calFormValue);
           break;
+        case 'calculate_manual_row_item':          
+          calFormValue = this.limsCalculationsService.calculate_manual_row_item(tamplateFormValue1,"automotive" ,field);
+          this.updateDataOnFormField(calFormValue);
+          break;
         case 'update_invoice_total_on_custom_field':          
           calFormValue = this.limsCalculationsService.update_invoice_total_on_custom_field(tamplateFormValue,"automotive" ,field);
           this.updateDataOnFormField(calFormValue);
-          break;    
+          break; 
+        case 'credit_note_invoice_calculation':          
+          calFormValue = this.limsCalculationsService.credit_note_invoice_calculation(tamplateFormValue,"standard" ,field);
+          this.updateDataOnFormField(calFormValue);
+          break;
         case 'calculate_lims_invoice':          
           calFormValue = this.limsCalculationsService.calculate_lims_invoice(tamplateFormValue,"automotive" ,field);
           this.updateDataOnFormField(calFormValue);
-          break;    
+          break;
+        case 'calculate_lims_invoice_extra_amount':          
+        calFormValue = this.limsCalculationsService.calculate_lims_invoice_extra_amount(tamplateFormValue,"automotive" ,field);
+        this.updateDataOnFormField(calFormValue);
+          break;
         case 'calculate_lims_invoice_with_po_items':
           let val = this.limsCalculationsService.calculate_lims_invoice_with_po_items(tamplateFormValue,"","");
           this.updateDataOnFormField(val);
+          break;
+        case 'calculate_lims_invoice_with_manual_items':
+          let val1 = this.limsCalculationsService.calculate_lims_invoice_with_manual_items(tamplateFormValue,"",field);
+          this.updateDataOnFormField(val1);
           break;
         case 'getDateInStringFunction':
           calFormValue = this.commonFunctionService.getDateInStringFunction(tamplateFormValue);
@@ -4414,571 +3055,245 @@ tinymceConfig = {}
             }
           }          
           break; 
+        case "calculate_balance_amount_engagement_letter":
+        calFormValue = this.limsCalculationsService.calculateBalanceAmountEngLetter(tamplateFormValue,multiFormValue);
+        this.updateDataOnFormField(calFormValue);
+          break;
+
         default:
           break;
       }
     }
-
+    // this.checkFormFieldIfCondition();
   }
-
-  async dismissModal(){
-    if(this.updateMode){      
-      Object.keys(this.custmizedFormValue).forEach(key => {
-        if(this.custmizedFormValue[key] != null && Array.isArray(this.custmizedFormValue[key])){
-          this.custmizedFormValue[key].forEach((element: any) => {
-            if(element.status == 'I'){
-              element.status = 'A';
-            }
-          });
-        }
-      });
+  // Change Event & KeyUp Event Function Handling End ---------------------
+  
+  // Click Function Dependency Start ------------------
+  // CD
+  changeDropdown(field, object,data_template) {
+    let params = field.onchange_api_params;
+    let callback = field.onchange_call_back_field;
+    let criteria = field.onchange_api_params_criteria;
+    const paramlist = params.split(";");
+    let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+    let completeObject = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
+    if(paramlist.length>1){
+      
     }else{
-      this.custmizedFormValue = {};
+      const payloads = []      
+      if( params.indexOf("CLTFN") >= 0){
+        const calculatedCost =  this.limsCalculationsService.calculateAdditionalCost(this.getFormValue(true));
+        this.updateDataOnFormField(calculatedCost);
+      }
+      else{
+        payloads.push(this.apiCallService.checkQtmpApi(params,field,this.apiCallService.getPaylodWithCriteria(params, callback, criteria, completeObject,data_template),this.multipleFormCollection,this.getFormValue(false),this.getFormValue(true))); 
+        this.callStaticData(payloads);
+      }
+
+      // delete below code below
+      // // if(callback != ''){        
+      // //   const fieldName = {
+      // //     "field" : callback
+      // //   }
+      // //   this.commonFunctionService.resetStaticDataByKey(fieldName);
+      // // }
+      // const staticModal = []
+      
+      // if( params.indexOf("CLTFN") >= 0){
+      //   const calculatedCost =  this.limsCalculationsService.calculateAdditionalCost(this.getFormValue(true));
+      //   this.updateDataOnFormField(calculatedCost);
+      // }
+      // else{
+      //   staticModal.push(this.checkQtmpApi(params,field,this.apiCallService.getPaylodWithCriteria(params, callback, criteria, completeObject, data_template))); 
+      //   // staticModal.push(this.coreUtilityService.getPaylodWithCriteria(params, callback, criteria, object))      
+      //   // if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
+      //   //   if(field && field.formValueAsObjectForQtmp){
+      //   //     staticModal[0]["data"]=this.getFormValue(false);
+      //   //   }else{
+      //   //     staticModal[0]["data"]=this.getFormValue(true);
+      //   //   }
+      //   // }
+      //   // // this.store.dispatch(
+      //   // //   new CusTemGenAction.GetStaticData(staticModal)
+      //   // // )
+      //   this.apiService.getStatiData(staticModal);
+      // }
+   }
+  }
+  // CD
+  getSavePayloadData(dataWithCustValue?:any) {
+    let formValue = this.templateForm.getRawValue();
+    let formValueWithCustomData = dataWithCustValue;
+    if(dataWithCustValue == undefined){
+      formValueWithCustomData = this.getFormValue(true);
+    }    
+    let formDataResponce = this.formValueService.getSavePayloadData(this.currentMenu,this.updateMode,this.deleteGridRowData,this.tableFields,formValue,formValueWithCustomData,this.gridSelectionMendetoryList,this.selectedRow,this.custmizedFormValue,this.dataSaveInProgress,this.showNotify,this.formName,this.templateForm.valid);   
+    this.deleteGridRowData = formDataResponce.deleteGridRowData;     
+    if(this.dataSaveInProgress){
+      this.getSavePayload = formDataResponce.getSavePayload;
+      this.showNotify = formDataResponce.showNotify;
+      this.dataSaveInProgress = formDataResponce.dataSaveInProgress;
+      if(!formDataResponce.data.data['platForm']) formDataResponce.data.data['platForm'] = Capacitor.getPlatform().toUpperCase();
+      return formDataResponce.data;
+    }else{
+      let message = formDataResponce.message;
+      if(message && message.msg && message.msg != ""){
+        this.notificationService.showAlert(message.class,'',['Dismiss']);
+      }
     }
-    this.resetForm();
-    //this.templateForm.reset();
-    //this.formGroupDirective.resetForm()
-    this.updateMode=false;
-    this.dataListForUpload = []
-    this.filePreviewFields = [];
-    this.staticData = {};
-    this.apiService.resetStaticAllData();
-    // this.modal.dismiss();
-    // this.modal.dismiss(null, null, this.form._id);
-    // this.modal.dismiss{
-    //   "dissmised": true
-    // });
-    this.resetFlagForOnchange()
-    this.checkFormAfterCloseModel();
-    //this.commonFunctionService.resetStaticAllData();
-    
-  }
 
-  fileDrop: boolean = false;
-  /**
-	 * handle file from browsing
-	 */
-   fileBrowseHandler(parent,field,files) {
-    this.curFileUploadField = field;
-    this.curFileUploadFieldparentfield = parent;
-    this.fileDrop = false;
-    this.prepareFilesList(files.files);
-  }
-
-	/**
-	 * Delete file from files list
-	 * @param index (File index)
-	 */
-  deleteFile(index: number) {
-    this.uploadData.splice(index, 1);
-  }
-
-	/**
-	 * Simulate the upload process
-	 */
-
-
-
-
-  prepareFilesList(files: Array<any>) {
-    for (const item of files) {
-      item.progress = 0;
-      this.files.push(item);
-    }
-    for (var i = 0; i < files.length; i++) {
-      var file = files[i];
-      this.uploadFilesData.push(file);
-      var reader = new FileReader();
-      reader.onload = this.readNoticeFile
-      reader.readAsDataURL(file);
-    }
-    // console.log(this.files);
-    // console.log(this.uploadData);
-    this.fileUploadResponce(this.uploadData)
-
-  }
-  readNoticeFile = (e) => {
-    var rxFile = this.uploadFilesData[0];
-    this.uploadFilesData.splice(0, 1);
-    this.uploadData.push({
-      fileData: e.target.result.split(',')[1],
-      fileName: rxFile.name,
-      fileExtn:  rxFile.name.split(".").pop(),
-      // size: rxFile.size,
-      innerBucketPath: rxFile.name,
-      log: this.storageService.getUserLog()
-    });
-
-  }
-  fileUploadResponce(response) {
-    let uploadFileResponce = this.fileHandlerService.updateFileUploadResponce(this.curFileUploadFieldparentfield,this.curFileUploadField,this.dataListForUpload,this.templateForm,this.tableFields,response);
-    this.dataListForUpload = uploadFileResponce.dataListForUpload;
-    this.templateForm = uploadFileResponce.templateForm;
-    this.tableFields = this.tableFields; 
-
-    // delete code
-    // if(this.curFileUploadFieldparentfield != ''){
-    //   const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);            
-    //   if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
-    //   if (!this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]) this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] = [];
-    //   this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] = response;
+    // delete below code
+    // this.getSavePayload = false;
+    // this.submitted = true;
+    // let hasPermission; 
+    // if(this.currentMenu && this.currentMenu.name){
+    //   hasPermission = this.permissionService.checkPermission(this.currentMenu.name.toLowerCase( ),'add');
+    // }
+    // if(this.updateMode){
+    //   hasPermission = this.permissionService.checkPermission(this.currentMenu.name.toLowerCase( ),'edit')
+    // }
+    // // if(this.envService.getRequestType() == 'PUBLIC'){
+    // //   hasPermission = true;
+    // // }
+    // let formValue;
+    // if(this.deleteGridRowData){
+    //   formValue = this.templateForm.getRawValue();
     // }else{
-    //   if (!this.dataListForUpload[this.curFileUploadField.field_name]) this.dataListForUpload[this.curFileUploadField.field_name] = [];
-    //   this.dataListForUpload[this.curFileUploadField.field_name] = response;
+    //   formValue = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(true),false);
     // }
-    
-    // if(this.curFileUploadFieldparentfield != ''){
-    //   const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield); 
-    //   if(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] && this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name].length > 0){
-    //     let fileName = this.fileHandlerService.modifyFileSetValue(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]);        
-    //     this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue(fileName);
+    // this.deleteGridRowData = false;
+       
+    // if(hasPermission){
+    //   let gridSelectionValidation:any = this.checkGridSelectionMendetory(); 
+    //   if(this.isFormValid() && gridSelectionValidation.status){
+    //     let checkCustmizedValuValidation = this.checkIfService.checkCustmizedValuValidation(this.tableFields,formValue);
+    //     if(checkCustmizedValuValidation.status){
+    //       if (this.dataSaveInProgress) {
+    //         this.showNotify = true;
+    //         this.dataSaveInProgress = false;
+    //         formValue['log'] = this.storageService.getUserLog();
+    //         if(!formValue['refCode'] || formValue['refCode'] == '' || formValue['refCode'] == null){
+    //           formValue['refCode'] = this.storageService.getRefCode();
+    //         }
+    //         if(!formValue['appId'] || formValue['appId'] == '' || formValue['appId'] == null){
+    //           formValue['appId'] = this.storageService.getAppId();              
+    //         }
+    //         if(!this.coreFunctionService.isNotBlank(formValue['platForm'])){
+    //           formValue['platForm'] = Capacitor.getPlatform().toUpperCase();              
+    //         }
+    //         if (this.updateMode) {
+    //           if(this.formName == 'cancel'){
+    //             formValue['status'] = 'CANCELLED';
+    //           }                                          
+    //         }              
+
+    //         const saveFromData = {
+    //           curTemp: this.currentMenu.name,
+    //           data: formValue
+    //         }
+    //         this.getSavePayload = true;
+    //         return saveFromData;
+            
+    //       }
+    //     }else{
+    //       this.getSavePayload = false;
+    //       if(checkCustmizedValuValidation.msg && checkCustmizedValuValidation.msg != ''){
+    //         this.notificationService.presentToastOnBottom(checkCustmizedValuValidation.msg,'danger');
+    //       }
+    //     }
     //   }else{
-    //     this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue('');
+    //     this.getSavePayload = false;
+    //     if(gridSelectionValidation.msg && gridSelectionValidation.msg != ''){
+    //       this.notificationService.showAlert(gridSelectionValidation.msg,'Mandatory Fields *',['Dismiss']);
+    //     }else{
+    //       this.notificationService.showAlert("Some fields are mendatory",'Mandatory Field *',['Dismiss']);
+    //     }
     //   }
-    // }else{    
-    //   if(this.dataListForUpload[this.curFileUploadField.field_name] && this.dataListForUpload[this.curFileUploadField.field_name].length > 0){
-    //     let fileName = this.fileHandlerService.modifyFileSetValue(this.dataListForUpload[this.curFileUploadField.field_name]);
-    //     this.templateForm.get(this.curFileUploadField.field_name).setValue(fileName);
-    //   }else{
-    //     this.templateForm.get(this.curFileUploadField.field_name).setValue('');
-    //   }
+    // }else{
+    //   this.getSavePayload = false;
+    //   this.notificationService.showAlert("Permission denied !!!",'',['Dismiss']);
     // }
   }
-  isDisable(parent,chield){
-    const  formValue = this.getFormValue(true);  
-    let responce:any = this.checkIfService.checkIsDisable(parent,chield,this.updateMode,formValue,this.templateForm);
-    this.templateForm = responce.templateForm;
-    return responce.tobedesabled;
-  }
-
-  focusField(parent,key){
-    const  id = key._id + "_" + key.field_name;
-    let field:any = {};
-    if(parent == ''){
-      if(this.focusFieldParent && this.focusFieldParent.field_name && this.focusFieldParent.field_name != ''){
-        parent = this.focusFieldParent;
-      }
-    }
-    if(parent != ""){
-      field = this.templateForm.get(parent.field_name).get(key.field_name);
-    }else{
-      field = this.templateForm.get(key.field_name);
-    }
-    if(field && field.touched){
-      this.checkFormFieldAutfocus = false;
-      if(this.previousFormFocusField && this.previousFormFocusField._id){
-        this.previousFormFocusField = {};
-        this.focusFieldParent={};
-      }
-    }else if(field == undefined){
-      this.previousFormFocusField = {};
-      this.focusFieldParent={};
-    }
-    const invalidControl = document.getElementById(id);
-    if(invalidControl != null){
-      invalidControl.focus();
-      this.checkFormFieldAutfocus = false;
-      if(this.previousFormFocusField && this.previousFormFocusField.type == 'list_of_fields' && this.previousFormFocusField.datatype == 'list_of_object_with_popup'){
-        this.previousFormFocusField = {};
-      }
-    }
-  }
-
-  async handleDisabeIf(){
-    if(this.checkFormFieldAutfocus && this.tableFields.length > 0){
-      if(this.previousFormFocusField && this.previousFormFocusField._id){
-        this.focusField("",this.previousFormFocusField)        
-      }else{
-        if(this.previousFormFocusField == undefined || this.previousFormFocusField._id == undefined){
-          for (const key of this.tableFields) {
-            if(key.type == "stepper"){
-              if(key.list_of_fields && key.list_of_fields != null && key.list_of_fields.length > 0){
-                for (const step of key.list_of_fields) {
-                  if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
-                    for (const field of step.list_of_fields) {
-                      if (field.field_name) {
-                        this.focusField(step,field);  
-                        break;
-                      }
-                    }
-                  }                
-                }
-              }
-            }else if (key.field_name) {
-              this.focusField("",key);  
-              break;
-            }              
-          }
+  saveFormData(confirmation?:any){
+    let dataWithCustValue = this.getFormValue(true);
+    let checkValidatiaon = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(false),true,dataWithCustValue);
+    if(typeof checkValidatiaon != 'object'){
+      const saveFromData = this.getSavePayloadData(dataWithCustValue);
+      // if(this.isSavedDuplicateData) {
+      //   saveFromData['data']['confirmationRequired'] = true;
+      // }
+      // if(this.bulkupdates){
+      //   saveFromData.data['data'] = this.bulkDataList;
+      //   saveFromData.data['bulk_update'] = true;
+      // }
+      if(confirmation && confirmation.confirm){
+        let formField = confirmation.griddata.field_name;
+        saveFromData[formField] = {
+          'latitude' : this.latitude,
+          'longitude' : this.longitude,
+          'address' : this.address,
         }
       }
-    }
-    if(this.disableIfFieldList && this.disableIfFieldList.length > 0){
-      this.disableIfFieldList.forEach(element => {
-        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
-          this.isDisable(element.parent,element);
+      if(this.getSavePayload){
+        if(this.currentActionButton && this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.api && this.currentActionButton.onclick.api != null && this.currentActionButton.onclick.api.toLowerCase() == 'send_email'){
+          this.apiService.SendEmail(saveFromData)
         }else{
-          this.isDisable('',element)
-        }
-      });
-    }
-    if(this.mendetoryIfFieldList && this.mendetoryIfFieldList.length > 0){
-      this.mendetoryIfFieldList.forEach(element => {
-        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
-          this.isMendetory(element.parent,element);
-        }else{
-          this.isMendetory('',element)
-        }
-      });
-    }
-    if(this.showIfFieldList && this.showIfFieldList.length > 0){
-      this.showIfFieldList.forEach(element => {
-        let id = '';
-        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
-          id = element._id+'_'+element.parent;
-        }else{
-          id = element._id;
-        }
-        let elementDetails = document.getElementById(id);
-        if(!this.showIf(element)){          
-          if(elementDetails && elementDetails != null){
-            const classes = Array.from(elementDetails.classList)
-            if(!classes.includes('d-none')){
-              this.removeClass(elementDetails,'d-block');
-              elementDetails.className += " d-none";
-              element['show'] = false;
-              const objectValue = this.templateForm.getRawValue();
-              if(element.type != "group_of_fields" && element.type != "list_of_fields" && objectValue[element.field_name] && objectValue[element.field_name] != ''){
-                this.templateForm.get(element.field_name).setValue('');
-              } 
-              if(element.type == "group_of_fields" || element.type == "list_of_fields"){
-                this.templateForm.get(element.field_name).reset();
-                element.list_of_fields.forEach(field => {
-                  if(field.type == 'list_of_string' || field.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
-                    const custmizedKey = this.commonFunctionService.custmizedKey(element);            
-                    if (this.custmizedFormValue[custmizedKey]){ 
-                      if (this.custmizedFormValue[custmizedKey][field.field_name]) this.custmizedFormValue[custmizedKey][field.field_name] = [];
-                    }
-                  }
-                });
-              }  
-              if(element.type == 'list_of_string' || element.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
-                if (this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = [];
-              }         
-              if(element.is_mandatory){
-                if(element.type == "list_of_fields"){
-                  element.list_of_fields.forEach(field =>{
-                    if(field.is_mandatory){
-                      if(this.templateFormControl[element.field_name].get([field.field_name]).status == 'INVALID'){
-                        this.templateFormControl[element.field_name].get([field.field_name]).clearValidators();
-                        this.templateFormControl[element.field_name].get([field.field_name]).updateValueAndValidity();
-                      }
-                    }
-                  })
-                }else{                  
-                  if(this.templateFormControl[element.field_name].status == 'INVALID'){
-                    this.templateForm.get(element.field_name).clearValidators();
-                    this.templateForm.get(element.field_name).updateValueAndValidity();
-                  }
-                }           
-              }
-            }            
-          }                
-        }else{          
-          if(elementDetails && elementDetails != null){
-            const classes = Array.from(elementDetails.classList)
-            if(!classes.includes('d-block')){
-              this.removeClass(elementDetails,'d-none');
-              elementDetails.className += " d-block"; 
-              element['show'] = true;
-              if(element.is_mandatory){
-                // if(element.type == "list_of_fields"){
-                //   element.list_of_fields.forEach(field =>{
-                //     if(field.is_mandatory){
-                //       if(this.templateFormControl[element.field_name].get([field.field_name]).status == 'VALID'){
-                //         this.templateFormControl[element.field_name].get([field.field_name]).setValidators([Validators.required]);
-                //         this.templateFormControl[element.field_name].get([field.field_name]).updateValueAndValidity();
-                //       }
-                //     }
-                //   })
-                // }else{ 
-                  if(this.templateFormControl[element.field_name].status == 'VALID'){
-                    this.templateForm.get(element.field_name).setValidators([Validators.required]);
-                    this.templateForm.get(element.field_name).updateValueAndValidity();
-                  }
-                // }             
-              }
-            }            
-          }
-        }
-      });
-      return true;
-    }
-    if(this.disableIfFieldList.length == 0 && this.showIfFieldList.length == 0){
-      return true;
-    }    
-    
-  }
-  removeClass = (element,name) => {    
-    // element.className = element.className.replace(name, "");
-    // element.className = element.className.removeClass(name);
-    if(element.classList && element.classList.length >0 && element.classList.contains(name)){
-      element.classList.remove(name);
-    }else if(element.className && element.className.includes(name)){
-      element.className = element.className.replace(name, "");
-    }
-  }
-  showIf(field){
-    const  objectc = this.selectedRow?this.selectedRow:{}
-    const object = JSON.parse(JSON.stringify(objectc));
-    if(this.templateForm){
-      Object.keys(this.templateForm.getRawValue()).forEach(key => {
-        object[key] = this.templateForm.getRawValue()[key];
-      })
-    }
-    const display = this.checkIfService.showIf(field,object);
-    const modifiedField = JSON.parse(JSON.stringify(field));
-    modifiedField['display'] = display; 
-    field = modifiedField;
-    return display;
-  }
-  checkGridSelectionButtonCondition(field,button){
-    let check = true;
-    switch (button) {
-      case 'add':
-        if(field && field.addNewButtonIf && field.addNewButtonIf != ''){
-          let modifyedField:any = {};
-          modifyedField['show_if'] = field.addNewButtonIf;
-          check = this.showIf(modifyedField);
-        }
-        break;    
-      default:
-        break;
-    }
-    return check;
-  }
-  formControlChanges(){
-    if(this.templateForm && this.templateForm.valueChanges && this.templateForm.valueChanges != null){
-      this.templateForm.valueChanges.subscribe(val => {
-        this.handleDisabeIf();
-      });
-    }    
-  }
-
-  async  openGridSelectionModal(field){
-    if(field.gridColumns && field.gridColumns.length > 0){
-      const gridColumns = this.modifiedGridColumns(field.gridColumns);
-      field.gridColumns = gridColumns;
-    }
-    this.samePageGridSelectionData = {}
-    this.selectedgridselectionField='';
-    if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
-    let selectedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[field.field_name]));
-    this.selectedgridselectionField = field;
-    const gridModalData = {
-      "field": field,
-      "selectedData":selectedValue,
-      "object": this.getFormValue(true),
-      "formTypeName" : this.formTypeName,
-      "updateMode" : this.updateMode
-    }
-    this.samePageGridSelection = this.appDataShareService.getgridselectioncheckvalue();
-    if(this.samePageGridSelection){
-      this.apiService.ResetStaticData(field.field_name);
-      this.curTreeViewField = field;      
-      this.samePageGridSelectionData = gridModalData;
+          this.apiService.SaveFormData(saveFromData);
+        }        
+      }
     }else{
-      const modal = await this.modalController.create({
-        component: GridSelectionModalComponent,
-        componentProps: {
-          "Data": gridModalData,
-        }
-      });
-      modal.present();
-      modal.componentProps.modal = modal;
-      modal.onDidDismiss()
-        .then((data) => {
-          const object = data['data']; // Here's your selected user!
-          if(object['data'] && object['data'].length > 0){
-            let obj =this.getSendData(object['data']);
-            this.gridSelectionResponce(obj);
-          }        
-      });
-    }
+      this.notificationService.showAlert(checkValidatiaon.msg,'',['Dismiss']);
+    }     
   }
-  getSendData(data){
-    let obj ={
-      "action":'',
-      "index":-1,
-      "data": data
-    }
-    return obj;
+  close(){
+    this.apiService.resetStaticAllData();
+    this.staticData = {};
+    this.typeAheadData = [];
+    this.latitude = 0;
+    this.longitude = 0;
+    this.address = "";
+    //this.commonFunctionService.resetStaticAllData();
+    this.selectedRow = {};
+    this.checkFormAfterCloseModel();
   }
-  gridSelectionResponce(responce){ 
-
-    if(this.curTreeViewField && this.curTreeViewField.add_new_enabled && responce && responce.action && responce.action == "edite"){
-      let index = responce.index;
-      if(this.samePageGridSelection){
-        this.samePageGridSelection = false;
-      }
-      this.updateListofFields(this.curTreeViewField,{},index);
-    }
-
-    if (!this.custmizedFormValue[this.curTreeViewField.field_name]) this.custmizedFormValue[this.curTreeViewField.field_name] = [];
-    this.custmizedFormValue[this.curTreeViewField.field_name] = JSON.parse(JSON.stringify(responce.data));
-
-    if(this.curTreeViewField && this.curTreeViewField.onchange_function && this.curTreeViewField.onchange_function_param){
-      // if(this.currentTreeViewFieldParent != ''){
-      //   this.templateForm.get([this.currentTreeViewFieldParent.field_name]).get([this.curTreeViewField.field_name]).setValue(this.custmizedFormValue[this.curTreeViewField.field_name]);
-      // }else{
-      //   this.templateForm.controls[this.curTreeViewField.field_name].setValue(this.custmizedFormValue[this.curTreeViewField.field_name]);
-      // }      
-      // this.templateForm = this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue, this.curTreeViewField);
-      let function_name = this.curTreeViewField.onchange_function_param;
-      switch(function_name){
-        case "calculation_of_script_for_tds":
-          const payload = this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField);   
-          this.apiService.getStatiData(payload);
-          break;
-        case "calculateQquoteAmount":
-          this.custmizedFormValue[this.curTreeViewField.field_name].forEach(element => {
-            element["qty"] = this.templateForm.getRawValue()["qty"];
-            this.limsCalculationsService.calculateNetAmount(element, {field_name: "qty"},"legacyQuotationParameterCalculation");
-          });
-          this.updateDataOnFormField(this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField)); 
-          break;
-        case "calculateAutomotiveLimsQuotation":
-          this.custmizedFormValue[this.curTreeViewField.field_name].forEach(element => {
-            // element["qty"] = this.templateForm.getRawValue()["qty"];
-            this.limsCalculationsService.calculateNetAmount(element, {field_name: "qty"},"calculateQuotationParameterAmountForAutomotiveLims");
-          });
-          // this.updateDataOnFormField(this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField)); 
-          this.updateDataOnFormField(this.limsCalculationsService.calculate_quotation(this.getFormValue(true),"automotive" ,{field_name:"parameter_array"}));
-          break;
-        case "calculateLimsQuotation":
-          this.custmizedFormValue[this.curTreeViewField.field_name].forEach(element => {
-            element["qty"] = this.templateForm.getRawValue()["qty"];
-            this.limsCalculationsService.calculateNetAmount(element, {field_name: "qty"}, "calculateQuotationParameterAmountForLims");
-          });
-          // this.updateDataOnFormField(this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField)); 
-          this.updateDataOnFormField(this.limsCalculationsService.calculate_quotation(this.getFormValue(true),"standard" ,{field_name:"parameter_array"}));
-          break;    
-        case 'quote_amount_via_sample_no':
-          let val = this.limsCalculationsService.quote_amount_via_sample_no(this.getFormValue(true),this.custmizedFormValue['quotation_param_methods']);
-          this.updateDataOnFormField(val);
-          break;
-        case 'calculate_lims_invoice':
-          let val1 = this.limsCalculationsService.calculate_lims_invoice(this.getFormValue(true),'','');
-          this.updateDataOnFormField(val1);
-          break;
-        default:
-          if(this.commonFunctionService[this.curTreeViewField.onchange_function_param]){      
-            this.templateForm = this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.templateForm, this.curTreeViewField);
-            const calTemplateValue= this.templateForm.getRawValue()
-            this.updateDataOnFormField(calTemplateValue);
-          }
-      }
-
-    }
-    if(this.curTreeViewField && this.curTreeViewField.onchange_function_param && this.curTreeViewField.onchange_function_param != ''){
-      if(this.curTreeViewField.onchange_function_param.indexOf('QTMP') >= 0){
-        const staticModalGroup = []
-        staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(this.curTreeViewField.onchange_function_param,'',[],this.getFormValue(true)));
-        //this.commonFunctionService.getStaticData(staticModalGroup);
-        this.apiService.getStatiData(staticModalGroup);
-      }
-    }
-
-
-
-
-    // if(this.templateForm.controls['quotation_param_methods']){
-    //   this.templateForm.controls['quotation_param_methods'].setValue(this.custmizedFormValue['quotation_param_methods']);
-    //   this.templateForm = this.commonFunctionService.calculateQquoteAmount(this.templateForm, this.curTreeViewField);
-    //   const tamplateValue = this.templateForm.getRawValue();
-    //   this.custmizedFormValue['quotation_param_methods'] = tamplateValue['quotation_param_methods'];
-    // }
-    // else if(this.templateForm.controls['items_list']){
-    //   this.templateForm.controls['items_list'].setValue(this.custmizedFormValue['items_list']);
-    //   this.templateForm = this.commonFunctionService.calculateInvoiceOrderAmount(this.templateForm, this.curTreeViewField);
-    //   const tamplateValue = this.templateForm.getRawValue();
-    //   this.custmizedFormValue['items_list'] = tamplateValue['items_list'];
-    // }
-
-    // this.curTreeViewField = {};
-    this.currentTreeViewFieldParent = {};
-  }
-
-  // getNumberOfSelectedRecord(field){
-  //   if (!this.custmizedFormValue[field.field_name]){
-  //     this.custmizedFormValue[field.field_name] = [];
-  //   }else{
-  //     if(this.custmizedFormValue[field.field_name] && this.custmizedFormValue[field.field_name].length > 0){
-  //       return "( "+this.custmizedFormValue[field.field_name].length+" )";
-  //     }else{
-  //       return '';
-  //     }
-  //   }
-  // }
-  // getNumberOfSelectedFile(field){
-  //   if (!this.dataListForUpload[field.field_name]){
-  //     this.dataListForUpload[field.field_name] = [];
-  //   }else{
-  //     if(this.dataListForUpload[field.field_name] && this.dataListForUpload[field.field_name].length > 0){
-  //       return "( "+this.dataListForUpload[field.field_name].length+" )";
-  //     }else{
-  //       return '';
-  //     }
-  //   }
-  // }
-  // checkCustmizedFormValueData(parent,chield){
-  //   let check = false;
-  //   if(parent != '' && parent != undefined && parent != null){
-  //     const parentKey = this.commonFunctionService.custmizedKey(parent);
-  //     if(this.custmizedFormValue[parentKey] && this.custmizedFormValue[parentKey][chield.field_name]){
-  //       check = true;
-  //     }
-  //   }else{
-  //     if(this.custmizedFormValue[chield.field_name]){
-  //       check = true;
-  //     }
-  //   }
-  //   return check;
-  // }
-  // custmizedFormValueData(parent,chield): Array<any>{
-  //   let data = [];    
-  //   if(parent != '' && parent != undefined && parent != null){
-  //     const parentKey = this.commonFunctionService.custmizedKey(parent); 
-  //     if(this.checkCustmizedFormValueData(parent,chield)){
-  //       data = this.custmizedFormValue[parentKey][chield.field_name] 
-  //     }       
-  //   }else {
-  //     if(this.checkCustmizedFormValueData('',chield)){
-  //       data = this.custmizedFormValue[chield.field_name]
-  //     }      
-  //   }
-  //    return data;
-  // }
-  async openModal(id, index, parent,child, data, alertType) {
-    this.deleteIndex = index;
-    if(parent != ''){
-      this.deletefieldName['parent'] = parent;
-      this.deletefieldName['child'] = child;
+  // CD
+  checkFormAfterCloseModel(){
+    if(this.multipleFormCollection.length > 0){
+      this.loadPreviousForm();
     }else{
-      this.deletefieldName['child'] = child;
+      // this.dismissModal();
+      this.addAndUpdateResponce.emit('close');
+      if(this.templateForm && this.templateForm.controls){
+        this.templateForm.reset();
+      }
+      this.closeModal();
     }
-    // console.log(this.deletefieldName);
-    // console.log(this.deleteIndex);
-    // this.alertData = {
-    //   "event": true,
-    //   "type": alertType,
-    //   "data": data
-    // }
-    // this.modalService.open(id, this.alertData);
-    //this.commonFunctionService.openAlertModal(id,alertType,'Are You Sure ?','Delete This record.');
-    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
-    
-    this.alertResponce(confirmDelete);
   }
+  async closeModal(){
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss(undefined,"confirmed");
+    }else{
+      this.modalController.dismiss(undefined,"confirmed",);
+    }
+  }
+  selectionFocus(tableField:any){
+    let selectionmsg:string = '';
+    let backdropdismiss:boolean = false;
+    if(tableField?.interface && tableField?.interface != 'alert' && !tableField?.multi_select){
+      this.ionSelectInterface = tableField.interface;
+      backdropdismiss = true;
+    }
+    if(tableField?.multi_select){
+      selectionmsg = 'Choose multiple';
+    } else{
+      selectionmsg = 'Choose only one';
+    }
+    this.customAlertOptions = {
+      message: selectionmsg,
+      backdropDismiss: backdropdismiss,
+      translucent: true,
+    };
+  }  
   alertResponce(responce) {
     if (responce === "confirm") {
       this.deleteitem()
@@ -4986,20 +3301,24 @@ tinymceConfig = {}
       this.cancel();
     }
   }
+  // CD
   deleteitem() {
     const custmizedKeyChild = this.deletefieldName['child'].field_name;
     if(this.deletefieldName['parent'] != undefined && this.deletefieldName['parent'] != null && this.deletefieldName['parent'] != ''){
       const custmizedKeyParent = this.commonFunctionService.custmizedKey(this.deletefieldName['parent']) 
       let deleteCustmizedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[custmizedKeyParent][custmizedKeyChild]))
       deleteCustmizedValue.splice(this.deleteIndex, 1);
+      if(this.modifyCustmizedFormValue[custmizedKeyParent] && this.modifyCustmizedFormValue[custmizedKeyParent][custmizedKeyChild]) this.modifyCustmizedFormValue[custmizedKeyParent][custmizedKeyChild].splice(this.deleteIndex,1);
       this.custmizedFormValue[custmizedKeyParent][custmizedKeyChild] = deleteCustmizedValue;
     }else{
 
       if(this.deletefieldName['child'].datatype == 'key_value'){
         delete this.custmizedFormValue[custmizedKeyChild][this.deleteIndex];
+        delete this.modifyCustmizedFormValue[custmizedKeyChild][this.deleteIndex];
       }else{
         let deleteCustmizedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[custmizedKeyChild]))
         deleteCustmizedValue.splice(this.deleteIndex, 1);
+        if(this.modifyCustmizedFormValue[custmizedKeyChild]) this.modifyCustmizedFormValue[custmizedKeyChild].splice(this.deleteIndex,1);
         this.custmizedFormValue[custmizedKeyChild] = deleteCustmizedValue;
         const field = this.deletefieldName['child']
         if(field.onchange_api_params != null && field.onchange_api_params != ''){
@@ -5030,320 +3349,53 @@ tinymceConfig = {}
     this.deleteIndex = "";
     this.deletefieldName = {};
   }
-  
-  // camera upload files
-  async selectImageSource(parent,field) {
-    this.curFileUploadField = field;
-    this.curFileUploadFieldparentfield = parent;
-    const buttons = [
-      {
-        text: 'Take Photo',
-        icon: 'camera',
-        handler: () => {
-          this.selectImage(CameraSource.Camera);
-        }
-      },
-      {
-        text: 'Choose From Photos',
-        icon: 'images',
-        handler: () => {
-          this.selectMultipleImages();
-        }
-      }
-    ];
- 
-    // Only allow file selection inside a browser
-    // if (!this.plt.is('hybrid')) {
-    //   buttons.push({
-    //     text: 'Choose a File',
-    //     icon: 'attach',
-    //     handler: () => {
-    //       this.fileInput.nativeElement.click();
-    //     }
-    //   });
-    // }
- 
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Select Image Source',
-      buttons
-    });
-    await actionSheet.present();
-  }
-
-  async selectImage(source: CameraSource) {
-    const image = await Camera.getPhoto({
-      quality: 60,
-      allowEditing: false,
-      resultType: CameraResultType.Uri,
-      source: source,      
-      correctOrientation: true,
-      saveToGallery: true
-    });
-
-    console.log('Selected Image : ', image);
-    let arrayimages:any = []; 
-    arrayimages.push(image);
-    if (arrayimages && arrayimages.length > 0) {
-        this.saveImages(arrayimages)
+  // CD
+  callTypeaheadData(field,objectValue){
+    this.clearTypeaheadData();   
+    const payload = [];
+    const params = field.api_params;
+    const criteria = field.api_params_criteria;
+    payload.push(this.apiCallService.getPaylodWithCriteria(params, '', criteria, objectValue, field.data_template));
+    this.apiService.GetTypeaheadData(payload);    
+  }  
+  async viewModal(value:any, field:any, i:number, editemode){
+    let Data = {"data":value,
+      "field":field,
+      "index": i,
+      "editemode": editemode
     }
-  }
-
-  async selectMultipleImages(){
-    
-    const multipleImagesOption:GalleryImageOptions = {
-      quality: 60,
-      limit: 0,     
-      correctOrientation: true,
-      presentationStyle: "popover"
-    } 
-    await Camera.pickImages(multipleImagesOption).then(res => {
-      let arrayimages = res.photos;
-      this.saveImages(arrayimages)
-    },
-    error => {
-         console.log(error)
-      });
-  }
-
-  async saveImages(photos) {
-    let base64Data:any;
-    let kbytes:any;
-    let fileName:any;
-    this.selectedphotos=[];
-    photos.forEach(async (img:any) => {
-      base64Data = await this.readAsBase64(img);
-      const dateTime = this.datePipe.transform(new Date(), 'yyyyMMdd') + "_" + this.datePipe.transform(new Date(), 'hhmmss');
-      fileName = "IMG_" + dateTime + '.'+ img.format;
-      this.selectedphotos.push({
-        fileData: base64Data,
-        fileName: fileName,
-        fileExtn:  img.format,
-        innerBucketPath: fileName,
-        // rollName: fileName,
-        log: this.storageService.getUserLog()
-      }) 
-      if(photos.length == this.selectedphotos.length){
-        this.setFile();
-      }     
+    const objectValue = Data;
+    await this.appModelService.openModal(ModalComponent,objectValue).then( data => {
+      if(data && data?.role == 'close'){
+        console.log('Modal ' + data?.role);
+      }
     });
   }
-
-  setFile(){
-    let uploadData = [];
-    if(this.curFileUploadField){
-      if(this.curFileUploadFieldparentfield != ''){
-        const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
-        const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]
-        if(data && data.length > 0){
-          uploadData = data;
-        }        
-      }else{ 
-        const data = this.dataListForUpload[this.curFileUploadField.field_name];
-        if(data && data.length > 0){
-          uploadData = data;
-        } 
+  async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
+    let objectValue:any = {
+      'data' : value,
+      'field' : field,
+      'index' : i,
+      'field_name': field_name,
+      'editemode' : editemode,
+      'field_type': obj?.field_type,
+      'previewFile': obj?.previewFile,
+      'printFile' : obj?.printFile
+    }
+    await this.appModelService.openModal(FileViewsModalComponent,objectValue).then( data => {
+      if(data && data?.role == 'close'){
+        console.log('Modal ' + data?.role);
       }
-    }
-    if(this.selectedphotos && this.selectedphotos.length > 0){
-      this.selectedphotos.forEach(element => {
-        uploadData.push(element);
-      });
-    }
-    if(uploadData && uploadData.length > 0){
-      this.fileUploadResponce(uploadData);    
-      this.notificationService.presentToastOnBottom("Image Added", "success");
-    }
-  }
-
-
-  //delecte selected image
-  deleteImage(index:number) {
-    // this.cameraService.deleteImage(index).subscribe(res => {
-    //   this.images.splice(index, 1);
-    // });
-    this.selectedphotos.splice(index, 1);
-    this.notificationService.presentToastOnBottom('File removed', "success");
-  }
-  async removeAttachedDataFromList(index:number,fieldName:any){
-    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
-    if(confirmDelete == "confirm"){
-      this.dataListForUpload[fieldName].splice(index,1)
-    }else{
-      this.cancel();
-    }
-  }
-  imageDownload(img:any) {
-    this.downloadClick = img.rollName;
-    const payload = {
-      path: 'download',
-      data: img
-    }
-    this.apiService.DownloadFile(payload);
-  }
-  async setFileData(getfileData){
-    if (getfileData != '' && getfileData != null && this.checkForDownloadReport) {
-      let link = document.createElement('a');
-      link.setAttribute('type', 'hidden');
-
-      const blobData = new Blob([getfileData.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blobData);
-      link.href = url;
-      let fileExt:any = '';
-      let fileName:any = '';
-      if(getfileData && getfileData.filename){
-        fileExt = getfileData.filename.split('.').pop();
-        if(fileExt == "pdf"){
-          fileName = getfileData.filename;
-        }else{
-          fileName = getfileData.filename + ".pdf";
-        }
-      }
-      
-      if(this.plt.is("hybrid")){
-        // this.downloadToMobile(file,fileName);
-        let downloadResponse = await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
-        this.downloadResponseHandler(downloadResponse);
-        this.checkForDownloadReport = false;
-      }else{
-        link.download = getfileData.filename;
-        document.body.appendChild(link);
-        link.click();
-      }
-      link.remove();
-      // this.downloadPdfCheck = '';
-      this.dataSaveInProgress = true;
-      this.checkForDownloadReport = false;
-      this.apiService.ResetFileData();
-      fileExt = '';
-      fileName = '';
-    }
-  }
-  setFileDownloadUrl(fileDownloadUrl){
-    if (fileDownloadUrl != '' && fileDownloadUrl != null && this.downloadClick != '') {
-      let link = document.createElement('a');
-      link.setAttribute('type', 'hidden');
-      // const file = new Blob([exportExcelLink], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      // const url = window.URL.createObjectURL(file);
-      link.href = fileDownloadUrl;
-      link.download = this.downloadClick;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      this.downloadClick = '';
-      this.dataSaveInProgress = true;
-      this.apiService.ResetDownloadUrl();
-    }
-  }
-  async downloadFileFromUrl(imageUrl: string, fileName?: string,file?:any) {
-    await this.loaderService.showLoader("blank");
-    let splitUrl = imageUrl.split('?')[0];
-    fileName = splitUrl.split('/').pop();
-    if(imageUrl){
-      // const mediaPermissions = await this.appDownloadService.checkFileSystemPermission();
-      // const newPermission = await this.appPermissionService.requestMediaPermission();
-      let response:any;        
-      let directoryName = 'DOCUMENTS';
-      response = await this.appDownloadService.saveAndGetFileUriFromUrl(imageUrl,fileName,directoryName);
-      if(response?.haspermission){
-        await this.loaderService.hideLoader();
-        if(response?.path){
-          const confirm = await this.notificationService.confirmAlert(fileName, "Downloaded into " + directoryName + ". Do you want to open it ?", "Open");
-          if(confirm == "confirm"){
-            FileOpener.open({filePath:response?.path, openWithDefault:true,}).then( res => {
-              console.log("File Opened");
-            }).catch((e)=>{
-              console.error("File Opening error ", JSON.stringify(e));
-            })
-          }
-        }else{
-          this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
-        }
-      }else{
-        await this.loaderService.hideLoader();
-        this.notificationService.presentToastOnBottom("Please allow media access permission to download !");
-      }
-    }else{      
-      this.commonFunctionService.downloadFile(file);
-    }
-    await this.loaderService.hideLoader();
-  }
-  getDivClass(field) {
-      const fieldsLength = this.tableFields.length;
-      const returnClass = this.commonFunctionService.getDivClass(field,fieldsLength);
-      if(field.hideOnMobile){
-        return returnClass + " ion-hide";
-      }else{
-        return returnClass
-      }
-  }
-// getColSize(field){
-  //   let size:any = 12;
-  //   if(field.type != 'typeahead' && field.type != 'dropdown'){
-  //     if(field.field_class && field.field_class != ''){
-  //       const fieldsLength = this.tableFields.length;
-  //       const returnClass = this.commonFunctionService.getDivClass(field,fieldsLength);
-  //       const classes = returnClass.split('-');
-  //       const lastIndex = classes.length-1;
-  //       const deviceIndex = classes.length-2;
-  //       const deviceName = classes[deviceIndex];
-  //       let deviceValue = classes[lastIndex];
-  //       if(this.plt.is('hybrid')){
-  //         if(deviceName == "xl" || deviceName == "lg" || deviceName == "md" || deviceName == "sm" || deviceName == "xs"){
-  //           if(deviceValue < 6){
-  //             size = '6';
-  //           }else{          
-  //             size = '12';
-  //           }
-  //         }
-  //       }else{
-  //         return size;
-  //       }
-  //     }
-  //   }
-  //   return size;
-
-  // }
-  // open same form on form component
-  addListOfFields(field){
-    this.storeFormDetails("",field);
-    if(this.samePageGridSelection){
-      this.samePageGridSelection = false;
-    }
-  }
-  updateListofFields(field,object,index){ 
-    let searchValue = this.term[field.field_name];
-    let correctIndex = index;
-    let data = this.custmizedFormValue[field.field_name];    
-    if(searchValue != '' || data && data.length > this.pageSize){
-      if(searchValue == undefined || searchValue == ''){
-        searchValue = 'this.pageNo';
-      }
-      correctIndex = this.commonFunctionService.getCorrectIndex(object,index,field,data,searchValue);
-    }    
-    this.storeFormDetails("",field,index); 
-  }
+    });
+  }  
+  // CD
   nextForm(){
     if(this.nextFormData && this.nextFormData.formName){
       this.openNextForm(true);
       this.enableNextButton = false;
     }    
-  }
-  openNextForm(next) {
-    const form = this.nextFormData.formName;
-    const field_name = this.nextFormData.field_name;
-    const form_field_name = this.nextFormData.form_field_name;
-    const field = {
-      'add_new_form': form,
-      'add_next_form_button': next,
-      'field_name': field_name,
-      'type': 'hidden',
-      'form_field_name': form_field_name,
-      'form_value_index' : 0,
-      'moveFieldsToNewForm' : ['employee_name#add_assignments.resource_name']
-    };
-    this.storeFormDetails('', field);
-  }
- 
+  }  
+  // CD
   loadPreviousForm(){
     let multiFormLength = this.multipleFormCollection.length;
     const lastIndex = multiFormLength - 1;
@@ -5390,7 +3442,7 @@ tinymceConfig = {}
     if(!this.previousFormFocusField.multi_select && this.previousFormFocusField.type != 'list_of_fields' && this.previousFormFocusField.type != 'hidden'){
       if(parentfield != ''){
         this.templateForm.get(parentfield.field_name).get(this.previousFormFocusField.field_name).setValue(previousFormFocusFieldValue);
-        // delete code
+        // delete below code
         //(<FormGroup>this.templateForm.controls[parentfield.field_name]).controls[this.previousFormFocusField.field_name].patchValue(previousFormFocusFieldValue);       
       }else{      
         this.templateForm.get(this.previousFormFocusField.field_name).setValue(previousFormFocusFieldValue);
@@ -5422,23 +3474,20 @@ tinymceConfig = {}
     }   
     this.multipleFormCollection.splice(lastIndex,1);    
   }
-
-  candelForm() {    
-    if(this.updateMode){      
-      Object.keys(this.custmizedFormValue).forEach(key => {
-        if(this.custmizedFormValue[key] != null){
-          this.custmizedFormValue[key].forEach(element => {
-            if(element.status == 'I'){
-              element.status = 'A';
-            }
-          });
+  // CD
+  callCalculation(){
+    if(this.calculationFieldList && this.calculationFieldList.length > 0){
+      for (var i = 0;i<this.calculationFieldList.length ;++i){
+        let element = this.calculationFieldList[i];
+        switch (element.onchange_function_param) {        
+            case 'autopopulateFields':
+              this.limsCalculationsService.autopopulateFields(this.templateForm);
+              break;
+          default:
+            this.inputOnChangeFunc('',element);
         }
-      });
-    }else{
-      this.custmizedFormValue = {};
+      }
     }
-    this.updateMode=false;
-    this.addAndUpdateResponce.emit('close');    
   }
   previous(){
     const previousIndex = this.selectedRowIndex - 1;
@@ -5458,26 +3507,7 @@ tinymceConfig = {}
       this.notificationService.showAlert('Next Index are not available.', "",['Ok'])
     }
   }
-  // previewModal(gridData:any, currentMenu:any, modalId:any) {
-  //   const getpreviewHtml = {
-  //     _id: gridData._id,
-  //     data: this.coreUtilityService.getPaylodWithCriteria(currentMenu.name, '', [], '')
-  //   }
-  //   this.apiService.GetPreviewHtml(getpreviewHtml);
-  //   const alertData = {
-  //     gridData: gridData,
-  //     currentPage: currentMenu.name
-  //   }
-  //   // this.modalService.open(modalId, alertData);
-  // }
-  // preview(gridData:any, currentMenu:any, modalId:any) {
-  //   const getpreviewHtml = {
-  //     _id: gridData._id,
-  //     data: this.coreUtilityService.getPaylodWithCriteria(currentMenu.name, '', [], '')
-  //   }
-  //   getpreviewHtml.data['data'] = gridData;
-  //   this.apiService.GetPreviewHtml(getpreviewHtml);
-  // }
+  // CD
   setListoffieldData(){
     const previousFormIndex = this.multipleFormCollection.length - 1;
     const previousFormCollection = this.multipleFormCollection[previousFormIndex];
@@ -5551,11 +3581,3037 @@ tinymceConfig = {}
       this.close();
     } 
   }
+  // CD
+  donotResetField(){
+    if(this.tableFields.length > 0){
+      let FormValue = this.getFormValue(true);
+      this.donotResetFieldLists = this.formCreationService.getDonotResetFields(this.tableFields,this.donotResetFieldLists,FormValue);
+    }
+
+    // delete below code
+    // //let FormValue = this.templateForm.getRawValue();
+    // let FormValue = this.getFormValue(true);
+    // this.tableFields.forEach(tablefield => {
+    //   if(tablefield.do_not_refresh_on_add && tablefield.type != "list_of_fields" && tablefield.type != "group_of_fields" && tablefield.type != "stepper"){
+    //     this.donotResetFieldLists[tablefield.field_name] = FormValue[tablefield.field_name];
+    //   }else if(tablefield.type == "group_of_fields"){
+    //     if(tablefield.list_of_fields && tablefield.list_of_fields.length > 0){
+    //       tablefield.list_of_fields.forEach(field => {
+    //         if(field.do_not_refresh_on_add){
+    //           this.donotResetFieldLists[tablefield.field_name][field.field_name] = FormValue[tablefield.field_name][field.field_name];
+    //         }
+    //       });
+    //     }
+    //   }else if(tablefield.type == "stepper"){
+    //     if(tablefield.list_of_fields && tablefield.list_of_fields.length > 0){
+    //       tablefield.list_of_fields.forEach(step => {
+    //         if(step.list_of_fields && step.list_of_fields.length > 0){
+    //           step.list_of_fields.forEach(field => {
+    //             if(field.do_not_refresh_on_add){
+    //               this.donotResetFieldLists[step.field_name][field.field_name] = FormValue[step.field_name][field.field_name];
+    //             }
+    //           });
+    //         }
+    //       });
+    //     }
+    //   }
+    // });
+  }
+  // Click Function Dependency End ------------------
+
+  //Dependency function Handling Start ---------------------
+  // CD
+  checkBeforeResetForm(){
+    if(this.close_form_on_success){
+      this.close_form_on_success=false;
+      this.close();
+    }else if(this.multipleFormCollection.length > 0){
+      this.close();
+    }else{
+      this.resetForm()
+    }
+  }
+  // CD
+  notifyFieldValueIsNull(formName,fieldNo){
+    let msg = "Field No. "+ fieldNo + " value is null";
+    this.notificationService.presentToastOnBottom(msg,"danger");
+    this.tableFields = [];
+    this.dismissModal();
+  }
+  // CD
+  downloadReport(){
+    const downloadReportFromData = this.getSavePayloadData();
+    if(downloadReportFromData != null){
+      downloadReportFromData['_id'] = this.childData._id;
+    }
+    this.checkForDownloadReport = true;
+    this.apiService.GetFileData(downloadReportFromData);
+  }
+  // CD
+  deleteGridData(){
+    let dataWithCustValue = this.getFormValue(true);
+    let checkValidatiaon = this.commonFunctionService.sanitizeObject(this.tableFields,this.getFormValue(false),true,dataWithCustValue);
+    if(typeof checkValidatiaon != 'object'){
+      this.deleteGridRowData = true;
+      const saveFromData = this.getSavePayloadData(dataWithCustValue);
+      if(this.getSavePayload){
+          this.apiService.deleteGridRow(saveFromData);
+      }
+    }else{
+      this.notificationService.showAlert(checkValidatiaon.msg,'',['Dismiss']);
+    }
+  }
+  // CD
+  publicDownloadReport(){
+    this.checkForDownloadReport = true;
+    let publicDownloadReportFromData = {};
+    let payload = {};
+    if(this.coreFunctionService.isNotBlank(this.selectedRow["_id"]) && this.coreFunctionService.isNotBlank(this.selectedRow["value"])){
+      publicDownloadReportFromData["_id"] = this.selectedRow["_id"];
+      publicDownloadReportFromData["value"] = this.selectedRow["value"];
+      payload["_id"] = this.selectedRow["_id"];
+      payload["data"] = publicDownloadReportFromData;
+      this.apiService.GetFileData(payload);
+    }
+  }
+  // CD
+  partialDataSave(feilds,tableField){       
+    const payload = {
+      data:{}
+    };
+    //for gsd call*************************
+    if(feilds.action_name == 'GSD_CALL'){
+      if(!this.storageService.GetIdToken()) this.envService.setRequestType("PUBLIC");
+      if(feilds.api != undefined && feilds.api != null && feilds.api != ''){
+        payload['path'] = feilds.api;
+      }
+      let list = [];
+      list.push(this.apiCallService.getPaylodWithCriteria(tableField.api_params,tableField.call_back_field,tableField.api_params_criteria,this.getFormValue(false)));
+       payload['data'] = list;
+      this.apiService.DynamicApiCall(payload);
+      this.saveCallSubscribe();
+    }
+    //for deafult call (like save)*******************
+    else{
+      if(feilds.api != undefined && feilds.api != null && feilds.api != ''){
+        payload['path'] = feilds.api+'/'+this.currentMenu.name
+      }    
+      if(this.updateMode){
+        const _id = this.selectedRow._id;    
+        payload.data['_id'] = _id;
+      }  
+      if(Array.isArray(feilds.payloads_fields) && feilds.payloads_fields.length > 0){
+        if(feilds.payloads_fields[0].toUpperCase() == 'FORM_OBJECT'){
+          const saveFromData = this.getSavePayloadData();
+          if(this.getSavePayload){
+            payload.data = saveFromData.data;
+            if(payload['path'] && payload['path'] != undefined && payload['path'] != null && payload['path'] != ''){
+              this.apiService.DynamicApiCall(payload);
+              this.saveCallSubscribe();
+            } 
+          }
+        }else{
+          feilds.payloads_fields.forEach(feild => {
+            if(feild in this.custmizedFormValue){
+                payload.data[feild] = this.custmizedFormValue[feild];
+              }
+              else if(feild in this.templateForm.value){
+                payload.data[feild] = this.templateForm.value[feild]
+              }
+          });
+          if(payload['path'] && payload['path'] != undefined && payload['path'] != null && payload['path'] != ''){
+            this.apiService.DynamicApiCall(payload);
+            this.saveCallSubscribe();
+          }
+        }
+      } 
+    } 
+  }  
+  // CD
+  editedRowData(object) {
+    this.selectedRow = JSON.parse(JSON.stringify(object)); 
+    this.updateMode = true;
+    this.updateDataOnFormField(this.selectedRow); 
+    this.getStaticDataWithDependentData();     
+    if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
+      this.templateForm = this.formControlService.setCheckboxFileListValue(this.checkBoxFieldListValue,this.templateForm, this.staticData,this.selectedRow,this.updateMode);
+    }
+  }
+  // CD
+  getStaticDataWithDependentData(){
+    let formValueWithCustomData = this.getFormValue(true)
+    let formValue = this.getFormValue(false)
+    // delete below code
+    // const staticModal = []
+    // if(this.tableFields && this.tableFields.length > 0){
+    //   this.tableFields.forEach(element => {
+    //     if(element.field_name && element.field_name != ''){
+    //       if (element.onchange_api_params && element.onchange_call_back_field && !element.do_not_auto_trigger_on_edit) {
+    //         const checkFormGroup = element.onchange_call_back_field.indexOf("FORM_GROUP");
+    //         const checkCLTFN = element.onchange_api_params.indexOf('CLTFN')
+    //         if(checkFormGroup == -1 && checkCLTFN == -1){
+
+    //           const payload = this.apiCallService.getPaylodWithCriteria(element.onchange_api_params, element.onchange_call_back_field, element.onchange_api_params_criteria, formValueWithCustomData)
+    //           if(element.onchange_api_params.indexOf('QTMP') >= 0){
+    //             if(element && element.formValueAsObjectForQtmp){
+    //               payload["data"]=formValue;
+    //             }else{
+    //               payload["data"]=formValueWithCustomData;
+    //             }
+    //           } 
+    //           staticModal.push(payload);
+    //         }
+    //       }
+    //       switch (element.type) {
+    //         case "stepper":
+    //           if (element.list_of_fields.length > 0) {
+    //             element.list_of_fields.forEach((step) => {                
+    //               if (step.list_of_fields.length > 0) {
+    //                 step.list_of_fields.forEach((data) => {
+    //                   if (data.onchange_api_params && data.onchange_call_back_field && !data.do_not_auto_trigger_on_edit) {
+    //                     const checkFormGroup = data.onchange_call_back_field.indexOf("FORM_GROUP");
+    //                     if(checkFormGroup == -1){
+              
+    //                       const payload = this.apiCallService.getPaylodWithCriteria(data.onchange_api_params, data.onchange_call_back_field, data.onchange_api_params_criteria, formValueWithCustomData)
+    //                       if(data.onchange_api_params.indexOf('QTMP') >= 0){
+    //                         if(element && element.formValueAsObjectForQtmp){
+    //                            payload["data"]=formValue;
+    //                         }else{
+    //                           payload["data"]=formValueWithCustomData;
+    //                         }
+    //                       } 
+    //                       staticModal.push(payload);
+    //                     }
+    //                   }
+    //                   if(data.tree_view_object && data.tree_view_object.field_name != ""){
+    //                     let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
+    //                     if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
+    //                       staticModal.push(this.apiCallService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
+    //                     }
+    //                   }
+    //                 });
+    //               }
+    //             });
+    //           }
+    //           break;
+    //       }
+    //       if(element.tree_view_object && element.tree_view_object.field_name != ""){
+    //         let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
+    //         if (editeTreeModifyData.onchange_api_params && editeTreeModifyData.onchange_call_back_field) {
+    //           staticModal.push(this.apiCallService.getPaylodWithCriteria(editeTreeModifyData.onchange_api_params, editeTreeModifyData.onchange_call_back_field, editeTreeModifyData.onchange_api_params_criteria, formValueWithCustomData));
+    //         }
+    //       }
+    //     }
+    //     if(element.type && element.type == 'pdf_view'){
+    //       staticModal.push(this.apiCallService.getPaylodWithCriteria(element.onchange_api_params,element.onchange_call_back_field,element.onchange_api_params_criteria,formValueWithCustomData))
+    //     }
+    //   });
+    // }
+    const staticModal:[] = this.apiCallService.getOnchangePayload(this.tableFields,formValue,formValueWithCustomData);
+    this.getStaticData(staticModal,formValueWithCustomData,formValue);    
+  }
+  // CD
+  getStaticData(staticModal,object,formDataObject){
+    // delete below code
+    // let formValue = object;
+    // if(this.multipleFormCollection && this.multipleFormCollection.length > 0){
+    //   let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+    //   formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,object);
+    // }
+    // let staticModalG = this.apiCallService.commanApiPayload([],this.tableFields,this.formFieldButtons,formValue);
+    // if(staticModalG && staticModalG.length > 0){
+    //   staticModalG.forEach(element => {
+    //     staticModal.push(element);
+    //   });
+    // }
+    // // if(this.tab && this.tab.api_params && this.tab.api_params != null && this.tab.api_params != "" && this.tab.api_params != undefined){      
+    // //   let criteria = [];
+    // //   if(this.tab.api_params_criteria && this.tab.api_params_criteria != null){
+    // //     criteria=this.tab.api_params_criteria
+    // //   }
+    // //   staticModal.push(this.apiCallService.getPaylodWithCriteria(this.tab.api_params,this.tab.call_back_field,criteria,{}))
+      
+    // // }
+    // if(this.form && this.form.api_params && this.form.api_params != null && this.form.api_params != "" && this.form.api_params != undefined){         
+    //   if(this.form.api_params == 'QTMP:EMAIL_WITH_TEMP:QUOTATION_LETTER'){
+    //     object = this.saveResponceData;
+    //   }          
+    //   let criteria = [];
+    //   if(this.form.api_params_criteria && this.form.api_params_criteria != null){
+    //     criteria=this.form.api_params_criteria
+    //   }
+    //   if(this.editedRowIndex > -1){
+    //     formDataObject = formValue;
+    //   }
+    //   staticModal.push(this.apiCallService.getPaylodWithCriteria(this.form.api_params,this.form.call_back_field,criteria,formDataObject))      
+    // }
+    // ================================
+    staticModal = this.apiCallService.getStaticDataPayload(staticModal,object,formDataObject,this.multipleFormCollection,this.tableFields,this.formFieldButtons,'',this.form,this.saveResponceData,this.editedRowIndex);
+    this.callStaticData(staticModal);
+  }
+  // CD
+  callStaticData(payloads){
+    if(payloads.length > 0){
+      this.apiService.getStatiData(payloads);        
+    }else{      
+      this.checkFormFieldIfCondition();      
+    }
+  }
+  // CD
+  getFocusFieldAndFocus(){
+    if(this.checkFormFieldAutfocus && this.tableFields.length > 0){
+      let focusRelatedFields = this.formCreationService.getFocusField(this.previousFormFocusField,this.tableFields,this.templateForm,this.focusFieldParent,this.checkFormFieldAutfocus);
+      this.checkFormFieldAutfocus = focusRelatedFields['checkFormFieldAutfocus'];
+      this.previousFormFocusField = focusRelatedFields['previousFormFocusField'];
+      this.focusFieldParent = focusRelatedFields['focusFieldParent'];
+      let id = focusRelatedFields['id'];
+      if(id != ''){
+        const invalidControl = document.getElementById(id);
+        if(invalidControl != null){
+          invalidControl.focus();
+          this.checkFormFieldAutfocus = false;
+          if(this.previousFormFocusField && this.previousFormFocusField.type == 'list_of_fields' && this.previousFormFocusField.datatype == 'list_of_object_with_popup'){
+            this.previousFormFocusField = {};
+          }
+        }
+      }
+    }
+  }
+  // CD
+  checkFormFieldIfCondition(){
+    if(this.buttonIfList?.length > 0){
+      this.buttonIfList.forEach(element => {
+        let fieldIndex = element['fieldIndex'];
+        this.tableFields[fieldIndex]['showButton'] = this.formCreationService.checkGridSelectionButtonCondition(element,'add',this.selectedRow,this.templateForm.getRawValue());
+      });
+    }
+    if(this.disableIfFieldList?.length > 0){
+      this.disableIfFieldList.forEach(element => {
+        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+          this.isDisable(element.parent,element);
+        }else{
+          this.isDisable('',element)
+        }
+      });
+    }
+    if(this.mendetoryIfFieldList?.length > 0){
+      this.mendetoryIfFieldList.forEach(element => {
+        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+          this.isMendetory(element.parent,element);
+        }else{
+          this.isMendetory('',element)
+        }
+      });
+    }
+    if(this.showIfFieldList?.length > 0){
+      this.showIfFieldList.forEach(element => {
+        let id = '';
+        let parentFieldName = '';
+        let parentIndex = -1;
+        let fieldIndex = -1;
+        if(element.parent && element.parent != undefined && element.parent != '' && element.parent != null ){
+          id = element._id;
+          parentFieldName = element.parent;
+          parentIndex = element.parentIndex;
+          fieldIndex = element.currentIndex;
+          this.tableFields[parentIndex].list_of_fields[fieldIndex]['notDisplay'] = this.checkIfService.checkShowIfListOfFiedlds(parentFieldName,element,this.getFormValue(true));
+        }else{
+          id = element._id;
+        }
+        let elementDetails = document.getElementById(id);
+        if(!this.checkIfService.checkShowIf(element,this.selectedRow,this.templateForm.getRawValue())){          
+          if(elementDetails && elementDetails != null){
+            const classes = Array.from(elementDetails.classList)
+            if(!classes.includes('d-none')){
+              this.removeClass(elementDetails,' d-inline-block');
+              elementDetails.className += " d-none";
+              element['show'] = false;
+              const objectValue = this.templateForm.getRawValue();
+              if(element.type != "group_of_fields" && element.type != "list_of_fields" && objectValue[element.field_name] && objectValue[element.field_name] != ''){
+                let controlarName = element.field_name;
+                let count = 0;
+                for (let index = 0; index < this.showIfFieldList.length; index++) {
+                  let showIfItem = this.showIfFieldList[index];
+                  if(controlarName == showIfItem.field_name){
+                    count = count+1;
+                  }
+                  if(count == 2){
+                    break;
+                  }
+                }
+                if(count != 2){
+                  this.templateForm.get(element.field_name).setValue('');
+                }
+              } 
+              if(element.type == "group_of_fields" || element.type == "list_of_fields"){
+                this.templateForm.get(element.field_name).reset();
+                element.list_of_fields.forEach(field => {
+                  if(field.type == 'list_of_string' || field.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
+                    const custmizedKey = this.commonFunctionService.custmizedKey(element);            
+                    if (this.custmizedFormValue[custmizedKey]){ 
+                      if (this.custmizedFormValue[custmizedKey][field.field_name]) this.custmizedFormValue[custmizedKey][field.field_name] = [];
+                    }
+                  }
+                });
+              }  
+              if(element.type == 'list_of_string' || element.datatype == "list_of_object" || element.datatype == "chips" || element.datatype == "chips_with_mask"){
+                if (this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = [];
+              }         
+              if(element.is_mandatory){
+                if(this.templateFormControl[element.field_name].status == 'INVALID'){
+                  this.templateForm.get(element.field_name).clearValidators();
+                  this.templateForm.get(element.field_name).updateValueAndValidity();
+                }              
+              }
+            }            
+          }                
+        }else{          
+          if(elementDetails && elementDetails != null){
+            const classes = Array.from(elementDetails.classList)
+            if(!classes.includes('d-inline-block')){
+              this.removeClass(elementDetails,' d-none');
+              elementDetails.className += " d-inline-block"; 
+              element['show'] = true;
+              if(element.is_mandatory){
+                if(this.templateFormControl[element.field_name].status == 'VALID'){
+                  this.templateForm.get(element.field_name).setValidators([Validators.required]);
+                  this.templateForm.get(element.field_name).updateValueAndValidity();
+                }              
+              }
+            }            
+          }
+        }
+      });
+      return true;
+    }      
+    if(this.disableIfFieldList.length == 0 && this.showIfFieldList.length == 0){
+      return true;
+    } 
+  }
+  // CD 
+  getFormValue(check){
+    let formValue = this.templateForm.getRawValue();
+    // delete below code part1
+    // let selectedRow = { ...this.selectedRow };     
+    // let modifyFormValue = {};   
+    // let valueOfForm = {};
+    // if (this.updateMode || this.complete_object_payload_mode){      
+    //   this.tableFields.forEach(element => {
+    //     switch (element.type) {
+    //       case 'stepper':
+    //         element.list_of_fields.forEach(step => {
+    //           if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
+    //             step.list_of_fields.forEach(data => {
+    //               selectedRow[data.field_name] = formValue[step.field_name][data.field_name]
+    //               if(data.tree_view_object && data.tree_view_object.field_name != ""){                  
+    //                 const treeViewField = data.tree_view_object.field_name;
+    //                 selectedRow[treeViewField] = formValue[step.field_name][treeViewField]
+    //               }
+    //             });
+    //           }
+    //         });
+    //         break;
+    //       case 'group_of_fields':
+    //         element.list_of_fields.forEach(data => {
+    //           switch (data.type) {
+    //             case 'date':
+    //               if(data && data.date_format && data.date_format != ''){
+    //                 if(typeof formValue[element.field_name][data.field_name] != 'string'){
+    //                   selectedRow[element.field_name][data.field_name] = this.datePipe.transform(formValue[element.field_name][data.field_name],'dd/MM/yyyy');
+    //                 }else{
+    //                   selectedRow[element.field_name] = formValue[element.field_name];
+    //                 }
+    //               }else{
+    //                 selectedRow[element.field_name] = formValue[element.field_name];
+    //               }            
+    //               break;
+              
+    //             default:
+    //               selectedRow[element.field_name] = formValue[element.field_name];
+    //               break;
+    //           }
+    //         });
+    //         break;
+    //       case 'gmap':
+    //       case "gmapview":
+    //         if(element && element.datatype == "object"){
+    //           let locationData = {};
+    //           locationData['latitude'] = this.latitude;
+    //           locationData['longitude'] = this.longitude;
+    //           locationData['address'] = this.address;
+    //           locationData['date'] = JSON.parse(JSON.stringify(new Date()));
+    //           locationData['time'] = this.datePipe.transform(new Date(),'shortTime');
+    //           selectedRow[element.field_name] = locationData;
+    //         }else{
+    //           selectedRow['latitude'] = this.latitude;
+    //           selectedRow['longitude'] = this.longitude;
+    //           selectedRow[element.field_name] = this.address;
+    //         }
+    //         break;
+    //       case 'date':
+    //         if(element && element.date_format && element.date_format != ''){
+    //           selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
+    //         }else{
+    //           // required format 2022-06-30T00:00:00+05:30 (client) and 2022-06-29T18:30:00.000Z (server)
+    //           let Mdate = formValue[element.field_name];
+    //           if(Mdate && Mdate.length > 10){
+    //             Mdate = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
+    //             let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
+    //             // const formattedString = format(parseISO(utcDate), 'yyyy-MM-ddHH:mm:ss.SSS');
+    //             // const pattern = 'yyyy-MM-dd HH:mm:ss.SSS \'GMT\' XXX (z)';
+    //             // const output = format(utcDate, pattern, { timeZone: this.userTimeZone });
+    //             utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
+    //             selectedRow[element.field_name] = utcDate;
+    //           }
+    //         }
+    //         break;
+    //       case 'time':
+    //           if(element && element.date_format && element.date_format != ''){
+    //             selectedRow[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
+    //           }else{
+    //             // required format 01:30 PM (client) and 01:30 PM as String (server)
+    //             let MTime:any = formValue[element.field_name];
+    //             if(MTime !="" && MTime != null && MTime !=undefined){
+    //               let splitHrMin:any = MTime.split(":");                  
+    //               // const selectedHr:any = (getHrFormat < 10) ? "0" + getHrFormat : getHrFormat;  
+    //               let formattedTime = new Date(`2023-01-01T${splitHrMin[0]}:${splitHrMin[1]}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+    //               // console.log("formattedTime ", formattedTime);
+    //               selectedRow[element.field_name] = formattedTime;
+                  
+    //               // below code with ion-datetime input work, need to do changes
+    //               // // if(MTime && MTime.length > 10){
+    //               //   // const isotime = new Date(isoValue);
+    //               //   // const time = new Date(value);
+    //               //   const hours = time.getHours();
+    //               //   const minutes = time.getMinutes();
+    //               //   const formattedTime = new Date(`2022-01-01T${hours}:${minutes}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+    //               //   console.log(formattedTime);
+    //               //   const now = new Date();
+    //               //   const newTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+    //               //   const resultIonTime = newTime.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+    //               //   console.log(resultIonTime);
+    //               //   MTime = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
+    //               //   let utcDate:any = zonedTimeToUtc(MTime, this.userTimeZone);
+    //               //   selectedRow[element.field_name] = utcDate;
+    //               // // }
+
+    //             }
+    //           }
+    //           break;
+    //       default:
+    //         selectedRow[element.field_name] = formValue[element.field_name];
+    //         break;
+    //     }
+    //   });
+    // }else{
+    //   this.tableFields.forEach(element => {
+    //     switch (element.type) {
+    //       case 'stepper':
+    //         element.list_of_fields.forEach(step => {
+    //           if(step.list_of_fields && step.list_of_fields != null && step.list_of_fields.length > 0){
+    //             step.list_of_fields.forEach(data => {
+    //               modifyFormValue[data.field_name] = formValue[step.field_name][data.field_name]
+    //               if(data.tree_view_object && data.tree_view_object.field_name != ""){                  
+    //                 const treeViewField = data.tree_view_object.field_name;
+    //                 modifyFormValue[treeViewField] = formValue[step.field_name][treeViewField]
+    //               }
+    //             });
+    //           }
+    //         });
+    //         break;
+    //       case 'group_of_fields':
+    //         modifyFormValue[element.field_name] = formValue[element.field_name];
+    //         element.list_of_fields.forEach(data => {
+    //           switch (data.type) {
+    //             case 'date':
+    //               if(data && data.date_format && data.date_format != ''){
+    //                 modifyFormValue[element.field_name][data.field_name] = this.datePipe.transform(formValue[element.field_name][data.field_name],'dd/MM/yyyy');
+    //               }else {
+    //                 modifyFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name];
+    //               }
+    //               break;
+              
+    //             default:
+    //               modifyFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name];
+    //               break;
+    //           }
+    //         });
+    //         break;
+    //       case 'gmap':
+    //       case "gmapview":
+    //         if(element && element.datatype == "object"){
+    //           let locationData = {};
+    //           locationData['latitude'] = this.latitude;
+    //           locationData['longitude'] = this.longitude;
+    //           locationData['address'] = this.address;
+    //           locationData['date'] = JSON.parse(JSON.stringify(new Date()));
+    //           locationData['time'] = this.datePipe.transform(new Date(),'shortTime');
+    //           modifyFormValue[element.field_name] = locationData;
+    //         }else{
+    //           modifyFormValue['latitude'] = this.latitude;
+    //           modifyFormValue['longitude'] = this.longitude;
+    //           modifyFormValue[element.field_name] = this.address;
+    //         }
+    //         break;
+    //       case 'date':
+    //         if(element && element.date_format && element.date_format != ''){
+    //           modifyFormValue[element.field_name] = this.datePipe.transform(formValue[element.field_name],element.date_format);
+    //         }  else{
+    //           // modifyFormValue[element.field_name] = formValue[element.field_name];
+
+    //           //required format 2022-06-30T00:00:00+05:30 (client) and 2022-06-29T18:30:00.000Z (server)
+    //           // let Mdate = new Date(formValue[element.field_name]).toISOString();
+    //           if(formValue[element.field_name]){
+    //             let  Mdate = formValue[element.field_name].substring(0,11) + "00:00:00" + formValue[element.field_name].substring(19);
+
+    //             // date-fns
+    //             let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
+    //             utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
+
+    //             // const pattern = "yyyy-MM-dd'T'hh:mm:ss.SSS'Z"
+    //             // const output = format(utcDate, pattern, { timeZone: this.userTimeZone })
+    //             // console.log("Output : ", output)
+    //             modifyFormValue[element.field_name] = utcDate;
+    //           }else{
+    //             modifyFormValue[element.field_name] = formValue[element.field_name];
+    //           }
+
+    //         }          
+    //         break;
+    //         case 'time':
+    //           if(element && element.date_format && element.date_format != ''){
+    //             modifyFormValue[element.field_name] = this.datePipe.transform(selectedRow[element.field_name],element.date_format);
+    //           }else{
+    //             // required format 01:30 PM (client) and 01:30 PM as String (server)
+    //             let MTime:any = formValue[element.field_name];
+    //             if(MTime !="" && MTime != null && MTime !=undefined){
+    //               let splitHrMin:any = MTime.split(":");
+    //               const getHr:any = splitHrMin[0];
+    //               const getMin:any = splitHrMin[1];
+                  
+    //               // const selectedHr:any = (getHrFormat < 10) ? "0" + getHrFormat : getHrFormat;
+  
+    //               let formattedTime = new Date(`2023-01-01T${splitHrMin[0]}:${splitHrMin[1]}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+    //               // console.log("formattedTime ", formattedTime);
+    //               modifyFormValue[element.field_name] = formattedTime;
+
+    //             }
+    //           }
+    //           break;
+    //       default:
+    //         modifyFormValue[element.field_name] = formValue[element.field_name];
+    //         // modifyFormValue = formValue;
+    //         break;
+    //     }
+    //   });
+    // }
+    // if(check){
+    //   Object.keys(this.custmizedFormValue).forEach(key => {
+    //     if (this.updateMode || this.complete_object_payload_mode) {
+    //       if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
+    //         this.tableFields.forEach(element => {            
+    //           if(element.field_name == key){
+    //             if(element.datatype && element.datatype != null && element.datatype == 'key_value'){
+    //               selectedRow[key] = this.custmizedFormValue[key];
+    //             }else{
+    //               Object.keys(this.custmizedFormValue[key]).forEach(child =>{
+    //                 selectedRow[key][child] = this.custmizedFormValue[key][child];
+    //               })
+    //             }
+    //           }
+    //         });          
+    //       }else{
+    //           selectedRow[key] = this.custmizedFormValue[key];
+    //       }
+    //     } else {
+    //       if(this.custmizedFormValue[key] && this.custmizedFormValue[key] != null && !Array.isArray(this.custmizedFormValue[key]) && typeof this.custmizedFormValue[key] === "object"){
+    //         this.tableFields.forEach(element => {
+    //           if(element.field_name == key){
+    //             if(element.datatype && element.datatype != null && element.datatype == 'key_value'){
+    //               modifyFormValue[key] = this.custmizedFormValue[key];
+    //             }else{
+    //               Object.keys(this.custmizedFormValue[key]).forEach(child =>{
+    //                 modifyFormValue[key][child] = this.custmizedFormValue[key][child];
+    //               })
+    //             }
+    //           }
+    //         });          
+    //       }else{
+    //         modifyFormValue[key] = this.custmizedFormValue[key];
+    //       }       
+          
+    //     }
+    //   })
+    //   if (this.checkBoxFieldListValue.length > 0 && Object.keys(this.staticData).length > 0) {
+    //     this.checkBoxFieldListValue.forEach(element => {
+    //       if (this.staticData[element.ddn_field]) {
+    //         const listOfCheckboxData = [];
+    //         let data = [];
+    //         if(this.updateMode || this.complete_object_payload_mode){
+    //           if(element.parent){
+    //             data = selectedRow[element.parent][element.field_name];
+    //           }else{
+    //             data = selectedRow[element.field_name];
+    //           }
+    //         }else{
+    //           if(element.parent){
+    //             data = modifyFormValue[element.parent][element.field_name];
+    //           }else{
+    //             data = modifyFormValue[element.field_name];
+    //           }
+    //         }
+    //         let currentData = this.staticData[element.ddn_field];
+    //         if(data && data.length > 0){
+    //           data.forEach((data, i) => {
+    //             if (data) {
+    //               listOfCheckboxData.push(currentData[i]);
+    //             }
+    //           });
+    //         }
+    //         if (this.updateMode || this.complete_object_payload_mode) {
+    //           if(element.parent){
+    //             selectedRow[element.parent][element.field_name] = listOfCheckboxData;
+    //           }else{
+    //             selectedRow[element.field_name] = listOfCheckboxData;
+    //           }
+    //         } else {
+    //           if(element.parent){
+    //             modifyFormValue[element.parent][element.field_name] = listOfCheckboxData;
+    //           }else{
+    //             modifyFormValue[element.field_name] = listOfCheckboxData
+    //           }
+    //         }
+    //       }
+    //     });
+    //   }
+    //   Object.keys(this.dataListForUpload).forEach(key => {
+    //     if (this.updateMode || this.complete_object_payload_mode) {
+    //       if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
+    //         this.tableFields.forEach(element => {            
+    //           if(element.field_name == key){                
+    //             Object.keys(this.dataListForUpload[key]).forEach(child =>{
+    //               selectedRow[key][child] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key][child]);
+    //             })
+    //           }
+    //         });          
+    //       }else{
+    //           selectedRow[key] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key]);
+    //       }
+    //     } else {
+    //       if(this.dataListForUpload[key] && this.dataListForUpload[key] != null && !Array.isArray(this.dataListForUpload[key]) && typeof this.dataListForUpload[key] === "object"){
+    //         this.tableFields.forEach(element => {
+    //           if(element.field_name == key){                
+    //             Object.keys(this.dataListForUpload[key]).forEach(child =>{
+    //               modifyFormValue[key][child] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key][child]);
+    //             })
+    //           }
+    //         });          
+    //       }else{
+    //         modifyFormValue[key] = this.fileHandlerService.modifyUploadFiles(this.dataListForUpload[key]);
+    //       }       
+          
+    //     }
+    //   })
+    // } 
+    // ================================
+
+    // delete below code part2
+    // if(this.selectContact != '' && this.selectContact != undefined){
+    //   let selectContactObject = {}
+    //   let account={};
+    //   let contact={};
+    //   // this.tabFilterData.forEach(element => {
+    //   //   if(element._id == this.selectContact){
+    //   //     selectContactObject = element;
+    //   //   }
+    //   // });
+    //   if(selectContactObject['_id']){
+    //     contact = {
+    //       "_id":selectContactObject['_id'],
+    //       "name":selectContactObject['name'],
+    //       "code":selectContactObject['serialId']
+    //     }
+    //     if(selectContactObject['lead']){
+    //       account = selectContactObject['lead'];
+    //     }
+    //   }
+    //   if(this.updateMode || this.complete_object_payload_mode){
+    //     selectedRow['account'] = account;
+    //     selectedRow['contact'] = contact;
+    //   }else{
+    //     modifyFormValue['account'] = account;
+    //     modifyFormValue['contact'] = contact;
+    //   }
+    // }
+    // valueOfForm = this.updateMode || this.complete_object_payload_mode ? selectedRow : modifyFormValue;
+    // ===========================
+
+    // delete below code part3
+    // if(this.getLocation){
+    //   if(this.center !=null && this.center.lat !=null){
+    //     valueOfForm['locationDetail'] = {
+    //       'latitude' : this.center.lat ? this.center.lat : this.latitude,
+    //       'longitude' : this.center.lng ? this.center.lng : this.longitude,
+    //       'address' : this.address
+    //     }
+    //   }else{
+    //     this.requestLocationPermission();
+    //   }
+    // }       
+    // return valueOfForm;
+    //============================================= 
+
+    return this.formValueService.getFormValue(check,formValue,this.selectedRow,this.updateMode,this.complete_object_payload_mode,this.tableFields,this.latitude,this.longitude,this.address,this.custmizedFormValue,this.checkBoxFieldListValue,this.staticData,this.dataListForUpload,this.selectContact,[],'',this.getLocation,this.center);
+  }
+  // CD
+  storeFormDetails(parent_field:any,field:any,index?:number){
+    let result = this.multipleFormService.storeFormDetails(parent_field,field,this.getFormValue(false),this.getFormValue(true),this.updateMode,this.nextFormData,this.lastTypeaheadTypeValue,this.multipleFormCollection,this.currentMenu,this.form,this.listOfFieldUpdateMode,this.listOfFieldsUpdateIndex,this.addNewRecord,this.enableNextButton,index);
+    this.multipleFormCollection = result.multipleFormCollection;
+    if(result.form && Object.keys(result.form).length > 0) this.loadNextForm(result.form);
+    if(result.id && result.id != '') this.multipleFormService.getNextFormById(result.id);
+    this.addNewRecord = result.addNewRecord;
+    if(result.params && result.params != '')  this.multipleFormService.getDataForNextForm(result.params,result.criteria);
+
+    // delete below code
+    // let targetFieldName ={}
+    // targetFieldName['form'] = {}
+    // targetFieldName['custom'] = [];
+
+    // let updateMode =  this.updateMode;
+    // let formData = JSON.parse(JSON.stringify(this.getFormValue(true)));
+    // if(field && field.form_field_name){
+    //   const nextFormReference = {
+    //     '_id':this.nextFormData._id,
+    //     'name':this.nextFormData.name
+    //   }
+    //   formData[field.form_field_name] = nextFormReference;
+    //   //targetFieldName = formData[field.field_name]
+    //   updateMode = true;
+    // }
+    // if(this.coreFunctionService.isNotBlank(field.add_new_target_field)){
+    //   targetFieldName['form'][field.add_new_target_field] = this.lastTypeaheadTypeValue
+    // }else if(field){
+    //   switch (field.type) {
+    //     case "list_of_fields":
+    //     case "grid_selection":
+    //       let currentFieldData = formData[field.field_name];
+    //       if(currentFieldData && this.commonFunctionService.isArray(currentFieldData)){
+    //           if(index != undefined && index >= 0){        
+    //             targetFieldName['form'] = currentFieldData[index];
+    //             targetFieldName['updataModeInPopupType'] = true;
+    //           }else {
+    //             targetFieldName['custom'] = currentFieldData;
+    //           }
+    //       }
+    //       break;      
+    //     default:
+    //       break;
+    //   }
+      
+     
+        
+    //   // const listOfFields = field.list_of_fields;
+    //   // let element:any = {}
+    //   // if(listOfFields && listOfFields.length > 0){
+    //   //   element = listOfFields[0]
+    //   // }
+    //   // if(element && element.field_name){
+    //   //   targetFieldName[element.field_name] = "";
+    //   // }      
+    // } 
+    // if(this.coreFunctionService.isNotBlank(field.moveFieldsToNewForm)){
+    //   if(field.moveFieldsToNewForm && field.moveFieldsToNewForm.length > 0){
+    //     field.moveFieldsToNewForm.forEach(keyValue => {
+    //       const sourceTarget = keyValue.split("#");
+    //       let key = sourceTarget[0];
+    //       let valueField = sourceTarget[1];
+    //       let formValue = {};
+    //       if(field && field.form_value_index >= 0 && this.multipleFormCollection.length >= 1){
+    //         const storeFormData = this.multipleFormCollection[field.form_value_index];
+    //         const formData = storeFormData['form_value'];            
+    //         formValue = formData;            
+    //       }else{
+    //         formValue = this.getFormValue(false)
+    //       }
+    //       let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+    //       formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(false));
+    //       let value = this.commonFunctionService.getObjectValue(valueField,formValue);
+    //       targetFieldName['form'][key] = value;
+    //     });
+    //   }
+    // }   
+    // let form = {
+    //   "collection_name":this.currentMenu.name,
+    //   "data":formData,
+    //   "form":this.form,
+    //   "parent_field":parent_field,
+    //   "current_field":field,
+    //   "next_form_data":targetFieldName,
+    //   "updateMode" : updateMode,
+    //   "form_value" : JSON.parse(JSON.stringify(this.getFormValue(false))),
+    //   "index": -1
+    // }
+    // if(field){
+    //   const type = field.type;
+    //   switch (type) {
+    //     case "list_of_fields":
+    //     case "grid_selection":
+    //       if(index != undefined){
+    //           form['index'] = index;
+    //       }
+    //       break;      
+    //     default:
+    //       break;
+    //   }
+      
+    // }
+    // this.multipleFormCollection.push(form);
+    // let id = '';
+    // if(field && field.type == "list_of_fields"){
+    //   let buttonLabel = "";
+    //   if(index != undefined && index >= 0){
+    //     buttonLabel = 'Update';
+    //   }else{
+    //     buttonLabel = 'Add';
+    //   }
+    //   if(field.list_of_fields && field.list_of_fields.length > 0){
+    //     let fieldList:any = JSON.parse(JSON.stringify(field.list_of_fields));
+    //     if(fieldList && fieldList.length > 0 && index == undefined){
+    //       let curField = JSON.parse(JSON.stringify(field));
+    //       curField['add_list_field'] = 'add';
+    //       fieldList.push(curField);
+    //     }
+    //     let form = {
+    //       "details": {
+    //           "class": "",
+    //           "collection_name":"",
+    //           "bulk_update":false
+    //           },
+    //       "tab_list_buttons": [
+    //           {
+    //               "label": buttonLabel,
+    //               "onclick": {
+    //                       "api": "add", 
+    //                       "action_name": "", 
+    //                       "close_form_on_succes": false
+    //                   },
+    //               "type": "button",
+    //               "field_name": "save",
+    //               "api_params": "",
+    //               "show_if":"",
+    //               "disable_if":""
+    //           },
+    //           {
+    //             "label": "Ok",
+    //             "onclick": {
+    //                     "api": "close", 
+    //                     "action_name": "", 
+    //                     "close_form_on_succes": false
+    //                 },
+    //             "type": "button",
+    //             "field_name": "",
+    //             "api_params": "",
+    //             "show_if":"",
+    //             "disable_if":""
+    //         }
+    //       ],
+    //       "tableFields": fieldList,
+    //       "api_params": null,
+    //       "label": field.label
+    //       }
+    //     this.loadNextForm(form);
+    //   }else{
+    //     if(field.form && field.form._id){
+    //       id = field.form._id;
+    //     }
+    //     this.getNextFormById(id);
+    //   }
+    // }else{
+    //   if(field.add_new_form && field.add_new_form._id){
+    //     id = field.add_new_form._id;
+    //   }
+    //   this.getNextFormById(id);
+    //   this.addNewRecord = false;
+    //   if(!this.enableNextButton && field && field.find_child_form){
+    //     const reqCriteria = ["collection.name;eq;" + this.currentMenu.name + ";STATIC"];
+    //     const reqParams = 'scheduled_task_form';
+    //     this.getDataForNextForm(reqParams,reqCriteria);
+    //   }      
+    // }    
+  }
+  async  openGridSelectionModal(field){
+    if(field.gridColumns && field.gridColumns.length > 0){
+      const gridColumns = this.modifiedGridColumns(field.gridColumns);
+      field.gridColumns = gridColumns;
+    }
+    this.samePageGridSelectionData = {}
+    this.selectedgridselectionField='';
+    if (!this.custmizedFormValue[field.field_name]) this.custmizedFormValue[field.field_name] = [];
+    let selectedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[field.field_name]));
+    this.selectedgridselectionField = field;
+    const gridModalData = {
+      "field": field,
+      "selectedData":selectedValue,
+      "object": this.getFormValue(true),
+      "formTypeName" : this.formTypeName,
+      "updateMode" : this.updateMode
+    }
+    this.samePageGridSelection = this.appDataShareService.getgridselectioncheckvalue();
+    if(this.samePageGridSelection){
+      this.apiService.ResetStaticData(field.field_name);
+      this.curTreeViewField = field;      
+      this.samePageGridSelectionData = gridModalData;
+    }else{
+      const modal = await this.modalController.create({
+        component: GridSelectionModalComponent,
+        componentProps: {
+          "Data": gridModalData,
+        }
+      });
+      modal.present();
+      modal.componentProps.modal = modal;
+      modal.onDidDismiss()
+        .then((data) => {
+          const object = data['data']; // Here's your selected user!
+          if(object['data'] && object['data'].length > 0){
+            let obj =this.getSendData(object['data']);
+            this.gridSelectionResponce(obj);
+          }        
+      });
+    }
+  }
+  async openGridSelectionDetailModal(data:any, cardtype?:string) {
+    if(cardtype! || cardtype =="" || cardtype ==undefined){
+      cardtype = "demo1"
+    }
+    // if(cpmonentName){
+      const modal = await this.modalController.create({
+        component: GridSelectionDetailModalComponent,
+        cssClass: "gridSelectionDetailModal",
+        componentProps: {
+          'Data': data,
+          "childCardType":cardtype
+        },
+        id: data.id,
+        animated: true,
+      });
+      modal.present();
+      modal.onDidDismiss()
+        .then((data) => {
+          const object = data['data'];
+          if(object['data'] && object['data'].length > 0){
+            let obj =this.getSendData(object['data']);
+            this.gridSelectionResponce(obj);
+          }        
+      });
+    // }
+  } 
+  getSendData(data){
+    let obj ={
+      "action":'',
+      "index":-1,
+      "data": data
+    }
+    return obj;
+  }
+  modifiedGridColumns(gridColumns){
+    if(gridColumns.length > 0){     
+      gridColumns.forEach(field => {
+        if(this.coreFunctionService.isNotBlank(field.show_if)){
+          if(!this.showIf(field)){
+            field['display'] = false;
+          }else{
+            field['display'] = true;
+          }                
+        }else{
+          field['display'] = true;
+        }
+      });
+    }
+    return gridColumns;
+  }
+  // CD
+  resetForm(){
+    if(this.multipleFormCollection.length > 0){
+      this.multipleFormCollection = this.multipleFormService.setPreviousFormTargetFieldData(this.multipleFormCollection,this.getFormValue(true));
+    }
+    this.donotResetField();
+    if(this.templateForm && this.templateForm.controls){
+      this.templateForm.reset(); 
+    }
+    if(Object.keys(this.donotResetFieldLists).length > 0){
+      this.custmizedFormValue = {};
+      this.modifyCustmizedFormValue = {};
+      this.dataListForUpload = {};
+      this.updateDataOnFormField(this.donotResetFieldLists);
+      this.donotResetFieldLists = {};
+    }else{
+      this.custmizedFormValue = {};
+      this.custmizedFormValue = {};
+      this.modifyCustmizedFormValue = {};
+    }
+    if(this.tableFields.length > 0){
+      this.tableFields.forEach(element => {
+        switch (element.type) {
+          case 'checkbox':
+            this.templateForm.controls[element.field_name].setValue(false)
+            break; 
+          case 'list_of_checkbox':
+            const controls:any = this.templateForm.get(element.field_name)['controls'];
+            if(controls && controls.length > 0){
+              controls.forEach((child,i) => {
+                controls.at(i).patchValue(false);
+              });
+            }
+            break;     
+          default:
+            break;
+        }
+      });
+    }
+  }
+  // CD
+  checkOnSuccessAction(){
+    let responce = this.apiCallResponceService.checkOnSuccessAction(this.currentActionButton,this.forms);
+    if(responce.index != -1) {
+      this.changeNewForm(responce.actionValue,responce.index)
+    }
+    // delete below code
+    // let actionValue = ''
+    // let index = -1;
+    // if(this.currentActionButton.onclick && this.currentActionButton.onclick != null && this.currentActionButton.onclick.action_name && this.currentActionButton.onclick.action_name != null){
+    //   if(this.currentActionButton.onclick.action_name != ''){
+    //     actionValue = this.currentActionButton.onclick.action_name;
+    //     if(actionValue != ''){
+    //       Object.keys(this.forms).forEach((key,i) => {
+    //         if(key == actionValue){
+    //           index = i;
+    //         }
+    //       });
+    //       if(index != -1) {
+    //         //this.changeNewForm(actionValue,index)
+    //       }    
+    //     }
+    //   }
+    // }
+    // ============================
+  };
+  // CD
+  changeNewForm(formName:string,i){
+    this.formName = formName;
+    //this.formIndex = i;
+    this.changeForm();
+  }
+  // CD
+  changeForm(){
+    this.resetFlagForOnchange();
+    this.resetFlagsForNewForm();
+    const form = this.dataShareService.getDinamicForm();
+    this.setDinamicForm(form)
+    const tempData = this.dataShareService.getTempData();  
+    // this.setTempData(tempData); 
+    this.ngOnInit();         
+  }
+  checkValidator(action_button){
+    if(action_button.field_name){
+      const field_name = action_button.field_name.toLowerCase();
+      switch (field_name) {
+        case "save":
+        case "update":
+        case "updateandnext":
+        case "send_email":
+          const valid:boolean =  this.isFormValid();
+          return !valid;
+        default:
+          return;
+      }
+    }
+  }
+  isFormValid() : boolean { 
+    return this.templateForm.disabled ? true : this.templateForm.valid
+  }
+  // CD
+  responceData(data) {
+    if(this.clickFieldName.type){
+      switch (this.clickFieldName.type) {
+        case "grid_selection":
+        case 'grid_selection_vertical':
+          if(this.clickFieldName.datatype == 'grid_review'){
+            this.custmizedFormValue[this.clickFieldName.field_name] = data;
+          }          
+          break;      
+        default:
+          break;
+      }
+    }
+    this.clickFieldName = {};
+  }
+  resetFlagsForNewForm(){    
+    //this.tableFields = [];
+    this.calculationFieldList=[];
+    this.buttonIfList=[];
+    this.showIfFieldList=[];
+    this.disableIfFieldList=[];
+    this.mendetoryIfFieldList = [];
+    this.gridSelectionMendetoryList=[];
+    this.customValidationFiels = [];
+    this.canUpdateIfFieldList=[];
+    this.custmizedFormValue = {};
+    this.dataListForUpload = {};
+    this.checkBoxFieldListValue = [];
+    this.selectedRow = {}
+    this.formFieldButtons=[];
+    this.list_of_fields = [];
+    this.typeAheadData = [];
+    this.createFormgroup = true;    
+    this.getTableField = true;
+    this.pageLoading = true;
+    this.dataSaveInProgress = true; 
+    this.isLinear=true;
+    this.isStepper = false;
+    this.listOfFieldUpdateMode=false; 
+    this.listOfFieldsUpdateIndex = -1; 
+    this.checkFormFieldAutfocus = true;
+    this.filePreviewFields = [];
+    this.nextFormUpdateMode=false;
+    this.focusFieldParent={};
+    this.term={};
+  }
+  resetFlagForOnchange(){
+    this.listOfFieldUpdateMode=false; 
+    this.listOfFieldsUpdateIndex = -1; 
+    // this.serverReq = false;
+    this.updateAddNew = false;
+    this.addOrUpdateIconShowHideList = {};
+  }
+  // CD
+  gridSelectionResponce(responce){ 
+    // New code added
+    const fieldName = this.curTreeViewField.field_name;    
+    if (!this.custmizedFormValue[fieldName]) this.custmizedFormValue[fieldName] = [];
+    this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(responce.data));
+    if(this.customEntryData[fieldName] && this.customEntryData[fieldName].length > 0){
+      this.customEntryData[fieldName].forEach(data => {
+        this.custmizedFormValue[fieldName].push(data);
+      });
+      this.customEntryData[fieldName] = [];
+    }
+    // ========================
+    if(this.curTreeViewField && this.curTreeViewField.add_new_enabled && responce && responce.action && responce.action == "edite"){
+      let index = responce.index;
+      if(this.samePageGridSelection){
+        this.samePageGridSelection = false;
+      }
+      this.updateListofFields(this.curTreeViewField,{},index);
+    }
+
+    // if (!this.custmizedFormValue[this.curTreeViewField.field_name]) this.custmizedFormValue[this.curTreeViewField.field_name] = [];
+    // this.custmizedFormValue[this.curTreeViewField.field_name] = JSON.parse(JSON.stringify(responce.data));        
+
+    if(this.curTreeViewField && this.curTreeViewField.onchange_function && this.curTreeViewField.onchange_function_param){
+      // delete below code
+      // if(this.currentTreeViewFieldParent != ''){
+      //   this.templateForm.get([this.currentTreeViewFieldParent.field_name]).get([this.curTreeViewField.field_name]).setValue(this.custmizedFormValue[this.curTreeViewField.field_name]);
+      // }else{
+      //   this.templateForm.controls[this.curTreeViewField.field_name].setValue(this.custmizedFormValue[this.curTreeViewField.field_name]);
+      // }      
+      // this.templateForm = this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue, this.curTreeViewField);
+      // =========================
+      let function_name = this.curTreeViewField.onchange_function_param;
+      let formValueWithCustomData = this.getFormValue(true);
+      switch(function_name){
+        case "calculation_of_script_for_tds":
+          const payload = this.commonFunctionService[this.curTreeViewField.onchange_function_param](formValueWithCustomData, this.curTreeViewField);   
+          this.apiService.getStatiData(payload);
+          break;
+        case "calculateQquoteAmount":
+          this.custmizedFormValue[this.curTreeViewField.field_name].forEach(element => {
+            // element["qty"] = this.templateForm.getRawValue()["qty"];
+            element["qty"] = formValueWithCustomData["qty"];
+            this.limsCalculationsService.calculateNetAmount(element, {field_name: "qty"},"legacyQuotationParameterCalculation");
+          });
+          this.updateDataOnFormField(this.commonFunctionService[this.curTreeViewField.onchange_function_param](formValueWithCustomData, this.curTreeViewField)); 
+          break;
+        case "calculateAutomotiveLimsQuotation":
+          this.custmizedFormValue[this.curTreeViewField.field_name].forEach(element => {
+            // element["qty"] = this.templateForm.getRawValue()["qty"];
+            this.limsCalculationsService.calculateNetAmount(element, {field_name: "qty"},"calculateQuotationParameterAmountForAutomotiveLims");
+          });
+          // this.updateDataOnFormField(this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField)); 
+          this.updateDataOnFormField(this.limsCalculationsService.calculate_quotation(formValueWithCustomData,"automotive" ,{field_name:"parameter_array"}));
+          break;
+        case "calculateLimsQuotation":
+          this.custmizedFormValue[this.curTreeViewField.field_name].forEach(element => {
+            // element["qty"] = this.templateForm.getRawValue()["qty"];
+            element["qty"] = formValueWithCustomData["qty"];
+            this.limsCalculationsService.calculateNetAmount(element, {field_name: "qty"}, "calculateQuotationParameterAmountForLims");
+          });
+          // this.updateDataOnFormField(this.commonFunctionService[this.curTreeViewField.onchange_function_param](this.getFormValue(true), this.curTreeViewField)); 
+          this.updateDataOnFormField(this.limsCalculationsService.calculate_quotation(formValueWithCustomData,"standard" ,{field_name:"parameter_array"}));
+          break;    
+        case 'quote_amount_via_sample_no':
+          let val = this.limsCalculationsService.quote_amount_via_sample_no(formValueWithCustomData,this.custmizedFormValue['quotation_param_methods']);
+          this.updateDataOnFormField(val);
+          break;
+        case 'calculation_invoice_totalAmount':
+          let value = this.limsCalculationsService.calculateInvoiceTotalAmount(formValueWithCustomData,this.custmizedFormValue['invoiceInfos']);
+          this.updateDataOnFormField(value);
+          break;
+        case 'calculate_lims_invoice':
+          let calculate_on_field = "";
+          if(this.curTreeViewField.calculate_on_field != null && this.curTreeViewField.calculate_on_field != ''){
+            calculate_on_field = this.curTreeViewField.calculate_on_field
+          }
+          let val1 = this.limsCalculationsService.calculate_lims_invoice(formValueWithCustomData,'',calculate_on_field);
+          this.updateDataOnFormField(val1);
+          break;
+        case 'calculate_lims_invoice_extra_amount':
+          let val2 = this.limsCalculationsService.calculate_lims_invoice_extra_amount(formValueWithCustomData,'','');
+          this.updateDataOnFormField(val2);
+          break;
+        case 'calculate_quotation_with_subsequent':          
+          let calFormValue = this.limsCalculationsService.calculate_quotation_with_subsequent(formValueWithCustomData,"standard", {field_name: "qty"});
+          this.updateDataOnFormField(calFormValue);
+          break;
+        default:
+          if(this.commonFunctionService[function_name]){      
+            this.templateForm = this.commonFunctionService[function_name](this.templateForm, this.curTreeViewField);
+            const calTemplateValue= this.templateForm.getRawValue()
+            this.updateDataOnFormField(calTemplateValue);
+          }else if(this.limsCalculationsService[function_name]){      
+            this.templateForm = this.limsCalculationsService[function_name](this.templateForm, this.curTreeViewField);
+            const calTemplateValue= this.templateForm.getRawValue()
+            this.updateDataOnFormField(calTemplateValue);
+          }
+          break
+      }
+    }
+
+    if(this.curTreeViewField && this.curTreeViewField.onchange_function_param && this.curTreeViewField.onchange_function_param != ''){
+      if(this.curTreeViewField.onchange_function_param.indexOf('QTMP') >= 0){
+        const payloads = [];
+        payloads.push(this.apiCallService.getPaylodWithCriteria(this.curTreeViewField.onchange_function_param,'',[],this.getFormValue(true)));
+        this.callStaticData(payloads);
+
+        // delete below code
+        // const staticModalGroup = []
+        // staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(this.curTreeViewField.onchange_function_param,'',[],this.getFormValue(true)));
+        // //this.commonFunctionService.getStaticData(staticModalGroup);
+        // this.apiService.getStatiData(staticModalGroup);
+      }
+    }
+
+    // delete below code
+    // if(this.templateForm.controls['quotation_param_methods']){
+    //   this.templateForm.controls['quotation_param_methods'].setValue(this.custmizedFormValue['quotation_param_methods']);
+    //   this.templateForm = this.commonFunctionService.calculateQquoteAmount(this.templateForm, this.curTreeViewField);
+    //   const tamplateValue = this.templateForm.getRawValue();
+    //   this.custmizedFormValue['quotation_param_methods'] = tamplateValue['quotation_param_methods'];
+    // }
+    // else if(this.templateForm.controls['items_list']){
+    //   this.templateForm.controls['items_list'].setValue(this.custmizedFormValue['items_list']);
+    //   this.templateForm = this.commonFunctionService.calculateInvoiceOrderAmount(this.templateForm, this.curTreeViewField);
+    //   const tamplateValue = this.templateForm.getRawValue();
+    //   this.custmizedFormValue['items_list'] = tamplateValue['items_list'];
+    // }
+    // ====================
+
+    this.modifyCustmizedValue(fieldName);
+    // this.curTreeViewField = {};
+    // this.currentTreeViewFieldParent = {};
+  }
+  // CD
+  updateDataOnFormField(formValue){
+    const checkDataType = typeof formValue;
+    if(checkDataType == 'object' && !this.commonFunctionService.isArray(formValue) && this.tableFields && this.tableFields.length > 0){
+
+      let result = this.formControlService.updateDataOnForm(this.templateForm,this.tableFields,formValue,this.formFieldButtons,this.custmizedFormValue,this.modifyCustmizedFormValue,this.selectedRow,this.dataListForUpload,this.treeViewData,this.staticData,this.longitude,this.latitude,this.zoom);
+      this.templateForm = result.templateForm;
+      this.tableFields = result.tableFields;
+      this.custmizedFormValue = result.custmizedFormValue;
+      this.modifyCustmizedFormValue = result.modifyCustmizedFormValue;
+      this.selectedRow = result.selectedRow;
+      // this.serialId = this.selectedRow?.serialId;
+      this.dataListForUpload = result.dataListForUpload;
+      this.treeViewData = result.treeViewData;
+      this.staticData = result.staticData;
+      this.latitude = result.latitude;
+      this.longitude = result.longitude;
+      this.center = {
+        "lat":result.latitude,
+        "lng": result.longitude
+      };
+      this.zoom = result.zoom;
+      if(result.getAddress){
+        this.getAddressfromLatLng(this.latitude,this.longitude);
+      }
+      // this.getFocusFieldAndFocus();
+      this.checkFormFieldIfCondition();
+
+      // delete below code part1
+      // this.tableFields.forEach(element => {
+      //   if(!element.hideOnMobile){
+      //     // if(element && element.field_name && element.field_name != ''){
+      //     //   let fieldName = element.field_name;
+      //     //   let object = formValue[fieldName];
+      //     //   if(object != null && object != undefined){
+      //     //     this.updateFormValue(element,formValue);
+      //     //   }
+      //     // }
+      //     let fieldName = element.field_name;
+      //     let object = formValue[fieldName];
+      //     if(object != null && object != undefined){
+      //       if(element && element.field_name && element.field_name != ''){
+      //         switch (element.type) {
+      //           case "grid_selection":
+      //           case 'grid_selection_vertical':
+      //           case "list_of_string":
+      //           case "drag_drop":
+      //             if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //               if(this.commonFunctionService.isArray(formValue[element.field_name])){
+      //                 this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
+      //               }
+      //               this.templateForm.controls[element.field_name].setValue('')
+      //             }
+      //             break;
+      //           case "file":
+      //           case "input_with_uploadfile":
+      //             if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //               this.dataListForUpload[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
+      //               const value = this.fileHandlerService.modifyFileSetValue(formValue[element.field_name]);
+      //               this.templateForm.controls[element.field_name].setValue(value);
+      //             }
+      //             break;
+      //           case "list_of_fields":
+      //             if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //               if(this.commonFunctionService.isArray(formValue[element.field_name])){
+      //                 this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
+      //               }else if(typeof formValue[element.field_name] == "object" && element.datatype == 'key_value'){
+      //                 this.custmizedFormValue[element.field_name] = formValue[element.field_name]
+      //               }else{
+      //                 if(element.list_of_fields && element.list_of_fields != null){
+      //                   element.list_of_fields.forEach(data => {
+      //                     switch (data.type) {
+      //                       case "list_of_string":
+      //                       case "grid_selection":
+      //                       case 'grid_selection_vertical':
+      //                       case "drag_drop":                    
+      //                         if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
+      //                           this.custmizedFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name]
+      //                           this.templateForm.get(element.field_name).get(data.field_name).setValue('')
+      //                           //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
+      //                         }
+      //                         break;
+      //                       case "typeahead":
+      //                         if(data.datatype == "list_of_object" || element.datatype == 'chips'){
+      //                           if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
+      //                             this.custmizedFormValue[element.field_name][data.field_name] = formValue[element.field_name][data.field_name]
+      //                             this.templateForm.get(element.field_name).get(data.field_name).setValue('')
+      //                             //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
+      //                           }
+      //                         }else{
+      //                           if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
+      //                             const value = formValue[element.field_name][data.field_name];
+      //                             this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+      //                             //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
+      //                           }
+      //                         }
+      //                         break;
+      //                       default:
+      //                         if(formValue[element.field_name] && formValue[element.field_name][data.field_name] != null && formValue[element.field_name][data.field_name] != undefined && formValue[element.field_name][data.field_name] != ''){
+      //                           const value = formValue[element.field_name][data.field_name];
+      //                           this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+      //                           //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
+      //                         }
+      //                         break;
+      //                     }
+      //                   });
+      //                 }
+      //               }
+      //             }
+      //             break; 
+      //           case "typeahead":
+      //             if(element.datatype == "list_of_object" || element.datatype == 'chips'){
+      //               if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //                 this.custmizedFormValue[element.field_name] = JSON.parse(JSON.stringify(formValue[element.field_name]));
+      //                 this.templateForm.controls[element.field_name].setValue('')
+      //               }
+      //             }else{
+      //               if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){                  
+      //                 const value = formValue[element.field_name];
+      //                 this.typeAheadData = [value];
+      //                 this.templateForm.controls[element.field_name].setValue(value)
+      //               }
+      //             }  
+      //             break;
+      //           case "group_of_fields":
+      //             if(element.list_of_fields && element.list_of_fields.length > 0){
+      //               element.list_of_fields.forEach(data => {
+      //                 let ChildFieldData = formValue[element.field_name];
+      //                 if(data && data.field_name && data.field_name != '' && ChildFieldData && ChildFieldData != null){
+      //                   switch (data.type) {
+      //                     case "list_of_string":
+      //                     case "grid_selection":
+      //                     case 'grid_selection_vertical':
+      //                     case "drag_drop": 
+      //                       if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+      //                         if (!this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = {};
+      //                         const value = JSON.parse(JSON.stringify(ChildFieldData[data.field_name]));
+      //                         this.custmizedFormValue[element.field_name][data.field_name] = value;
+      //                         this.templateForm.get(element.field_name).get(data.field_name).setValue('')
+      //                         //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
+      //                       }
+      //                       break;   
+      //                     case "typeahead":
+      //                       if(data.datatype == "list_of_object" || data.datatype == 'chips'){
+      //                         if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+      //                           if (!this.custmizedFormValue[element.field_name]) this.custmizedFormValue[element.field_name] = {};
+      //                           const value = JSON.parse(JSON.stringify(ChildFieldData[data.field_name]));
+      //                           this.custmizedFormValue[element.field_name][data.field_name] = value;
+      //                           this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+      //                           //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue('');
+      //                         }
+      //                       }else{
+      //                         if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+      //                           const value = ChildFieldData[data.field_name];
+      //                           this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+      //                           //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
+      //                         }
+      //                       }  
+      //                       break;               
+      //                     case "number":
+      //                       if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+      //                         let gvalue;
+      //                         const value = ChildFieldData[data.field_name];
+      //                         if(value != null && value != ''){
+      //                           gvalue = value;
+      //                         }else{
+      //                           gvalue = 0;
+      //                         }
+      //                         this.templateForm.get(element.field_name).get(data.field_name).setValue(gvalue)
+      //                         //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(gvalue);
+      //                       }else if(ChildFieldData && ChildFieldData.hasOwnProperty(data.field_name)){
+      //                         let gvalue = 0;
+      //                         this.templateForm.get(element.field_name).get(data.field_name).setValue(gvalue)
+      //                       }
+      //                       break;
+      //                     case "list_of_checkbox":
+      //                       this.templateForm.get(element.field_name).get(data.field_name).patchValue([])
+      //                       if(element.parent){
+      //                         this.selectedRow[element.parent] = {}
+      //                         this.selectedRow[element.parent][element.field_name] = ChildFieldData;
+      //                       }else{
+      //                         this.selectedRow[element.field_name] = ChildFieldData;
+      //                       }
+      //                       //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue([]);
+      //                       break;
+      //                     case "date":
+      //                       if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+      //                         if(data.date_format && data.date_format !="" && typeof ChildFieldData[data.field_name] === 'string'){
+      //                           const date = ChildFieldData[data.field_name];
+      //                           const dateMonthYear = date.split('/');
+      //                           const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
+      //                           const value = new Date(formatedDate);
+      //                           this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+      //                         }else{                  
+      //                           const value = formValue[element.field_name][data.field_name] == null ? null : formValue[element.field_name][data.field_name];
+      //                           this.templateForm.get(element.field_name).get(data.field_name).setValue(value);              
+      //                         }
+      //                       }
+      //                       break;
+      //                     default:
+      //                       if(ChildFieldData && ChildFieldData[data.field_name] != null && ChildFieldData[data.field_name] != undefined && ChildFieldData[data.field_name] != ''){
+      //                         const value = ChildFieldData[data.field_name];
+      //                         this.templateForm.get(element.field_name).get(data.field_name).setValue(value)
+      //                         //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(value);
+      //                       }
+      //                       break;
+      //                   }
+      //                 }
+      //               });
+      //             }
+      //             break;
+      //           case "tree_view_selection":
+      //             if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //               this.treeViewData[fieldName] = [];            
+      //               let treeDropdownValue = object == null ? null : object;
+      //               if(treeDropdownValue != ""){
+      //                 this.treeViewData[fieldName].push(JSON.parse(JSON.stringify(treeDropdownValue)));
+      //               }
+      //               this.templateForm.controls[fieldName].setValue(treeDropdownValue)
+      //             }
+      //             break;
+      //           case "stepper":
+      //             if(element.list_of_fields && element.list_of_fields.length > 0){
+      //               element.list_of_fields.forEach(step => {
+      //                 if(step.list_of_fields && step.list_of_fields.length > 0){
+      //                   step.list_of_fields.forEach(data => {
+      //                     switch (data.type) {
+      //                       case "list_of_string":
+      //                       case "grid_selection":
+      //                       case 'grid_selection_vertical':
+      //                         if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){                                             
+      //                           this.custmizedFormValue[data.field_name] = formValue[data.field_name]                    
+      //                         }
+      //                         this.templateForm.get(step.field_name).get(data.field_name).setValue('')
+      //                         //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue('');
+      //                         break;
+      //                       case "typeahead":
+      //                         if(data.datatype == "list_of_object" || data.datatype == 'chips'){
+      //                           if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){                      
+      //                             this.custmizedFormValue[data.field_name] = formValue[data.field_name]
+      //                             this.templateForm.get(step.field_name).get(data.field_name).setValue('')
+      //                             //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue('');
+      //                           }
+      //                         }else{
+      //                           if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){
+      //                             const value = formValue[data.field_name];
+      //                             this.templateForm.get(step.field_name).get(data.field_name).setValue(value)
+      //                             //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(value);
+      //                           }
+      //                         }
+      //                         break;
+      //                       case "number":
+      //                           let gvalue;
+      //                           const value = formValue[data.field_name];
+      //                           if(value != null && value != ''){
+      //                             gvalue = value;
+      //                           }else{
+      //                             gvalue = 0;
+      //                           }
+      //                           this.templateForm.get(step.field_name).get(data.field_name).setValue(gvalue)
+      //                           //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(gvalue);
+      //                         break;
+      //                       case "list_of_checkbox":
+      //                         this.templateForm.get(step.field_name).get(data.field_name).patchValue([])
+      //                         //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue([]);
+      //                         break;
+      //                       default:
+      //                         if(formValue[data.field_name] != null && formValue[data.field_name] != undefined && formValue[data.field_name] != ''){
+      //                           const value = formValue[data.field_name];
+      //                           this.templateForm.get(step.field_name).get(data.field_name).setValue(value)
+      //                           //(<FormGroup>this.templateForm.controls[step.field_name]).controls[data.field_name].patchValue(value);
+      //                         }
+      //                         break;
+      //                     }
+      //                     if(data.tree_view_object && data.tree_view_object.field_name != ""){
+      //                       let editeTreeModifyData = JSON.parse(JSON.stringify(data.tree_view_object));
+      //                       const treeObject = this.selectedRow[editeTreeModifyData.field_name];
+      //                       this.templateForm.get(step.field_name).get(editeTreeModifyData.field_name).setValue(treeObject)
+      //                       //(<FormGroup>this.templateForm.controls[step.field_name]).controls[editeTreeModifyData.field_name].patchValue(treeObject);
+      //                     } 
+      //                   });
+      //                 }
+      //               });
+      //             }
+      //             break;            
+      //           case "number":
+      //             if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //               let value;
+      //               if(object != null && object != ''){
+      //                 value = object;
+      //                 this.templateForm.controls[element.field_name].setValue(value)
+      //               }else if(object == 0){
+      //                 value = object;
+      //                 this.templateForm.controls[element.field_name].setValue(value)
+      //               }
+      //             }
+      //           break; 
+      //           case "gmap":
+      //           case "gmapview":
+      //             if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //               if(formValue['longitude']){
+      //                 this.longitude = formValue['longitude'];
+      //               }
+      //               if(formValue['latitude']){
+      //                 this.latitude = formValue['latitude'];
+      //               }
+      //               if(formValue['zoom']){
+      //                 this.zoom = formValue['zoom'];
+      //               }    
+      //               if(this.longitude != 0 && this.latitude != 0){
+      //                 this.getAddressfromLatLng(this.latitude,this.longitude)
+      //               }
+      //               this.templateForm.controls[element.field_name].setValue(object)
+      //             }
+      //             break;
+      //           case "daterange":
+      //             if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //               let list_of_dates = [
+      //                 {field_name : 'start'},
+      //                 {field_name : 'end'}
+      //               ]
+      //               if (list_of_dates.length > 0) {
+      //                 list_of_dates.forEach((data) => { 
+      //                   this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
+      //                   //(<FormGroup>this.templateForm.controls[element.field_name]).controls[data.field_name].patchValue(object[data.field_name]);
+      //                 });
+      //               }
+      //             }                                   
+      //             break;
+      //           case "date":
+      //             if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //               if(element.date_format && element.date_format != '' && typeof object === 'string'){
+      //                 const date = object[element.field_name];
+      //                 const dateMonthYear = date.split('/');
+      //                 const formatedDate = dateMonthYear[2]+"-"+dateMonthYear[1]+"-"+dateMonthYear[0];
+      //                 const value = new Date(formatedDate);
+      //                 this.templateForm.controls[element.field_name].setValue(value)
+      //               }else{        
+      //                 const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
+      //                 //need in this format 2022-06-30T00:00:00+05:30
+      //                 // let isoString = new Date(value).toISOString()
+      //                 let transformzonedTime :any;
+      //                 // let zonedTime:any;
+      //                 if(value !=''){
+      //                   // zonedTime = utcToZonedTime(value, this.userTimeZone);
+      //                   let localZonedDateTime = new Date(value).toLocaleString();
+      //                   // let nntransformzonedTime = (parseISO(zonedTime), "yyyy-MM-dd'T'HH:mm:ssZ");
+      //                   transformzonedTime = this.datePipe.transform(localZonedDateTime,"yyyy-MM-dd'T'HH:mm:ssZZZZZ");
+      //                   // let pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'";
+      //                   // let output = format(zonedTime, pattern, { timeZone: userTimeZone })
+      //                   // const localDateTime =  transformzonedTime.toLocaleString();
+
+      //                 }else{
+      //                   transformzonedTime='';
+      //                 }
+      //                 this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
+      //               }
+      //             }
+      //             break;
+      //           case "time":
+      //             if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //               if(element.time_format && element.time_format != '' && typeof object === 'string'){
+      //                 const time = object[element.field_name];
+      //                 this.templateForm.controls[element.field_name].setValue(time)
+      //               }else{
+      //                 const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
+      //                 let transformzonedTime :any;
+      //                 if(value !='' && value !=null && value !=undefined){
+      //                   //new way required foramt for Ionic TimeFormat to convert into 24hr is "07:05:45 PM"
+      //                   let splitServerValue = value.split(" ");
+      //                   let addsec = splitServerValue[0] +":"+'00'+" "+splitServerValue[1];
+      //                   let date = new Date("2023-01-01 " + addsec);
+      //                   // Format the date object into a 24 hour time string
+      //                   transformzonedTime = date.toLocaleTimeString([], { hour12: false });
+      //                   console.log("format :",transformzonedTime);
+  
+      //                   // below code with ion-datetime input work, need to do changes
+      //                   // const isoValue = new Date(value).toISOString();
+      //                   // const isotime = new Date(isoValue);
+      //                   // let splitHrMin:any = value.split(":");
+      //                   // const getHr:any = splitHrMin[0];
+      //                   // const splitMinFormat:any = splitHrMin[1];
+      //                   // const getMin:any = splitMinFormat.split(" ");
+      //                   // const time = new Date(value);
+      //                   // const hours = time.getHours();
+      //                   // const minutes = time.getMinutes();
+      //                   // const formattedTime = new Date(`2022-01-01T${splitHrMin[0]}:${getMin}:00`).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+      //                   // console.log(formattedTime);
+      //                   // const now = new Date();
+      //                   // const newTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+      //                   // const resultIonTime = newTime.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true });
+      //                   // console.log(resultIonTime);
+  
+      //                 }else{
+      //                   transformzonedTime='';
+      //                 }
+      //                 this.templateForm.controls[element.field_name].setValue(transformzonedTime);                  
+      //               }
+      //             }
+      //             break;
+      //           case "tabular_data_selector":   
+      //             if(object != undefined && object != null){
+      //               this.custmizedFormValue[fieldName] = JSON.parse(JSON.stringify(object));     
+      //             } 
+      //             if(Array.isArray(this.staticData[element.ddn_field]) && Array.isArray(this.custmizedFormValue[fieldName])){
+      //               this.custmizedFormValue[fieldName].forEach(staData => {
+      //                 if(this.staticData[element.ddn_field][staData._id]){
+      //                   this.staticData[element.ddn_field][staData._id].selected = true;
+      //                 }
+      //               });
+      //             }          
+      //             break;
+      //           case "list_of_checkbox":
+      //             this.templateForm.controls[element.field_name].setValue([]);
+      //             break;
+      //           default:
+      //             if(formValue[element.field_name] != null && formValue[element.field_name] != undefined){
+      //               const value = formValue[element.field_name] == null ? null : formValue[element.field_name];
+      //               this.templateForm.controls[element.field_name].setValue(value)
+      //             }
+      //             break;
+      //         } 
+      //       }  
+      //       if(element.tree_view_object && element.tree_view_object.field_name != ""){
+      //         let editeTreeModifyData = JSON.parse(JSON.stringify(element.tree_view_object));
+      //         const object = this.selectedRow[editeTreeModifyData.field_name];
+      //         this.templateForm.controls[editeTreeModifyData.field_name].setValue(object)
+      //       } 
+
+      //     }
+      //   }  
+      // });
+      // ===================================
+
+      // delete below code part2
+      // if(this.formFieldButtons.length > 0){
+        //   this.formFieldButtons.forEach(element => {
+          //     let fieldName = element.field_name;
+          //     let object = this.selectedRow[fieldName];
+          //     if(formValue[fieldName] != null && formValue[fieldName] != undefined){
+            //       if(element.field_name && element.field_name != ''){              
+              //         switch (element.type) {
+                //           case "dropdown":
+                  //             let dropdownValue = object == null ? null : object;
+                  //             this.templateForm.controls[element.field_name].setValue(dropdownValue);
+                  //             break;
+      //           default:
+      //             break;
+      //         }
+      //       }
+      //     }
+      //   });
+      // }
+      // ===================================
+    }
+  }
+  // CD
+  isMendetory(parent,chield){
+    const  formValue = this.getFormValue(true);
+    let responce = this.checkIfService.checkIsMendetory(parent,chield,formValue,this.templateForm);
+    this.templateForm = responce.templateForm;
+    return responce.tobedesabled;
+  }
+  // CD
+  getNextFormData(formData){
+    let result = this.multipleFormService.getNextFormData(formData,this.listOfFieldsUpdateIndex);
+    if(result.updateAddNew){
+      this.apiService.getGridData(result.payload);
+    }
+
+    // delete below code
+    // if(formData){
+    //   let parent:any = '';
+    //   let child:any = '';
+    //   if(formData['parent_field']){
+    //     parent = formData['parent_field'];
+    //   }
+    //   if(formData['current_field']){
+    //     child = formData['current_field'];
+    //   }
+    //   let formValue = formData['data'];
+    //   let fieldValue:any = '';
+    //   if(parent != ''){
+    //     fieldValue = formValue[parent.field_name][child.field_name];
+    //   }else{
+    //     fieldValue = formValue[child.field_name];
+    //   }    
+    //   if(fieldValue && fieldValue._id && fieldValue._id != ''){
+    //     //console.log(fieldValue._id);
+    //     const params = child.api_params;
+    //     if(params && params != ''){
+    //       const criteria = ["_id;eq;"+fieldValue._id+";STATIC"]
+    //       const crList = this.apiCallService.getCriteriaList(criteria,{});
+    //       const payload = this.apiCallService.getDataForGrid(1,{},{'name':params},[],{},'');
+    //       payload.data.crList = crList;
+    //       this.apiService.getGridData(payload);
+    //       this.updateAddNew = true;
+    //     }else{
+    //       this.updateAddNew = false;
+    //     }     
+    //   }else{
+    //     this.updateAddNew = false;
+    //   }
+    // }else{
+    //   this.updateAddNew = false;
+    // }
+  }
+  // CD
   modifyCustmizedValue(fieldName){
     let modifyObject = this.gridCommonFunctionService.gridDataModify(this.modifyCustmizedFormValue,this.custmizedFormValue,this.tableFields,fieldName,'grid_selection',this.getFormValue(true));
     this.modifyCustmizedFormValue = modifyObject.modifyData;
     this.tableFields = modifyObject.fields;
   }
+  // CD
+  isDisable(parent,chield){
+    const  formValue = this.getFormValue(true);  
+    let responce:any = this.checkIfService.checkIsDisable(parent,chield,this.updateMode,formValue,this.templateForm);
+    this.templateForm = responce.templateForm;
+    return responce.tobedesabled;
+  }
+  // CD
+  removeClass = (element,name) => {
+    // delete below code
+    // element.className = element.className.replace(name, "");
+    // element.className = element.className.removeClass(name);
+    // ====================
+    if(element.classList && element.classList.length >0 && element.classList.contains(name)){
+      element.classList.remove(name);
+    }else if(element.className && element.className.includes(name)){
+      element.className = element.className.replace(name, "");
+    }
+  }
+  get templateFormControl() {
+    return this.templateForm.controls;
+  }
+  //Dependency function Handling End ------------------
+  
+  // Function used On HTML, Handling Start -------------  
+  getDivClass(field) {
+    const fieldsLength = this.tableFields.length;
+    const returnClass = this.commonFunctionService.getDivClass(field,fieldsLength);
+    if(field.hideOnMobile){
+      return returnClass + " ion-hide";
+    }else{
+      return returnClass
+    }
+  }
+  isEnable(parent,field, elementType) {
+    //this.tempVal[field+"_"+elementType] = true;
+    if(parent != ''){
+      return this.tempVal[parent + '_' + field + "_" + elementType];
+    }else{
+      return this.tempVal[field + "_" + elementType];
+    }    
+  }
+  checkObjectSize(object){
+    if(object != undefined && object != null){
+      return (Object.keys(object).length > 0)
+    }
+    return false;
+  }
+  // CD
+  showListFieldValue(listOfField, item) {
+    return this.gridCommonFunctionService.showListFieldValue(listOfField,item);
+
+    // delete below code also need to delete this fucntion
+    // switch (item.type) {
+    //   case "typeahead":
+    //     if(item.datatype == "list_of_object"){
+    //       if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
+    //         return '<i class="fa fa-eye text-pointer"></i>';
+    //       } else {
+    //         return '-';
+    //       }
+    //     }else if(item.datatype == "object"){
+    //       if (item.display_name && item.display_name != "") {
+    //         return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+    //       } else {
+    //         return listOfField[item.field_name];
+    //       }
+    //     }
+    //     else if(item.datatype == "text"){
+    //       if (item.display_name && item.display_name != "") {
+    //         return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+    //       } else {
+    //         return listOfField[item.field_name];
+    //       }
+    //     }
+    //     break;
+    //   case "list_of_string":
+    //   case "list_of_checkbox":
+    //   case "grid_selection":
+    //   case "list_of_fields":
+    //     if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
+    //       // if (isPlatform('hybrid')){
+    //         return '<span class="material-symbols-outlined cursor-pointer">visibility</span>';
+    //       // }else{
+    //         // return '<i class="fa fa-eye text-pointer"></i>';
+    //       // }
+    //     } else {
+    //       return '-';
+    //     }
+    //   case "checkbox":
+    //     let value:any = false;
+    //     if (item.display_name && item.display_name != "") {
+    //       value = this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+    //     } else {
+    //       value = this.getValueForGrid(item,listOfField);
+    //     }
+    //     return value ? "Yes" : "No";
+    //   default:
+    //     if (item.display_name && item.display_name != "") {
+    //       return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
+    //     } else {
+    //       return this.getValueForGrid(item,listOfField);
+    //     }
+    // }
+  }  
+  clearTypeaheadData() {
+    this.apiService.clearTypeaheadData();
+  }  
+  getButtonDivClass(field){
+    return this.commonFunctionService.getButtonDivClass(field);
+  }
+  checkRowDisabledIf(field,index){
+    const data = this.commonFunctionService[field.field_name];
+    const condition = field.disableRowIf;
+    if(condition){
+      return !this.checkIfService.checkDisableRowIf(condition,data);
+    }
+    return true;    
+  }
+  getValueForGrid(field,object){
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
+  }
+  // Function used On HTML, Handling End -------------
+  
+  // Need to remove dependency & delete functions Start------
+  checkShowIfListOfFiedlds(parent,field){
+    let formValue = this.getFormValue(true);
+    let fieldValue = formValue[parent];    
+    if(fieldValue && fieldValue.length > 0 && field && field.show_if && field.show_if != null && field.show_if != ''){
+      let check = 0;      
+      for (let index = 0; index < fieldValue.length; index++) {
+        const value = fieldValue[index];
+        formValue[parent] = value;
+        if(this.checkIfService.showIf(field,formValue)){
+          check = 1;
+          break;
+        }        
+      }
+      if(check == 1){
+        return false;
+      }else{
+        return true;
+      }
+    }else{
+      return false;
+    }
+  }
+  showIf(field){
+    const  objectc = this.selectedRow?this.selectedRow:{}
+    const object = JSON.parse(JSON.stringify(objectc));
+    if(this.templateForm){
+      Object.keys(this.templateForm.getRawValue()).forEach(key => {
+        object[key] = this.templateForm.getRawValue()[key];
+      })
+    }
+    const display = this.checkIfService.showIf(field,object);
+    const modifiedField = JSON.parse(JSON.stringify(field));
+    modifiedField['display'] = display; 
+    field = modifiedField;
+    return display;
+  }  
+  checkGridSelectionButtonCondition(field,button){
+    let check = true;
+    switch (button) {
+      case 'add':
+        if(field && field.addNewButtonIf && field.addNewButtonIf != ''){
+          let modifyedField:any = {};
+          modifyedField['show_if'] = field.addNewButtonIf;
+          check = this.showIf(modifyedField);
+        }
+        break;    
+      default:
+        break;
+    }
+    return check;
+  }
+  // Need to remove dependency & delete functions End-----
+  
+
+  // Ionin Event || Method Function Handling Start-------
+  clearDropdownField(e:any,field:any){
+    if(e.target.value && e.target.value.name){      
+      e.target.value = "";
+    }else{
+      e.target.value = "";
+    }
+    this.setValue("",field, "", e);
+  }
+  /** Reorder objects in array */
+	doReorder(ev: CustomEvent<ItemReorderEventDetail>, draggableItemId: number) {
+    let groupToChangeIndex = this.custmizedFormValue.findIndex(
+      (Item:any) => Item.id === draggableItemId
+    );
+    this.custmizedFormValue[groupToChangeIndex].items = ev.detail.complete(
+      this.custmizedFormValue[groupToChangeIndex].items
+    );
+  }
+  handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
+    console.log("Item", ev.detail.from, 'Dragged from index', ev.detail.from, 'to', ev.detail.to);
+    ev.detail.complete();
+  }
+  // Ionic Event || Method Function Handling End-------
+
+  
+  // Camera Function Handling Start --------------
+  async selectImageSource(parent,field) {
+    this.curFileUploadField = field;
+    this.curFileUploadFieldparentfield = parent;
+    const buttons = [
+      {
+        text: 'Take Photo',
+        icon: 'camera',
+        handler: () => {
+          this.selectImage(CameraSource.Camera);
+        }
+      },
+      {
+        text: 'Choose From Photos',
+        icon: 'images',
+        handler: () => {
+          this.selectMultipleImages();
+        }
+      }
+    ];
+ 
+    // Only allow file selection inside a browser
+    // if (!this.plt.is('hybrid')) {
+    //   buttons.push({
+    //     text: 'Choose a File',
+    //     icon: 'attach',
+    //     handler: () => {
+    //       this.fileInput.nativeElement.click();
+    //     }
+    //   });
+    // }
+ 
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Select Image Source',
+      buttons
+    });
+    await actionSheet.present();
+  }
+  async selectImage(source: CameraSource) {
+    const image = await Camera.getPhoto({
+      quality: 60,
+      allowEditing: false,
+      resultType: CameraResultType.Uri,
+      source: source,      
+      correctOrientation: true,
+      saveToGallery: true
+    });
+
+    console.log('Selected Image : ', image);
+    let arrayimages:any = []; 
+    arrayimages.push(image);
+    if (arrayimages && arrayimages.length > 0) {
+        this.saveImages(arrayimages)
+    }
+  }
+  async selectMultipleImages(){    
+    const multipleImagesOption:GalleryImageOptions = {
+      quality: 60,
+      limit: 0,     
+      correctOrientation: true,
+      presentationStyle: "popover"
+    } 
+    await Camera.pickImages(multipleImagesOption).then(res => {
+      let arrayimages = res.photos;
+      this.saveImages(arrayimages)
+    },
+    error => {
+         console.log(error)
+      });
+  }
+  async saveImages(photos) {
+    let base64Data:any;
+    let kbytes:any;
+    let fileName:any;
+    this.selectedphotos=[];
+    photos.forEach(async (img:any) => {
+      base64Data = await this.readAsBase64(img);
+      const dateTime = this.datePipe.transform(new Date(), 'yyyyMMdd') + "_" + this.datePipe.transform(new Date(), 'hhmmss');
+      fileName = "IMG_" + dateTime + '.'+ img.format;
+      this.selectedphotos.push({
+        fileData: base64Data,
+        fileName: fileName,
+        fileExtn:  img.format,
+        innerBucketPath: fileName,
+        // rollName: fileName,
+        log: this.storageService.getUserLog()
+      }) 
+      if(photos.length == this.selectedphotos.length){
+        this.setFile();
+      }     
+    });
+  }
+  setFile(){
+    let uploadData = [];
+    if(this.curFileUploadField){
+      if(this.curFileUploadFieldparentfield != ''){
+        const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);
+        if(this.dataListForUpload[custmizedKey] && this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]){
+          const data = this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name];
+          if(data && data.length > 0){
+            uploadData = data;
+          }  
+        }      
+      }else{ 
+        const data = this.dataListForUpload[this.curFileUploadField.field_name];
+        if(data && data.length > 0){
+          uploadData = data;
+        } 
+      }
+    }
+    if(this.selectedphotos && this.selectedphotos.length > 0){
+      this.selectedphotos.forEach(element => {
+        uploadData.push(element);
+      });
+    }
+    if(uploadData && uploadData.length > 0){
+      this.fileUploadResponce(uploadData);    
+      this.notificationService.presentToastOnBottom("Image Added", "success");
+    }
+  }
+  // CD
+  fileUploadResponce(response) {
+    let uploadFileResponce = this.fileHandlerService.updateFileUploadResponce(this.curFileUploadFieldparentfield,this.curFileUploadField,this.dataListForUpload,this.templateForm,this.tableFields,response);
+    this.dataListForUpload = uploadFileResponce.dataListForUpload;
+    this.templateForm = uploadFileResponce.templateForm;
+    this.tableFields = this.tableFields; 
+
+    // delete below code
+    // if(this.curFileUploadFieldparentfield != ''){
+    //   const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield);            
+    //   if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
+    //   if (!this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]) this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] = [];
+    //   this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] = response;
+    // }else{
+    //   if (!this.dataListForUpload[this.curFileUploadField.field_name]) this.dataListForUpload[this.curFileUploadField.field_name] = [];
+    //   this.dataListForUpload[this.curFileUploadField.field_name] = response;
+    // }
+    
+    // if(this.curFileUploadFieldparentfield != ''){
+    //   const custmizedKey = this.commonFunctionService.custmizedKey(this.curFileUploadFieldparentfield); 
+    //   if(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name] && this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name].length > 0){
+    //     let fileName = this.fileHandlerService.modifyFileSetValue(this.dataListForUpload[custmizedKey][this.curFileUploadField.field_name]);        
+    //     this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue(fileName);
+    //   }else{
+    //     this.templateForm.get(this.curFileUploadFieldparentfield.field_name).get(this.curFileUploadField.field_name).setValue('');
+    //   }
+    // }else{    
+    //   if(this.dataListForUpload[this.curFileUploadField.field_name] && this.dataListForUpload[this.curFileUploadField.field_name].length > 0){
+    //     let fileName = this.fileHandlerService.modifyFileSetValue(this.dataListForUpload[this.curFileUploadField.field_name]);
+    //     this.templateForm.get(this.curFileUploadField.field_name).setValue(fileName);
+    //   }else{
+    //     this.templateForm.get(this.curFileUploadField.field_name).setValue('');
+    //   }
+    // }
+  }
+  // delete selected image from the list
+  deleteImage(index:number) {
+    // this.cameraService.deleteImage(index).subscribe(res => {
+    //   this.images.splice(index, 1);
+    // });
+    this.selectedphotos.splice(index, 1);
+    this.notificationService.presentToastOnBottom('File removed', "success");
+  }
+  // Camera Function Handling End --------------
+
+
+  // Download File Functions into Mobile Start ------------
+  async downloadResponseHandler(response:any){
+    if(response?.haspermission && response?.status){
+      await this.loaderService.hideLoader();
+      if(response?.openfile && !response?.sharefile){
+        const confirm:any = await this.notificationService.confirmAlert('Open file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Open", "Dismiss");
+        if(response?.fileuri && confirm == "confirm"){
+          FileOpener.open({filePath:response.fileuri, contentType:response?.mimetype}).then( res => {
+            console.log("File Opened");
+          }).catch((e)=>{
+            console.error("File Opening error ", JSON.stringify(e));
+            this.notificationService.presentToastOnBottom("No app found to open the file.");
+          })
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+        }
+      }else if(!response?.openfile && response?.sharefile){
+        const confirm:any = await this.notificationService.confirmAlert('Share file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Share", "Dismiss");
+        if(response?.fileuri && confirm == "confirm"){
+          const canShare = await this.appShareService.checkDeviceCanShare();
+          if(canShare){
+            let shareOption = {
+              title: response?.filename ? response.filename : "Share",
+              text: "Here is the file you requested.",
+              url: response?.fileuri,
+              dialogTitle: "Share " + response?.filename
+            }
+            this.appShareService.share(shareOption);
+          }
+        }else{
+          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
+        }
+      }else{
+        this.notificationService.presentToastOnBottom("Downloaded into " + response.directoryname.toLowerCase(),"success")
+      }
+    }else{
+      this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
+    }
+  }
+  // Download File Functions into Mobile End ------------ 
+
+  
+  // Google Map Function Handling Start ------------------ 
+  async checkPermissionandRequest(){
+    let permResult = false;
+    if(isPlatform('hybrid')){
+      permResult = await this.app_googleService.checkGeolocationPermission();
+      if(permResult){        
+        this.requestLocationPermission();
+      }
+    }else{
+      permResult = await this.app_googleService.checkGeolocationPermission();
+    }   
+    if(!permResult){
+      let alreadyOpen = await this.alertController.getTop();
+      if(alreadyOpen == undefined){
+        this.gpsEnableAlert();
+      }
+    }else{
+      if(isPlatform('hybrid')){
+        this.setCurrentLocation();
+      }else{
+        this.getCoordinatesOnBrowser();
+      }
+    }
+  }
+  async gpsEnableAlert(){     
+    const alert = await this.alertController.create({
+      cssClass: 'form-gps-class',
+      header: 'Please Enable GPS !',
+      message: 'For smooth app experience please give us your location access.',
+      buttons: [
+        {
+          text: 'No, thanks',
+          role: 'cancel',
+        },
+        {
+          text: 'OK',
+          role: 'confirmed',
+          handler: () => {},
+        },
+      ],
+    });
+
+    await alert.present();
+    let resultrole:any='';
+    await alert.onDidDismiss().then(value => {
+      resultrole = value;
+      console.log("Form Gps Alert :",value.role)
+    });
+    if(resultrole && resultrole.role == 'confirmed'){
+      await this.requestLocationPermission();
+    }
+  }
+  async requestLocationPermission() {
+    let isGpsEnable = false;
+    if(isPlatform('hybrid')){
+      const permResult = await this.appPermissionService.checkAppPermission("ACCESS_FINE_LOCATION");
+      if(permResult){
+        isGpsEnable = await this.app_googleService.askToTurnOnGPS();
+        if(isGpsEnable){
+          this.setCurrentLocation();
+        }
+      }
+    }else{      
+      await this.getCoordinatesOnBrowser();
+    }    
+  }
+  async getCoordinatesOnBrowser(){
+    const successCallback = (position) => {
+      let latLng = position.coords;
+      if(latLng && latLng['latitude'] && latLng['longitude']){ 
+        this.latitude = latLng['latitude'];
+        this.longitude = latLng['longitude']
+        this.center = {
+          lat:latLng.latitude,
+          lng:latLng.longitude
+        }
+      }
+    };      
+    const errorCallback = (error: any) => {
+      console.log(error);
+      this.notificationService.presentToastOnBottom("Geolocation is not supported by this browser.", "danger");
+    };
+    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+  }
+  async setCurrentLocation(){
+    if(isPlatform('hybrid')){
+      let currentLatLng:any = await this.app_googleService.getUserLocation();
+      if((currentLatLng && currentLatLng.lat) || (currentLatLng && currentLatLng.latitude)){
+        this.latitude = currentLatLng.lat ? currentLatLng.lat : currentLatLng.latitude;
+        this.longitude = currentLatLng.lng ? currentLatLng.lng : currentLatLng.longitude;
+        this.center ={
+          'lat':this.latitude,
+          'lng':this.longitude
+        }
+      }else{
+        console.log("Error while getting Location")
+      }
+    }else{
+      await this.getCoordinatesOnBrowser();
+    }
+    this.zoom = 17;
+  }
+  async locateMe(event:any,field?:any){
+    this.zoom = 17;
+    const hasGpsPermission = await this.app_googleService.checkGeolocationPermission();
+    if(hasGpsPermission ){
+      await this.setCurrentLocation();
+      await this.getAddressfromLatLng(this.latitude,this.longitude);
+      this.setAddressOnForm(field);
+    }else{
+      this.gpsEnableAlert();
+    }
+  }
+  async gmapSearchPlaces(inputData?:any,field?:any){
+    if(inputData?.target?.value){
+      if(this.searchElementRef != undefined){
+        if(this.searchElementRef && this.searchElementRef.nativeElement){
+          this.searchElementRef.nativeElement.value  = inputData.target.value;
+        }else{
+          this.searchElementRef['el']['value']  = inputData.target.value; // for ion-input
+        } 
+      }
+    }
+    let loadGoogleMap:boolean = false;
+    if(typeof Common.GOOGLE_MAP_IN_FORM == "string"){
+      if(Common.GOOGLE_MAP_IN_FORM == "true"){
+        loadGoogleMap = true;
+      }
+    }else{
+      if(Common.GOOGLE_MAP_IN_FORM){
+        loadGoogleMap = true;
+      }
+    }
+    if(loadGoogleMap){
+      // if(this.apiLoaded){
+        // this.geoCoder = new google.maps.Geocoder;
+        if(this.longitude == 0 && this.latitude == 0){
+          await this.setCurrentLocation();
+        }
+        this.center = {
+          "lat": this.latitude,
+          "lng": this.longitude
+        }
+        if(this.searchElementRef != undefined){
+          let googleautosearch;
+          if(this.searchElementRef && this.searchElementRef.nativeElement){
+            googleautosearch = this.searchElementRef.nativeElement
+          }else{
+            googleautosearch = this.searchElementRef['el']
+          }
+          let autocomplete = new google.maps.places.Autocomplete(
+            googleautosearch
+          );
+          autocomplete.addListener('place_changed', () => {
+            this.ngZone.run(() => {
+              let place: google.maps.places.PlaceResult = autocomplete?.getPlace();
+              if (place.geometry === undefined || place.geometry === null) {
+                return;
+              }
+              this.searchElementRef.nativeElement.value = place.name;
+              this.address = place.formatted_address;
+              this.latitude = place.geometry.location.lat();
+              this.longitude = place.geometry.location.lng();
+              this.center = {
+                "lat": this.latitude,
+                "lng": this.longitude
+              }
+              this.zoom = 17;
+              this.setAddressOnForm(field);
+              // this.addCapMarker(this.center);
+              this.getAddressfromLatLng(this.latitude, this.longitude);
+            });
+          });
+        }
+      // }
+    }
+  }
+  async mapClick(event: google.maps.MapMouseEvent,field?:any) {
+    this.zoom = 16;
+    this.center = (event.latLng.toJSON());
+    await this.getAddressfromLatLng(this.center.lat, this.center.lng);
+    this.setAddressOnForm(field);
+  }
+  openInfoWindow(marker: MapMarker) {
+    this.infoWindow.open(marker);
+  }  
+  async getAddressfromLatLng(latitude, longitude)  {
+    if(latitude && longitude){
+      let location = {
+        "location" : {
+        'lat': latitude,
+        'lng': longitude
+        }
+      }
+      let address:any = await this.app_googleService.getGoogleAddressFromString(location);
+      if(address && address.formatted_address){
+        this.address = address.formatted_address;
+        this.latitude = address?.geometry?.location?.lat;
+        this.longitude = address?.geometry?.location?.lng;
+      }
+    }
+  }
+  setAddressOnForm(field:any){
+    if(this.templateForm?.get(field?.field_name)){
+      this.templateForm.get(field?.field_name).setValue(this.address);
+    }else if(this.templateForm?.get('address')){
+      this.templateForm.get('address').setValue(this.address);
+    }
+  }
+  // Google Map Function Handling End ------------------ 
+  
+  // Functions Not in use =============
+  getName(object:any){
+    let columns = this.tableFields.gridColumns;
+    let field_name : string = "";
+    if(columns && columns.length > 0){
+      columns.forEach(element => {
+        if(element.field_name == "plainCustomerName"){
+          field_name = element.field_name;
+        }
+      });
+      if(field_name == ""){
+        field_name = columns[0].field_name;
+      }
+      let value = this.commonFunctionService.getObjectValue(field_name,object);
+      return value;      
+    }
+  }
+  async delete(index:number,field:any,fieldName:string){
+    //alert, if confirm then
+    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
+    if(confirmDelete === "confirm"){
+      this.custmizedFormValue[fieldName].splice(index,1);
+      let obj = await this.getSendData(field)
+      this.gridSelectionResponce(obj);
+    }
+  }
+   // go to new page 2nd method
+  async detailCardButton(data:any,index:number){
+    // if(this.detailPage){
+    //   //const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
+    //   //this.editedRow(data,index);
+    //   this.modaldetailCardButton(column,data);
+    // }else{
+      const newobj = {
+        "childdata": data,
+        "selected_tab_index": this.selectedIndex
+      }
+      this.dataShareServiceService.setchildDataList(newobj);  
+      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);  
+      this.router.navigate(['card-detail-view']);
+    // }    
+  }
+  candelForm() {    
+    if(this.updateMode){      
+      Object.keys(this.custmizedFormValue).forEach(key => {
+        if(this.custmizedFormValue[key] != null){
+          this.custmizedFormValue[key].forEach(element => {
+            if(element.status == 'I'){
+              element.status = 'A';
+            }
+          });
+        }
+      });
+    }else{
+      this.custmizedFormValue = {};
+    }
+    this.updateMode=false;
+    this.addAndUpdateResponce.emit('close');    
+  }
+  async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
+    const fileExtension = extentionType;
+    const response: any = await this.appDownloadService.getBlobTypeFromExtn(extentionType);
+    const file_Type:string = response?.mimeType ? response?.mimeType : '';
+    const file_prefix:string = response?.filePrefix ? response?.filePrefix : '';
+
+    let fileName:any;
+    if(filename && filename !=undefined){      
+      fileName = filename;
+    }else{
+      fileName = file_prefix + '_' + new Date().getTime() + "." + fileExtension;
+    }
+    const blobData:Blob = new Blob([arrayBufferData],{type:file_Type});
+    
+    // this.downloadToMobile(blobData,fileName);
+    let downloadResponse:any =  await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
+    this.downloadResponseHandler(downloadResponse);
+  }
+  onClickLoadData(parent,field){
+    if(field && field.onClickApiParams && field.onClickApiParams != ''){        
+      let api_params = field.onClickApiParams;
+      let callBackfield = field.onClickCallBackField;
+      let criteria = field.onClickApiParamsCriteria
+      let object = this.getFormValue(false);
+      const payload = this.apiCallService.getPaylodWithCriteria(api_params,callBackfield,criteria,object);
+      let payloads = [];
+      payloads.push(this.apiCallService.checkQtmpApi(api_params,field,payload,this.multipleFormCollection,object,this.getFormValue(true)));
+      this.callStaticData(payloads);
+    }
+  }
+  getTimeFormat(field){
+    if(field && field.time_format && field.time_format != ''){
+      return Number(field.time_format);
+    }else{
+      return Number('12');
+    }
+  }
+  searchTypeaheadData(field, currentObject,chipsInputValue) {
+    this.typeaheadObjectWithtext = currentObject;
+
+    this.addedDataInList = this.typeaheadObjectWithtext[field.field_name]
+
+    this.typeaheadObjectWithtext[field.field_name] = chipsInputValue.target.value;
+
+    let call_back_field = '';
+    let criteria = [];
+    const staticModal = []
+    if (field.call_back_field && field.call_back_field != '') {
+      call_back_field = field.call_back_field;
+    }
+    if(field.api_params_criteria && field.api_params_criteria != ''){
+      criteria =  field.api_params_criteria;
+    }
+    let staticModalGroup = this.apiCallService.getPaylodWithCriteria(field.api_params, call_back_field, criteria, this.typeaheadObjectWithtext ? this.typeaheadObjectWithtext : {});
+    staticModal.push(staticModalGroup);
+    this.apiService.GetTypeaheadData(staticModal);
+
+    this.typeaheadObjectWithtext[field.field_name] = this.addedDataInList;
+  }
+  getListOfFieldsGridColumn(field:any): Array<any>{
+    let columns = [];
+    if(field && field.list_of_fields && field.list_of_fields.length > 0){
+      for (let index = 0; index < field.list_of_fields.length; index++) {
+        const element = field.list_of_fields[index];
+        if(element == null){
+          this.notifyFieldValueIsNull(field.label,index+1);
+          break;
+        }
+      }
+      columns = JSON.parse(JSON.stringify(field.list_of_fields));
+    }else if(field && field.gridColumns && field.gridColumns.length > 0){
+      for (let index = 0; index < field.gridColumns.length; index++) {
+        const element = field.gridColumns[index];
+        if(element == null){
+          this.notifyFieldValueIsNull(field.label,index+1);
+          break;
+        }
+      }
+      columns = JSON.parse(JSON.stringify(field.gridColumns));
+    }
+    return columns;
+  }
+  removeItem(data:any,column:any,i:number){
+    this.commonFunctionService.removeItem(data,column,i);
+  }
+  
+  /**
+	 * handle file from browsing
+	 */
+  fileBrowseHandler(parent,field,files) {
+    this.curFileUploadField = field;
+    this.curFileUploadFieldparentfield = parent;
+    this.fileDrop = false;
+    this.prepareFilesList(files.files);
+  }
+
+	/**
+	 * Delete file from files list
+	 * @param index (File index)
+	 */
+  deleteFile(index: number) {
+    this.uploadData.splice(index, 1);
+  }
+
+	/**
+	 * Simulate the upload process
+	 */
+
+  prepareFilesList(files: Array<any>) {
+    for (const item of files) {
+      item.progress = 0;
+      this.files.push(item);
+    }
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+      this.uploadFilesData.push(file);
+      var reader = new FileReader();
+      reader.onload = this.readNoticeFile
+      reader.readAsDataURL(file);
+    }
+    // console.log(this.files);
+    // console.log(this.uploadData);
+    this.fileUploadResponce(this.uploadData);
+  }
+
+  readNoticeFile = (e) => {
+    var rxFile = this.uploadFilesData[0];
+    this.uploadFilesData.splice(0, 1);
+    this.uploadData.push({
+      fileData: e.target.result.split(',')[1],
+      fileName: rxFile.name,
+      fileExtn:  rxFile.name.split(".").pop(),
+      // size: rxFile.size,
+      innerBucketPath: rxFile.name,
+      log: this.storageService.getUserLog()
+    });
+  }
+
+  //Functions Not in use End ====================================
+  
+  // checkObjecOrString(data){
+  //   if(data._id){
+  //     return data._id;
+  //   }else{
+  //     return data;
+  //   }
+  // }
+
+  // checkRowIf(data:any){
+  //   let check = false;
+  //   if(data.selected){
+  //     let condition = '';
+  //     if(this.tableFields.disableRowIf && this.tableFields.disableRowIf != ''){
+  //       condition = this.tableFields.disableRowIf;
+  //     }
+  //     if(condition != ''){
+  //       if(this.checkIfService.checkDisableRowIf(condition,data)){
+  //         check = true;
+  //       }else{
+  //         check = false;
+  //       }
+  //     }
+  //   }
+  //   return check;
+  // }
+
+  // checkGridSelectionMendetory(){
+  //   let validation = {
+  //     'status' : true,
+  //     'msg' : ''
+  //   }
+  //   if(this.gridSelectionMendetoryList && this.gridSelectionMendetoryList.length > 0){
+  //     let check = 0;
+  //     this.gridSelectionMendetoryList.forEach(field => {        
+  //       let data:any = [];
+  //       if(this.custmizedFormValue[field.field_name]){
+  //         data = this.custmizedFormValue[field.field_name];
+  //       }
+  //       if(field.mendetory_fields && field.mendetory_fields.length > 0){
+  //         field.mendetory_fields = this.modifiedGridColumns(field.mendetory_fields);
+  //         if(data && data.length > 0){
+  //           field.mendetory_fields.forEach(mField => {
+  //             const fieldName = mField.field_name;
+  //             if(mField.display){
+  //               data.forEach((row:any,i) => {
+  //                 if(row && row[fieldName] == undefined || row[fieldName] == '' || row[fieldName] == null){
+  //                   if(validation.msg == ''){
+  //                     let errorPositionInArray:any;
+  //                     if(row.plainCustomerName){
+  //                       errorPositionInArray =  " of " + row.plainCustomerName;
+  //                     }else{
+  //                       errorPositionInArray = '';
+  //                     }
+  //                     validation.msg = mField.label + errorPositionInArray + ' of ' + field.label + ' is required.';
+  //                   }
+  //                   check = 1;
+  //                 }
+  //               });
+  //             }
+  //           });
+  //         }
+  //       }     
+  //     });
+  //     if(check != 0){
+  //       validation.status = false;
+  //       return validation;
+  //     }else{
+  //       return validation
+  //     }
+  //   }else{
+  //     return validation;
+  //   }
+  // }
+
+  // focusField(parent,key){
+  //   const  id = key._id + "_" + key.field_name;
+  //   let field:any = {};
+  //   if(parent == ''){
+  //     if(this.focusFieldParent && this.focusFieldParent.field_name && this.focusFieldParent.field_name != ''){
+  //       parent = this.focusFieldParent;
+  //     }
+  //   }
+  //   if(parent != ""){
+  //     field = this.templateForm.get(parent.field_name).get(key.field_name);
+  //   }else{
+  //     field = this.templateForm.get(key.field_name);
+  //   }
+  //   if(field && field.touched){
+  //     this.checkFormFieldAutfocus = false;
+  //     if(this.previousFormFocusField && this.previousFormFocusField._id){
+  //       this.previousFormFocusField = {};
+  //       this.focusFieldParent={};
+  //     }
+  //   }else if(field == undefined){
+  //     this.previousFormFocusField = {};
+  //     this.focusFieldParent={};
+  //   }
+  //   const invalidControl = document.getElementById(id);
+  //   if(invalidControl != null){
+  //     invalidControl.focus();
+  //     this.checkFormFieldAutfocus = false;
+  //     if(this.previousFormFocusField && this.previousFormFocusField.type == 'list_of_fields' && this.previousFormFocusField.datatype == 'list_of_object_with_popup'){
+  //       this.previousFormFocusField = {};
+  //     }
+  //   }
+  // }
+
+  // private getDataForNextForm(reqParams,reqCriteria) {    
+  //   const request = this.apiCallService.getDataForGrid(1, {}, { 'name': reqParams }, [], {}, '');
+  //   const crList = this.apiCallService.getCriteriaList(reqCriteria, {});
+  //   request.data.crList = crList;
+  //   this.apiService.getNextFormData(request);
+  // }
+
+  // checkFieldShowOrHide(field){    
+  //   for (let index = 0; index < this.showIfFieldList.length; index++) {
+  //     const element = this.showIfFieldList[index];
+  //     if(element.field_name == field.field_name){
+  //       if(element.show){
+  //         return true;
+  //       }else{
+  //         return false;
+  //       }
+  //     }
+      
+  //   }
+  // }
+
+  // checkQtmpApi(params,field,payload){
+  //   if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
+  //     let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
+  //     if(field && field.formValueAsObjectForQtmp){            
+  //       let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(false));
+  //       payload["data"]=formValue;
+  //     }else{
+  //       let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(true));
+  //       payload["data"]=formValue;
+  //     }
+  //   }
+  //   return payload;
+  // }
+  
+  // create Capacitor  map and add markers
+  // async createMap(latlng?,field?) {
+  //   try{
+  //     let lat = 0;
+  //     let lng = 0;
+  //     if(latlng !=undefined){
+  //       lat = latlng.lat ? latlng.lat : latlng.latitude;
+  //       lng = latlng.lng ? latlng.lng : latlng.longitude;
+  //     }else{
+  //       lat = this.center.lat;
+  //       lng = this.center.lng;
+  //     }
+  //     this.newCapMap = await GoogleMap.create({
+  //       id: 'capa-google-map',
+  //       element: this.capMapRef.nativeElement,
+  //       apiKey: this.envService.getGoogleMapApiKey(),
+  //       config: {
+  //         center: {
+  //           lat : lat,
+  //           lng : lng
+  //         },
+  //         zoom: 15,
+  //       },
+  //     });
+  //     await this.addCapMarker(latlng? latlng : this.center);     
+  //     await this.newCapMap.enableTrafficLayer(true);
+  //     if(isPlatform('hybrid')){
+  //       await this.newCapMap.enableIndoorMaps(true);
+  //       await this.newCapMap.setMapType(MapType.Satellite);
+  //       await this.newCapMap.enableCurrentLocation(true); 
+  //     }
+  //     this.addListeners();
+  //   }catch(e){
+  //     console.log("CapMap Error :", e);
+  //   }
+  // }
+  // async addCapMarker(marker){
+  //   if(this.capMapMarkerId) await this.removeMarker(this.capMapMarkerId);
+  //   this.capMapMarkerId = await this.newCapMap.addMarker({
+  //     coordinate: {
+  //       lat: marker.lat ? marker.lat : marker.latitude,
+  //       lng: marker.lng ? marker.lng : marker.longitude
+  //     },
+  //     draggable : false,
+  //   })
+  //   const CameraConfig:any = {
+  //     coordinate: {
+  //       lat: marker.lat ? marker.lat : marker.latitude,
+  //       lng: marker.lng ? marker.lng : marker.longitude
+  //     },
+  //     zoom: 15,
+  //     animate: true
+  //   }
+  //   this.newCapMap.setCamera(CameraConfig);
+  // }
+  // async removeMarker(markerId?:any){
+  //   await  this.newCapMap.removeMarker(markerId ? markerId : this.capMapMarkerId);
+  // }
+  // async addListeners(){
+  //   await this.newCapMap.setOnMarkerClickListener((event) => {
+  //     console.log("setOnMarkerClickListener :",event);
+  //     this.capMapMarkerId = event.markerId;
+  //     this.latitude = event.latitude;
+  //     this.longitude = event.longitude;
+  //     this.center = {
+  //       lat : event.latitude,
+  //       lng : event.longitude
+  //     }
+  //   })
+  //   await this.newCapMap.setOnMapClickListener(async (event) => {
+  //     console.log("setOnMapClickListener :",event);
+  //     this.latitude = event.latitude;
+  //     this.longitude = event.longitude;
+  //     this.center = {
+  //       lat : event.latitude,
+  //       lng : event.longitude
+  //     }
+  //     await this.getAddressfromLatLng(this.center.lat, this.center.lng);
+  //     this.addCapMarker(event);
+  //   })
+  //   await this.newCapMap.setOnMyLocationButtonClickListener((event) => {
+  //     console.log("setOnMyLocationButtonClickListener :",event);
+  //     this.addCapMarker(event);
+  //   })
+  //   await this.newCapMap.setOnMyLocationClickListener((event) => {
+  //     console.log("setOnMyLocationClickListener :",event);
+  //     this.latitude = event.latitude;
+  //     this.longitude = event.longitude;
+  //     this.center = {
+  //       lat : event.latitude,
+  //       lng : event.longitude
+  //     }      
+  //     this.addCapMarker(event);
+  //   })
+    
+  // }
+
+  
+  // CD
+  // checkAddNewButtonOnGridSelection(buttons){
+  //   let check = false;
+  //   if(buttons && buttons.length >0){
+  //       for (let i = 0; i < buttons.length; i++) {
+  //         const btn = buttons[i];
+  //         if(btn && btn.onclick && btn.onclick.api && btn.onclick.api == "save"){
+  //           check = true;
+  //           break;
+  //         }
+  //       }
+  //   }
+  //   return check;
+  // }
+
+  
+  // async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
+  //   let file_Type:any = '';
+  //   let folderName:any = '';
+  //   if(blobData && blobData.type){
+  //     file_Type = blobData.type;
+  //   }
+  //   if(FolderName == undefined || FolderName == null){
+  //     folderName = 'Download'
+  //   }else{
+  //     folderName = FolderName;
+  //   }
+  //   let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
+  //   let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
+
+  //   if(readPermission && writePermission){
+
+  //     // ==========using native file    
+  //     this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
+
+  //       this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
+  //         // confirm alert
+  //         let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
+  //         if(openFile == "confirm"){
+  //           const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
+  //           const mimeType = file_Type;      
+  //           this.fileOpener.open(path,mimeType)
+  //           .then(()=> console.log('File is opened'))
+  //           .catch(error => console.log('Error opening file ',error));
+  //         }
+  //       }).catch( (error:any) =>{
+  //         this.notificationService.presentToastOnBottom(JSON.stringify(error));
+  //       })
+        
+  //     }).catch( (error:any) =>{
+  //       if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
+          
+  //         this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
+  //           console.log('Directory create '+ response);
+  //           this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
+  //             this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
+  //           })
+
+  //         }).catch( (error:any) =>{
+  //             this.notificationService.presentToastOnBottom(JSON.stringify(error));
+  //         })
+  //       }
+  //     });
+  //   }else{
+  //     let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
+  //     if(gavepermission == "cancel"){
+  //       this.apppermissionsService.openNativeSettings('application_details');
+  //     }
+  //   }
+  // }
+
+  
+  // getTitlecase(value){
+  //   return this.coreUtilityService.getTitlecase(value);
+  // }
+  
+  // getFirstCharOfString(char:any){
+  //   return this.coreUtilityService.getFirstCharOfString(char);
+  // }
+
+  
+  // checkDates(endDate: string, startDate: string) {
+  //   return (formGroup: FormGroup) => {
+  //     const startDateControl = formGroup.controls[startDate];
+  //     const endDateControl = formGroup.controls[endDate];
+  //     const date1 =new Date(startDateControl.value);
+  //     const date2 =new Date(endDateControl.value);
+  //     if(date1 > date2) {
+  //       endDateControl.setErrors({ notValid: true });
+  //     }else{
+  //       endDateControl.setErrors(null);
+  //     }
+  //   }    
+  // }
+
+  
+
+  // isDisable(field, object) {
+  //   const updateMode = false;
+  //   let disabledrow = false;
+  //   if (field.is_disabled) {
+  //     return true;
+  //   } 
+  //   if(this.tableFields.disableRowIf && this.tableFields.disableRowIf != ''){
+  //     disabledrow = this.checkRowIf(object);
+  //   }
+  //   if(disabledrow){
+  //     this.readonly = true;
+  //     return true;
+  //   }
+  //   if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
+  //     return this.checkIfService.isDisable(field.etc_fields, updateMode, object);
+  //   }   
+  //   return false;
+  // }
+
+  
   // checkDublicateOnForm(fields,value,list,i,parent?){
   //   let checkDublic = {
   //     status : false,
@@ -5708,1113 +6764,314 @@ tinymceConfig = {}
   //   }
   //   return checkDublic;
   // }
-
-  // CD
-  donotResetField(){
-    if(this.tableFields.length > 0){
-      let FormValue = this.getFormValue(true);
-      this.donotResetFieldLists = this.formCreationService.getDonotResetFields(this.tableFields,this.donotResetFieldLists,FormValue);
-    }
-
-    // delete code
-    // //let FormValue = this.templateForm.getRawValue();
-    // let FormValue = this.getFormValue(true);
-    // this.tableFields.forEach(tablefield => {
-    //   if(tablefield.do_not_refresh_on_add && tablefield.type != "list_of_fields" && tablefield.type != "group_of_fields" && tablefield.type != "stepper"){
-    //     this.donotResetFieldLists[tablefield.field_name] = FormValue[tablefield.field_name];
-    //   }else if(tablefield.type == "group_of_fields"){
-    //     if(tablefield.list_of_fields && tablefield.list_of_fields.length > 0){
-    //       tablefield.list_of_fields.forEach(field => {
-    //         if(field.do_not_refresh_on_add){
-    //           this.donotResetFieldLists[tablefield.field_name][field.field_name] = FormValue[tablefield.field_name][field.field_name];
-    //         }
-    //       });
-    //     }
-    //   }else if(tablefield.type == "stepper"){
-    //     if(tablefield.list_of_fields && tablefield.list_of_fields.length > 0){
-    //       tablefield.list_of_fields.forEach(step => {
-    //         if(step.list_of_fields && step.list_of_fields.length > 0){
-    //           step.list_of_fields.forEach(field => {
-    //             if(field.do_not_refresh_on_add){
-    //               this.donotResetFieldLists[step.field_name][field.field_name] = FormValue[step.field_name][field.field_name];
-    //             }
-    //           });
-    //         }
-    //       });
-    //     }
-    //   }
-    // });
-  }
-
-  searchTypeaheadData(field, currentObject,chipsInputValue) {
-    this.typeaheadObjectWithtext = currentObject;
-
-    this.addedDataInList = this.typeaheadObjectWithtext[field.field_name]
-
-    this.typeaheadObjectWithtext[field.field_name] = chipsInputValue.target.value;
-
-    let call_back_field = '';
-    let criteria = [];
-    const staticModal = []
-    if (field.call_back_field && field.call_back_field != '') {
-      call_back_field = field.call_back_field;
-    }
-    if(field.api_params_criteria && field.api_params_criteria != ''){
-      criteria =  field.api_params_criteria;
-    }
-    let staticModalGroup = this.apiCallService.getPaylodWithCriteria(field.api_params, call_back_field, criteria, this.typeaheadObjectWithtext ? this.typeaheadObjectWithtext : {});
-    staticModal.push(staticModalGroup);
-    this.apiService.GetTypeaheadData(staticModal);
-
-    this.typeaheadObjectWithtext[field.field_name] = this.addedDataInList;
-  }
-
   
-  removeItem(data:any,column:any,i:number){
-    this.commonFunctionService.removeItem(data,column,i);
-  }
 
-  // isDisable(field, object) {
-  //   const updateMode = false;
-  //   let disabledrow = false;
-  //   if (field.is_disabled) {
-  //     return true;
-  //   } 
-  //   if(this.tableFields.disableRowIf && this.tableFields.disableRowIf != ''){
-  //     disabledrow = this.checkRowIf(object);
+
+  // previewModal(gridData:any, currentMenu:any, modalId:any) {
+  //   const getpreviewHtml = {
+  //     _id: gridData._id,
+  //     data: this.coreUtilityService.getPaylodWithCriteria(currentMenu.name, '', [], '')
   //   }
-  //   if(disabledrow){
-  //     this.readonly = true;
-  //     return true;
+  //   this.apiService.GetPreviewHtml(getpreviewHtml);
+  //   const alertData = {
+  //     gridData: gridData,
+  //     currentPage: currentMenu.name
   //   }
-  //   if (field.etc_fields && field.etc_fields.disable_if && field.etc_fields.disable_if != '') {
-  //     return this.checkIfService.isDisable(field.etc_fields, updateMode, object);
-  //   }   
-  //   return false;
+  //   // this.modalService.open(modalId, alertData);
   // }
-  checkRowIf(data:any){
-    let check = false;
-    if(data.selected){
-      let condition = '';
-      if(this.tableFields.disableRowIf && this.tableFields.disableRowIf != ''){
-        condition = this.tableFields.disableRowIf;
-      }
-      if(condition != ''){
-        if(this.checkIfService.checkDisableRowIf(condition,data)){
-          check = true;
-        }else{
-          check = false;
-        }
-      }
-    }
-    return check;
-  }
-  checkRowDisabledIf(field,index){
-    const data = this.commonFunctionService[field.field_name];
-    const condition = field.disableRowIf;
-    if(condition){
-      return !this.checkIfService.checkDisableRowIf(condition,data);
-    }
-    return true;    
-  }
-  reviewParameters(fields,data){
-    this.clickFieldName=fields;
-    let value={};
-    value['data'] = JSON.parse(JSON.stringify(data));
-    value['gridColumns']=fields.gridColumns;
-    const editemode = true;    
-    // this.viewModal('form_basic-modal', value, fields,editemode); 
-    if (!this.custmizedFormValue[fields.field_name]) this.custmizedFormValue[fields.field_name] = [];
-    let selectedValue = JSON.parse(JSON.stringify(this.custmizedFormValue[fields.field_name]))
-    const gridModalData = {
-      "field": fields,
-      "selectedData":selectedValue,
-      "object": this.getFormValue(true),
-      "formTypeName" : this.formTypeName,
-      
-    }
-    this.samePageGridSelection = this.appDataShareService.getgridselectioncheckvalue();
-    if(this.samePageGridSelection){
-      this.curTreeViewField = fields;      
-      this.samePageGridSelectionData = gridModalData;
-    }
-  }
-
-  // checkDates(endDate: string, startDate: string) {
-  //   return (formGroup: FormGroup) => {
-  //     const startDateControl = formGroup.controls[startDate];
-  //     const endDateControl = formGroup.controls[endDate];
-  //     const date1 =new Date(startDateControl.value);
-  //     const date2 =new Date(endDateControl.value);
-  //     if(date1 > date2) {
-  //       endDateControl.setErrors({ notValid: true });
-  //     }else{
-  //       endDateControl.setErrors(null);
-  //     }
-  //   }    
-  // }
-  clearDropdownField(e:any,field:any){
-    if(e.target.value && e.target.value.name){      
-      e.target.value = "";
-    }else{
-      e.target.value = "";
-    }
-    this.setValue("",field, "", e);
-  }
-// getTitlecase(value){
-  //   return this.coreUtilityService.getTitlecase(value);
-  // }
-  
-  // getFirstCharOfString(char:any){
-  //   return this.coreUtilityService.getFirstCharOfString(char);
-  // }
-  
-  /** Reorder objects in array */
-	doReorder(ev: CustomEvent<ItemReorderEventDetail>, draggableItemId: number) {
-    let groupToChangeIndex = this.custmizedFormValue.findIndex(
-      (Item:any) => Item.id === draggableItemId
-    );
-    this.custmizedFormValue[groupToChangeIndex].items = ev.detail.complete(
-      this.custmizedFormValue[groupToChangeIndex].items
-    );
-  }
-  
-  getName(object:any){
-    let columns = this.tableFields.gridColumns;
-    let field_name : string = "";
-    if(columns && columns.length > 0){
-      columns.forEach(element => {
-        if(element.field_name == "plainCustomerName"){
-          field_name = element.field_name;
-        }
-      });
-      if(field_name == ""){
-        field_name = columns[0].field_name;
-      }
-      let value = this.commonFunctionService.getObjectValue(field_name,object);
-      return value;      
-    }
-  }
-  getValueForGrid(field,object){
-    return this.gridCommonFunctionService.getValueForGrid(field,object);
-  }
-
-  async delete(index:number,field:any,fieldName:string){
-    //alert, if confirm then
-    let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');
-    if(confirmDelete === "confirm"){
-      this.custmizedFormValue[fieldName].splice(index,1);
-      let obj = await this.getSendData(field)
-      this.gridSelectionResponce(obj);
-    }
-  }
-  checkObjecOrString(data){
-    if(data._id){
-      return data._id;
-    }else{
-      return data;
-    }
-  }
-  // CD
-  editListOfFiedls(field:any,index:number){
-    let responce = this.formControlService.editeListFieldData(this.templateForm,this.custmizedFormValue,this.tableFields,field,index,this.listOfFieldsUpdateIndex,this.staticData,this.dataListForUpload);
-    this.listOfFieldUpdateMode = responce['listOfFieldUpdateMode'];
-    this.listOfFieldsUpdateIndex = responce['listOfFieldsUpdateIndex'];
-    this.custmizedFormValue = responce['custmizedFormValue'];
-    this.dataListForUpload = responce['dataListForUpload'];
-    this.templateForm = responce['templateForm'];
-
-    // delete code
-    // let parentList = this.custmizedFormValue[field.field_name];
-    // let object = parentList[index];
-    // this.listOfFieldUpdateMode = true;
-    // this.listOfFieldsUpdateIndex = index;
-    // if(this.tableFields && this.tableFields.length > 0){
-    //   this.tableFields.forEach(element => {
-    //     switch (element.type) {
-    //       case "list_of_fields":
-    //         if(element.field_name == field.field_name){
-    //           this.templateForm.get(element.field_name).reset();
-    //           if (element.list_of_fields.length > 0) {
-    //             element.list_of_fields.forEach((data) => {
-    //               switch (data.type) {
-    //                 case "list_of_string":
-    //                   const custmisedKey = this.commonFunctionService.custmizedKey(element);
-    //                   if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
-    //                   this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];
-    //                   break;
-    //                 case "typeahead":
-    //                   if (data.datatype == 'list_of_object') {
-    //                     const custmisedKey = this.commonFunctionService.custmizedKey(element);
-    //                     if (!this.custmizedFormValue[custmisedKey]) this.custmizedFormValue[custmisedKey] = {};
-    //                     this.custmizedFormValue[custmisedKey][data.field_name] = object[data.field_name];    
-    //                   } else {
-    //                     this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
-    //                   }
-    //                   break;
-    //                 case "list_of_checkbox":
-    //                   let checkboxListValue = [];
-    //                   if(this.staticData && this.staticData[data.ddn_field] && this.staticData[data.ddn_field].length > 0){
-    //                     this.staticData[data.ddn_field].forEach((value, i) => {                      
-    //                       let arrayData = object[data.field_name];                        
-    //                       let selected = false;
-    //                       if (arrayData != undefined && arrayData != null) {
-    //                         for (let index = 0; index < arrayData.length; index++) {
-    //                           if (this.checkObjecOrString(value) == this.checkObjecOrString(arrayData[index])) {
-    //                             selected = true;
-    //                             break;
-    //                           }
-    //                         }
-    //                       }
-    //                       if (selected) {
-    //                         checkboxListValue.push(true);
-    //                       } else {
-    //                         checkboxListValue.push(false);
-    //                       }               
-    //                     });
-    //                   }
-    //                   this.templateForm.get(element.field_name).get(data.field_name).setValue(checkboxListValue);
-    //                   break; 
-    //                 case "file":
-    //                 case "input_with_uploadfile":
-    //                   if(object[data.field_name] != null && object[data.field_name] != undefined){
-    //                     let custmizedKey = this.commonFunctionService.custmizedKey(element);
-    //                     if (!this.dataListForUpload[custmizedKey]) this.dataListForUpload[custmizedKey] = {};
-    //                     if (!this.dataListForUpload[custmizedKey][data.field_name]) this.dataListForUpload[custmizedKey][data.field_name] = [];
-    //                     this.dataListForUpload[custmizedKey][data.field_name] = JSON.parse(JSON.stringify(object[data.field_name]));
-    //                     const value = this.fileHandlerService.modifyFileSetValue(object[data.field_name]);
-    //                     this.templateForm.get(element.field_name).get(data.field_name).setValue(value);
-    //                   }
-    //                   break;
-    //                 // case "date":
-    //                 //   let transformzonedTime:any = '';
-    //                 //   let zonedTime:any = ''
-    //                 //   if(object[data.field_name] != null && object[data.field_name] != undefined){
-    //                 //     zonedTime = utcToZonedTime(object[data.field_name], this.userTimeZone);
-    //                 //     transformzonedTime = this.datePipe.transform(zonedTime,"yyyy-MM-dd'", this.userTimeZone);  
-    //                 //   }else{
-    //                 //     transformzonedTime='';
-    //                 //   }
-    //                 //   this.templateForm.get(element.field_name).get(data.field_name).setValue(transformzonedTime);
-    //                 //   break;
-    //                 default:
-    //                   this.templateForm.get(element.field_name).get(data.field_name).setValue(object[data.field_name]);
-    //                   break;
-    //               }              
-    //             })
-    //           }
-    //         }
-    //         break;
-    //       default:          
-    //         break;
-    //     }
-    //   });
-    // }
-  }
-  // go to new page 2nd method
-  async detailCardButton(data:any,index:number){
-    // if(this.detailPage){
-    //   //const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
-    //   //this.editedRow(data,index);
-    //   this.modaldetailCardButton(column,data);
-    // }else{
-      const newobj = {
-        "childdata": data,
-        "selected_tab_index": this.selectedIndex
-      }
-      this.dataShareServiceService.setchildDataList(newobj);  
-      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);  
-      this.router.navigate(['card-detail-view']);
-    // }    
-  }
-  getButtonDivClass(field){
-    return this.commonFunctionService.getButtonDivClass(field);
-  }
-  
-  checkGridSelectionMendetory(){
-    let validation = {
-      'status' : true,
-      'msg' : ''
-    }
-    if(this.gridSelectionMendetoryList && this.gridSelectionMendetoryList.length > 0){
-      let check = 0;
-      this.gridSelectionMendetoryList.forEach(field => {        
-        let data:any = [];
-        if(this.custmizedFormValue[field.field_name]){
-          data = this.custmizedFormValue[field.field_name];
-        }
-        if(field.mendetory_fields && field.mendetory_fields.length > 0){
-          field.mendetory_fields = this.modifiedGridColumns(field.mendetory_fields);
-          if(data && data.length > 0){
-            field.mendetory_fields.forEach(mField => {
-              const fieldName = mField.field_name;
-              if(mField.display){
-                data.forEach((row:any,i) => {
-                  if(row && row[fieldName] == undefined || row[fieldName] == '' || row[fieldName] == null){
-                    if(validation.msg == ''){
-                      let errorPositionInArray:any;
-                      if(row.plainCustomerName){
-                        errorPositionInArray =  " of " + row.plainCustomerName;
-                      }else{
-                        errorPositionInArray = '';
-                      }
-                      validation.msg = mField.label + errorPositionInArray + ' of ' + field.label + ' is required.';
-                    }
-                    check = 1;
-                  }
-                });
-              }
-            });
-          }
-        }     
-      });
-      if(check != 0){
-        validation.status = false;
-        return validation;
-      }else{
-        return validation
-      }
-    }else{
-      return validation;
-    }
-  }
-
-  checkShowIfListOfFiedlds(parent,field){
-    let formValue = this.getFormValue(true);
-    let fieldValue = formValue[parent];    
-    if(fieldValue && fieldValue.length > 0 && field && field.show_if && field.show_if != null && field.show_if != ''){
-      let check = 0;      
-      for (let index = 0; index < fieldValue.length; index++) {
-        const value = fieldValue[index];
-        formValue[parent] = value;
-        if(this.checkIfService.showIf(field,formValue)){
-          check = 1;
-          break;
-        }        
-      }
-      if(check == 1){
-        return false;
-      }else{
-        return true;
-      }
-    }else{
-      return false;
-    }
-  }
-
-  // CD
-  showListFieldValue(listOfField, item) {
-    return this.gridCommonFunctionService.showListFieldValue(listOfField,item);
-
-    // delete code also need to delete this fucntion
-    // switch (item.type) {
-    //   case "typeahead":
-    //     if(item.datatype == "list_of_object"){
-    //       if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
-    //         return '<i class="fa fa-eye text-pointer"></i>';
-    //       } else {
-    //         return '-';
-    //       }
-    //     }else if(item.datatype == "object"){
-    //       if (item.display_name && item.display_name != "") {
-    //         return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
-    //       } else {
-    //         return listOfField[item.field_name];
-    //       }
-    //     }
-    //     else if(item.datatype == "text"){
-    //       if (item.display_name && item.display_name != "") {
-    //         return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
-    //       } else {
-    //         return listOfField[item.field_name];
-    //       }
-    //     }
-    //     break;
-    //   case "list_of_string":
-    //   case "list_of_checkbox":
-    //   case "grid_selection":
-    //   case "list_of_fields":
-    //     if (Array.isArray(listOfField[item.field_name]) && listOfField[item.field_name].length > 0 && listOfField[item.field_name] != null && listOfField[item.field_name] != undefined && listOfField[item.field_name] != '') {
-    //       // if (isPlatform('hybrid')){
-    //         return '<span class="material-symbols-outlined cursor-pointer">visibility</span>';
-    //       // }else{
-    //         // return '<i class="fa fa-eye text-pointer"></i>';
-    //       // }
-    //     } else {
-    //       return '-';
-    //     }
-    //   case "checkbox":
-    //     let value:any = false;
-    //     if (item.display_name && item.display_name != "") {
-    //       value = this.commonFunctionService.getObjectValue(item.display_name, listOfField);
-    //     } else {
-    //       value = this.getValueForGrid(item,listOfField);
-    //     }
-    //     return value ? "Yes" : "No";
-    //   default:
-    //     if (item.display_name && item.display_name != "") {
-    //       return this.commonFunctionService.getObjectValue(item.display_name, listOfField);
-    //     } else {
-    //       return this.getValueForGrid(item,listOfField);
-    //     }
-    // }
-  }
-  showListOfFieldData(field,index,item){
-    let value={};
-    let parentObject = this.custmizedFormValue[field.field_name];
-    let listOfField = parentObject[index];
-    value['data'] = listOfField[item.field_name];
-    let editemode = false;   
-    switch (item.type) {
-      case "typeahead":
-          if(item.datatype == "list_of_object"){    
-            // this.viewModal('form_basic-modal', value, item,editemode);
-          }          
-          break;
-      case "list_of_string":
-      case "list_of_checkbox":
-      case "grid_selection":
-      case "list_of_fields":
-      case "info":
-        if(item["gridColumns"] && item["gridColumns"].length > 0){
-          value['gridColumns']=item.gridColumns;
-        }else if(item["fields"] && item["fields"].length > 0){
-          value['gridColumns']=item.fields;
-        }
-        // this.viewModal('form_basic-modal', value, item,editemode);
-        this.viewModal(value, item, index,editemode);
-        break;
-      case "file":
-        if (value['data'] && value['data'] != '') {
-          let fileData = {};
-          fileData['data'] = this.fileHandlerService.modifyUploadFiles(value['data']);
-          // this.viewModal('fileview-grid-modal', fileData, item, editemode);
-          let previewFile:boolean = false;
-          let printFile:boolean = false;
-          if(field.type.toLowerCase() == "file_with_preview"){
-            previewFile = true;
-          }else if(field.type.toLowerCase() == "file_with_print"){
-            printFile = true;
-          }
-          const obj = {
-            'field_type': field.type.toLowerCase(),
-            'previewFile': previewFile,
-            'printFile' : printFile
-          }
-          this.viewFileModal(FileViewsModalComponent, value, field, index, field.field_name,editemode,obj);
-        };
-        break;      
-      default:
-        break;
-    } 
-  }
-  // viewModal(id, object, field,editemode) {
-  //   this.alertData = {
-  //     "field": field,
-  //     "data": object,
-  //     "menu_name": this.currentMenu.name,
-  //     'editemode': editemode
+  // preview(gridData:any, currentMenu:any, modalId:any) {
+  //   const getpreviewHtml = {
+  //     _id: gridData._id,
+  //     data: this.coreUtilityService.getPaylodWithCriteria(currentMenu.name, '', [], '')
   //   }
-  //   // this.modalService.open(id, this.alertData);
-  //   this.notificationService.showAlert("DO modal work","MODAL",['Ok']);
+  //   getpreviewHtml.data['data'] = gridData;
+  //   this.apiService.GetPreviewHtml(getpreviewHtml);
   // }
-  async viewModal(value:any, field:any, i:number, editemode){
-    let Data = {"data":value,
-      "field":field,
-      "index": i,
-      "editemode": editemode
-    }
-    const objectValue = Data;
-    await this.appModelService.openModal(ModalComponent,objectValue).then( data => {
-      if(data && data?.role == 'close'){
-        console.log('Modal ' + data?.role);
-      }
-    });
-  }
-  async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
-    let objectValue:any = {
-      'data' : value,
-      'field' : field,
-      'index' : i,
-      'field_name': field_name,
-      'editemode' : editemode,
-      'field_type': obj?.field_type,
-      'previewFile': obj?.previewFile,
-      'printFile' : obj?.printFile
-    }
-    await this.appModelService.openModal(FileViewsModalComponent,objectValue).then( data => {
-      if(data && data?.role == 'close'){
-        console.log('Modal ' + data?.role);
-      }
-    });
-    // const modal = await this.modalController.create({
-    //   component: FileViewsModalComponent,
-    //   cssClass: 'file-info-modal',
-    //   componentProps: {
-    //     "objectData": objectData,      
-    //   },
-    // });
-    // modal.componentProps.modal = modal;
-    // modal.onDidDismiss()
-    //   .then((data) => {
-    //       console.log("File Download Modal closed " , data.role);                
-    // });
-    // return await modal.present();
-  } 
-  
-  async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
-    const fileExtension = extentionType;
-    // let file_Type: any;
-    // let file_prefix: any;
-    // if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
-    //   file_Type = "image/" + extentionType;
-    //   file_prefix = "Image";
-    // }else if(fileExtension == "xlsx" || fileExtension == "xls"){
-    //   file_Type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
-    //   file_prefix = "Excel";
-    // }else if(fileExtension == "pdf"){
-    //   file_Type = "application/" + extentionType;
-    //   file_prefix = "PDF";
-    // }else{
-    //   file_Type = "application/octet-stream";
-    //   file_prefix = "TEXT";
-    // }
 
-    const response: any = await this.appDownloadService.getBlobTypeFromExtn(extentionType);
-    const file_Type:string = response?.mimeType ? response?.mimeType : '';
-    const file_prefix:string = response?.filePrefix ? response?.filePrefix : '';
-
-    let fileName:any;
-    if(filename && filename !=undefined){      
-      fileName = filename;
-    }else{
-      fileName = file_prefix + '_' + new Date().getTime() + "." + fileExtension;
-    }
-    const blobData:Blob = new Blob([arrayBufferData],{type:file_Type});
-    
-    // this.downloadToMobile(blobData,fileName);
-    let downloadResponse:any =  await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
-    this.downloadResponseHandler(downloadResponse);
-    
-
-  }
-
-  async downloadResponseHandler(response:any){
-    if(response?.haspermission && response?.status){
-      await this.loaderService.hideLoader();
-      if(response?.openfile && !response?.sharefile){
-        const confirm:any = await this.notificationService.confirmAlert('Open file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Open", "Dismiss");
-        if(response?.fileuri && confirm == "confirm"){
-          FileOpener.open({filePath:response.fileuri, contentType:response?.mimetype}).then( res => {
-            console.log("File Opened");
-          }).catch((e)=>{
-            console.error("File Opening error ", JSON.stringify(e));
-            this.notificationService.presentToastOnBottom("No app found to open the file.");
-          })
-        }else{
-          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
-        }
-      }else if(!response?.openfile && response?.sharefile){
-        const confirm:any = await this.notificationService.confirmAlert('Share file !',response.filename + " downloaded into " + response.directoryname.toLowerCase(), "Share", "Dismiss");
-        if(response?.fileuri && confirm == "confirm"){
-          const canShare = await this.appShareService.checkDeviceCanShare();
-          if(canShare){
-            let shareOption = {
-              title: response?.filename ? response.filename : "Share",
-              text: "Here is the file you requested.",
-              url: response?.fileuri,
-              dialogTitle: "Share " + response?.filename
-            }
-            this.appShareService.share(shareOption);
-          }
-        }else{
-          this.notificationService.presentToastOnBottom("File "+ response.filename + " is not availabe.")
-        }
-      }else{
-        this.notificationService.presentToastOnBottom("Downloaded into " + response.directoryname.toLowerCase(),"success")
-      }
-    }else{
-      this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
-    }
-  }
-
-  // async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
-  //   let file_Type:any = '';
-  //   let folderName:any = '';
-  //   if(blobData && blobData.type){
-  //     file_Type = blobData.type;
-  //   }
-  //   if(FolderName == undefined || FolderName == null){
-  //     folderName = 'Download'
-  //   }else{
-  //     folderName = FolderName;
-  //   }
-  //   let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-  //   let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
-
-  //   if(readPermission && writePermission){
-
-  //     // ==========using native file    
-  //     this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
-
-  //       this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
-  //         // confirm alert
-  //         let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
-  //         if(openFile == "confirm"){
-  //           const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
-  //           const mimeType = file_Type;      
-  //           this.fileOpener.open(path,mimeType)
-  //           .then(()=> console.log('File is opened'))
-  //           .catch(error => console.log('Error opening file ',error));
+  // getColSize(field){
+  //   let size:any = 12;
+  //   if(field.type != 'typeahead' && field.type != 'dropdown'){
+  //     if(field.field_class && field.field_class != ''){
+  //       const fieldsLength = this.tableFields.length;
+  //       const returnClass = this.commonFunctionService.getDivClass(field,fieldsLength);
+  //       const classes = returnClass.split('-');
+  //       const lastIndex = classes.length-1;
+  //       const deviceIndex = classes.length-2;
+  //       const deviceName = classes[deviceIndex];
+  //       let deviceValue = classes[lastIndex];
+  //       if(this.plt.is('hybrid')){
+  //         if(deviceName == "xl" || deviceName == "lg" || deviceName == "md" || deviceName == "sm" || deviceName == "xs"){
+  //           if(deviceValue < 6){
+  //             size = '6';
+  //           }else{          
+  //             size = '12';
+  //           }
   //         }
-  //       }).catch( (error:any) =>{
-  //         this.notificationService.presentToastOnBottom(JSON.stringify(error));
-  //       })
-        
-  //     }).catch( (error:any) =>{
-  //       if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
-          
-  //         this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
-  //           console.log('Directory create '+ response);
-  //           this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
-  //             this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
-  //           })
+  //       }else{
+  //         return size;
+  //       }
+  //     }
+  //   }
+  //   return size;
 
-  //         }).catch( (error:any) =>{
-  //             this.notificationService.presentToastOnBottom(JSON.stringify(error));
-  //         })
+  // }
+
+  // getNumberOfSelectedRecord(field){
+  //   if (!this.custmizedFormValue[field.field_name]){
+  //     this.custmizedFormValue[field.field_name] = [];
+  //   }else{
+  //     if(this.custmizedFormValue[field.field_name] && this.custmizedFormValue[field.field_name].length > 0){
+  //       return "( "+this.custmizedFormValue[field.field_name].length+" )";
+  //     }else{
+  //       return '';
+  //     }
+  //   }
+  // }
+  // getNumberOfSelectedFile(field){
+  //   if (!this.dataListForUpload[field.field_name]){
+  //     this.dataListForUpload[field.field_name] = [];
+  //   }else{
+  //     if(this.dataListForUpload[field.field_name] && this.dataListForUpload[field.field_name].length > 0){
+  //       return "( "+this.dataListForUpload[field.field_name].length+" )";
+  //     }else{
+  //       return '';
+  //     }
+  //   }
+  // }
+  // checkCustmizedFormValueData(parent,chield){
+  //   let check = false;
+  //   if(parent != '' && parent != undefined && parent != null){
+  //     const parentKey = this.commonFunctionService.custmizedKey(parent);
+  //     if(this.custmizedFormValue[parentKey] && this.custmizedFormValue[parentKey][chield.field_name]){
+  //       check = true;
+  //     }
+  //   }else{
+  //     if(this.custmizedFormValue[chield.field_name]){
+  //       check = true;
+  //     }
+  //   }
+  //   return check;
+  // }
+  // custmizedFormValueData(parent,chield): Array<any>{
+  //   let data = [];    
+  //   if(parent != '' && parent != undefined && parent != null){
+  //     const parentKey = this.commonFunctionService.custmizedKey(parent); 
+  //     if(this.checkCustmizedFormValueData(parent,chield)){
+  //       data = this.custmizedFormValue[parentKey][chield.field_name] 
+  //     }       
+  //   }else {
+  //     if(this.checkCustmizedFormValueData('',chield)){
+  //       data = this.custmizedFormValue[chield.field_name]
+  //     }      
+  //   }
+  //    return data;
+  // }
+
+  // delete below code
+  // setPreviousFormTargetFieldData(){
+  //   if(this.multipleFormCollection.length > 0){
+  //     const previousFormIndex = this.multipleFormCollection.length - 1;
+  //     const previousFormData = this.multipleFormCollection[previousFormIndex];
+  //     const previousFormField = previousFormData.current_field;
+  //     const formData = previousFormData.next_form_data;
+  //     if(previousFormField && previousFormField.add_new_target_field){
+  //       const targateFieldName = previousFormField.add_new_target_field;          
+  //       const currentFormValue = this.getFormValue(true)
+  //       const currentTargetFieldValue = currentFormValue[targateFieldName]
+  //       formData[targateFieldName] = currentTargetFieldValue;
+  //     }      
+  //     this.multipleFormCollection[previousFormIndex]['next_form_data'] = formData;
+  //   }
+  // }
+
+  
+
+  // checkDataAlreadyAddedInListOrNot(field,incomingData,alreadyDataAddedlist,i?){
+  //   if(field && field.type == "date"){
+  //     incomingData = ""+incomingData;
+  //   }
+  //   let checkStatus = {
+  //     status : false,
+  //     msg : ""
+  //   };
+  //   if(field && field.allowDuplicacy){
+  //     checkStatus.status = false;
+  //     return checkStatus;
+  //   }else{
+  //     let primary_key = field.field_name
+  //     let criteria = primary_key+"#eq#"+incomingData;
+  //     let primaryCriteriaList=[];
+  //     primaryCriteriaList.push(criteria);
+  //     if(field && field.primaryKeyCriteria && this.commonFunctionService.isArray(field.primaryKeyCriteria) && field.primaryKeyCriteria.length > 0){
+  //       field.primaryKeyCriteria.forEach(criteria => {          
+  //         const crList = criteria.split("#");
+  //         const cr = crList[0]+"#"+crList[1]+"#"+incomingData;
+  //         primaryCriteriaList.push(cr);
+  //       });
+  //     }
+  //     if(alreadyDataAddedlist == undefined){
+  //       alreadyDataAddedlist = [];
+  //     }
+  //     let alreadyExist = false;
+  //     if(typeof incomingData == 'object'){
+  //       alreadyDataAddedlist.forEach(element => {
+  //         if(element._id == incomingData._id){
+  //           alreadyExist =  true;
+  //         }
+  //       });
+  //     }
+  //     else if(typeof incomingData == 'string'){
+  //       for (let index = 0; index < alreadyDataAddedlist.length; index++) {
+  //         const element = alreadyDataAddedlist[index];
+  //         if(i == undefined || i == -1){
+  //           if(typeof element == 'string'){
+  //             if(element == incomingData){
+  //               alreadyExist =  true;
+  //             }
+  //           }else{
+  //             if(primaryCriteriaList && primaryCriteriaList.length > 0){
+  //               for (let index = 0; index < primaryCriteriaList.length; index++) {
+  //                 const cri = primaryCriteriaList[index];
+  //                 alreadyExist = this.checkIfService.checkIfCondition(cri,element,field.type);
+  //                 if(alreadyExist){
+  //                   const crList = cri.split("#");
+  //                   switch (crList[1]) {
+  //                     case "lte":
+  //                       checkStatus.msg = "Entered value for "+field.label+" is gretter then to "+crList[0]+". !!!";
+  //                       break;
+  //                     case "gte":
+  //                       checkStatus.msg = "Entered value for "+field.label+" is less then to "+crList[0]+". !!!";
+  //                       break;                  
+  //                     default:
+  //                       checkStatus.msg = "Entered value for "+field.label+" is already added. !!!";
+  //                       break;
+  //                   }
+  //                   break;
+  //                 }                
+  //               }
+  //             }
+  //           }
+  //           if(alreadyExist){
+  //             break;
+  //           } 
+  //         }else{
+  //           break;
+  //         }       
+  //       };
+  //     }else{
+  //       alreadyExist =  false;
+  //     }
+  //     if(alreadyExist){
+  //       checkStatus.status = true;
+  //       return checkStatus;
+  //     }else{
+  //       checkStatus.status = false;
+  //       return checkStatus;
+  //     }
+  //   }
+  // }
+
+  
+  // delete  below code 
+  // getGridSelectedData(data,field){
+  //   let gridSelectedData = [];
+  //   if (!this.customEntryData[field.field_name]) this.customEntryData[field.field_name] = [];
+  //   this.customEntryData[field.field_name] = []
+  //   if(data && data.length > 0){
+  //     data.forEach(grid => {
+  //       if(grid && grid.customEntry && field.add_new_enabled){
+  //         this.customEntryData[field.field_name].push(grid);
+  //       }else{
+  //         gridSelectedData.push(grid);
   //       }
   //     });
-  //   }else{
-  //     let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
-  //     if(gavepermission == "cancel"){
-  //       this.apppermissionsService.openNativeSettings('application_details');
-  //     }
   //   }
+  //   return gridSelectedData;
   // }
 
-  isMendetory(parent,chield){
-    const  formValue = this.getFormValue(true);
-    let responce = this.checkIfService.checkIsMendetory(parent,chield,formValue,this.templateForm);
-    this.templateForm = responce.templateForm;
-    return responce.tobedesabled;
-  }
-  getListOfFieldsGridColumn(field:any): Array<any>{
-    let columns = [];
-    if(field && field.list_of_fields && field.list_of_fields.length > 0){
-      for (let index = 0; index < field.list_of_fields.length; index++) {
-        const element = field.list_of_fields[index];
-        if(element == null){
-          this.notifyFieldValueIsNull(field.label,index+1);
-          break;
-        }
-      }
-      columns = JSON.parse(JSON.stringify(field.list_of_fields));
-    }else if(field && field.gridColumns && field.gridColumns.length > 0){
-      for (let index = 0; index < field.gridColumns.length; index++) {
-        const element = field.gridColumns[index];
-        if(element == null){
-          this.notifyFieldValueIsNull(field.label,index+1);
-          break;
-        }
-      }
-      columns = JSON.parse(JSON.stringify(field.gridColumns));
-    }
-    return columns;
-  }
-  onClickLoadData(parent,field){
-    if(field && field.onClickApiParams && field.onClickApiParams != ''){        
-      let api_params = field.onClickApiParams;
-      let callBackfield = field.onClickCallBackField;
-      let criteria = field.onClickApiParamsCriteria
-      const payload = this.apiCallService.getPaylodWithCriteria(api_params,callBackfield,criteria,this.getFormValue(false));
-      let payloads = [];
-      payloads.push(this.checkQtmpApi(api_params,field,payload));
-      this.apiService.getStatiData(payloads);
-    }
-  }  
-  checkQtmpApi(params,field,payload){
-    if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
-      let multiCollection = JSON.parse(JSON.stringify(this.multipleFormCollection));
-      if(field && field.formValueAsObjectForQtmp){            
-        let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(false));
-        payload["data"]=formValue;
-      }else{
-        let formValue = this.commonFunctionService.getFormDataInMultiformCollection(multiCollection,this.getFormValue(true));
-        payload["data"]=formValue;
-      }
-    }
-    return payload;
-  }
-  checkObjectSize(object){
-    if(object != undefined && object != null){
-      return (Object.keys(object).length > 0)
-    }
-    return false;
-  }
+  // delete below code
+  // setTypeaheadData(typeAheadData){
+  //   if (typeAheadData && typeAheadData.length > 0) {
+  //     this.typeAheadData = typeAheadData;
+  //   } else {
+  //     this.typeAheadData = [];
+  //   }
+  // }  
 
-  handleReorder(ev: CustomEvent<ItemReorderEventDetail>) {
-    console.log("Item", ev.detail.from, 'Dragged from index', ev.detail.from, 'to', ev.detail.to);
-    ev.detail.complete();
-  }
-  getTimeFormat(field){
-    if(field && field.time_format && field.time_format != ''){
-      return Number(field.time_format);
-    }else{
-      return Number('12');
-    }    
-  }
-  async checkPermissionandRequest(){
-    let permResult = false;
-    if(isPlatform('hybrid')){
-      permResult = await this.app_googleService.checkGeolocationPermission();
-      if(permResult){        
-        this.requestLocationPermission();
-      }
-    }else{
-      permResult = await this.app_googleService.checkGeolocationPermission();
-    }   
-    if(!permResult){
-      let alreadyOpen = await this.alertController.getTop();
-      if(alreadyOpen == undefined){
-        this.gpsEnableAlert();
-      }
-    }else{
-      if(isPlatform('hybrid')){
-        this.setCurrentLocation();
-      }else{
-        this.getCoordinatesOnBrowser();
-      }
-    }
-  }
-  async gpsEnableAlert(){     
-    const alert = await this.alertController.create({
-      cssClass: 'form-gps-class',
-      header: 'Please Enable GPS !',
-      message: 'For smooth app experience please give us your location access.',
-      buttons: [
-        {
-          text: 'No, thanks',
-          role: 'cancel',
-        },
-        {
-          text: 'OK',
-          role: 'confirmed',
-          handler: () => {},
-        },
-      ],
-    });
-
-    await alert.present();
-    let resultrole:any='';
-    await alert.onDidDismiss().then(value => {
-      resultrole = value;
-      console.log("Form Gps Alert :",value.role)
-    });
-    if(resultrole && resultrole.role == 'confirmed'){
-      await this.requestLocationPermission();
-    }
-  }
-  async requestLocationPermission() {
-    let isGpsEnable = false;
-    if(isPlatform('hybrid')){
-      const permResult = await this.appPermissionService.checkAppPermission("ACCESS_FINE_LOCATION");
-      if(permResult){
-        isGpsEnable = await this.app_googleService.askToTurnOnGPS();
-        if(isGpsEnable){
-          this.setCurrentLocation();
-        }
-      }
-    }else{      
-      await this.getCoordinatesOnBrowser();
-    }    
-  }
-
-  async getCoordinatesOnBrowser(){
-    const successCallback = (position) => {
-      let latLng = position.coords;
-      if(latLng && latLng['latitude'] && latLng['longitude']){ 
-        this.latitude = latLng['latitude'];
-        this.longitude = latLng['longitude']
-        this.center = {
-          lat:latLng.latitude,
-          lng:latLng.longitude
-        }
-      }
-    };      
-    const errorCallback = (error: any) => {
-      console.log(error);
-      this.notificationService.presentToastOnBottom("Geolocation is not supported by this browser.", "danger");
-    };
-    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-  }
-  async setCurrentLocation(){
-    if(isPlatform('hybrid')){
-      let currentLatLng:any = await this.app_googleService.getUserLocation();
-      if((currentLatLng && currentLatLng.lat) || (currentLatLng && currentLatLng.latitude)){
-        this.latitude = currentLatLng.lat ? currentLatLng.lat : currentLatLng.latitude;
-        this.longitude = currentLatLng.lng ? currentLatLng.lng : currentLatLng.longitude;
-        this.center ={
-          'lat':this.latitude,
-          'lng':this.longitude
-        }
-      }else{
-        console.log("Error while getting Location")
-      }
-    }else{
-      await this.getCoordinatesOnBrowser();
-    }
-    this.zoom = 17;
-  }
-  async locateMe(event:any,field?:any){
-    this.zoom = 17;
-    const hasGpsPermission = await this.app_googleService.checkGeolocationPermission();
-    if(hasGpsPermission ){
-      await this.setCurrentLocation();
-      await this.getAddressfromLatLng(this.latitude,this.longitude);
-      this.setAddressOnForm(field);
-    }else{
-      this.gpsEnableAlert();
-    }
-  }
-  async gmapSearchPlaces(inputData?:any,field?:any){
-    if(inputData?.target?.value){
-      if(this.searchElementRef != undefined){
-        if(this.searchElementRef && this.searchElementRef.nativeElement){
-          this.searchElementRef.nativeElement.value  = inputData.target.value;
-        }else{
-          this.searchElementRef['el']['value']  = inputData.target.value; // for ion-input
-        } 
-      }
-    }
-    let loadGoogleMap:boolean = false;
-    if(typeof Common.GOOGLE_MAP_IN_FORM == "string"){
-      if(Common.GOOGLE_MAP_IN_FORM == "true"){
-        loadGoogleMap = true;
-      }
-    }else{
-      if(Common.GOOGLE_MAP_IN_FORM){
-        loadGoogleMap = true;
-      }
-    }
-    if(loadGoogleMap){
-      // if(this.apiLoaded){
-        // this.geoCoder = new google.maps.Geocoder;
-        if(this.longitude == 0 && this.latitude == 0){
-          await this.setCurrentLocation();
-        }
-        this.center = {
-          "lat": this.latitude,
-          "lng": this.longitude
-        }
-        if(this.searchElementRef != undefined){
-          let googleautosearch;
-          if(this.searchElementRef && this.searchElementRef.nativeElement){
-            googleautosearch = this.searchElementRef.nativeElement
-          }else{
-            googleautosearch = this.searchElementRef['el']
-          }
-          let autocomplete = new google.maps.places.Autocomplete(
-            googleautosearch
-          );
-          autocomplete.addListener('place_changed', () => {
-            this.ngZone.run(() => {
-              let place: google.maps.places.PlaceResult = autocomplete?.getPlace();
-              if (place.geometry === undefined || place.geometry === null) {
-                return;
-              }
-              this.searchElementRef.nativeElement.value = place.name;
-              this.address = place.formatted_address;
-              this.latitude = place.geometry.location.lat();
-              this.longitude = place.geometry.location.lng();
-              this.center = {
-                "lat": this.latitude,
-                "lng": this.longitude
-              }
-              this.zoom = 17;
-              this.setAddressOnForm(field);
-              // this.addCapMarker(this.center);
-              this.getAddressfromLatLng(this.latitude, this.longitude);
-            });
-          });
-        }
-      // }
-    }
-  }
-  async mapClick(event: google.maps.MapMouseEvent,field?:any) {
-    this.zoom = 16;
-    this.center = (event.latLng.toJSON());
-    await this.getAddressfromLatLng(this.center.lat, this.center.lng);
-    this.setAddressOnForm(field);
-  }
-  openInfoWindow(marker: MapMarker) {
-    this.infoWindow.open(marker);
-  }
+  // setCheckboxFileListValue() {
+  //   this.checkBoxFieldListValue.forEach(element => {
+  //     let checkCreatControl: any;
+  //     if (element.parent) {
+  //       checkCreatControl = this.templateForm.get(element.parent).get(element.field_name);
+  //     } else {
+  //       checkCreatControl = this.templateForm.get(element.field_name);
+  //     }
+  //     if (this.staticData[element.ddn_field] && checkCreatControl.controls && checkCreatControl.controls.length == 0) {
+  //       let checkArray: UntypedFormArray;
+  //       if (element.parent) {
+  //         checkArray = this.templateForm.get(element.parent).get(element.field_name) as UntypedFormArray;
+  //       } else {
+  //         checkArray = this.templateForm.get(element.field_name) as UntypedFormArray;
+  //       }
+  //       this.staticData[element.ddn_field].forEach((data, i) => {
+  //         if (this.updateMode) {
+  //           let arrayData;
+  //           if (element.parent) {
+  //             arrayData = this.selectedRow[element.parent][element.field_name];
+  //           } else {
+  //             arrayData = this.selectedRow[element.field_name];
+  //           }
+  //           let selected = false;
+  //           if (arrayData != undefined && arrayData != null) {
+  //             for (let index = 0; index < arrayData.length; index++) {
+  //               if (this.checkObjecOrString(data) == this.checkObjecOrString(arrayData[index])) {
+  //                 selected = true;
+  //                 break;
+  //               }
+  //             }
+  //           }
+  //           if (selected) {
+  //             checkArray.push(new UntypedFormControl(true));
+  //           } else {
+  //             checkArray.push(new UntypedFormControl(false));
+  //           }
+  //         } else {
+  //           checkArray.push(new UntypedFormControl(false));
+  //         }
+  //       });
+  //     }
+  //   });
+  // }  
   
-  async getAddressfromLatLng(latitude, longitude)  {
-    if(latitude && longitude){
-      let location = {
-        "location" : {
-        'lat': latitude,
-        'lng': longitude
-        }
-      }
-      let address:any = await this.app_googleService.getGoogleAddressFromString(location);
-      if(address && address.formatted_address){
-        this.address = address.formatted_address;
-        this.latitude = address?.geometry?.location?.lat;
-        this.longitude = address?.geometry?.location?.lng;
-      }
-    }
-  }
-  setAddressOnForm(field:any){
-    if(this.templateForm?.get(field?.field_name)){
-      this.templateForm.get(field?.field_name).setValue(this.address);
-    }else if(this.templateForm?.get('address')){
-      this.templateForm.get('address').setValue(this.address);
-    }
-  }
-  selectionFocus(tableField:any){
-    let selectionmsg:string = '';
-    let backdropdismiss:boolean = false;
-    if(tableField?.interface && tableField?.interface != 'alert' && !tableField?.multi_select){
-      this.ionSelectInterface = tableField.interface;
-      backdropdismiss = true;
-    }
-    if(tableField?.multi_select){
-      selectionmsg = 'Choose multiple';
-    } else{
-      selectionmsg = 'Choose only one';
-    }
-    this.customAlertOptions = {
-      message: selectionmsg,
-      backdropDismiss: backdropdismiss,
-      translucent: true,
-    };
-  }
-  // create Capacitor  map and add markers
-  // async createMap(latlng?,field?) {
-  //   try{
-  //     let lat = 0;
-  //     let lng = 0;
-  //     if(latlng !=undefined){
-  //       lat = latlng.lat ? latlng.lat : latlng.latitude;
-  //       lng = latlng.lng ? latlng.lng : latlng.longitude;
-  //     }else{
-  //       lat = this.center.lat;
-  //       lng = this.center.lng;
-  //     }
-  //     this.newCapMap = await GoogleMap.create({
-  //       id: 'capa-google-map',
-  //       element: this.capMapRef.nativeElement,
-  //       apiKey: this.envService.getGoogleMapApiKey(),
-  //       config: {
-  //         center: {
-  //           lat : lat,
-  //           lng : lng
-  //         },
-  //         zoom: 15,
-  //       },
-  //     });
-  //     await this.addCapMarker(latlng? latlng : this.center);     
-  //     await this.newCapMap.enableTrafficLayer(true);
-  //     if(isPlatform('hybrid')){
-  //       await this.newCapMap.enableIndoorMaps(true);
-  //       await this.newCapMap.setMapType(MapType.Satellite);
-  //       await this.newCapMap.enableCurrentLocation(true); 
-  //     }
-  //     this.addListeners();
-  //   }catch(e){
-  //     console.log("CapMap Error :", e);
+
+  // getDate(e) {
+  //   let date = new Date(e.target.value).toISOString().substring(0, 10);
+  //   this.ionicForm.get('dob').setValue(date, {
+  //     onlyself: true
+  //   })
+  // }
+  // get errorControl() {
+  //   return this.ionicForm.controls;
+  // }
+  // submitForm() {
+  //   this.isSubmitted = true;
+  //   if (!this.ionicForm.valid) {
+  //     console.log('Please provide all the required values!')
+  //     return false;
+  //   } else {
+  //     console.log(this.ionicForm.value)
+  //     this.router.navigate(['home']);
   //   }
   // }
-  // async addCapMarker(marker){
-  //   if(this.capMapMarkerId) await this.removeMarker(this.capMapMarkerId);
-  //   this.capMapMarkerId = await this.newCapMap.addMarker({
-  //     coordinate: {
-  //       lat: marker.lat ? marker.lat : marker.latitude,
-  //       lng: marker.lng ? marker.lng : marker.longitude
-  //     },
-  //     draggable : false,
-  //   })
-  //   const CameraConfig:any = {
-  //     coordinate: {
-  //       lat: marker.lat ? marker.lat : marker.latitude,
-  //       lng: marker.lng ? marker.lng : marker.longitude
-  //     },
-  //     zoom: 15,
-  //     animate: true
-  //   }
-  //   this.newCapMap.setCamera(CameraConfig);
+
+  
+  // compareFn(e1: User, e2: User): boolean {
+  //   return e1 && e2 ? e1.id === e2.id : e1 === e2;
   // }
-  // async removeMarker(markerId?:any){
-  //   await  this.newCapMap.removeMarker(markerId ? markerId : this.capMapMarkerId);
+  // getddnDisplayVal(val) {
+  //   return this.commonFunctionService.getddnDisplayVal(val);    
   // }
-  // async addListeners(){
-  //   await this.newCapMap.setOnMarkerClickListener((event) => {
-  //     console.log("setOnMarkerClickListener :",event);
-  //     this.capMapMarkerId = event.markerId;
-  //     this.latitude = event.latitude;
-  //     this.longitude = event.longitude;
-  //     this.center = {
-  //       lat : event.latitude,
-  //       lng : event.longitude
-  //     }
-  //   })
-  //   await this.newCapMap.setOnMapClickListener(async (event) => {
-  //     console.log("setOnMapClickListener :",event);
-  //     this.latitude = event.latitude;
-  //     this.longitude = event.longitude;
-  //     this.center = {
-  //       lat : event.latitude,
-  //       lng : event.longitude
-  //     }
-  //     await this.getAddressfromLatLng(this.center.lat, this.center.lng);
-  //     this.addCapMarker(event);
-  //   })
-  //   await this.newCapMap.setOnMyLocationButtonClickListener((event) => {
-  //     console.log("setOnMyLocationButtonClickListener :",event);
-  //     this.addCapMarker(event);
-  //   })
-  //   await this.newCapMap.setOnMyLocationClickListener((event) => {
-  //     console.log("setOnMyLocationClickListener :",event);
-  //     this.latitude = event.latitude;
-  //     this.longitude = event.longitude;
-  //     this.center = {
-  //       lat : event.latitude,
-  //       lng : event.longitude
-  //     }      
-  //     this.addCapMarker(event);
-  //   })
-    
-  // }
-  callCalculation(){
-    if(this.calculationFieldList && this.calculationFieldList.length > 0){
-      for (var i = 0;i<this.calculationFieldList.length ;++i){
-        let element = this.calculationFieldList[i];
-        switch (element.onchange_function_param) {        
-            case 'autopopulateFields':
-              this.limsCalculationsService.autopopulateFields(this.templateForm);
-              break;
-          default:
-            this.inputOnChangeFunc('',element);
-        }
-      }
-    }
-  }
-  checkAddNewButtonOnGridSelection(buttons){
-    let check = false;
-    if(buttons && buttons.length >0){
-        for (let i = 0; i < buttons.length; i++) {
-          const btn = buttons[i];
-          if(btn && btn.onclick && btn.onclick.api && btn.onclick.api == "save"){
-            check = true;
-            break;
-          }
-        }
-    }
-    return check;
-  }
+  
 
   // Let these below 2 functions of readAsBase64 and convertBlobToBase64 , in the last of this file
   async readAsBase64(photo: Photo) {

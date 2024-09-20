@@ -100,7 +100,7 @@ ion-tabs.footertab {
     }
     .tab-selected {background:rgba(0,0,0,0.2);}
 }
-
+// delete
 // Inner Page Common Tabs
 .menutab {
     ion-segment {max-height:auto;}
@@ -151,7 +151,7 @@ ion-tabs.footertab {
 
 .addmore {position:fixed;right:20px;bottom:48px;z-index:9;background:#348EF7;color:#fff;width:48px;height:48px;border-radius:100%;text-align:center;line-height:52px;font-size:24px;}
 
-
+// delete
 .quotationlist {
     ion-row{width: 100%;}
     .inner_padding{padding: 10px 0;}
@@ -185,7 +185,7 @@ ion-tabs.footertab {
         img {vertical-align:middle;}
     }
 }
-
+// delete
 .contactprofile {text-align:center;background:#fff;border-radius:0 0 20px 20px;margin-bottom: auto;
     padding: 10px;
     .profileicon {width:65px;height:65px;border-radius:100%;line-height:65px;background:var(--themebg);margin:auto;color:#fff;font-size:28px;text-transform: uppercase;}
@@ -197,6 +197,7 @@ ion-tabs.footertab {
     h3.personName, .personDesignation{text-transform: uppercase;}
     .contactmedia ion-icon{color: var(--themebg);}
 }
+// delete
 .contactpersonlists{background: #ffffff;border-radius: 20px 20px 0 0;margin-top: 20px;padding: 10px 0;
     .contactlist ion-item{border: 1px solid #e3dfdf;}
 }
