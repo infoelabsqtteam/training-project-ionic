@@ -3133,7 +3133,7 @@ tinymceConfig = {}
       this.getSavePayload = formDataResponce.getSavePayload;
       this.showNotify = formDataResponce.showNotify;
       this.dataSaveInProgress = formDataResponce.dataSaveInProgress;
-      if(!formDataResponce.data.data['platForm']) formDataResponce.data.data['platForm'] = Capacitor.getPlatform().toUpperCase();
+      if(!formDataResponce?.data?.data['platForm'] || formDataResponce?.data?.data['platForm']) formDataResponce.data.data['platForm'] = Capacitor.getPlatform().toUpperCase();
       return formDataResponce.data;
     }else{
       let message = formDataResponce.message;
@@ -3382,7 +3382,7 @@ tinymceConfig = {}
       'previewFile': obj?.previewFile,
       'printFile' : obj?.printFile
     }
-    await this.appModelService.openModal(FileViewsModalComponent,objectValue).then( data => {
+    await this.appModelService.openModal(FileViewsModalComponent,{objectData:objectValue}).then( data => {
       if(data && data?.role == 'close'){
         console.log('Modal ' + data?.role);
       }
