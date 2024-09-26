@@ -4,11 +4,11 @@ import { AlertController, AlertOptions, ModalController, ModalOptions, PopoverCo
 @Injectable({
   providedIn: 'root'
 })
-export class PopoverModalService {
+export class TestService {
 
   constructor(
     private alertCtrl: AlertController,
-    private modalController: ModalController, 
+    private modalController: ModalController,
     private popoverCtrl: PopoverController
   ) { }
 
@@ -26,24 +26,24 @@ export class PopoverModalService {
     });
   }
 
-async presentModal(anyComponent:any, data:any) {
-  let id:any = anyComponent.toLowerCase;
-  const modal = await this.modalController.create({
-    component: anyComponent,
-    cssClass: id+"-class",
-    componentProps: {
-      'Data': data,
-    },
-    animated: true,
-    keyboardClose: true,
-    id:id
-  });
-  modal.present();
-  return await modal.onDidDismiss()
-        .then((data) => {
-          return data;
-      });
-}
+  async presentModal(anyComponent:any, data:any) {
+    let id:any = anyComponent.toLowerCase;
+    const modal = await this.modalController.create({
+      component: anyComponent,
+      cssClass: id+"-class",
+      componentProps: {
+        'Data': data,
+      },
+      animated: true,
+      keyboardClose: true,
+      id:id
+    });
+    modal.present();
+    return await modal.onDidDismiss()
+          .then((data) => {
+            return data;
+        });
+  }
 
   async getPopover(component: any, event?: any, componentProps?: any, mode?: 'md' | 'ios', cssClass?: string | string[]): Promise<HTMLIonPopoverElement> {
     return await this.popoverCtrl.create({
@@ -88,9 +88,7 @@ async presentModal(anyComponent:any, data:any) {
     return modal;
   }
 
-  public async showPopover(
-    opts: PopoverOptions
-  ): Promise<HTMLIonPopoverElement> {
+  public async showPopover(opts: PopoverOptions): Promise<HTMLIonPopoverElement> {
     const popover = await this.popoverCtrl.create(opts);
     await popover.present();
     return popover;

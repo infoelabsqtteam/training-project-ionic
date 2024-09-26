@@ -1,9 +1,9 @@
-import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, ElementRef, Renderer2, ChangeDetectorRef} from '@angular/core';
+import { Component, OnInit, Optional, OnDestroy, SimpleChanges, ViewChild, Renderer2, ChangeDetectorRef} from '@angular/core';
 import { NotificationService } from '@core/ionic-core';
 import { ModalController, IonRouterOutlet, PopoverController} from '@ionic/angular';
 import { UntypedFormBuilder, UntypedFormGroup} from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, AuthService, FormCreationService } from '@core/web-core';
+import { MenuOrModuleCommonService, CommonAppDataShareService, FormCreationService } from '@core/web-core';
 
 @Component({
   selector: 'app-card-view',
@@ -294,64 +294,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   popoverMenuItem(menuitem:any){
     this.popoverItems = menuitem;
   }
-  // Dependency Functions Handling End -------------------
-  
-
-  // Functions NOt In use--------------
-  
-  // search(searchcardvalue){
-  //   // console.log(searchcardvalue);
-  //   // if(searchcardvalue && searchcardvalue.length > 0){
-  //     this.data = {
-  //       'searchData' : searchcardvalue
-  //     }
-  //   // }
-  // }
-  // setCardDetails(card) {  
-  //   if(card && card.add_new){
-  //     if(this.detailPage){
-  //       this.addNewEnabled = false;
-  //     }else{
-  //       this.addNewEnabled = true;
-  //     }
-  //   }else{
-  //     this.addNewEnabled = false;
-  //   } 
-  //   this.cardtitle = card.name;
-  //   if (card.card_type !== '') {
-  //     this.cardType = card.card_type.name;
-  //   }
-  //   // this.childColumn = card.child_card;
-  // }
-  // async presentPopover(ev: any) {
-  //   const popover = await this.popoverController.create({
-  //     component: PopoverComponent,
-  //     cssClass: 'my-custom-class',
-  //     event: ev,
-  //     translucent: true,
-  //     componentProps: {
-  //       "popoverItems" : this.popoverItems 
-  //     }
-  //   });
-  //   popover.componentProps.popover = popover;
-  //   popover.onDidDismiss().then((result) => {        
-  //     console.log('onDidDismiss resolved with role', result);
-  //     this.getCardDataByCollection(this.selectedIndex);
-  //   });
-  //   return await popover.present();
-  // }
-  
-  // primaryheaderNewEmit(setStyleValue){
-  //   if (setStyleValue.scrollValue >= 50) {
-  //     this.renderer.setStyle(this.primaryheader['el'], 'top', setStyleValue.setTopValue);
-  //   } else {
-  //     this.renderer.setStyle(this.primaryheader['el'], 'top', setStyleValue.setTopValue);
-  //   }
-  // }
-  // comingSoon() {
-  //   this.notificationService.presentToastOnBottom('Comming Soon...');
-  // }
-  
+  // Dependency Functions Handling End ------------------- 
   
 
 }

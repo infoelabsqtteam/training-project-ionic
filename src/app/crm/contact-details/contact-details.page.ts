@@ -2,13 +2,12 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppStorageService, NotificationService } from '@core/ionic-core';
+import { AppStorageService, LoaderService, NotificationService } from '@core/ionic-core';
 import { CallNumber } from '@awesome-cordova-plugins/call-number/ngx';
 import { PopoverController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { SocialOptionComponent } from '../social-option/social-option.component';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { IonLoaderService } from 'src/app/service/ion-loader.service';
 import { ApiCallService, CommonFunctionService, EnvService, FormCreationService, StorageService } from '@core/web-core';
 
 @Component({
@@ -62,7 +61,7 @@ export class ContactDetailsPage implements OnInit {
     private formBuilder: UntypedFormBuilder,
     private datePipe: DatePipe,
     private CurrencyPipe: CurrencyPipe,
-    private ionLoaderService: IonLoaderService,
+    private ionLoaderService: LoaderService,
     private commonFunctionService:CommonFunctionService,
     private appStorageService: AppStorageService,
     private notificationService: NotificationService,

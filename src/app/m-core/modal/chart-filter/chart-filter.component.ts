@@ -2,7 +2,6 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { NotificationService, AppPermissionService, AppDownloadService, LoaderService, AppShareService } from '@core/ionic-core';
 import * as XLSX from 'xlsx';
-// import { File } from '@awesome-cordova-plugins/file/ngx';
 import { ModalController, Platform, isPlatform } from '@ionic/angular';
 import { DatePipe } from '@angular/common';
 import { utcToZonedTime, format} from 'date-fns-tz';
@@ -117,10 +116,10 @@ export class ChartFilterComponent implements OnInit {
     this.setminmaxDate();
   }
 
+  // Angular LifeCycle Function Handling Start --------------------
   ngOnInit() {
     this.showModal(this.dashboardItem);
   }
-
   ngOnDestroy(){
     this.checkGetDashletData = false;
     // if(this.staticDataSubscription){
@@ -133,7 +132,69 @@ export class ChartFilterComponent implements OnInit {
       this.typeaheadDataSubscription.unsubscribe();
     }
   }
+  // Angular LifeCycle Function Handling End --------------------
 
+  // Initial Function Handling Start ---------------
+  setminmaxDate(){
+    let minDateFromToday:any;
+    let maxDateFromToday:any;
+    minDateFromToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
+    maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd") + "T23:59:59";
+    if(this.platform.is('hybrid')){
+      let getToday: any  = (new Date()).toISOString();
+      getToday = utcToZonedTime(getToday, this.userTimeZone);
+      getToday = this.datePipe.transform(getToday, "yyyy-MM-ddThh:mm:ss");
+      this.minDate = minDateFromToday;
+      this.maxDate = maxDateFromToday;
+    }else{
+      this.minDate = minDateFromToday;
+      this.maxDate = maxDateFromToday;
+    }
+  }
+  showModal(object:any){
+    if(this.dashboardItem){
+      // this.dashboardItem = object.dashboardItem;
+      // this.dashletData = object.dashletData;
+      this.checkGetDashletData = true; 
+      if(this.dashboardItem.call_back_field){
+        this.dashlet_call_back = this.dashboardItem.call_back_field;
+      } 
+      if(this.filter){
+        this.showFilter = true;
+        this.setFilterForm(this.dashboardItem);
+      }else{
+        this.showFilter = false;
+      }   
+      if(this.dashletData && this.dashletData != ''){
+        this.setDashLetData(this.dashletData);
+      }
+      // this.chartFilterModal.show();
+      if(this.filter){
+        this.dashboardFilter.reset();
+      }
+      if(this.dashboardItem.package_name == "mongodb_chart"){
+        setTimeout(() => {
+          this.populateMongodbChart(this.dashboardItem);
+        }, 100);
+      }
+    } 
+  }
+  // Initial Function Handling End -------------
+
+  // Subscriber Function Handling Start -----------------------
+  setStaticData(staticDatas){
+    if(Object.keys(staticDatas).length > 0) {
+      Object.keys(staticDatas).forEach(key => {  
+        let staticData = {};
+        staticData[key] = staticDatas[key];  
+        if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
+          if(staticData[key]) { 
+            this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
+          }
+        } 
+      });
+    }
+  }  
   setDashLetData(dashletData:any){
     if (dashletData) {
       let dashletValue = {};
@@ -154,18 +215,163 @@ export class ChartFilterComponent implements OnInit {
         })
       }
     }
+  }  
+  setTypeaheadData(typeAheadData:any){
+    if (typeAheadData && typeAheadData.length > 0) {
+      this.typeAheadData = typeAheadData;
+    } else {
+      this.typeAheadData = [];
+    }
   }
+  // Subscriber Function Handling End -----------------------
 
-  getddnDisplayVal(val:any) {
-    return this.commonFunctionService.getddnDisplayVal(val);    
+  // Click Function Handling Start -----------------------
+  dismissModal(item:any){
+    this.close(item);
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss({'dismissed': true},'closed');
+    }else{        
+      this.modalController.dismiss({'dismissed': true},'closed',);
+    }
   }
-
-  chartHover(e:any){}
-  chartClicked(e:any){}
-  compareObjects(o1: any, o2: any): boolean {
-    return o1._id === o2._id;
+  exportexcel():void {
+    let list = [];
+    for (let index = 0; index < this.tableData.length; index++) {
+      let row = this.tableData[index];
+      const element = {};
+      for (let j = 0; j < row.length; j++) {
+        let col = this.tableHead[j];
+        element[col] = row[j];
+      }
+      list.push(element);
+    }
+    this.createExcel(list)
   }
+  dashletFilter(item:any){
+    if(item.package_name == "mongodb_chart"){
+      this.setFilterInMongodbChart(item);
+    }else{
+      this.getDashletData([item]);
+    }
+  }
+  reset(item:any){
+    if(this.dashboardFilter){
+      this.dashboardFilter.reset();
+    }    
+    if(this.showFilter){      
+      if(this.dashboardItem.package_name == "mongodb_chart"){
+        this.setFilterInMongodbChart(item);
+      }else{
+        this.getDashletData([item]);
+      }
+    }    
+  }
+  updateData(event:any, field:any) {
+    if(event.keyCode == 38 || event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 27 || event.keyCode == 9){
+      return false;
+    }
+    let objectValue:any = this.dashboardFilter.getRawValue();
+    if(objectValue[field.field_name]){
+      this.callTypeaheadData(field,objectValue);
+    }else{
+      objectValue[field.field_name] = event.target.value
+      this.callTypeaheadData(field,objectValue);
+    }
+  }
+  createExcel(list:any){    
+    if(this.platform.is('hybrid')){
+      if(this.platform.is('android')){
+        const ws:XLSX.WorkSheet = XLSX.utils.json_to_sheet(list);
+        const wb:XLSX.WorkBook = {
+          SheetNames:['excelData'],
+          Sheets:{
+            'excelData':ws
+          }
+        };
+        const excelBuffer:any = XLSX.write(wb,{
+          bookType:'xlsx',
+          type:'array'
+        });
+        // console.log(excelBuffer);
+        const fileExtension = "xlsx";
+        this.downloadtomobile(excelBuffer, fileExtension);
+      }
+    }else{
+      const ws:XLSX.WorkSheet = XLSX.utils.json_to_sheet(list);
+      const wb:XLSX.WorkBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb,ws,'Sheet1');
+      XLSX.writeFile(wb,this.dashboardItem.name + '.xlsx');
+    }
+  }
+  async canvasimg() {
+    var canvas = document.getElementById('chartjs') as HTMLCanvasElement;
+    this.chartjsimg = canvas.toDataURL('image/png');
+    if(this.platform.is("android")){
+      const b64Data = this.chartjsimg.split(',').pop();
+      const [,type] = this.chartjsimg.split(';')[0].split('/');
+      const byteCharacters = atob(b64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      this.downloadtomobile(byteArray, type);
+    }
+  }
+  dateonChange(e:any,fieldName){
+    if(e.detail.value && e.target.id == "startDate"){
+      this.selectedStartDateasMindate = this.datePipe.transform(e.detail.value, "yyyy-MM-dd") + "T00:00:00";
+      this.CheckStartDate=true;
+      const date = format(parseISO(e.detail.value), 'PP');
+      this.dashboardFilter.get(fieldName).get("start").setValue(date)
+      this.dashboardFilter.get(fieldName).get("end").setValue('');
 
+    }else if(e.detail.value && e.target.id == "endDate"){
+      if(this.CheckStartDate){
+        const date = format(parseISO(e.detail.value), 'PP');
+        this.dashboardFilter.get(fieldName).get("end").setValue(date)
+      }else{
+        this.dashboardFilter.get(fieldName).get("end").setValue('');
+        this.notificationService.presentToastOnBottom("Please First select Start Date","danger")
+      }
+    }else{
+      this.CheckStartDate= false;
+    }
+  }
+  // Click Function Handling End -----------------------
+
+  // Dependency Function Handling Start ------------
+  populateMongodbChart(chart){
+    if(this.accessToken != "" && this.accessToken != null){
+      const sdk = new ChartsEmbedSDK({
+        baseUrl: chart.chartUrl, // Optional: ~REPLACE~ with the Base URL from your Embed Chart dialog
+        getUserToken: () => this.accessToken
+      });
+      if(chart && chart.chartId){        
+        const id = "filter_"+chart.chartId;
+        const idRef = document.getElementById(id);
+        let height = "50vh"
+        if(this.filter){
+          height = "50vh";
+        }else{
+          height = "90vh";
+        }
+        if(idRef){
+          let cretedChart = sdk.createChart({
+            chartId: chart.chartId, // Optional: ~REPLACE~ with the Chart ID from your Embed Chart dialog
+            height: height
+          });
+          this.createdChartList[id] = cretedChart;
+          cretedChart
+          .render(idRef)
+          .catch(() => 
+          console.log('Chart failed to initialise')
+          //window.alert('Chart failed to initialise')
+          );
+        }        
+      }
+    }
+  }
   getDashletData(elements:any){
     if(elements && elements.length > 0){
       let payloads = [];
@@ -202,32 +408,15 @@ export class ChartFilterComponent implements OnInit {
       }
     }
   }
+  getddnDisplayVal(val:any) {
+    return this.commonFunctionService.getddnDisplayVal(val);    
+  }
   getSingleCardFilterValue(field:any,object:any){
     let value = {};
     if (object && object[field.name]) {
       value = object[field.name]
     }
     return value;
-  }
-  getOptionText(option:any) {
-    if (option && option.name) {
-      return option.name;
-    }else{
-      return option;
-    }
-  }
-
-  updateData(event:any, field:any) {
-    if(event.keyCode == 38 || event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 27 || event.keyCode == 9){
-      return false;
-    }
-    let objectValue:any = this.dashboardFilter.getRawValue();
-    if(objectValue[field.field_name]){
-      this.callTypeaheadData(field,objectValue);
-    }else{
-      objectValue[field.field_name] = event.target.value
-      this.callTypeaheadData(field,objectValue);
-    }
   }
   callTypeaheadData(field:any,objectValue:any){
     this.clearTypeaheadData();
@@ -243,25 +432,6 @@ export class ChartFilterComponent implements OnInit {
   }
   clearTypeaheadData() {
     this.apiService.clearTypeaheadData();
-  }
-
-  dashletFilter(item:any){
-    if(item.package_name == "mongodb_chart"){
-      this.setFilterInMongodbChart(item);
-    }else{
-      this.getDashletData([item]);
-    }
-  }
-  getMongodbFilterObject(data){
-    let object = {};
-    if(Object.keys(data).length > 0){
-      Object.keys(data).forEach(key => {
-        if(data[key] && data[key] != ''){
-          object[key] = data[key];
-        }
-      });
-    }
-    return object;
   }
   setFilterInMongodbChart(chart){
     let id = "filter_"+chart.chartId;
@@ -318,7 +488,17 @@ export class ChartFilterComponent implements OnInit {
     }
     return modifyObject;
   }
-
+  getMongodbFilterObject(data){
+    let object = {};
+    if(Object.keys(data).length > 0){
+      Object.keys(data).forEach(key => {
+        if(data[key] && data[key] != ''){
+          object[key] = data[key];
+        }
+      });
+    }
+    return object;
+  }
   setFilterForm(dashlet:any){    
     if(this.checkGetDashletData && dashlet._id && dashlet._id != ''){
       this.checkGetDashletData = false;
@@ -364,140 +544,13 @@ export class ChartFilterComponent implements OnInit {
       }
     } 
   }
-
-  setTypeaheadData(typeAheadData:any){
-    if (typeAheadData && typeAheadData.length > 0) {
-      this.typeAheadData = typeAheadData;
-    } else {
-      this.typeAheadData = [];
-    }
-  }
-
-  dismissModal(item:any){
-    this.close(item);
-    if(this.modal && this.modal?.offsetParent['hasController']){
-      this.modal?.offsetParent?.dismiss({'dismissed': true},'closed');
-    }else{        
-      this.modalController.dismiss({'dismissed': true},'closed',);
-    }
-  }
-
-  exportexcel():void {
-    let list = [];
-    for (let index = 0; index < this.tableData.length; index++) {
-      let row = this.tableData[index];
-      const element = {};
-      for (let j = 0; j < row.length; j++) {
-        let col = this.tableHead[j];
-        element[col] = row[j];
-      }
-      list.push(element);
-    }
-    this.createExcel(list)
-  }
-  createExcel(list:any){    
-    if(this.platform.is('hybrid')){
-      if(this.platform.is('android')){
-        const ws:XLSX.WorkSheet = XLSX.utils.json_to_sheet(list);
-        const wb:XLSX.WorkBook = {
-          SheetNames:['excelData'],
-          Sheets:{
-            'excelData':ws
-          }
-        };
-        const excelBuffer:any = XLSX.write(wb,{
-          bookType:'xlsx',
-          type:'array'
-        });
-        // console.log(excelBuffer);
-        const fileExtension = "xlsx";
-        this.downloadtomobile(excelBuffer, fileExtension);
-      }
-    }else{
-      const ws:XLSX.WorkSheet = XLSX.utils.json_to_sheet(list);
-      const wb:XLSX.WorkBook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb,ws,'Sheet1');
-      XLSX.writeFile(wb,this.dashboardItem.name + '.xlsx');
-    }
-  }
-  
-  async downloadtomobile(excelBuffer:any, extentionType?:any){ 
-    
+  async downloadtomobile(excelBuffer:any, extentionType?:any){    
     const fileExtension = extentionType;
-    // let file_Type: any;
-    // let file_prefix: any;
-    // if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
-    //   file_Type = "image/" + extentionType;
-    //   file_prefix = "Image";
-    // }else if(fileExtension == "xlsx" || fileExtension == "xls"){
-    //   file_Type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
-    //   file_prefix = "Excel";
-    // }else if(fileExtension == "pdf"){
-    //   file_Type = "application/" + extentionType;
-    //   file_prefix = "PDF";
-    // }else{
-    //   file_Type = "application/octet-stream";
-    //   file_prefix = "TEXT";
-    // }
     let response:any = this.appDownloadService.getBlobTypeFromExtn(extentionType);
     const fileName = response?.filePrefix + '_' + new Date().getTime() + "." + fileExtension;
     const excelBlobData:Blob = new Blob([excelBuffer],{type:response?.mimeType});
-    
-    // let readPermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-    // let writePermission = await this.permissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
-
-    // if(readPermission && writePermission){ 
-
-    // // ==========using native file
-    
-    //   this.file.checkDir(this.file.externalRootDirectory, "Download").then(() => {
-
-    //     this.file.writeFile(this.file.externalRootDirectory + '/Download/',fileName,excelBlobData,{replace:true}).then(() => {
-    //       this.notificationService.presentToastOnBottom(fileName + " Saved in Downloads");
-    //     }).catch( (error:any) =>{
-    //       if(error && error.message){
-    //         this.notificationService.presentToastOnBottom(error.message);
-    //       }else{
-    //         this.notificationService.presentToastOnBottom(error);
-    //       }
-    //     })
-        
-    //   }).catch( (error:any) =>{
-    //     if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
-    //     this.file.createDir(this.file.externalRootDirectory, "Download", true).then(() => {
-          
-    //       this.file.writeFile(this.file.externalRootDirectory + "/Download/",fileName,excelBlobData,{replace:true}).then(() => {
-    //         this.notificationService.presentToastOnBottom(fileName + " Saved in Download");
-    //       })
-
-    //     }).catch( (error:any) =>{
-    //       if(error && error.message){
-    //         this.notificationService.presentToastOnBottom(error.message);
-    //       }else{
-    //         this.notificationService.presentToastOnBottom(error);
-    //       }
-    //     })
-    //     }
-    //   });
-
-    // }
     let downloadResponse:any =  this.appDownloadService.downloadAnyBlobData(excelBlobData,fileName,true);
-    this.downloadResponseHandler(downloadResponse);
-    // // ======using filesaver
-    // // FileSaver.saveAs(excelBlobData,fileName);
-    // // FileSaver.saveAs(excelBlobData,fileName).then(() => {
-    // //   this.storageService.presentToast(this.dashboardItem.name + "Saved");
-    // //   // alert("Excel file saved in device");
-    // // }).catch( (error:any) =>{
-    // //   if(error && error.message){
-    // //     this.storageService.presentToast(error.message);
-    // //   }else{
-    // //     this.storageService.presentToast(error);
-    // //   }
-    // //   // alert(error);
-    // // })
-
-    
+    this.downloadResponseHandler(downloadResponse);   
   }
   async downloadResponseHandler(response:any){
     if(response?.haspermission && response?.status){
@@ -536,117 +589,6 @@ export class ChartFilterComponent implements OnInit {
     }else{
       this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
     }
-  }
-
-  // public async getDownloadPath() {
-  //   if (this.platform.is('android')) {    
-  //     const ReadWritePermission = await this.permissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-  //     if(ReadWritePermission){
-  //       return this.file.externalRootDirectory + '/Download/';
-  //     }      
-  //   }else{
-  //     return this.file.documentsDirectory;
-  //   }
-  // }
-
-  // Helper Function
-  convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
-    const reader:FileReader = new FileReader();
-    reader.onerror = reject;
-    reader.onabort = reject;
-    reader.onload = () => {
-      resolve(reader.result as string);
-    };
-    reader.readAsDataURL(blob);
-  });
-
-  async canvasimg() {
-    var canvas = document.getElementById('chartjs') as HTMLCanvasElement;
-    this.chartjsimg = canvas.toDataURL('image/png');
-
-    if(this.platform.is("android")){
-      const b64Data = this.chartjsimg.split(',').pop();
-      const [,type] = this.chartjsimg.split(';')[0].split('/');
-      const byteCharacters = atob(b64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      this.downloadtomobile(byteArray, type);
-    }
-  }
-
-  showModal(object:any){
-    if(this.dashboardItem){
-      // this.dashboardItem = object.dashboardItem;
-      // this.dashletData = object.dashletData;
-      this.checkGetDashletData = true; 
-      if(this.dashboardItem.call_back_field){
-        this.dashlet_call_back = this.dashboardItem.call_back_field;
-      } 
-      if(this.filter){
-        this.showFilter = true;
-        this.setFilterForm(this.dashboardItem);
-      }else{
-        this.showFilter = false;
-      }   
-      if(this.dashletData && this.dashletData != ''){
-        this.setDashLetData(this.dashletData);
-      }
-      // this.chartFilterModal.show();
-      if(this.filter){
-        this.dashboardFilter.reset();
-      }
-      if(this.dashboardItem.package_name == "mongodb_chart"){
-        setTimeout(() => {
-          this.populateMongodbChart(this.dashboardItem);
-        }, 100);
-      }
-    } 
-  }
-  populateMongodbChart(chart){
-    if(this.accessToken != "" && this.accessToken != null){
-      const sdk = new ChartsEmbedSDK({
-        baseUrl: chart.chartUrl, // Optional: ~REPLACE~ with the Base URL from your Embed Chart dialog
-        getUserToken: () => this.accessToken
-      });
-      if(chart && chart.chartId){        
-        const id = "filter_"+chart.chartId;
-        const idRef = document.getElementById(id);
-        let height = "50vh"
-        if(this.filter){
-          height = "50vh";
-        }else{
-          height = "90vh";
-        }
-        if(idRef){
-          let cretedChart = sdk.createChart({
-            chartId: chart.chartId, // Optional: ~REPLACE~ with the Chart ID from your Embed Chart dialog
-            height: height
-          });
-          this.createdChartList[id] = cretedChart;
-          cretedChart
-          .render(idRef)
-          .catch(() => 
-          console.log('Chart failed to initialise')
-          //window.alert('Chart failed to initialise')
-          );
-        }        
-      }
-    }
-  }
-  async download(object){
-    let chartId = "filter_"+object.chartId;
-    let chart = this.createdChartList[chartId];    
-    let blobData:any = await this.chartService.getDownloadData(chart,object);
-    if(isPlatform('hybrid')){
-      // const response:any = await this.appDownloadService.downloadBlobData(blobData.url, blobData.name);
-      const response:any = await this.appDownloadService.downloadAnyBlobData(blobData.url, blobData.name,true);
-      this.downloadResponseHandler(response);
-    }else{
-      this.chartService.downlodBlobData(blobData.url, blobData.name);
-    }
   } 
   close(item:any){
     this.checkGetDashletData = false;
@@ -654,80 +596,59 @@ export class ChartFilterComponent implements OnInit {
   //  this.chartFilterModal.hide();
   }
 
-  reset(item:any){
-    if(this.dashboardFilter){
-      this.dashboardFilter.reset();
-    }    
-    if(this.showFilter){      
-      if(this.dashboardItem.package_name == "mongodb_chart"){
-        this.setFilterInMongodbChart(item);
-      }else{
-        this.getDashletData([item]);
-      }
-    }    
-  }
+  
+  
+  // Dependency Function Handling End ------------
+  
+  // Not in Use functions Start----------------
+  chartHover(e:any){}
+  chartClicked(e:any){}
+  // compareObjects(o1: any, o2: any): boolean {
+  //   return o1._id === o2._id;
+  // }
 
-  checkValidator(){    
-    return !this.dashboardFilter.valid;     
-  }
+  // getOptionText(option:any) {
+  //   if (option && option.name) {
+  //     return option.name;
+  //   }else{
+  //     return option;
+  //   }
+  // }
 
-  setminmaxDate(){
-    let minDateFromToday:any;
-    let maxDateFromToday:any;
-    minDateFromToday = this.datePipe.transform(this.minDate, "yyyy-MM-dd") + "T00:00:00";
-    maxDateFromToday = this.datePipe.transform(this.maxDate, "yyyy-MM-dd") + "T23:59:59";
-    if(this.platform.is('hybrid')){
-      let getToday: any  = (new Date()).toISOString();
-      getToday = utcToZonedTime(getToday, this.userTimeZone);
-      getToday = this.datePipe.transform(getToday, "yyyy-MM-ddThh:mm:ss");
-      this.minDate = minDateFromToday;
-      this.maxDate = maxDateFromToday;
-    }else{
-      this.minDate = minDateFromToday;
-      this.maxDate = maxDateFromToday;
-    }
-  }
-  dateonChange(e:any,fieldName){
-    if(e.detail.value && e.target.id == "startDate"){
-      this.selectedStartDateasMindate = this.datePipe.transform(e.detail.value, "yyyy-MM-dd") + "T00:00:00";
-      this.CheckStartDate=true;
-      const date = format(parseISO(e.detail.value), 'PP');
-      this.dashboardFilter.get(fieldName).get("start").setValue(date)
-      this.dashboardFilter.get(fieldName).get("end").setValue('');
+  // convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
+  //   const reader:FileReader = new FileReader();
+  //   reader.onerror = reject;
+  //   reader.onabort = reject;
+  //   reader.onload = () => {
+  //     resolve(reader.result as string);
+  //   };
+  //   reader.readAsDataURL(blob);
+  // }); 
+  
+  // async download(object){
+  //   let chartId = "filter_"+object.chartId;
+  //   let chart = this.createdChartList[chartId];    
+  //   let blobData:any = await this.chartService.getDownloadData(chart,object);
+  //   if(isPlatform('hybrid')){
+  //     // const response:any = await this.appDownloadService.downloadBlobData(blobData.url, blobData.name);
+  //     const response:any = await this.appDownloadService.downloadAnyBlobData(blobData.url, blobData.name,true);
+  //     this.downloadResponseHandler(response);
+  //   }else{
+  //     this.chartService.downlodBlobData(blobData.url, blobData.name);
+  //   }
+  // }  
 
-    }else if(e.detail.value && e.target.id == "endDate"){
-      if(this.CheckStartDate){
-        const date = format(parseISO(e.detail.value), 'PP');
-        this.dashboardFilter.get(fieldName).get("end").setValue(date)
-      }else{
-        this.dashboardFilter.get(fieldName).get("end").setValue('');
-        this.notificationService.presentToastOnBottom("Please First select Start Date","danger")
-      }
-    }else{
-      this.CheckStartDate= false;
-    }
-  }
-  checkStartDateValue(){
-    if(this.startDateSelected["el"].value){
-      this.CheckStartDate=true;
-    }else{
-      this.notificationService.presentToastOnBottom("Please First select Start Date","danger")
-    }
-  }
-  setStaticData(staticDatas){
-    if(Object.keys(staticDatas).length > 0) {
-      Object.keys(staticDatas).forEach(key => {  
-        let staticData = {};
-        staticData[key] = staticDatas[key];  
-        if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
-          if(staticData[key]) { 
-            this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
-          }
-        } 
-      });
-    }
-  }
-
-
+  // checkValidator(){    
+  //   return !this.dashboardFilter.valid;     
+  // } 
+  
+  // checkStartDateValue(){
+  //   if(this.startDateSelected["el"].value){
+  //     this.CheckStartDate=true;
+  //   }else{
+  //     this.notificationService.presentToastOnBottom("Please First select Start Date","danger")
+  //   }
+  // }
+  // Not in Use functions End----------------
 
 }

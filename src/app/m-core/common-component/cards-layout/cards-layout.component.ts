@@ -1,21 +1,18 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService, AppDownloadService, AppShareService, AppStorageService } from '@core/ionic-core';
+import { AppDataShareService, NotificationService, AppPermissionService, App_googleService, LoaderService, AppDownloadService, AppShareService, AppStorageService, AppModelService } from '@core/ionic-core';
 import { CallNumber } from '@awesome-cordova-plugins/call-number/ngx';
-import { Platform, ModalController, AlertController, PopoverController, isPlatform, ActionSheetController } from '@ionic/angular';
+import { Platform, ModalController, AlertController, isPlatform, ActionSheetController } from '@ionic/angular';
 import { DataShareServiceService } from 'src/app/service/data-share-service.service';
 import { ModalDetailCardComponent } from '../modal-detail-card/modal-detail-card.component';
 import { FormComponent } from '../form/form.component';
 import { DatePipe } from '@angular/common';
 import { CallDataRecordFormComponent } from '../../modal/call-data-record-form/call-data-record-form.component';
-import { AndroidpermissionsService } from '../../../service/androidpermissions.service';
 import { GmapViewComponent } from '../gmap-view/gmap-view.component';
 import { zonedTimeToUtc } from 'date-fns-tz';
 import { ApiService, DataShareService, CommonFunctionService, MenuOrModuleCommonService, CommonAppDataShareService, PermissionService, StorageService, CoreFunctionService, AuthService, ApiCallService, GridCommonFunctionService, DownloadService, ChartService } from '@core/web-core';
 import { Barcode, BarcodeFormat, BarcodeScanner, LensFacing } from '@capacitor-mlkit/barcode-scanning';
-// import { Capacitor, CapacitorException } from '@capacitor/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
 import { BarcodeScanningComponent } from '../../modal/barcode-scanning/barcode-scanning.component';
 import { Subscription } from 'rxjs';
 import { FileOpener } from '@capacitor-community/file-opener';
@@ -195,9 +192,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private datePipe: DatePipe,
     private notificationService: NotificationService,
     private permissionService:PermissionService,
-    // private fileOpener: FileOpener,
-    // private file: File,
-    private apppermissionsService: AndroidpermissionsService,
     public renderer: Renderer2,
     private app_googleService: App_googleService,
     private commonFunctionService: CommonFunctionService,
@@ -211,10 +205,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     private gridCommonFunctionService: GridCommonFunctionService,
     private downloadService: DownloadService,
     private appDownloadService: AppDownloadService,
-    private androidpermissionsService: AndroidpermissionsService,
     private chartService: ChartService,
     private appShareService: AppShareService,
-    private popoverModalService: PopoverModalService,
+    private appModelService: AppModelService,
     private appStorageService: AppStorageService
   ) 
   {
@@ -259,13 +252,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.printFileSubscription = this.dataShareService.printData.subscribe(data =>{
       this.downloadandprint(data);
     })
-
-    // this.gridRunningDataSubscriber = this.dataShareService.gridRunningData.subscribe((data:any) =>{
-    //   if(data && data?.data?.length >0 &&this.scannerForm){
-    //     this.checkStatusAndOpenForm(data);
-    //     this.scannerForm=false;
-    //   }
-    // });
     
   }
   // Test Functions Start
@@ -294,9 +280,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     // this.renderer.setStyle(this.cardViewContent['el'], 'webkitTransition', 'top 700ms');
   }
   ngOnDestroy(): void {
-    // if (this.cardListSubscription) {
-    //   this.cardListSubscription.unsubscribe();
-    // }
     this.unSubscribed();
   }
   ngOnChanges(changes?: SimpleChanges) {
@@ -350,7 +333,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       //   .catch(e => console.log(" hasReadPermission " + JSON.stringify(e)));
 
     });
-
   }
   setCardData(data:any){
     if( this.currentPage < this.totalPageCount){
@@ -417,21 +399,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         this.editedRowData(0,this.formTypeName)
       }
       this.formTypeName='';
-      // this.scannerForm=false;
     }
     if(this.enableScanner){
       this.appStorageService.setObject('scannedData',this.carddata);
     }
-    // if(this.cardType=='sampleSubmit')this.goToSampleSubmit();
   }
-  // checkLoader() {
-  //   new Promise(async (resolve)=>{
-  //     let checkLoader = await this.loaderService.loadingCtrl.getTop();
-  //     if(checkLoader && checkLoader['hasController']){
-  //       this.loaderService.hideLoader();
-  //     }
-  //   });
-  // }
   async setDownloadPdfData(downloadPdfData){
     if (downloadPdfData != '' && downloadPdfData != null && this.downloadPdfCheck != '') {
       const blobData = new Blob([downloadPdfData.data], { type: "application/pdf" });
@@ -443,7 +415,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         fileName = downloadPdfData.filename;
       }      
       if(this.platform.is("hybrid")){
-        // this.downloadToMobile(blobData,fileName);
         let downloadResponse = await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
         this.downloadResponseHandler(downloadResponse);
       }else{
@@ -493,61 +464,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.notificationService.presentToastOnBottom('Please allow media access in App setting, to Download')
     }
   }
-  
-  // async downloadToMobile(blobData:any,fileName:any,FolderName?:any){
-  //   let file_Type:any = '';
-  //   let folderName:any = '';
-  //   if(blobData && blobData.type){
-  //     file_Type = blobData.type;
-  //   }
-  //   if(FolderName == undefined || FolderName == null){
-  //     folderName = 'Download'
-  //   }else{
-  //     folderName = FolderName;
-  //   }
-  //   let readPermission = await this.appPermissionService.checkAppPermission("READ_EXTERNAL_STORAGE");
-  //   let writePermission = await this.appPermissionService.checkAppPermission("WRITE_EXTERNAL_STORAGE");
-
-  //   if(readPermission && writePermission){
-
-  //     // ==========using native file    
-  //     this.file.checkDir(this.file.externalRootDirectory, folderName).then(() => {
-
-  //       this.file.writeFile(this.file.externalRootDirectory + '/' + folderName + '/',fileName,blobData,{replace:true}).then(async() => {
-  //         // confirm alert
-  //         let openFile:any = await this.notificationService.confirmAlert("Saved in Downloads","Open file  " + fileName);
-  //         if(openFile == "confirm"){
-  //           const path = this.file.externalRootDirectory + '/' + folderName + '/' + fileName;
-  //           const mimeType = file_Type;      
-  //           // this.fileOpener.open(path,mimeType)
-  //           // .then(()=> console.log('File is opened'))
-  //           // .catch(error => console.log('Error opening file ',error));
-  //         }
-  //       }).catch( (error:any) =>{
-  //         this.notificationService.presentToastOnBottom(JSON.stringify(error), 'danger');
-  //       })
-        
-  //     }).catch( (error:any) =>{
-  //       if(error && error.message == "NOT_FOUND_ERR" || error.message == "PATH_EXISTS_ERR"){
-          
-  //         this.file.createDir(this.file.externalRootDirectory, folderName, false).then((response:any) => {
-  //           console.log('Directory create '+ response);
-  //           this.file.writeFile(this.file.externalRootDirectory + "/" + folderName + "/",fileName,blobData,{replace:true}).then(() => {
-  //             this.notificationService.presentToastOnBottom(fileName + " Saved in " + folderName);
-  //           })
-
-  //         }).catch( (error:any) =>{            
-  //           this.notificationService.presentToastOnBottom(JSON.stringify(error));
-  //         })
-  //       }
-  //     });
-  //   }else{
-  //     let gavepermission:any = await this.notificationService.presentToastWithButton("Please Allow File and Media Access in App Permission, to Download File","",'Allow',"",5000);
-  //     if(gavepermission == "cancel"){
-  //       this.apppermissionsService.openNativeSettings('application_details');
-  //     }
-  //   }
-  // }
   async downloadandprint(data){
     let template = data.data;
     const blob = new Blob([template], { type: 'application/pdf' });
@@ -593,7 +509,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
 
   // Unsubscribe Functions Handling Start -------------------
   unSubscribed(){
-    if (this.gridDataSubscription) {
+    if(this.gridDataSubscription) {
       this.gridDataSubscription.unsubscribe();
     }
     if(this.pdfFileSubscription){
@@ -800,16 +716,188 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }
     }
   }
+  clickOnGridElement(field, object, i,e:Event) {
+    e.stopPropagation();
+    let value={};
+    value['data'] = this.commonFunctionService.getObjectValue(field.field_name, object);
+    if(value['data']!){
+      console.log('Data available in ' + field.field_label);
+    }else{
+      return console.log('No data available in ' + field.field_label);
+    }    
+    if(field.gridColumns && field.gridColumns.length > 0){
+      value['gridColumns'] = field.gridColumns;
+    }
+    let editemode = false;
+    if(field.editable){
+      editemode = true;
+    }
+    if(field.bulk_download){
+      value['bulk_download'] = true;
+    }else{
+      value['bulk_download'] = false;
+    }
+    if (!field.type) field.type = "Text";
+    switch (field.type.toLowerCase()) {
+      case "file":
+      case "file_with_preview":
+      case "file_with_print":
+        if (value['data'] && value['data'] != '') {
+          let previewFile:boolean = false;
+          let printFile:boolean = false;
+          if(field.type.toLowerCase() == "file_with_preview"){
+            previewFile = true;
+          }else if(field.type.toLowerCase() == "file_with_print"){
+            printFile = true;
+          }
+          const obj = {
+            'data' : value,
+            'field' : field,
+            'index' : i,
+            'field_name': field?.field_name,
+            'editemode' : editemode,
+            'field_type': field.type.toLowerCase(),
+            'previewFile': previewFile,
+            'printFile' : printFile
+          }
+          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode,obj);
+        };
+        break;
+      default: return;
+    }
+  }
+  // go to new page 2nd method
+  async detailCardButton(column, data){
+    if(this.detailPage){
+      //const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
+      this.modaldetailCardButton(column,data);
+    }else{
+      const newobj = {
+        "childdata": data,
+        "selected_tab_index": this.selectedIndex
+      }
+      this.dataShareServiceService.setchildDataList(newobj);  
+      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);  
+      this.router.navigate(['card-detail-view']);
+    }    
+  }
+  // add new card or record in cardlist 
+  addNewForm(formName?:any,permissionName?:string,scannedData?:string){
+    if (this.permissionService.checkPermission(this.currentMenu.name, 'add') || this.permissionService.checkPermission(this.currentMenu.name, 'edit') || this.permissionService.checkPermission(this.currentMenu.name, permissionName)) {
+      if(formName){
+        this.formTypeName = formName;
+      }else{
+        this.formTypeName = "default";
+      }
+      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);
+      let card = this.card;
+      let form:any = {};
+      let id = '5f6d95da9feaa2409c3765cd';
+      if(card && card.card && card.card.form){
+        form = this.commonFunctionService.getForm(card.card.form,formName,this.gridButtons);
+        if(form && form._id && form._id != ''){
+          id = form._id;
+        }else if(card.card.form && card.card.form._id){
+          form = card.card.form;
+          id = card.card.form._id;
+        }
+      }    
+      this.commonAppDataShareService.setFormId(id);
+      // this.router.navigate(['crm/form']);
+      this.saveCallSubscribe();
+      const additionalData = {
+        'scannedData': scannedData,
+        'card': this.card?.card ? this.card?.card : this.card,
+        'enableScanner': this.enableScanner
+      }
+      this.openFormModal(form,additionalData);
+    } else {
+      this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
+    }
+  }  
+  // Pull from bottom for loading more cards
+  loadData(event:any) {
+    if(this.loadMoreData){
+      this.ionEvent = event;
+      setTimeout(() => {
+        event.target.complete();
+        // this.loadMoreData = true;
+        if(this.currentPageCount <= this.totalPageCount){
+          if (this.carddata.length === this.totalDataCount || this.totalDataCount === 1) {// App logic to determine if all data is loaded
+            this.ionEvent.target.disabled = true;    // and disable the infinite scroll
+            this.notificationService.presentToastOnBottom("You reached at the end.","success");
+          }else{
+            this.currentPageCount++;
+            this.getGridData(this.collectionname);  
+          }
+        }else{
+          this.notificationService.presentToastOnBottom("No more data.");
+        }        
+      }, 2000);
+
+    }else{
+      setTimeout(() => {
+        console.log("Load More Data feature disable.");
+          event.target.complete();
+      }, 2000);
+    }
+  }
+  // Pull from Top for Do refreshing or update card list 
+  doRefresh(event:any) {
+    if(this.refreshlist){
+      this.ionEvent = event;
+      console.log('Begin doRefresh async operation');
+      this.updateMode = false;  
+      setTimeout(() => {
+        event.target.complete();
+        let card:any;
+        let criteria:any = [];
+        // if (this.carddata.length === this.totalDataCount) { 
+          // App logic to determine if all data is loaded
+          // this.refreshEvent.target.disabled = true;    // Disable the infinite scroll if carddata.length === response.totaldata.length
+          // console.log('doRefresh async operation has ended');
+          // this.notificationService.presentToastOnBottom("No Updates Available","success");
+        // }else{
+          if(this.card && this.card.card){
+            card = this.card.card;
+          }
+          if(card && card.api_params_criteria && card.api_params_criteria.length > 0){
+            card.api_params_criteria.forEach(element => {
+              criteria.push(element);
+            });
+          }
+          if(card && card.parent_id){
+            if(card && card.collection_name == "travel_tracking_master" && card.parent_id && card.parent_id !=''){
+              const cr = "travelPlan._id;eq;" + card.parent_id + ";STATIC";
+              criteria.push(cr);
+            }      
+          }
+          // if(card && card.collection_name){
+          //   if(card.collection_name=='sample_collection'){
+          //     let user=this.storageService.GetUserInfo();
+          //     const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
+          //     const cr2 = "status;eq;" + "PENDING" + ";STATIC";
+          //     criteria.push(cr1);
+          //     criteria.push(cr2);
+          //   }      
+          // }
+          this.getGridData(this.collectionname, criteria, card);
+        // }
+      }, 2000);
+
+    }else{
+      console.log("Top refresh feature disable.");
+      event.target.complete();
+    }
+  }
   // Click Functions Handling End---------------------
 
   // Dependency Functions Handling Start -------------------
-
-  // Dependency Functions Handling End -------------------
   saveCallSubscribe(){
     this.saveResponceSubscription = this.dataShareService.saveResponceData.subscribe(responce =>{
       this.setSaveResponce(responce);
     })
-  }  
+  }
   resetVariabls(){
     if(this.updateMode){
     }
@@ -832,20 +920,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.selectedgriddataId = "";
     this.addNewEnabled = false;
     this.form = "";
-  }  
-  onContentScroll(event:any) {
-    let scrollEventVal:any = {};
-    if (event.detail.scrollTop >= 50) {
-      this.renderer.setStyle(this.cardViewContent['el'], 'top', '-69px');
-      scrollEventVal['scrollValue'] = event.detail.scrollTop;
-      scrollEventVal['setTopValue'] = "-69px";
-      this.primaryheaderNew.emit(scrollEventVal);
-    } else {
-      this.renderer.setStyle(this.cardViewContent['el'], 'top', '0px');
-      scrollEventVal['scrollValue'] = event.detail.scrollTop;
-      scrollEventVal['setTopValue'] = "0px";
-      this.primaryheaderNew.emit(scrollEventVal);
-    }
   }
   getCardDataByCollection(i: number,parentId?:string) {
     this.resetVariabls();
@@ -855,7 +929,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.card = cardWithTab;
     }
     this.setCardAndTab(cardWithTab);    
-  } 
+  }
   setCardAndTab(cardWithTab){
     if(cardWithTab && cardWithTab.card){
       if (this.permissionService.checkPermission(cardWithTab.card.collection_name, 'view')) {
@@ -904,15 +978,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       }else{
         this.gridButtons = [];
       }
-      // if(card.add_new){
-      //   if(this.detailPage){
-      //     this.addNewEnabled = false;
-      //   }else{
-      //     this.addNewEnabled = true;
-      //   }
-      // }else{
-      //   this.addNewEnabled = false;
-      // }
       if(card.add_calling){
         if(this.detailPage){
           this.addCallingFeature = false;
@@ -1024,20 +1089,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
           break;
       }
     }
-    // if(card.collection_name=='sample_collection'){
-    //   let user=this.storageService.GetUserInfo();
-    //   const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
-    //   let cr2;
-    //   if(this.cardType== 'summary'){
-    //     cr2 = "status;eq;" + "PENDING" + ";STATIC";
-    //   }
-    //   else{
-    //     cr2 = "status;eq;" + "RECEIVED" + ";STATIC";
-    //   }
-    //   customCriteria.push(cr1);
-    //   customCriteria.push(cr2);
-    //   return customCriteria;
-    // }
     if(card['enableGps']){
       if(this.platform.is("hybrid")){
         let isGpsEnabled = await this.app_googleService.checkGeolocationPermission();
@@ -1048,54 +1099,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         await this.getCurrentPosition();
       }
     }
-  }
-  // search(searchcard) {
-  //   // const criteria = "quotation_status;stwic;"+this.searchcard+";STATIC";
-  //   // this.getGridData(this.collectionname, [criteria]);
-  //   // this.getGridData(this.collectionname);
-  // }
-  onChangeValue(myInput) {
-    this.inValue = myInput.length;
-    if (this.inValue <= 0) {
-      this.getGridData(this.collectionname);
-    }
-  }
-  // goBack(){
-  //   this.carddata = [];
-  //   this.tabMenu = [];
-  //   this.openFilter = false;
-  // }  
-
-  // go to new page 2nd method
-  async detailCardButton(column, data){
-    if(this.detailPage){
-      //const index = this.coreUtilityService.getIndexInArrayById(this.carddata,data._id);
-      this.modaldetailCardButton(column,data);
-    }else{
-      const newobj = {
-        "childdata": data,
-        "selected_tab_index": this.selectedIndex
-      }
-      this.dataShareServiceService.setchildDataList(newobj);  
-      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);  
-      this.router.navigate(['card-detail-view']);
-    }
-    
-  }
-  
-  comingSoon() {
-    this.notificationService.presentToastOnBottom('Comming Soon...');
-  }  
-
-  callInvoice(card:any,Index:number) {
-    let callingNumber:any;
-    if(card.billing_mobile !=''){
-      callingNumber = card.billing_mobile;
-    }
-    this.callNumber.callNumber(callingNumber, true)
-      .then(res => console.log('Launched dialer!' + res))
-      .catch(err => console.log('Error launching dialer ' + err));
-  }
+  } 
   setCriteria(listCiteria,criteria){
     if(criteria && criteria.length > 0){
       criteria.forEach(cr => {
@@ -1159,63 +1163,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     }
     this.apiService.getDatabyCollectionName(payload);
   }
-
   getValueForGrid(field,object){
     return this.gridCommonFunctionService.getValueForGrid(field,object);
   } 
-
-  tabmenuClick(index:number){
-    this.selectedIndex = index;
-    this.carddata = [];
-    this.createFormgroup = true;
-    const tab = this.tabMenu[index];
-    const moduleList = this.commonAppDataShareService.getModuleList();
-    const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
-    const card = moduleList[tabIndex];
-    this.card['card'] = card;
-    this.card.selectedTabIndex = index;
-    this.setCardDetails(card);
-  } 
-  
-  showCardTemplate(card:any, index:number){
-    this.selectedIndex = index;
-    //this.router.navigate(['crm/quotation']);
-    this.dataShareServiceService.setcardData(card);
-  }
-  // add new card or record in cardlist 
-  addNewForm(formName?:any,permissionName?:string,scannedData?:string){
-    if (this.permissionService.checkPermission(this.currentMenu.name, 'add') || this.permissionService.checkPermission(this.currentMenu.name, 'edit') || this.permissionService.checkPermission(this.currentMenu.name, permissionName)) {
-      if(formName){
-        this.formTypeName = formName;
-      }else{
-        this.formTypeName = "default";
-      }
-      this.commonAppDataShareService.setSelectedTabIndex(this.selectedIndex);
-      let card = this.card;
-      let form:any = {};
-      let id = '5f6d95da9feaa2409c3765cd';
-      if(card && card.card && card.card.form){
-        form = this.commonFunctionService.getForm(card.card.form,formName,this.gridButtons);
-        if(form && form._id && form._id != ''){
-          id = form._id;
-        }else if(card.card.form && card.card.form._id){
-          form = card.card.form;
-          id = card.card.form._id;
-        }
-      }    
-      this.commonAppDataShareService.setFormId(id);
-      // this.router.navigate(['crm/form']);
-      this.saveCallSubscribe();
-      const additionalData = {
-        'scannedData': scannedData,
-        'card': this.card?.card ? this.card?.card : this.card,
-        'enableScanner': this.enableScanner
-      }
-      this.openFormModal(form,additionalData);
-    } else {
-      this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
-    }
-  }
   async openFormModal(form,additionalData){
     const modal = await this.modalController.create({
       component: FormComponent,
@@ -1240,56 +1190,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.unsubscribedSavecall();
     });
   }
-
-  // async openFormModalForScanner(form:any,selectedData:any){
-  //   this.commonAppDataShareService.setFormId(form?._id);
-  //   const modal = await this.modalController.create({
-  //     component: FormComponent,
-  //     componentProps: {
-  //       "childData": selectedData,
-  //       "editedRowIndex": 0,
-  //       "addform" : form,
-  //       "formTypeName" : this.formTypeName,
-  //       "cardType" : this.cardType
-  //     },
-  //     id: form._id,
-  //     showBackdrop:true,
-  //     backdropDismiss:false,
-  //   });
-  //   modal.present();
-  //   modal.componentProps.modal = modal;
-  //   modal.onDidDismiss().then((result) => {  
-  //     this.getCardDataByCollection(this.selectedIndex);
-  //     // this.unsubscribedSavecall();
-  //   });
-  // }
-  // checkStatusAndOpenForm(data:any){
-  //   let checkLoaderStatus = false;
-  //   let alertMsg = '';
-  //   if(this.cardType == "summary" && (data?.data?.[0].status=="SUBMIT" || data?.data?.[0].status=="RECEIVED")){
-  //     checkLoaderStatus = true;
-  //     alertMsg = "This Sample is already Submitted";
-  //   }
-  //   else if(this.cardType == "sampleSubmit" && data?.data?.[0].status=="RECEIVED"){
-  //     checkLoaderStatus = true;
-  //     alertMsg = "This Sample is already received";
-  //   }
-  //   else if(this.cardType == "sampleSubmit" && data?.data?.[0].status!="SUBMIT"){
-  //     checkLoaderStatus = true;
-  //     alertMsg = "This Sample is not submited by sample collector";
-  //   }else{
-  //     let form = this.commonFunctionService.getForm(this.card?.card?.form,'UPDATE',this.gridButtons);
-  //     // this.loaderService.showLoader("Loading...");
-  //     this.openFormModalForScanner(form,data?.data?.[0]);
-  //   }
-  //   if(checkLoaderStatus) {
-  //     const checkingLoader = async () => {
-  //       await this.loaderService.checkAndHideLoader();
-  //     }
-  //   }
-  //   if(alertMsg) this.notificationService.showAlert("",alertMsg,['Dismiss']);
-
-  // }
   getFirstCharOfString(char:any){
     return this.commonFunctionService.getFirstCharOfString(char);
   }
@@ -1313,82 +1213,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.getCardDataByCollection(this.selectedIndex);
     });
   }
-  // Pull from bottom for loading more cards
-  loadData(event:any) {
-    if(this.loadMoreData){
-      this.ionEvent = event;
-      setTimeout(() => {
-        event.target.complete();
-        // this.loadMoreData = true;
-        if(this.currentPageCount <= this.totalPageCount){
-          if (this.carddata.length === this.totalDataCount || this.totalDataCount === 1) {// App logic to determine if all data is loaded
-            this.ionEvent.target.disabled = true;    // and disable the infinite scroll
-            this.notificationService.presentToastOnBottom("You reached at the end.","success");
-          }else{
-            this.currentPageCount++;
-            this.getGridData(this.collectionname);  
-          }
-        }else{
-          this.notificationService.presentToastOnBottom("No more data.");
-        }        
-      }, 2000);
-
-    }else{
-      setTimeout(() => {
-        console.log("Load More Data feature disable.");
-          event.target.complete();
-      }, 2000);
-    }
-  }
-  // Pull from Top for Do refreshing or update card list 
-  doRefresh(event:any) {
-    if(this.refreshlist){
-      this.ionEvent = event;
-      console.log('Begin doRefresh async operation');
-      this.updateMode = false;  
-      setTimeout(() => {
-        event.target.complete();
-        let card:any;
-        let criteria:any = [];
-        // if (this.carddata.length === this.totalDataCount) { 
-          // App logic to determine if all data is loaded
-          // this.refreshEvent.target.disabled = true;    // Disable the infinite scroll if carddata.length === response.totaldata.length
-          // console.log('doRefresh async operation has ended');
-          // this.notificationService.presentToastOnBottom("No Updates Available","success");
-        // }else{
-          if(this.card && this.card.card){
-            card = this.card.card;
-          }
-          if(card && card.api_params_criteria && card.api_params_criteria.length > 0){
-            card.api_params_criteria.forEach(element => {
-              criteria.push(element);
-            });
-          }
-          if(card && card.parent_id){
-            if(card && card.collection_name == "travel_tracking_master" && card.parent_id && card.parent_id !=''){
-              const cr = "travelPlan._id;eq;" + card.parent_id + ";STATIC";
-              criteria.push(cr);
-            }      
-          }
-          // if(card && card.collection_name){
-          //   if(card.collection_name=='sample_collection'){
-          //     let user=this.storageService.GetUserInfo();
-          //     const cr1 = "updatedBy;eq;" + user?.email + ";STATIC";
-          //     const cr2 = "status;eq;" + "PENDING" + ";STATIC";
-          //     criteria.push(cr1);
-          //     criteria.push(cr2);
-          //   }      
-          // }
-          this.getGridData(this.collectionname, criteria, card);
-        // }
-      }, 2000);
-
-    }else{
-      console.log("Top refresh feature disable.");
-      event.target.complete();
-    }
-  }
-
   editedRowData(index,formName,customData?:any) {
     if (this.permissionService.checkPermission(this.currentMenu.name, 'edit')) {
       this.editedRowIndex = index;
@@ -1428,7 +1252,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.notificationService.presentToastOnBottom("Permission denied !!!","danger");
     }
   }
-
   async storeCardGridDetails(selectedgridcard:any,index:number){
     let updateMode =  this.updateMode;
     let cardLayoutDetails = {
@@ -1452,8 +1275,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.commonAppDataShareService.setMultipleCardCollection(this.multipleCardCollection);
     }
        
-  }
-  
+  }  
   async loadNextGrid(index:number,gridData:any,buttonName?:any){
     const status = await this.checkStatus(gridData); //only for travel approve status
     if(status){
@@ -1507,7 +1329,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     this.carddata=nextGridData.carddata;
     // this.setCardDetails(nextNextGridData.card);
   }
-
   checkUpdatePermission(rowdata){
     if(this.details && this.details.permission_key && this.details.permission_key != '' && this.details.permission_value && this.details.permission_value != ''){ 
       const value = this.commonFunctionService.getObjectValue(this.details.permission_key,rowdata) 
@@ -1538,42 +1359,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       const payload = this.apiCallService.getPaylodWithCriteria(params, '', criteria, {});
       this.apiService.GetChildGrid(payload);
   }
-  // myFiles:any;
-  
-  async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
-    const fileExtension = extentionType;
-    // if(fileExtension == "png" || fileExtension == "jpg" || fileExtension == "jpeg" ){
-    //   file_Type = "image/" + extentionType;
-    //   file_prefix = "Image";
-    // }else if(fileExtension == "xlsx" || fileExtension == "xls"){
-    //   file_Type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
-    //   file_prefix = "Excel";
-    // }else if(fileExtension == "pdf"){
-    //   file_Type = "application/" + extentionType;
-    //   file_prefix = "PDF";
-    // }else{
-    //   file_Type = "application/octet-stream";
-    //   file_prefix = "TEXT";
-    // }
-
-    const response: any = await this.appDownloadService.getBlobTypeFromExtn(extentionType);
-    const file_Type:string = response?.mimeType ? response?.mimeType : '';
-    const file_prefix:string = response?.filePrefix ? response?.filePrefix : '';
-
-    let fileName:any;
-    if(filename && filename !=undefined){      
-      fileName = filename;
-    }else{
-      fileName = file_prefix + '_' + new Date().getTime() + "." + fileExtension;
-    }
-    const blobData:Blob = new Blob([arrayBufferData],{type:file_Type});
-    
-    // this.downloadToMobile(blobData,fileName);
-    let downloadResponse:any =  await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
-    this.downloadResponseHandler(downloadResponse);
-
-  }
-
   checkionEvents(){
     if(this.refreshlist){
       if(this.ionEvent && this.ionEvent.type == 'ionRefresh'){
@@ -1642,7 +1427,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       await this.requestLocationPermission();
     }
   }
-
   async requestLocationPermission() {
     let isGpsEnable = false;
     if(isPlatform('hybrid')){
@@ -1684,39 +1468,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.currentLatLng = {};
     }
   }
-  // async actionBtnClicked(index:number,btnStatus:any){
-  //   this.updateMode=true;
-  //   this.editedRowIndex = index;
-  //   let header:string = "Are you sure !";
-  //   let msg:string = "Wanna do this?";
-  //   if(btnStatus == "reject"){
-  //     header = 'Reject Item';
-  //     msg = 'Do you wanna Reject the Item Delivery ?'
-  //   }else if(btnStatus == "accept"){
-  //     header = 'Accept Item';
-  //     msg = 'Accept this Item for Delivery ?'
-  //   }
-  //   let confirmDelete:any = await this.notificationService.confirmAlert(header,msg);
-  //   let selectedRow:any = {};
-  //   selectedRow = this.carddata[index];
-  //   if(confirmDelete === "confirm"){
-  //     if(btnStatus == "reject"){ 
-  //       selectedRow['status'] = "REJECTED";
-  //       selectedRow['rejectedDateTime'] = this.datePipe.transform(new Date(), "dd-MM-yyyyThh:mm:ss");
-  //       // this.carddata.splice(index,1);
-  //     }
-  //     if(btnStatus == "accept"){ 
-  //       selectedRow['status'] = "ACCEPTED";
-  //       selectedRow['acceptedDateTime'] = this.datePipe.transform(new Date(), "dd-MM-yyyyThh:mm:ss");
-  //     }
-  //     this.carddata[index]=selectedRow;
-  //     let payload = {
-  //       'data':selectedRow,
-  //       'curTemp': this.collectionname
-  //     }
-  //     this.apiService.SaveFormData(payload);
-  //   }
-  // }
   setSaveResponce(saveFromDataRsponce){
     if (saveFromDataRsponce) {
       if (saveFromDataRsponce.success && saveFromDataRsponce.success != '') {
@@ -1870,69 +1621,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
   saveCurrentLocationDetails(data,index:number){
     const formData = ''
-  }
-  
-  async getUTCDate(date:any){
-    let Mdate = date.substring(0,11) + "00:00:00" + date.substring(19);
-    let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
-    return utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
-  }
-
-  mapOutPutData(index:number){
-    this.editedRowData(index,"UPDATE");
-  }
-
-  clickOnGridElement(field, object, i,e:Event) {
-    e.stopPropagation();
-    let value={};
-    value['data'] = this.commonFunctionService.getObjectValue(field.field_name, object);
-    if(value['data']!){
-      console.log('Data available in ' + field.field_label);
-    }else{
-      return console.log('No data available in ' + field.field_label);
-    }    
-    if(field.gridColumns && field.gridColumns.length > 0){
-      value['gridColumns'] = field.gridColumns;
-    }
-    let editemode = false;
-    if(field.editable){
-      editemode = true;
-    }
-    if(field.bulk_download){
-      value['bulk_download'] = true;
-    }else{
-      value['bulk_download'] = false;
-    }
-    if (!field.type) field.type = "Text";
-    switch (field.type.toLowerCase()) {
-      case "file":
-      case "file_with_preview":
-      case "file_with_print":
-        if (value['data'] && value['data'] != '') {
-          let previewFile:boolean = false;
-          let printFile:boolean = false;
-          if(field.type.toLowerCase() == "file_with_preview"){
-            previewFile = true;
-          }else if(field.type.toLowerCase() == "file_with_print"){
-            printFile = true;
-          }
-          const obj = {
-            'data' : value,
-            'field' : field,
-            'index' : i,
-            'field_name': field?.field_name,
-            'editemode' : editemode,
-            'field_type': field.type.toLowerCase(),
-            'previewFile': previewFile,
-            'printFile' : printFile
-          }
-          this.viewFileModal(FileViewsModalComponent, value, field, i, field.field_name,editemode,obj);
-        };
-        break;
-      default: return;
-    }
-  }
-
+  }  
   async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
     let objectData:any = {
       'data' : value,
@@ -1958,6 +1647,9 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     });
     return await modal.present();
   }
+
+  // Dependency Functions Handling End -------------------
+
   /*----BarCode Functions Start------------------------------------------------------------------------- */
   async checkBarcodeScannerSupportedorNot(){
       await BarcodeScanner.isSupported().then(async (result) => {
@@ -2019,7 +1711,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         }
       ]
     }
-    this.popoverModalService.showErrorAlert(alertOpt);
+    this.notificationService.showErrorAlert(alertOpt);
   }
   removeAllBarCodeListeners(){
     BarcodeScanner.removeAllListeners().then(() => {
@@ -2042,7 +1734,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     const formats = this.formGroup.get('formats')?.value || this.barCodeFormats;
     const lensFacing =
       this.formGroup.get('lensFacing')?.value || LensFacing.Back;
-    const modal = await this.popoverModalService.showModal({
+    const modal = await this.appModelService.showModal({
       component: BarcodeScanningComponent,
       // Set `visibility` to `visible` to show the modal (see `src/theme/variables.scss`)
       cssClass: 'barcode-scanning-modal',
@@ -2105,7 +1797,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       this.openSettings();
     }
   }
-
   async checkScannedData(barcodeDetails?:any){
     let resultValue='';
     let barCodeType=barcodeDetails?.format;
@@ -2132,42 +1823,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     if(!resultValue) this.notificationService.showAlert('',errorMsg,["Dismiss"]);
     // if(resultValue && resultValue!='')this.alertPopUp(forms,this.formTypeName,resultValue)
     if(resultValue && resultValue!='')this.addNewForm(formName,'',resultValue);
-    // this.openScannedData(forms,this.formTypeName,resultValue)
-    //   if(forms && forms[this.formTypeName] && resultValue != ''){
-    //     this.scannerForm=true;
-    //     this.data={
-    //       filterFormData:{
-    //         "serialId": resultValue
-    //       }
-    //     }
-    //     this.ngOnChanges();
-    //     this.data={};
-    // }
   }
-
-  // openScannedData(forms:any,formTypeName:any,resultValue:any){
-  //   // if(forms && forms[formTypeName] && resultValue != ''){
-  //     this.scannerForm=true;
-  //     this.loaderService.showLoader("Loading...");
-  //     let criterai ="uniqueId;eq;"+resultValue+";STATIC";
-  //     let payload = this.apiCallService.getPaylodWithCriteria(this.collectionname,"",[criterai],{});
-  //     payload["pageSize"] = 25;
-  //     payload["pageNo."] = 0;
-  //     let finalPayload = {
-  //       "data" : payload,
-  //       "path" : null
-  //     }
-  //     this.apiService.getGridRunningData(finalPayload);
-  //     // this.data={
-  //     //   filterFormData:{
-  //     //     "serialId": resultValue
-  //     //   }
-  //     // }
-  //     // this.ngOnChanges();
-  //     // this.data={};
-  //   // }
-  // }
-
   parseIfObject(variable:any) {
     try {
         return JSON.parse(variable);
@@ -2175,7 +1831,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
         return variable;
     }
   }
-
   async startBarcodeScanner(){
     let options : CapacitorBarcodeScannerOptions = {
       hint: CapacitorBarcodeScannerTypeHint.ALL, 
@@ -2345,164 +2000,89 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   //   // this.popoverModalService.
   //   this.apiService.SaveFormData(saveFromData);
   // }
-  // onlySuccessAlert(responseData?:any){
-  //   let successData = responseData;
-  //   let alertMsg = '';
-  //   if(this.collectionname == "daily_scan_visit"){
-  //     if( successData && successData.customer){
-  //       if(typeof successData.customer == "object"){
-  //         alertMsg += `${successData.customer.name}` + ' scanned successfully !';
-  //       }else{
-  //         alertMsg += `${successData.customer}` + ' scanned successfully !';
-  //       }
-  //     }
-  //   }else{      
-  //     if( successData && successData.name){
-  //       if(typeof successData.name == "object"){
-  //         alertMsg += `${successData.name.name}` + 'added successfully !';
-  //       }else{
-  //         alertMsg += `${successData.name}` + 'added successfully !';
-  //       }
-  //     }
-  //   }
-  //   let alertOpt = {
-  //     'header': "Success",
-  //     'message':alertMsg,
-  //     'buttons' : [
-  //       {
-  //         text: 'Dismiss',
-  //         role: 'cancel',
-  //       }
-  //     ]
-  //   }
-  //   // this.popoverModalService.showAlert(alertOpt);
-  //   this.notificationService.presentToastOnMiddle(alertMsg,"success");
-  //   this.unsubscribedSavecall();
-  // }
+
   /*-------BarCode Functions End--------------*/
 
-  
-  /*-------Custom Functions for Demo scanner Start --------------*/
+  /*-------Not in Use Functions Start--------------*/
 
-  // getCollectionCenterList(){
-  //   this.subscribeStaticData();
-  //   this.getCollectionCentre = true;
-  //   const api = "GET_NEARBY_GEO_LOCATION"
-  //   const params = "QTMP:"+api;
-  //   // const criteria = ["_id;eq;" + childrGridId + ";STATIC"];
-  //   // let payload = {
-  //   //   'data':data,
-  //   //   'path':null
-  //   // }
-  //   let userObj = {};
-  //   if(this.userCurrentLocation?.latitude != 0 && this.userCurrentLocation?.longitude !=0){
-  //     userObj = {
-  //       'userCurrentLocation' : this.userCurrentLocation
-  //     }
+  // onContentScroll(event:any) {
+  //   let scrollEventVal:any = {};
+  //   if (event.detail.scrollTop >= 50) {
+  //     this.renderer.setStyle(this.cardViewContent['el'], 'top', '-69px');
+  //     scrollEventVal['scrollValue'] = event.detail.scrollTop;
+  //     scrollEventVal['setTopValue'] = "-69px";
+  //     this.primaryheaderNew.emit(scrollEventVal);
+  //   } else {
+  //     this.renderer.setStyle(this.cardViewContent['el'], 'top', '0px');
+  //     scrollEventVal['scrollValue'] = event.detail.scrollTop;
+  //     scrollEventVal['setTopValue'] = "0px";
+  //     this.primaryheaderNew.emit(scrollEventVal);
   //   }
-  //   const staticModalGroup = [];
-  //   if(userObj)
-  //   staticModalGroup.push(this.apiCallService.getPaylodWithCriteria(params, '', [], userObj));
-  //   this.apiService.getStatiData(staticModalGroup);
   // }
-  // subscribeStaticData(){
-  //   this.staticDataSubscriber = this.dataShareService.staticData.subscribe(data =>{
-  //     this.setStaticData(data);
-  //   });
-  // }
+  onChangeValue(myInput) {
+    this.inValue = myInput.length;
+    if (this.inValue <= 0) {
+      this.getGridData(this.collectionname);
+    }
+  }  
+  comingSoon() {
+    this.notificationService.presentToastOnBottom('Comming Soon...');
+  }
+  callInvoice(card:any,Index:number) {
+    let callingNumber:any;
+    if(card.billing_mobile !=''){
+      callingNumber = card.billing_mobile;
+    }
+    this.callNumber.callNumber(callingNumber, true)
+      .then(res => console.log('Launched dialer!' + res))
+      .catch(err => console.log('Error launching dialer ' + err));
+  }
+  tabmenuClick(index:number){
+    this.selectedIndex = index;
+    this.carddata = [];
+    this.createFormgroup = true;
+    const tab = this.tabMenu[index];
+    const moduleList = this.commonAppDataShareService.getModuleList();
+    const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
+    const card = moduleList[tabIndex];
+    this.card['card'] = card;
+    this.card.selectedTabIndex = index;
+    this.setCardDetails(card);
+  }
+  showCardTemplate(card:any, index:number){
+    this.selectedIndex = index;
+    //this.router.navigate(['crm/quotation']);
+    this.dataShareServiceService.setcardData(card);
+  }
 
-  // setStaticData(staticDatas:any){
-  //   if(staticDatas && Object.keys(staticDatas).length > 0) {
-  //     Object.keys(staticDatas).forEach(key => {
-  //       let staticData = {};
-  //       staticData[key] = staticDatas[key];
-  //       if(staticData['staticDataMessgae'] != null && staticData['staticDataMessgae'] != ''){
-  //         this.notificationService.presentToastOnBottom(staticData['staticDataMessgae'], "danger");
-  //         // const fieldName = {
-  //         //   "field" : "staticDataMessgae"
-  //         // }
-  //         // this.apiService.ResetStaticData(fieldName);
-  //       }
-  //       if(key && key != 'null' && key != 'FORM_GROUP' && key != 'CHILD_OBJECT' && key != 'COMPLETE_OBJECT' && key != 'FORM_GROUP_FIELDS'){
-  //         if(staticData[key]) { 
-  //           this.staticData[key] = JSON.parse(JSON.stringify(staticData[key]));
-  //         }
-  //       }
-  //     })
-  //     // if(this.staticData?.['collection_center_list']){
-  //     //   this.getCollectionCentre = false;
-  //     //   this.goToCollectioncenter(this.staticData);
-  //     // }
-  //   }
-  // }
-  // async checkPermissionandRequest(){
-  //   let permResult = false;
-  //   if(isPlatform('hybrid')){
-  //     permResult = await this.app_googleService.checkGeolocationPermission();
-  //     if(permResult){
-  //       this.requestLocationPermission();
-  //     }
-  //   }else{
-  //     permResult = await this.app_googleService.checkGeolocationPermission();
-  //   }   
-  //   if(!permResult){
-  //     let alreadyOpen = await this.alertController.getTop();
-  //     if(alreadyOpen == undefined){
-  //       this.gpsEnableAlert();
-  //     }
-  //   }else{
-  //     if(isPlatform('hybrid')){
-  //       this.setCurrentLocation();
-  //     }else{
-  //       this.getCoordinatesOnBrowser();
-  //     }
-  //   }
-  // }
-  // async getCoordinatesOnBrowser(){
-  //   const successCallback = (position) => {
-  //     let latLng = position.coords;
-  //     if(latLng && latLng['latitude'] && latLng['longitude']){ 
-  //       const latitude= latLng['latitude'];
-  //       const longitude = latLng['longitude'];
-  //       this.userCurrentLocation.latitude = latitude;
-  //       this.userCurrentLocation.longitude = longitude;
-  //       // this.center = {
-  //       //   lat:latLng.latitude,
-  //       //   lng:latLng.longitude
-  //       // }
-  //       this.getCollectionCenterList();
-  //     }
-  //   };      
-  //   const errorCallback = (error: any) => {
-  //     console.log(error);
-  //     this.notificationService.presentToastOnBottom("Geolocation is not supported by this browser.", "danger");
-  //   };
-  //   navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-  // }
-  // async setCurrentLocation(){
-  //   if(isPlatform('hybrid')){
-  //     let currentLatLng:any = await this.app_googleService.getUserLocation();
-  //     if((currentLatLng && currentLatLng.lat) || (currentLatLng && currentLatLng.latitude)){
-  //       const latitude = currentLatLng.lat ? currentLatLng.lat : currentLatLng.latitude;
-  //       const longitude = currentLatLng.lng ? currentLatLng.lng : currentLatLng.longitude;
-  //       this.userCurrentLocation.latitude = latitude;
-  //       this.userCurrentLocation.longitude = longitude;
-  //       // this.center ={
-  //       //   'lat':this.latitude,
-  //       //   'lng':this.longitude
-  //       // }
-  //       this.getCollectionCenterList();
-  //     }else{
-  //       console.log("Error while getting Location")
-  //     }
-  //   }else{
-  //     await this.getCoordinatesOnBrowser();
-  //   }
-  //   // this.zoom = 17;
-  // }
+  async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
+    const fileExtension = extentionType;
+    const response: any = await this.appDownloadService.getBlobTypeFromExtn(extentionType);
+    const file_Type:string = response?.mimeType ? response?.mimeType : '';
+    const file_prefix:string = response?.filePrefix ? response?.filePrefix : '';
+    let fileName:any;
+    if(filename && filename !=undefined){      
+      fileName = filename;
+    }else{
+      fileName = file_prefix + '_' + new Date().getTime() + "." + fileExtension;
+    }
+    const blobData:Blob = new Blob([arrayBufferData],{type:file_Type});    
+    // this.downloadToMobile(blobData,fileName);
+    let downloadResponse:any =  await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
+    this.downloadResponseHandler(downloadResponse);
+  }
 
-  
-  /*-------Custom Functions for Demo scanner End --------------*/
+  async getUTCDate(date:any){
+    let Mdate = date.substring(0,11) + "00:00:00" + date.substring(19);
+    let utcDate:any = zonedTimeToUtc(Mdate, this.userTimeZone);
+    return utcDate = this.datePipe.transform(utcDate,"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC');
+  }
+
+  mapOutPutData(index:number){
+    this.editedRowData(index,"UPDATE");
+  }
+
+  /*-------Not in Use Functions End--------------*/
   
   /* --------Let these below 2 functions at the end of this file--------------------------------- */
   async getGeocodeAddress(LatLng:any) {

@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { Barcode, BarcodeFormat, BarcodeScanner, LensFacing, StartScanOptions } from '@capacitor-mlkit/barcode-scanning';
 import { FilePicker } from '@capawesome/capacitor-file-picker';
 import { AlertController, InputCustomEvent } from '@ionic/angular';
-import { PopoverModalService } from 'src/app/service/modal-service/popover-modal.service';
+import { AppModelService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-barcode-scanning',
@@ -37,7 +37,7 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
   });
 
   constructor(
-    private readonly popoverModalService: PopoverModalService,
+    private appModelService: AppModelService,
     private readonly ngZone: NgZone,
     private storageService : StorageService
   ) {}
@@ -67,7 +67,7 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
         'barcode':barcode
       });
     }else{        
-      this.popoverModalService.dismissModal({
+      this.appModelService.dismiss({
         barcode: barcode,
       });
     }
