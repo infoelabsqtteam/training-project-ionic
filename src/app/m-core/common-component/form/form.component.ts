@@ -295,12 +295,14 @@ tinymceConfig = {}
   public onchangeNextForm:boolean = false;
   // for open next same form
 
+  // Google map variables
   latitude: number = 0;
   longitude: number = 0;
   zoom: number = 10;  
   center: google.maps.LatLngLiteral = {lat: 0, lng: 0};
   address: string;
   capMapMarkerId:string = '';
+  getLocation:boolean = false;  
 
   focusFieldParent:any={};
   currentForm_id = "";
@@ -325,7 +327,6 @@ tinymceConfig = {}
     public obj: any = {};
     public uploadData: any = []
     public uploadFilesData: any = [];
-    getLocation:boolean = false;
   
     term:any={};
 
@@ -2087,8 +2088,9 @@ tinymceConfig = {}
     let confirmDelete:any = await this.notificationService.confirmAlert('Are you sure?','Delete This record.');    
     this.alertResponce(confirmDelete);
   }
+  // CD
   async dismissModal(){
-    if(this.updateMode){      
+    if(this.updateMode && this.multipleFormCollection.length > 0){      
       Object.keys(this.custmizedFormValue).forEach(key => {
         if(this.custmizedFormValue[key] != null && Array.isArray(this.custmizedFormValue[key])){
           this.custmizedFormValue[key].forEach((element: any) => {
@@ -2100,23 +2102,31 @@ tinymceConfig = {}
       });
     }else{
       this.custmizedFormValue = {};
+      this.modifyCustmizedFormValue = {};
+    }
+    if(this.multipleFormCollection.length > 0){
+      this.multipleFormCollection = this.multipleFormService.setPreviousFormTargetFieldData(this.multipleFormCollection,this.getFormValue(true));
     }
     this.resetForm();
+    this.updateMode=false;
+    this.dataListForUpload = [];
+    this.filePreviewFields = [];
+    
+    // delete below code
     //this.templateForm.reset();
     //this.formGroupDirective.resetForm()
-    this.updateMode=false;
-    this.dataListForUpload = []
-    this.filePreviewFields = [];
-    this.staticData = {};
-    this.apiService.resetStaticAllData();
+    // this.staticData = {};
+    // this.apiService.resetStaticAllData();
     // this.modal.dismiss();
     // this.modal.dismiss(null, null, this.form._id);
     // this.modal.dismiss{
     //   "dissmised": true
     // });
-    this.resetFlagForOnchange()
-    this.checkFormAfterCloseModel();
+    // this.checkFormAfterCloseModel();
     //this.commonFunctionService.resetStaticAllData();
+
+    this.resetFlagForOnchange();
+    this.close();
     
   }
   // CD
@@ -3254,6 +3264,9 @@ tinymceConfig = {}
     this.address = "";
     //this.commonFunctionService.resetStaticAllData();
     this.selectedRow = {};
+    // this.showGridData={};
+    this.treeViewData={};
+    // this.isSavedDuplicateData = false;
     this.checkFormAfterCloseModel();
   }
   // CD
@@ -4614,21 +4627,24 @@ tinymceConfig = {}
     }
     return obj;
   }
+  // CD and try to remove this function
   modifiedGridColumns(gridColumns){
-    if(gridColumns.length > 0){     
-      gridColumns.forEach(field => {
-        if(this.coreFunctionService.isNotBlank(field.show_if)){
-          if(!this.showIf(field)){
-            field['display'] = false;
-          }else{
-            field['display'] = true;
-          }                
-        }else{
-          field['display'] = true;
-        }
-      });
-    }
-    return gridColumns;
+    return this.gridCommonFunctionService.modifiedGridColumns(gridColumns,this.selectedRow,this.templateForm.getRawValue());
+    // delete below code
+    // if(gridColumns.length > 0){     
+    //   gridColumns.forEach(field => {
+    //     if(this.coreFunctionService.isNotBlank(field.show_if)){
+    //       if(!this.checkIfService.checkShowIf(field,this.selectedRow,this.templateForm.getRawValue())){
+    //         field['display'] = false;
+    //       }else{
+    //         field['display'] = true;
+    //       }                
+    //     }else{
+    //       field['display'] = true;
+    //     }
+    //   });
+    // }
+    // return gridColumns;
   }
   // CD
   resetForm(){
@@ -4710,7 +4726,7 @@ tinymceConfig = {}
     this.setDinamicForm(form)
     const tempData = this.dataShareService.getTempData();  
     // this.setTempData(tempData); 
-    this.ngOnInit();         
+    this.ngOnInit();
   }
   checkValidator(action_button){
     if(action_button.field_name){
@@ -5580,35 +5596,40 @@ tinymceConfig = {}
       return false;
     }
   }
-  showIf(field){
-    const  objectc = this.selectedRow?this.selectedRow:{}
-    const object = JSON.parse(JSON.stringify(objectc));
-    if(this.templateForm){
-      Object.keys(this.templateForm.getRawValue()).forEach(key => {
-        object[key] = this.templateForm.getRawValue()[key];
-      })
-    }
-    const display = this.checkIfService.showIf(field,object);
-    const modifiedField = JSON.parse(JSON.stringify(field));
-    modifiedField['display'] = display; 
-    field = modifiedField;
-    return display;
-  }  
-  checkGridSelectionButtonCondition(field,button){
-    let check = true;
-    switch (button) {
-      case 'add':
-        if(field && field.addNewButtonIf && field.addNewButtonIf != ''){
-          let modifyedField:any = {};
-          modifyedField['show_if'] = field.addNewButtonIf;
-          check = this.showIf(modifyedField);
-        }
-        break;    
-      default:
-        break;
-    }
-    return check;
-  }
+
+  // delete below code
+  // showIf(field){
+  //   const  objectc = this.selectedRow?this.selectedRow:{}
+  //   const object = JSON.parse(JSON.stringify(objectc));
+  //   if(this.templateForm){
+  //     Object.keys(this.templateForm.getRawValue()).forEach(key => {
+  //       object[key] = this.templateForm.getRawValue()[key];
+  //     })
+  //   }
+  //   const display = this.checkIfService.showIf(field,object);
+  //   const modifiedField = JSON.parse(JSON.stringify(field));
+  //   modifiedField['display'] = display; 
+  //   field = modifiedField;
+  //   return display;
+  // }
+
+  // delete below code
+  // checkGridSelectionButtonCondition(field,button){
+  //   let check = true;
+  //   switch (button) {
+  //     case 'add':
+  //       if(field && field.addNewButtonIf && field.addNewButtonIf != ''){
+  //         let modifyedField:any = {};
+  //         modifyedField['show_if'] = field.addNewButtonIf;
+  //         check = this.checkIfService.checkShowIf(modifyedField);
+  //       }
+  //       break;    
+  //     default:
+  //       break;
+  //   }
+  //   return check;
+  // }
+
   // Need to remove dependency & delete functions End-----
   
 
@@ -6098,23 +6119,25 @@ tinymceConfig = {}
       this.router.navigate(['card-detail-view']);
     // }    
   }
-  candelForm() {    
-    if(this.updateMode){      
-      Object.keys(this.custmizedFormValue).forEach(key => {
-        if(this.custmizedFormValue[key] != null){
-          this.custmizedFormValue[key].forEach(element => {
-            if(element.status == 'I'){
-              element.status = 'A';
-            }
-          });
-        }
-      });
-    }else{
-      this.custmizedFormValue = {};
-    }
-    this.updateMode=false;
-    this.addAndUpdateResponce.emit('close');    
-  }
+  // delete below code
+  // candelForm() {    
+  //   if(this.updateMode){      
+  //     Object.keys(this.custmizedFormValue).forEach(key => {
+  //       if(this.custmizedFormValue[key] != null){
+  //         this.custmizedFormValue[key].forEach(element => {
+  //           if(element.status == 'I'){
+  //             element.status = 'A';
+  //           }
+  //         });
+  //       }
+  //     });
+  //   }else{
+  //     this.custmizedFormValue = {};
+  //     this.modifyCustmizedFormValue = {};
+  //   }
+  //   this.updateMode=false;
+  //   this.addAndUpdateResponce.emit('close');    
+  // }
   async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
     const fileExtension = extentionType;
     const response: any = await this.appDownloadService.getBlobTypeFromExtn(extentionType);
