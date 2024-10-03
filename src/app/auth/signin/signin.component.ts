@@ -300,11 +300,6 @@ export class SigninComponent implements OnInit {
     return !this.loginForm.valid;
   }
   get f() { return this.loginForm.controls; }
-  // Dependency Functions Handling Start -------------------
+  // Dependency Functions Handling End -------------------
   
-  // NOt in Use Functions--------------  
-  // comingSoon() {
-  //   this.notificationService.presentToastOnBottom('Comming Soon...');
-  // }
-
 }

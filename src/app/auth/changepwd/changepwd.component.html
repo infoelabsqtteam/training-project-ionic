@@ -1,11 +1,8 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start" (click)="homenavigate()"><ion-button><ion-icon name="arrow-back"></ion-icon></ion-button></ion-buttons>
-    <!-- <ion-buttons slot="start"><ion-icon name="arrow-back" (click)="homenavigate()"></ion-icon></ion-buttons> -->
-    <!-- <ion-title class="">Change Password</ion-title> -->
   </ion-toolbar>
 </ion-header>
-<ion-content>
 <ion-content class="loginpage">
   <div class="logintitle">
       <h4>Change Password</h4>
@@ -45,7 +42,6 @@
           <div class="formgroup"><ion-button type="submit" (click)="onChangePwd()">Change Password</ion-button></div>
       </form>
   </div>
-
 
   <!-- // FOR OTP Functianallity uncomment below code -->
   <div class="login" *ngIf="VerifyType">

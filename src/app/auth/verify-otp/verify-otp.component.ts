@@ -106,10 +106,4 @@ export class VerifyOtpComponent implements OnInit {
   }
   // Dependancy Function Handling End-------------------
 
-  // NOt In use but call in html, need to use this function  
-  resendCode() {
-  //   // this.resetPwd = true;
-  //   // this.authService.forgetPass(this.username);
-  } 
-
 }

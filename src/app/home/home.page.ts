@@ -167,7 +167,6 @@ export class HomePage implements OnInit, OnDestroy {
   // Hardware Button Click Functions Handling Start-------------  
   initializeApp() {
     this.platform.ready().then(() => {});
-
     this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
       console.log('Back press handler!');
       if(this.isExitAlertOpen){
@@ -288,10 +287,6 @@ export class HomePage implements OnInit, OnDestroy {
         this.getGridData();
         (event.target as HTMLIonRefresherElement).complete();
       }, 2000);
-
-    // }else{
-    //   console.log("Top refresh feature disable.");
-    // }
   }
   // Ionic Event Handling Function End--------------
   
@@ -409,11 +404,6 @@ export class HomePage implements OnInit, OnDestroy {
   // WebMic Functions End
   // SpeechRecognition Functions End --------------
 
-
-  // NOt In used  
-  // resetVariables(){
-  //   this.cardList = [];
-  // }
 
   
 }
