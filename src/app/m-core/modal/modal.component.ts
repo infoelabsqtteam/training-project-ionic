@@ -112,14 +112,6 @@ export class ModalComponent implements OnInit {
 
   // Click Function Handling Start -----------------------
   closeModal(role?:string){
-    // let length = this.multiGridDetails.length;
-    // if(this.multiGridDetails && length >= 1){
-    //   let previousGridIndex = (length - 1);
-    //   let previousGridDetails = this.multiGridDetails[previousGridIndex];
-    //   this.loadPreviousGrid(previousGridDetails);
-    //   this.multiGridDetails.splice(previousGridIndex,1);  
-    // }else{
-      // this.basicTableModal.hide();
       this.dismissModal(role);
       this.resetFlags();
     // }    
