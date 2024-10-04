@@ -38,46 +38,8 @@
                       <ion-checkbox  color="primary" [disabled]="coloum.is_disabled" [(ngModel)]="item[coloum.field_name]"></ion-checkbox>
                   </div>
                 </div>
-                <!-- <div *ngIf="editedColumne">
-                    <div *ngIf="!coloum.editable" class="grid-data" [style.width]="getGridColumnWidth(coloum)" [style.text-align]="coloum.text_align"><span class="grid-coloumn-nowrap" [ngClass]="coloum.field_class != ''?coloum.field_class:''" [innerHtml]="getddnDisplayVal(getValueForGrid(coloum,item))"></span></div>
-                    <div *ngIf="coloum.editable">  
-                      <div *ngIf="coloum.type == 'boolean'">
-                          <ion-checkbox  color="primary"  [(ngModel)]="item[coloum.field_name]"></ion-checkbox>
-                      </div>
-                      <div *ngIf="coloum.type == 'checkbox'">
-                        <ion-checkbox  color="primary"  [(ngModel)]="item[coloum.field_name]"></ion-checkbox>
-                      </div>
-                      <div *ngIf="coloum.type.toLowerCase() == 'text'">
-                          <input  type="text" class="w-75 form-control form-control-sm d-inline mr-2"  [(ngModel)]="item[coloum.field_name]" >
-                      </div>
-                      <div *ngIf="coloum.type.toLowerCase() == 'dropdown'">
-                        <div appearance="outline" style="min-width: 130px;" *ngIf="coloum.datatype == 'object'">
-                            <ng-select [compareWith]="compareObjects" [(ngModel)]="item[coloum.field_name]" (change)="setValue(coloum,i)">
-                                <ng-option *ngFor="let staticValue of copyStaticData[coloum.ddn_field][i]" [value]="staticValue">
-                                    {{getddnDisplayVal(staticValue)}}
-                                </ng-option>
-                            </ng-select>
-                        </div>
-                        <div appearance="outline" style="min-width: 130px;" *ngIf="coloum.datatype != 'object'">
-                            <ng-select [(ngModel)]="item[coloum.field_name]" (change)="setValue(coloum,i)">
-                                <ng-option *ngFor="let staticValue of copyStaticData[coloum.ddn_field][i]" [value]="staticValue">
-                                    {{getddnDisplayVal(staticValue)}}
-                                </ng-option>
-                            </ng-select>
-                        </div>
-                      </div>
-                    </div>
-                </div> -->
               </td>
-              <!-- <td *ngIf="rateShow" class="p-1">
-                <input type="number" class="form-control form-control-sm"  [formControlName]="i" (keyup)="addRates()">
-              </td> -->
             </tr>
-            <!-- <tr *ngIf="rateShow">
-              <td class="p-1"></td>
-              <td class="p-1" [attr.colspan]="gridColumns.length">Total</td>
-              <td class="p-1">{{ rateTotal }}</td>
-            </tr> -->
           </tbody>
         </table>
         <table class="table-bordered table-striped one-line-text" *ngIf="gridColumns.length == 0">

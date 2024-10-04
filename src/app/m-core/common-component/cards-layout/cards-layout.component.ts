@@ -1605,7 +1605,7 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
     const formData = ''
   }  
   async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
-    let objectData:any = {
+    let objectValue:any = {
       'data' : value,
       'field' : field,
       'index' : i,
@@ -1615,19 +1615,11 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
       'previewFile': obj?.previewFile,
       'printFile' : obj?.printFile
     }
-    const modal = await this.modalController.create({
-      component: FileViewsModalComponent,
-      cssClass: 'file-info-modal',
-      componentProps: {
-        "objectData": objectData,      
-      },
+    await this.appModelService.openModal(FileViewsModalComponent,{objectData:objectValue}).then( data => {
+      if(data && data?.role == 'close'){
+        console.log('Modal ' + data?.role);
+      }
     });
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss()
-      .then((data) => {
-          console.log("File Download Modal closed " , data.role);                
-    });
-    return await modal.present();
   }
   // Dependency Functions Handling End -------------------
   
@@ -1839,63 +1831,6 @@ export class CardsLayoutComponent implements OnInit, OnChanges {
   }
 
   /*-------BarCode Functions End--------------*/
-
-  /*-------Not in Use Functions Start--------------*/
-  
-  // onChangeValue(myInput) {
-  //   this.inValue = myInput.length;
-  //   if (this.inValue <= 0) {
-  //     this.getGridData(this.collectionname);
-  //   }
-  // }
-
-  // callInvoice(card:any,Index:number) {
-  //   let callingNumber:any;
-  //   if(card.billing_mobile !=''){
-  //     callingNumber = card.billing_mobile;
-  //   }
-  //   this.callNumber.callNumber(callingNumber, true)
-  //     .then(res => console.log('Launched dialer!' + res))
-  //     .catch(err => console.log('Error launching dialer ' + err));
-  // }
-
-  // tabmenuClick(index:number){
-  //   this.selectedIndex = index;
-  //   this.carddata = [];
-  //   this.createFormgroup = true;
-  //   const tab = this.tabMenu[index];
-  //   const moduleList = this.commonAppDataShareService.getModuleList();
-  //   const tabIndex = this.commonFunctionService.getIndexInArrayById(moduleList,tab._id,"_id"); 
-  //   const card = moduleList[tabIndex];
-  //   this.card['card'] = card;
-  //   this.card.selectedTabIndex = index;
-  //   this.setCardDetails(card);
-  // }
-
-  // showCardTemplate(card:any, index:number){
-  //   this.selectedIndex = index;
-  //   //this.router.navigate(['crm/quotation']);
-  //   this.dataShareServiceService.setcardData(card);
-  // }
-
-  // async arrayBufferToBlob(arrayBufferData:any, extentionType?:any,filename?:any){  
-  //   const fileExtension = extentionType;
-  //   const response: any = await this.appDownloadService.getBlobTypeFromExtn(extentionType);
-  //   const file_Type:string = response?.mimeType ? response?.mimeType : '';
-  //   const file_prefix:string = response?.filePrefix ? response?.filePrefix : '';
-  //   let fileName:any;
-  //   if(filename && filename !=undefined){      
-  //     fileName = filename;
-  //   }else{
-  //     fileName = file_prefix + '_' + new Date().getTime() + "." + fileExtension;
-  //   }
-  //   const blobData:Blob = new Blob([arrayBufferData],{type:file_Type});    
-  //   // this.downloadToMobile(blobData,fileName);
-  //   let downloadResponse:any =  await this.appDownloadService.downloadAnyBlobData(blobData,fileName,true);
-  //   this.downloadResponseHandler(downloadResponse);
-  // } 
-
-  /*-------Not in Use Functions End--------------*/
   
   /* --------Let these below 2 functions at the end of this file--------------------------------- */
   async getGeocodeAddress(LatLng:any) {

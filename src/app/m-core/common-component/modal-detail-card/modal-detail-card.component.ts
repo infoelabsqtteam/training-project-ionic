@@ -3,6 +3,7 @@ import { ModalController } from '@ionic/angular';
 import { ModalComponent } from '../../modal/modal.component';
 import { DataShareService, CommonFunctionService, MenuOrModuleCommonService, ApiService, CommonAppDataShareService, GridCommonFunctionService, ApiCallService } from '@core/web-core';
 import { FileViewsModalComponent } from '../../modal/file-views-modal/file-views-modal.component';
+import { AppModelService } from '@core/ionic-core';
 
 @Component({
   selector: 'app-modal-detail-card',
@@ -38,7 +39,8 @@ export class ModalDetailCardComponent implements OnInit {
     private commonFunctionService: CommonFunctionService,
     private menuOrModuleCommonService: MenuOrModuleCommonService,
     private gridCommonFunctionService: GridCommonFunctionService,
-    private apiCallService: ApiCallService
+    private apiCallService: ApiCallService,
+    private appModelService: AppModelService
   ) {
     this.childgridsubscription = this.dataShareService.childGrid.subscribe(data =>{
       if(data && data.gridColumns){
@@ -270,7 +272,7 @@ export class ModalDetailCardComponent implements OnInit {
     return await modal.present();
   }
   async viewFileModal(component:any, value, field, i,field_name,editemode,obj?,){    
-    let objectData:any = {
+    let objectValue:any = {
       'data' : value,
       'field' : field,
       'index' : i,
@@ -280,24 +282,11 @@ export class ModalDetailCardComponent implements OnInit {
       'previewFile': obj?.previewFile,
       'printFile' : obj?.printFile
     }
-    // this.modelService.openModal(component,objectData).then((data:any) => {
-    //   if(data && data.role == 'closed'){
-    //     console.log("ModalIs",data.role);
-    //   }
-    // });
-    const modal = await this.modalController.create({
-      component: FileViewsModalComponent,
-      cssClass: 'file-info-modal',
-      componentProps: {
-        "objectData": objectData,      
-      },
+    await this.appModelService.openModal(FileViewsModalComponent,{"objectData":objectValue}).then( data => {
+      if(data && data?.role == 'close'){
+        console.log('Modal ' + data?.role);
+      }
     });
-    modal.componentProps.modal = modal;
-    modal.onDidDismiss()
-      .then((data) => {
-          console.log("File Download Modal closed " , data.role);                
-    });
-    return await modal.present();
   }
   getValueForGrid(field,object){
     return this.gridCommonFunctionService.getValueForGrid(field,object);

@@ -41,18 +41,15 @@ export class ModalComponent implements OnInit {
   ) {
   }
 
+  // Angular LifeCycle Function Handling Start --------------------
   ngOnInit() { 
     this.rateForm = this.formBuilder.group( {} ); 
     this.setGridDetails(this.Data);
   }
+  // Angular LifeCycle Function Handling End --------------------
 
-  dismissModal(role:string){
-    if(this.modal && this.modal?.offsetParent['hasController']){
-      this.modal?.offsetParent?.dismiss({'dismissed': true},role);
-    }else{        
-      this.modalController.dismiss({'dismissed': true},role,);
-    }
-  }
+  // Initial Function Handling Start --------------------
+  
   setGridDetails(alert){
     let typeofData:string = "";
     this.field = alert.field;
@@ -70,11 +67,6 @@ export class ModalComponent implements OnInit {
     if(typeofData !== 'array'){
       this.data['object'] = true;
     }
-    // if(alert.menu_name && alert.menu_name != null && alert.menu_name != undefined && alert.menu_name != ''){
-    //   this.currentPage = alert.menu_name;
-    // }   
-    
-    //Object.assign([],alert.data.data);
     if(alert.data.gridColumns){
       this.gridColumns = JSON.parse(JSON.stringify(alert.data.gridColumns));
       if(this.gridColumns && this.gridColumns.length > 0){
@@ -116,37 +108,45 @@ export class ModalComponent implements OnInit {
       this.addRates();
     } 
   }
+  // Initial Function Handling End --------------------
 
-  storeGridDetails(){
-    let object = {
-      "data" : this.data,
-      "gridColumns":this.gridColumns
+  // Click Function Handling Start -----------------------
+  closeModal(role?:string){
+    // let length = this.multiGridDetails.length;
+    // if(this.multiGridDetails && length >= 1){
+    //   let previousGridIndex = (length - 1);
+    //   let previousGridDetails = this.multiGridDetails[previousGridIndex];
+    //   this.loadPreviousGrid(previousGridDetails);
+    //   this.multiGridDetails.splice(previousGridIndex,1);  
+    // }else{
+      // this.basicTableModal.hide();
+      this.dismissModal(role);
+      this.resetFlags();
+    // }    
+  }
+  save(){
+    this.responceData.emit(this.data);
+    this.closeModal();
+  }
+  multipleDownload(){
+    this.selectedData = [];
+    if(this.data && this.data.length > 0){
+      this.data.forEach(row => {
+        if(row.selected){
+          this.selectedData.push(row);
+        }
+      });
     }
-    const currentDetails = {
-      "field": this.field,
-      "data": object,
-      // "menu_name": this.currentPage,
-      'editemode': this.editeMode
+    const alertData={
+      field:this.coloumName,
+      menu_name:this.field.field_name,
+      data:this.selectedData
     }
-    this.multiGridDetails.push(currentDetails);
+    // this.modalService.open('multiple-download-modal',alertData)
   }
-  loadNextGrid(nextGridData){
-    this.resetFlags();
-    this.setGridDetails(nextGridData);
-  }
-  loadPreviousGrid(previousGridData){
-    this.resetFlags();
-    this.setGridDetails(previousGridData);
-  }
-  resetFlags(){
-    this.field = {};
-    this.coloumName = "";
-    this.data = [];
-    // this.currentPage = "";
-    this.editeMode=false;
-    this.editedColumne=false;
-    this.gridColumns=[];
-  }
+  // Click Function Handling End --------------------
+
+  // Dependency Function Handling Start-------------------  
   createFormControl(forControl,fieldName,object,type,mandatory){
     switch (type) {
       case "text":
@@ -168,70 +168,12 @@ export class ModalComponent implements OnInit {
       this.data[i].rate =  this.rateForm.value[i]   
     })
   }
-
-  getddnDisplayVal(val) {
-    return this.commonFunctionService.getddnDisplayVal(val);    
-  }
-  getValueForGrid(field,object){
-    return this.gridCommonFunctionService.getValueForGrid(field,object);
-  }
-  getGridColumnWidth(column){
-    if(column.width){
-      return column.width;
-    }else{
-      if(this.gridColumns.length > 8){
-        return '150px';
-      }else{
-        return '';
-      }      
-    }    
-  }
-  closeModal(role?:string){
-    // let length = this.multiGridDetails.length;
-    // if(this.multiGridDetails && length >= 1){
-    //   let previousGridIndex = (length - 1);
-    //   let previousGridDetails = this.multiGridDetails[previousGridIndex];
-    //   this.loadPreviousGrid(previousGridDetails);
-    //   this.multiGridDetails.splice(previousGridIndex,1);  
-    // }else{
-      // this.basicTableModal.hide();
-      this.dismissModal(role);
-      this.data=[];
-      this.editeMode=false;
-      this.editedColumne=false;
-      this.gridColumns=[];
-    // }    
-  }
-  checkSelectedData(){
-    let length = 0;
-    if(this.data && this.data.length > 0){
-      this.data.forEach(element => {
-        if(element.selected){
-          length = length + 1;
-        }
-      });
+  dismissModal(role:string){
+    if(this.modal && this.modal?.offsetParent['hasController']){
+      this.modal?.offsetParent?.dismiss({'dismissed': true},role);
+    }else{        
+      this.modalController.dismiss({'dismissed': true},role,);
     }
-    if(length >= 1){
-      return true;
-    }else{
-      return false;
-    }
-  }
-  multipleDownload(){
-    this.selectedData = [];
-    if(this.data && this.data.length > 0){
-      this.data.forEach(row => {
-        if(row.selected){
-          this.selectedData.push(row);
-        }
-      });
-    }
-    const alertData={
-      field:this.coloumName,
-      menu_name:this.field.field_name,
-      data:this.selectedData
-    }
-    // this.modalService.open('multiple-download-modal',alertData)
   }
   multiDownloadResponce(event){
     if(this.data && this.data.length > 0){
@@ -243,10 +185,18 @@ export class ModalComponent implements OnInit {
       this.notificationService.presentToastOnBottom(event.length +' File Downloaded.','success');
     }
   }
-  save(){
-    this.responceData.emit(this.data);
-    this.closeModal();
+  resetFlags(){
+    this.field = {};
+    this.coloumName = "";
+    this.data = [];
+    // this.currentPage = "";
+    this.editeMode=false;
+    this.editedColumne=false;
+    this.gridColumns=[];
   }
+  // Dependency Function Handling End-------------------
+
+  // HTML Dependency Function Handling Start-------------------
   toggle(index,event: any) {
     const data = JSON.parse(JSON.stringify(this.data))
     if (event.checked) {
@@ -256,6 +206,12 @@ export class ModalComponent implements OnInit {
     }
     this.data = data;
     //console.log(this.selected3);
+  }
+  getddnDisplayVal(val) {
+    return this.commonFunctionService.getddnDisplayVal(val);    
+  }
+  getValueForGrid(field,object){
+    return this.gridCommonFunctionService.getValueForGrid(field,object);
   }
   isIndeterminate() {
     let check = 0;
@@ -293,34 +249,89 @@ export class ModalComponent implements OnInit {
         });
       }
     }
-    //console.log(this.selected3);
   }
-  compareObjects(o1: any, o2: any): boolean {
-    return o1._id === o2._id;
+  getGridColumnWidth(column){
+    if(column.width){
+      return column.width;
+    }else{
+      if(this.gridColumns.length > 8){
+        return '150px';
+      }else{
+        return '';
+      }      
+    }    
   }
-  setValue(column,i){
-    if(column.onchange_api_params && column.onchange_call_back_field){
-      this.changeDropdown(column.onchange_api_params, column.onchange_call_back_field, column.onchange_api_params_criteria, this.data[i],i);
+  checkSelectedData(){
+    let length = 0;
+    if(this.data && this.data.length > 0){
+      this.data.forEach(element => {
+        if(element.selected){
+          length = length + 1;
+        }
+      });
+    }
+    if(length >= 1){
+      return true;
+    }else{
+      return false;
     }
   }
-  changeDropdown(params, callback, criteria, object,i) {    
-    const paramlist = params.split(";");
-    if(paramlist.length>1){
+  // HTML Dependency Function Handling End-------------------
+
+  // Not in Use Functions Start ----------------- 
+
+  // storeGridDetails(){
+  //   let object = {
+  //     "data" : this.data,
+  //     "gridColumns":this.gridColumns
+  //   }
+  //   const currentDetails = {
+  //     "field": this.field,
+  //     "data": object,
+  //     // "menu_name": this.currentPage,
+  //     'editemode': this.editeMode
+  //   }
+  //   this.multiGridDetails.push(currentDetails);
+  // }
+  // loadNextGrid(nextGridData){
+  //   this.resetFlags();
+  //   this.setGridDetails(nextGridData);
+  // }
+  // loadPreviousGrid(previousGridData){
+  //   this.resetFlags();
+  //   this.setGridDetails(previousGridData);
+  // }
+  
+  
+  // compareObjects(o1: any, o2: any): boolean {
+  //   return o1._id === o2._id;
+  // }
+  // setValue(column,i){
+  //   if(column.onchange_api_params && column.onchange_call_back_field){
+  //     this.changeDropdown(column.onchange_api_params, column.onchange_call_back_field, column.onchange_api_params_criteria, this.data[i],i);
+  //   }
+  // }
+  // changeDropdown(params, callback, criteria, object,i) {    
+  //   const paramlist = params.split(";");
+  //   if(paramlist.length>1){
       
-    }else{
-      const staticModal = []
-      const staticModalPayload = this.apiCallService.getPaylodWithCriteria(params, callback, criteria, object);
-      staticModalPayload['adkeys'] = {'index':i};
-      staticModal.push(staticModalPayload)      
-      if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
-        staticModal[0]["data"]=object;
-      }
-      // this.store.dispatch(
-      //   new CusTemGenAction.GetStaticData(staticModal)
-      // )
-      this.apiService.getStatiData(staticModal);
-   }
-  }
+  //   }else{
+  //     const staticModal = []
+  //     const staticModalPayload = this.apiCallService.getPaylodWithCriteria(params, callback, criteria, object);
+  //     staticModalPayload['adkeys'] = {'index':i};
+  //     staticModal.push(staticModalPayload)      
+  //     if(params.indexOf("FORM_GROUP") >= 0 || params.indexOf("QTMP") >= 0){
+  //       staticModal[0]["data"]=object;
+  //     }
+  //     // this.store.dispatch(
+  //     //   new CusTemGenAction.GetStaticData(staticModal)
+  //     // )
+  //     this.apiService.getStatiData(staticModal);
+  //  }
+  // }
+  
+
+  // Not in Use Functions End -----------------
 
 
 }
