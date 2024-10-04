@@ -154,9 +154,4 @@ export class VerifyCompanyComponent implements OnInit {
   }
   // Dependency Functions Handling End------------------
 
-  // Functions NOt in use -----------  
-  // get ccform() { return this.cCodeForm.controls;}
-  
-  
-
 }

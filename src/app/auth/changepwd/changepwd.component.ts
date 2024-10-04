@@ -3,7 +3,6 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms
 import { Router } from '@angular/router';
 import { NotificationService } from '@core/ionic-core';
 import { EnvService, AuthService, AuthDataShareService, CustomvalidationService, StorageService } from '@core/web-core';
-// import { ErrorMessageComponent } from 'src/app/component/error-message/error-message.component';
 
 @Component({
   selector: 'app-changepwd',
@@ -19,10 +18,6 @@ export class ChangepwdComponent implements OnInit {
   oldpassword = false;
   confirmpwd: any;
   oldpwd: string;
-  // newpassword = false;
-  // confirmpassword = false;
-  // newpwd: any;
-  // passwordNotMatch:boolean;
 
   // for Mobile OTP functianality
   fForm: UntypedFormGroup;
@@ -186,14 +181,5 @@ export class ChangepwdComponent implements OnInit {
     }
   }
   // Ion Change Functions Handling End --------------------   
-
-  // NOt In use Functions------------------
-  // shownewpass() {
-  //   this.newpassword = !this.newpassword;
-  // }
-
-  // showconfirmpass() {
-  //   this.confirmpassword = !this.confirmpassword;
-  // }
 
 }

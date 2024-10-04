@@ -245,27 +245,7 @@ export class GmapViewComponent implements OnInit {
       }
     }else{
       if (navigator.geolocation) {
-        // const successCallback = (position) => {
-        //   console.log(position);
-        //   this.canUseGPS=true;
-        // };      
-        // const errorCallback = (error) => {
-        //   console.log(error);
-        //   this.canUseGPS=false;
-        //   this.notificationService.presentToastOnBottom(error, "danger");
-        // };
-        // this.watchId = navigator.geolocation.watchPosition(successCallback, errorCallback,this.positionOptions);
         this.enableGPSandgetCoordinates(true);
-        // this.watchPosition();
-
-        // const watchPosition:any = this.app_googleService.watchPosition(this.positionOptions);
-        // watchPosition.then((value) => {
-        //   console.log(value);
-        //   if(value && value['message']){
-        //     this.notificationService.presentToastOnBottom(value['message'],"danger");
-        //   }else{
-        //   }
-        // });
       } else { 
         this.notificationService.presentToastOnBottom("Geolocation is not supported by this browser.", "danger");
       }
@@ -475,11 +455,6 @@ export class GmapViewComponent implements OnInit {
         this.notificationService.presentToastOnBottom("Something went wrong, please try again.");
       }
     }
-
-    // }else{
-    //   this.getCall(this.selectedRowData);
-    //   this.notificationService.presentToastOnBottom("Please wait for a while!, Something went wrong.");
-    // }
   }
   dismissModal(data?:any,role?:any){
     if(this.additionalData?.barcodeCenter){
@@ -704,21 +679,6 @@ export class GmapViewComponent implements OnInit {
     }
   }
 
-  // getCall(selectedData){
-  //   let crList:any = [];
-  //   const cr = "_id;eq;" + selectedData._id + ";STATIC";
-  //   crList.push(cr);
-
-  //   let data = this.coreUtilityService.getPaylodWithCriteria('location_tracker','',crList,'');
-  //   data['pageNo'] = 0;
-  //   data['pageSize'] = 50;
-  //   let payload = {
-  //     'data':data,
-  //     'path':"null"
-  //   }
-  //   this.apiService.getGridData(payload);
-  // }
-
   // JS Google Map Func.
   async loadMap(){
     try{
@@ -876,21 +836,6 @@ export class GmapViewComponent implements OnInit {
     window.open(url,"_blank")
     a.remove();
   }
-
-  // async checkTimeAndDate(){
-  //   try{
-  //     let leaveTime=this.appStorageService.getObject('leaveDateAndTime');
-  //     leaveTime=JSON.parse(await leaveTime)
-  //     if(leaveTime){
-  //       return false;
-  //     }
-  //     else{
-  //       return true;
-  //     }
-  //   }catch(error){
-  //     return true;
-  //   }
-  // }
   ongoogleMapOriginMarkerClick(){
     let markerHeading = "";
     if(this.directionsData && this.directionsData.start_address){
@@ -911,19 +856,7 @@ export class GmapViewComponent implements OnInit {
   setSaveResponce(saveFromDataRsponce){
     if (saveFromDataRsponce) {
       if (saveFromDataRsponce.success && saveFromDataRsponce.success != '' && saveFromDataRsponce.data) {
-        if (saveFromDataRsponce.success == 'success' && !this.additionalData.updateMode) {          
-          // let card:any;
-          // let criteria:any = [];
-          // if(this.card && this.card.card){
-          //   card = this.card.card;
-          // }
-          // if(card && card.api_params_criteria && card.api_params_criteria.length > 0){
-          //   card.api_params_criteria.forEach(element => {
-          //     criteria.push(element);
-          //   });
-          // }
-          // this.getGridData(this.collectionname,);
-          // this.setCardDetails(this.card.card);
+        if (saveFromDataRsponce.success == 'success' && !this.additionalData.updateMode) { 
         }else if ((saveFromDataRsponce.success == 'success' || saveFromDataRsponce.success_msg != '' ) && this.additionalData.updateMode) {
           this.selectedRowData == saveFromDataRsponce.data;
           let status = saveFromDataRsponce.data.trackingStatus;

@@ -9,7 +9,6 @@ import { ModalDetailCardComponent } from './modal-detail-card/modal-detail-card.
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ChartComponent } from './chart/chart.component';
 import { NgChartsModule } from 'ng2-charts';
-// import { GoogleChartsModule } from 'angular-google-charts';
 import { GridSelectionComponent } from './grid-selection/grid-selection.component';
 import { PopoverComponent } from './popover/popover.component';
 import { AngularEditorModule } from '@kolkov/angular-editor';

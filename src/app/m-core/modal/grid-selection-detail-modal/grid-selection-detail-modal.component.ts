@@ -223,7 +223,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
   }
   remove(){
     if(!this.alreadyAdded){
-      // this.notificationService.presentToastOnBottom("Can't perform this action because this record not selected");
       this.dismissModal();
     }else{
       this.notificationService.presentToastOnBottom(this.gridSelctionTitle + "is deselect");
@@ -298,22 +297,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
         }
       });
       this.columnList = gridColumns;
-      // let gridColumns = this.commonFunctionService.updateFieldInList('display',this.field.gridColumns);
-      // gridColumns.forEach(field => {
-      //   if (this.coreFunctionService.isNotBlank(field.show_if)) {
-      //     if (!this.commonFunctionService.showIf(field, parentObject)) {
-      //       field['display'] = false;
-      //     } else {
-      //       field['display'] = true;
-      //     }
-      //   } else {
-      //     field['display'] = true;
-      //   }
-      //   if(field['field_class']){
-      //     field['field_class'] = field['field_class'].trim();
-      //   }
-      // });
-      // this.columnList = gridColumns;
       this.columnList = this.gridCommonFunctionService.modifyGridColumns(JSON.parse(JSON.stringify(this.field.gridColumns)),parentObject);
       this.editableGridColumns = this.gridCommonFunctionService.getListByKeyValueToList(this.columnList,"editable",true);
       this.modifiedGridData = this.gridCommonFunctionService.rowModify(alert.value,this.field,this.field.gridColumns,this.editableGridColumns,[]);
@@ -641,8 +624,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
     if(confirmDelete == "confirm"){
       // this.data[fieldName].splice(deleteIndex,1);
       this.modifiedGridData[fieldName].splice(deleteIndex,1);
-    }else{
-     // this.cancel();
     }
   }
 
@@ -652,55 +633,6 @@ export class GridSelectionDetailModalComponent implements OnInit {
       // this.commonFunctionService.downloadFile(file);
   }
   // Camera upload file Function Handling  End ----------------
-
-
-  
-  // checkRowDisabledIf(field,data){
-  //   const condition = field.disableRowIf;
-  //   if(condition){
-  //     return !this.checkIfService.checkDisableRowIf(condition,data);
-  //   }
-  //   return true;    
-  // }
-  
-  // getValueForGrid(field, object) {
-  //   return this.commonFunctionService.getValueForGrid(field, object);
-  // } 
-
-  // checkRowIf(data:any){
-  //   let check = false;
-  //   if(data.selected){
-  //     let condition = '';
-  //     if(this.field.disableRowIf && this.field.disableRowIf != ''){
-  //       condition = this.field.disableRowIf;
-  //     }
-  //     if(condition != ''){
-  //       if(this.checkIfService.checkDisableRowIf(condition,data)){
-  //         check = true;
-  //       }else{
-  //         check = false;
-  //       }
-  //     }
-  //   }
-  //   return check;
-  // }  
-  
-  // getddnDisplayVal(val) {
-  //   return this.commonFunctionService.getddnDisplayVal(val);
-  // }  
-  
-  // custmizedFormValueData(data, fieldName) {
-  //   if (data && data[fieldName.field_name] && data[fieldName.field_name].length > 0) {
-  //     return data[fieldName.field_name];
-  //   }
-  // }
-  
-  
-  
-  
-  
-
-  
  
 
 }

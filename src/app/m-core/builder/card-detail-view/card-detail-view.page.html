@@ -6,8 +6,7 @@
 </ion-header>
 
 <ion-content class="pages">
-  <div class="contactdetails"  *ngIf="cardType == 'detail1'">
-   
+  <div class="contactdetails"  *ngIf="cardType == 'detail1'">   
     <ion-item class="enquerylist" *ngFor="let column of childColumns; index as j">
       <span [ngClass]="column.class_name ? column.class_name  : ''">{{column.field_label}}</span>
 
@@ -19,7 +18,6 @@
         <ion-button shape="round" fill="outline"></ion-button>
       </strong>
     </ion-item>
-
   </div>
 
   <div class="contactprofile" style="height: 40%;" *ngIf="cardType == 'contactdetail'">
@@ -37,69 +35,6 @@
   <div *ngIf="tabMenu.length > 0" style="height: 60%;">
     <app-cards-layout [card]="card" [data]="childDataValue" (columnListOutput) = "columnListOutput($event)"></app-cards-layout>
   </div>
-
-  <!-- <div class="contactpersonlists" *ngIf="tabMenu && tabMenu.length > 0" >
-    <ion-segment scrollable value="">
-      <ion-segment-button *ngFor="let tabItem of tabMenu; let i = index" (click)="tabmenuClick(tabItem, i)" [class.segment-button-checked]="selectedIndex == i"  [ngClass]="" value="{{tabItem.name}}" ><ion-label>{{tabItem.name}}</ion-label> </ion-segment-button>
-    </ion-segment>
-  
-    <ion-list class="contactlist" *ngIf="cardType == 'enquiry'">
-      
-      <ion-item-sliding *ngFor="let card of carddata; index as i">
-          <ion-item class="quotationlist">
-            <ion-row class="ion-align-items-center inner_padding">
-              <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="detailCardButton(column,card)">
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'"  [innerHTML]="getValueForGrid(column,card)"></p>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'email'" [innerHTML]="getValueForGrid(column,card)"></p>
-                <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)"></ion-button>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
-              </ion-col>
-            </ion-row>
-          </ion-item>
-      </ion-item-sliding>
-    </ion-list>
-  
-    <ion-list class="contactlist" *ngIf="cardType == 'summary'">
-      <ion-item-sliding *ngFor="let card of carddata; index as i">
-          <ion-item class="quotationlist">
-            <ion-row class="ion-align-items-center inner_padding">
-              <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="detailCardButton(column,card)">
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
-                <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)"></ion-button>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
-              </ion-col>
-            </ion-row>
-          </ion-item>
-      </ion-item-sliding>
-    </ion-list>
-  
-    <ion-list class="contactlist" *ngIf="cardType == 'invoice'">
-      <ion-item-sliding *ngFor="let card of carddata; index as i">
-          <ion-item class="quotationlist">
-            <ion-row class="ion-align-items-center inner_padding">
-              <ion-col *ngFor="let column of columnList; index as j" [size]="column.column_size" class="ion-no-padding"  (click)="detailCardButton(column,card)">
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'number'" [innerHTML]="getValueForGrid(column,card)"></p>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'currency'" [innerHTML]="getValueForGrid(column,card)"></p>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'text'" [innerHTML]="getValueForGrid(column,card)"></p>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'email'" [innerHTML]="getValueForGrid(column,card)"></p>
-                <ion-button [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'button'" [innerHTML]="getValueForGrid(column,card)"></ion-button>
-                <p [ngClass]="column.class_name ? column.class_name  : ''" *ngIf="column.type == 'date' || column.type == 'datetime'" [innerHTML]="getValueForGrid(column,card)"></p>
-              </ion-col>
-            </ion-row>
-          </ion-item>
-          <ion-item-options side="end" (click)="callInvoice(card, i)"><ion-item-option><ion-icon name="call"></ion-icon></ion-item-option></ion-item-options>
-      </ion-item-sliding>
-    </ion-list>
-  
-    <div *ngIf="filterCount == 0" class="nodatafound">    
-      <ion-img src="../../../assets/nodatafound.png"></ion-img>
-    </div>
-  
-  </div> -->
   
 </ion-content>
 

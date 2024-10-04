@@ -4,7 +4,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Barcode, BarcodeFormat, BarcodeScanner, LensFacing, StartScanOptions } from '@capacitor-mlkit/barcode-scanning';
 import { FilePicker } from '@capawesome/capacitor-file-picker';
-import { AlertController, InputCustomEvent } from '@ionic/angular';
+import { InputCustomEvent } from '@ionic/angular';
 import { AppModelService } from '@core/ionic-core';
 
 @Component({
@@ -87,36 +87,10 @@ export class BarcodeScanningComponent implements OnInit, AfterViewInit, OnDestro
       path,
       formats,
     });
-    // this.barcodes = barcodes;
-    // let alertType = "GPS";
-    // let alertHeader:string = 'Barcode result';
-    // let message:string;
-    // if(this.barcodes.length==0){
-    //     message = `Please select Correct Image`;
-    //     this.closeModal(this.barcodes);
-    //   }
-    //   else{
-    //    message= `your Barcode value is ${barcodes[0].displayValue}`;
-    //    this.closeModal(this.barcodes);
-    //   }
-    //   const alert = await this.alertController.create({
-    //     cssClass: 'my-gps-class',
-    //     header: alertHeader,
-    //     message: message,
-    //     buttons: [
-    //       {
-    //         text: 'CLOSE',
-    //         role: 'confirmed',
-    //         handler: () => {
-    //           console.log(alertType.toUpperCase() + " alert action : ", "Confirmed");
-    //         },
-    //       },
-    //     ],
-    //   })
-      this.listener.remove();
-      // this.stopScan();
-      this.closeModal(barcodes[0]);
-      // await alert.present();
+    this.listener.remove();
+    // this.stopScan();
+    this.closeModal(barcodes[0]);
+    // await alert.present();
   }
   public setZoomRatio(event: InputCustomEvent): void {
     if (!event.detail.value) {

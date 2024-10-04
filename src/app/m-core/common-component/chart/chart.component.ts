@@ -253,22 +253,5 @@ export class ChartComponent implements OnInit{
     this.getPage(1);
   }
   // Ionic Event Functions Handling End ------------------
-
-  // NOt in used Functions -----------
-  
-  // setChartData(chartData:any){
-  //   if (chartData) {
-  //      console.log(chartData);
-  //   }
-  // }  
-  
-  // onKey(value:any){
-  //   this.copyStaticData['chart_list'] = this.search(value)
-  // }
-  // search(value: string) { 
-  //   let filter = value.toLowerCase();
-  //   return this.staticData['chart_list'].filter(option => option.name.toLowerCase().startsWith(filter));
-  // }
-
   
 }

@@ -14,9 +14,7 @@
     </ion-toolbar>
 </ion-header>
 
-
 <ion-content class="pages">
-
     <div class="banner">
         <ion-slides>
             <ion-slide swiperSlide *ngFor="let banner of banner_img">
@@ -24,9 +22,7 @@
             </ion-slide>
         </ion-slides>
     </div>
-
     <div class="catlist">
-
         <ion-grid *ngIf="homePageLayout == 'layout1'">
             <ion-row>
                 <ion-col size="6" *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)" [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
@@ -37,7 +33,6 @@
                 </ion-col>
             </ion-row>
         </ion-grid>
-
         <ul *ngIf="homePageLayout == 'layout2'">
             <li *ngFor="let cardItem of cardList; let i = index" (click)="showCardTemplate(cardItem, i)"
                 [class.selected]="selectedIndex == i" [ngClass]="cardItem.home_icon_menu?'ion-show':'ion-hide'">
@@ -48,7 +43,6 @@
                 <span>{{cardItem.name}}</span>
             </li>
         </ul>
-
         <div>
             <ion-card *ngIf="cardList == null" class="">
                 <!-- <div class="ion-text-center"><img alt="No Modules Assign" *ngIf="nodatafoundImg" [src]="nodatafoundImg" /> </div>-->

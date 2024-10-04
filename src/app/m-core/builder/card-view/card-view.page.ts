@@ -25,8 +25,7 @@ export class CardViewPage implements OnInit, OnDestroy {
   childColumns : any;
   childColumn: any = {};  
   card:any={};
-  data :any ={};  
-  // new var
+  data :any ={}; 
   gridDataSubscription: any;
   // filter card
   filterForm: UntypedFormGroup;
@@ -37,8 +36,6 @@ export class CardViewPage implements OnInit, OnDestroy {
   searchcardvalue:string = '';
   collectionName:any;
   searchcardfield:any = '';
-  // addNewEnabled:boolean=false;
-  // detailPage:boolean=false; 
   popoverTabbing:any; 
   headerTitle:string;
   popoverdata:any;
@@ -220,17 +217,6 @@ export class CardViewPage implements OnInit, OnDestroy {
       }
       this.popoverTabbing = cardWithTab?.popoverTabbing;
       this.selectedIndex = cardWithTab?.selectedTabIndex;
-    // }else{
-    //   let getStatus:any = this.authService.checkIdTokenStatus();
-    //   if(getStatus && getStatus.status){
-    //     this.notificationService.presentToastOnBottom("Permission denied !", "danger");
-    //   }else{
-    //     if(getStatus && getStatus.msg){
-    //       this.notificationService.presentToastOnBottom(getStatus.msg);
-    //     }
-    //     this.authService.gotToSigninPage();
-    //   }
-    // }
   }
   tabSwichingChanges(){   
     this.searchcardfield = "";

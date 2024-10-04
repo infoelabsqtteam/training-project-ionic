@@ -1,6 +1,4 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild } from '@angular/core';
-import { Legend } from 'chart.js';
+import { AfterViewInit, Component } from '@angular/core';
 import { chartdata } from './data';
 
 
@@ -46,17 +44,6 @@ export class ChartsPage implements AfterViewInit {
     })
     
   }
-
-  //  (chartHover)="chartHovered($event[])"
-  // chartHovered({ event, active }: { event: MouseEvent, active: {}[] }): void {
-  //   console.log(event, active);
-  // }
-  
-  //(chartClick)="chartClicked($event[])"
-  // chartClicked({ event, active }: { event: MouseEvent, ac'tive: {}[] }): void {
-  //   alert("Enent Clicked = " + event.type + "=" + " x = " + event.x  + " y = " + event.y);
-  //   console.log(event, active);
-  // }
 
   chartClicked(obj: any, i){
     alert("You clicked on Chart " + this.charts[i].name);

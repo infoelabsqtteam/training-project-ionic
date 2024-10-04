@@ -45,8 +45,6 @@ export class FileViewsModalComponent implements OnInit {
     private loaderService: LoaderService,
     private notificationService: NotificationService,
     private appDownloadService: AppDownloadService,
-    private deviceService: DeviceService,
-    private appPermissionService: AppPermissionService
     ) {
       this.fileDownloadUrlSubscription = this.dataShareService.fileDownloadUrl.subscribe(data =>{
         let splitUrl =data.split('?')[0];
@@ -187,7 +185,7 @@ export class FileViewsModalComponent implements OnInit {
           }
         }
         if(!response.status || !fileUri.status){
-          this.notificationService.presentToastOnBottom("Something went wrong Please retry.");
+          this.notificationService.presentToastOnBottom("Something went wrong Please retry downloading.");
         }
       }else{
         this.notificationService.presentToastOnBottom("Please allow media access permission !");

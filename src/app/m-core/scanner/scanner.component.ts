@@ -8,7 +8,6 @@ import { ApiCallService, ApiService, CommonFunctionService, CoreFunctionService,
 import { AppPermissionService, AppStorageService, App_googleService, NotificationService, AppModelService } from '@core/ionic-core';
 import { ActionSheetController, AlertController, IonModal, ModalController, Platform, isPlatform } from '@ionic/angular';
 import { Router } from '@angular/router';
-// import { OverlayEventDetail } from '@ionic/core/components';
 import { DataModalComponent } from './data-modal/data-modal.component';
 import { Location } from '@angular/common';
 import { App } from '@capacitor/app';
@@ -96,7 +95,6 @@ export class MyScannerComponent implements OnInit {
     private coreFunctionService: CoreFunctionService,
     private router: Router,
     private actionSheetCtrl: ActionSheetController,
-    private commonFunctionService: CommonFunctionService,
     private modalCtrl: ModalController,
     private platform: Platform,
     private _location: Location,
@@ -211,26 +209,10 @@ export class MyScannerComponent implements OnInit {
     if (saveFromDataRsponce) {
       if (saveFromDataRsponce.success && saveFromDataRsponce.success != '') {
         if (saveFromDataRsponce.success == 'success' && !this.updateMode) {
-          let card:any;
-          let criteria:any = [];
-          // if(this.card && this.card.card){
-          //   card = this.card.card;
-          // }
-          // if(card && card.api_params_criteria && card.api_params_criteria.length > 0){
-          //   card.api_params_criteria.forEach(element => {
-          //     criteria.push(element);
-          //   });
-          // }
             this.getGridData();
             this.onlySuccessAlert(saveFromDataRsponce.data);
           // this.setCardDetails(this.card.card);
         }
-        // else if (saveFromDataRsponce.success == 'success' && this.updateMode) {
-        //   this.carddata[this.editedRowIndex] == saveFromDataRsponce.data;
-        //   if(saveFromDataRsponce.success_msg && saveFromDataRsponce.success_msg != ''){
-        //     this.notificationService.showAlert(saveFromDataRsponce.success_msg,'',['Dismiss']);
-        //   }
-        // }
       }
       this.apiService.ResetSaveResponce();
     }
@@ -426,17 +408,7 @@ export class MyScannerComponent implements OnInit {
     this.apiCallService.getRealTimeGridData(currentMenu, scannedData.displayValue);
   }
   updateRunningData(data){
-    this.openDataModal(data)
-    // this.presentConfirmationActionSheet(data).then((result:any) => {
-    //   if (this.ConfirmScannedResult === "confirm") {
-    //     this.saveCallSubscribe();
-    //     // barcode.displayValue = JSON.parse(barcode.displayValue);
-    //     // barcode.rawValue = JSON.parse(barcode.rawValue);
-    //     // this.prepareQrCodeData(barcode);
-    //   }else{
-    //     this.startScan();
-    //   }
-    // })
+    this.openDataModal(data);
   }
   async openDataModal(dbData:any) {
     let dataWithId = dbData['0'];

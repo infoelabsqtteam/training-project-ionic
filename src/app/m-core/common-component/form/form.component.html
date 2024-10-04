@@ -50,7 +50,6 @@
                     <ion-button expand="round" slot="end" size="small" fill="outline" *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length > 0">{{ custmizedFormValue[tableField.field_name] && this.custmizedFormValue[tableField.field_name].length > 0 ? "( " + custmizedFormValue[tableField.field_name].length + " )" : '' }}</ion-button>
                   </ion-item>
                   <div class="ion-padding-vertical-0 ion-padding-horizontal-0" slot="content" *ngIf="samePageGridSelection">
-                    <!-- <div class="ion-padding" *ngIf="custmizedFormValue[tableField.field_name] && custmizedFormValue[tableField.field_name].length == 0">No data available</div> -->
                     <app-grid-selection [Data]="samePageGridSelectionData" (gridSelectionResponce) = "gridSelectionResponce($event)"></app-grid-selection>
                   </div>
                 </ion-accordion>

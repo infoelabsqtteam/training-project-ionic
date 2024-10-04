@@ -244,8 +244,8 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     const payload = this.apiCallService.getPaylodWithCriteria('mongo_dashlet_master','chart_list',[],'');
     this.apiService.getStatiData([payload]);
   }
-  openModal(component:any, objectData:object){
-    this.appModelService.openModal(component,objectData).then((data:any) => {
+  async openModal(component:any, objectData:object){
+    await this.appModelService.openModal(component,objectData).then((data:any) => {
       if(data && data.role == 'closed'){
         console.log("ModalIs",data.role);
       }
@@ -261,30 +261,6 @@ export class MongodbChartComponent implements OnInit,AfterViewInit {
     // this.checkGetDashletData = true;
   }
   // Dependency Function Handling End--------------------
-  
-  
-  // async chartFilterModal(data:any){
-  //   // this.showfilter = true;
-  //   const modal = await this.modalController.create({
-  //     component: ChartFilterComponent,
-  //     cssClass: 'my-custom-modal-css',
-  //     componentProps: {
-  //       'dashboardItem' : data.dashboardItem,
-  //       'dashletData' : data.dashletData,
-  //       'filter':data.filter,
-  //       'selectedIndex': data.index,
-  //       'staticData': this.staticData
-  //     },
-  //     showBackdrop:true,
-  //     backdropDismiss:false,
-  //   });
-  //   modal.componentProps.modal = modal;
-  //   modal.onDidDismiss()
-  //       .then((data) => {
-  //         console.log(data.role);
-  //       })
-  //   return await modal.present();
-  // }  
 
 }
 

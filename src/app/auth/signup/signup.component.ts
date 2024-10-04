@@ -118,7 +118,6 @@ export class SignupComponent implements OnInit {
     delete payload['confpwd'];
     payload['domain'] = domain;
     payload['userId'] = userId;
-    // const data = {email: email, password: password, name: name, mobileNumber: mobile, domain:"", userId: userId}
     //note: if autologin =true then set redirection= '/home', And if autologin =false then set redirection= '/signine'
     const payloadNew = { data:payload, redirection:'/signin',"autologin":false};
     this.authService.Signup(payloadNew);
@@ -142,17 +141,6 @@ export class SignupComponent implements OnInit {
     this.adminEmail = this.storageService.getAdminEmail();
   }
   // Dependency Functions Handling End -------------------
-
-  // NOt In use
-  // passwordmismatch(){
-  //   if((this.signUpForm.value.password === this.signUpForm.value.confpwd)){
-  //     this.signUpForm.controls['confpwd'].setErrors(null);
-  //     this.passwordNotMatch = false;
-  //   }else{
-  //     this.signUpForm.controls['confpwd'].setErrors({'invalid': true});
-  //     this.passwordNotMatch = true;
-  //   }
-  // }
 
 
 }

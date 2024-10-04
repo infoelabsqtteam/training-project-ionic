@@ -249,21 +249,6 @@ export class ImageUploadPage implements OnInit {
     this.loadFiles();
     this.cameraService.presentToast('File removed.');
   }
- 
-  // loadImages() {
-  //   this.cameraService.getImages().subscribe(images => {
-  //     this.images = images;
-  //   });
-  // }
-  // selectImage(){
-  //   this.cameraService.selectImage(CameraSource.Camera);
-  // }
-  // startupload(file:any){
-  //   this.cameraService.startUpload(file);
-  // }
-  // deleteimage(file:any){
-  //   this.cameraService.deleteSelectedImage(file);
-  // }
   
 
  
@@ -274,7 +259,6 @@ export class ImageUploadPage implements OnInit {
         text: 'Take Photo',
         icon: 'camera',
         handler: () => {
-          // this.addImage(CameraSource.Camera);
           this.selectImage(CameraSource.Camera);
         }
       },
@@ -282,23 +266,10 @@ export class ImageUploadPage implements OnInit {
         text: 'Choose From Photos',
         icon: 'images',
         handler: () => {
-          // this.addImage(CameraSource.Photos);
-          // this.selectImage(CameraSource.Photos);
           this.selectMultipleImages();
         }
       }
     ];
- 
-    // Only allow file selection inside a browser
-    // if (!this.plt.is('hybrid')) {
-    //   buttons.push({
-    //     text: 'Choose a File',
-    //     icon: 'attach',
-    //     handler: () => {
-    //       this.fileInput.nativeElement.click();
-    //     }
-    //   });
-    // }
  
     const actionSheet = await this.actionSheetCtrl.create({
       header: 'Select Image Source',
@@ -308,26 +279,6 @@ export class ImageUploadPage implements OnInit {
   }
  
   async addImage(source: CameraSource) {
-    // const image = await Camera.getPhoto({
-    //   quality: 90,
-    //   allowEditing: false,
-    //   // resultType: CameraResultType.Uri,
-    //   resultType: CameraResultType.Base64,
-    //   source: source,      
-    //   correctOrientation: true,
-    //   saveToGallery: true
-    // });
- 
-    // const blobData = this.b64toBlob(image.base64String, `image/${image.format}`);
-    // const time = new Date().getTime();
-    // const imageName = 'Give a Name';
- 
-    // this.cameraService.uploadImage(blobData, imageName, image.format).subscribe((newImage: ApiImage) => {
-    //   this.images.push(newImage);
-    //   // let img:any = newImage;
-    // });
-
-    // --------------------------
     var options: ImageOptions = {
       quality: 90,
       allowEditing: false,
@@ -339,7 +290,6 @@ export class ImageUploadPage implements OnInit {
 
     Camera.getPhoto(options).then((result:any) => {
       this.images.push(result.dataUrl);
-      console.log(this.images);
     },(err) => {
       alert(JSON.stringify(err))
     })

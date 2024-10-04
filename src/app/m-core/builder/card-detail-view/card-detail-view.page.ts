@@ -83,18 +83,6 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
     let smslink =  "sms:" + mobile + "?subject=Hi,"+ this.childDataValue.first_name +"Contact%20Details&body=Hello,%20I%20need%20Some%20Information.";
     window.location.href = smslink;
   }
-  callInvoice(card:any,Index:number) {
-    let callingNumber:any;
-    if(card.billing_mobile !=''){
-      callingNumber = card.billing_mobile;
-    }
-    this.callNumber.callNumber(callingNumber, true)
-      .then(res => console.log('Launched dialer!' + res))
-      .catch(err => console.log('Error launching dialer ' + err));
-  }
-  comingSoon() {
-    this.notificationService.presentToastOnBottom('Comming Soon...');
-  }
   // Click Functions Handling End--------------------
 
   // Dependency Functions Handling Start------------
@@ -153,26 +141,24 @@ export class CardDetailViewPage implements OnInit, OnDestroy {
     this.card = {};
     this.childDataValue = {};
   }
+  comingSoon() {
+    this.notificationService.presentToastOnBottom('Comming Soon...');
+  }
+  columnListOutput(columnList){
+    console.log(columnList);
+  }
   // Dependency Functions Handling End------------ 
 
   
   // Functions Not in Use -------
-
-  columnListOutput(columnList){
-    console.log(columnList);
-  }
-  
-  // async detailCardButton(column, data){}  
-  
-  // tabmenuClick(tabItem:any,index:number){    
-  //   this.getCardDataByCollection(tabItem._id);
-  // }
-  // private getCardDataByCollection(i) {
-  //   const cardWithTab = this.menuOrModuleCommonService.getCard(i); 
-  //   if(cardWithTab && cardWithTab.card){
-  //     this.card = cardWithTab
-  //     ;
-  //   }     
+  // callInvoice(card:any,Index:number) {
+  //   let callingNumber:any;
+  //   if(card.billing_mobile !=''){
+  //     callingNumber = card.billing_mobile;
+  //   }
+  //   this.callNumber.callNumber(callingNumber, true)
+  //     .then(res => console.log('Launched dialer!' + res))
+  //     .catch(err => console.log('Error launching dialer ' + err));
   // }
 
 }
