@@ -84,12 +84,9 @@ export class ChartFilterComponent implements OnInit {
     public formBuilder: UntypedFormBuilder,
     private apiService:ApiService,
     private dataShareService:DataShareService,
-    // private file: File,
     private storageService:StorageService,
-    private permissionService: AppPermissionService,
     private datePipe: DatePipe,
     private notificationService:NotificationService,
-    private chartService:ChartService,
     private commonFunctionService: CommonFunctionService,
     private appDownloadService: AppDownloadService,
     private modalController: ModalController,
@@ -603,52 +600,6 @@ export class ChartFilterComponent implements OnInit {
   // Not in Use functions Start----------------
   chartHover(e:any){}
   chartClicked(e:any){}
-  // compareObjects(o1: any, o2: any): boolean {
-  //   return o1._id === o2._id;
-  // }
-
-  // getOptionText(option:any) {
-  //   if (option && option.name) {
-  //     return option.name;
-  //   }else{
-  //     return option;
-  //   }
-  // }
-
-  // convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
-  //   const reader:FileReader = new FileReader();
-  //   reader.onerror = reject;
-  //   reader.onabort = reject;
-  //   reader.onload = () => {
-  //     resolve(reader.result as string);
-  //   };
-  //   reader.readAsDataURL(blob);
-  // }); 
-  
-  // async download(object){
-  //   let chartId = "filter_"+object.chartId;
-  //   let chart = this.createdChartList[chartId];    
-  //   let blobData:any = await this.chartService.getDownloadData(chart,object);
-  //   if(isPlatform('hybrid')){
-  //     // const response:any = await this.appDownloadService.downloadBlobData(blobData.url, blobData.name);
-  //     const response:any = await this.appDownloadService.downloadAnyBlobData(blobData.url, blobData.name,true);
-  //     this.downloadResponseHandler(response);
-  //   }else{
-  //     this.chartService.downlodBlobData(blobData.url, blobData.name);
-  //   }
-  // }  
-
-  // checkValidator(){    
-  //   return !this.dashboardFilter.valid;     
-  // } 
-  
-  // checkStartDateValue(){
-  //   if(this.startDateSelected["el"].value){
-  //     this.CheckStartDate=true;
-  //   }else{
-  //     this.notificationService.presentToastOnBottom("Please First select Start Date","danger")
-  //   }
-  // }
   // Not in Use functions End----------------
 
 }

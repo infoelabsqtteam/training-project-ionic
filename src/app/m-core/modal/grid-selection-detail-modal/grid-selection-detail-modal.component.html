@@ -82,8 +82,6 @@
             </ion-accordion>
           </ion-accordion-group>
         </div>
-
-
       </div>
     </div>
     <ion-card-content *ngIf="columnList.length == 0">
@@ -104,9 +102,5 @@
           <ion-button *ngIf="(gridselectionverticalbutton && !grid_row_selection) || (!gridselectionverticalbutton)" type="button" color="appcolor" [disabled]="" (click)="closeModal()" size="small" expand="block" >Cancel</ion-button>
         </ion-col>
       </ion-row>
-      <!-- <div *ngIf="!grid_row_selection">
-        <ion-button  type="button" [disabled]="checkValidator()" color="appcolor" outline="true" size="small" expand="block"  (click)="selectGridData()">{{ fieldButtonLabel(field)}}</ion-button >
-        <ion-button type="button" color="appcolor" outline="true" size="small" expand="block" (click)="closeModal()">Close</ion-button>
-      </div> -->
   </div>
 </ion-footer>

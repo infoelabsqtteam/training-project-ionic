@@ -437,27 +437,4 @@ export class GridSelectionComponent implements OnInit, OnChanges {
 
   /*---- Dependency Function Handling End ------------*/
 
-  
-  // checkRowIf(data:any){
-  //   let check = false;
-  //   if(data.selected){
-  //     let condition = '';
-  //     if(this.field.disableRowIf && this.field.disableRowIf != ''){
-  //       condition = this.field.disableRowIf;
-  //     }
-  //     if(condition != ''){
-  //       if(this.checkIfService.checkDisableRowIf(condition,data)){
-  //         check = true;
-  //       }else{
-  //         check = false;
-  //       }
-  //     }
-  //   }
-  //   return check;
-  // }
-  
-  // calculateNetAmount(data, fieldName, index){
-  //   this.limsCalculationsService.calculateNetAmount(data, fieldName, fieldName["grid_cell_function"]);
-  // }
-
 }
